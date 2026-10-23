@@ -1,0 +1,48 @@
+#ifndef _RSTL_CONSTRUCTION_DEFERRED
+#define _RSTL_CONSTRUCTION_DEFERRED
+
+#include "rstl/RstlVersions.h"
+#include "types.h"
+
+#include "rstl/construct.hpp"
+
+namespace rstl {
+template < typename T >
+class construction_deferred {
+public:
+  construction_deferred() : m_valid(false) {}
+  ~construction_deferred() { clear(); }
+
+  template < typename A >
+  void build(const A& arg) {
+    makeValid();
+#if RSTL_CONSTRUCTION_POLICY
+    new (get_ptr()) T(arg);
+#else
+    rstl::construct(get_ptr(), arg);
+#endif
+  }
+  void clear() {
+    if (valid()) {
+      rstl::destroy(get_ptr());
+      m_valid = false;
+    }
+  }
+  bool valid() const { return m_valid; }
+
+  T* get_ptr() { return reinterpret_cast< T* >(mData); }
+  T& data() {
+    // TODO ensureIsValid
+    return *get_ptr();
+  }
+  T& operator*() { return data(); }
+
+private:
+  ALIGNAS(T) uchar mData[sizeof(T)];
+  ATTRIBUTE_ALIGN_DECL(4, bool m_valid);
+
+  void makeValid() { m_valid = true; }
+};
+} // namespace rstl
+
+#endif // _RSTL_CONSTRUCTION_DEFERRED
