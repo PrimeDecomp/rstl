@@ -55,9 +55,9 @@ void rbtree_rotate_left(void* header_void, void* node_void) {
   fake_node* right = node->mRight;
   fake_node* l = right->mLeft;
 
-  if (parent == nullptr) {
+  if (parent == RSTL_RBTREE_NULL) {
     header->mRootNode = right;
-    right->mParent = nullptr;
+    right->mParent = RSTL_RBTREE_NULL;
   } else {
     if (parent->mLeft == node) {
       parent->mLeft = right;
@@ -82,9 +82,9 @@ void rbtree_rotate_right(void* header_void, void* node_void) {
   fake_node* left = node->mLeft;
   fake_node* r = left->mRight;
 
-  if (parent == nullptr) {
+  if (parent == RSTL_RBTREE_NULL) {
     header->mRootNode = left;
-    left->mParent = nullptr;
+    left->mParent = RSTL_RBTREE_NULL;
   } else {
     if (node == parent->mLeft) {
       parent->mLeft = left;
@@ -105,11 +105,11 @@ void rbtree_rebalance(void* header_void, void* node_void) {
   fake_node* node = static_cast< fake_node* >(node_void);
   fake_header* header = static_cast< fake_header* >(header_void);
 
-  while (node->mParent != nullptr && node->mParent->mColor == kNC_Red) {
+  while (node->mParent != RSTL_RBTREE_NULL && node->mParent->mColor == kNC_Red) {
     fake_node* p = node->mParent->mParent->mLeft;
     if (node->mParent == p) {
       p = node->mParent->mParent->mRight;
-      if ((p != nullptr && p->mColor == kNC_Red)) {
+      if ((p != RSTL_RBTREE_NULL && p->mColor == kNC_Red)) {
         node->mParent->mColor = kNC_Black;
         p->mColor = kNC_Black;
         node->mParent->mParent->mColor = kNC_Red;
@@ -124,7 +124,7 @@ void rbtree_rebalance(void* header_void, void* node_void) {
         node->mParent->mParent->mColor = kNC_Red;
         rbtree_rotate_right(header, node->mParent->mParent);
       }
-    } else if (p != nullptr && p->mColor == kNC_Red) {
+    } else if (p != RSTL_RBTREE_NULL && p->mColor == kNC_Red) {
       node->mParent->mColor = kNC_Black;
       p->mColor = kNC_Black;
       node->mParent->mParent->mColor = kNC_Red;
@@ -150,15 +150,15 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
   fake_node* parent;
   fake_header* header = static_cast< fake_header* >(header_void);
 
-  if (node->get_left() == nullptr) {
+  if (node->get_left() == RSTL_RBTREE_NULL) {
     replacement = node->get_right();
   } else {
     fake_node* tmp = node->get_right();
-    if (tmp == nullptr) {
+    if (tmp == RSTL_RBTREE_NULL) {
       replacement = node->get_left();
     } else {
       successor = tmp;
-      while (successor->get_left() != nullptr) {
+      while (successor->get_left() != RSTL_RBTREE_NULL) {
         successor = successor->get_left();
       }
       replacement = successor->get_right();
@@ -171,7 +171,7 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
 
     if (successor != node->get_right()) {
       parent = successor->get_parent();
-      if (replacement != nullptr) {
+      if (replacement != RSTL_RBTREE_NULL) {
         replacement->set_parent(successor->get_parent());
       }
       successor->get_parent()->set_left(replacement);
@@ -199,7 +199,7 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
 
   } else {
     parent = successor->get_parent();
-    if (replacement != nullptr) {
+    if (replacement != RSTL_RBTREE_NULL) {
       replacement->set_parent(parent);
     }
     if (header->get_root() == node) {
@@ -213,14 +213,14 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
     }
 
     if (header->get_leftmost() == node) {
-      if (node->get_right() == nullptr) {
+      if (node->get_right() == RSTL_RBTREE_NULL) {
         header->set_leftmost(node->get_parent());
       } else {
-        if (replacement == nullptr) {
+        if (replacement == RSTL_RBTREE_NULL) {
           header->set_leftmost(replacement);
         } else {
           fake_node* newLeftmost = replacement;
-          while (newLeftmost->get_left() != nullptr) {
+          while (newLeftmost->get_left() != RSTL_RBTREE_NULL) {
             newLeftmost = newLeftmost->get_left();
           }
           header->set_leftmost(newLeftmost);
@@ -229,14 +229,14 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
     }
 
     if (header->get_rightmost() == node) {
-      if (node->get_left() == nullptr) {
+      if (node->get_left() == RSTL_RBTREE_NULL) {
         header->set_rightmost(node->get_parent());
       } else {
-        if (replacement == nullptr) {
+        if (replacement == RSTL_RBTREE_NULL) {
           header->set_rightmost(replacement);
         } else {
           fake_node* newRightmost = replacement;
-          while (newRightmost->get_right() != nullptr) {
+          while (newRightmost->get_right() != RSTL_RBTREE_NULL) {
             newRightmost = newRightmost->get_right();
           }
           header->set_rightmost(newRightmost);
@@ -268,8 +268,8 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
           replacement = parent;
           parent = parent->get_parent();
         } else {
-          if ((sibling->get_right() == nullptr) || (sibling->get_right()->get_color() == kNC_Black)) {
-            if (siblingChild != nullptr) {
+          if ((sibling->get_right() == RSTL_RBTREE_NULL) || (sibling->get_right()->get_color() == kNC_Black)) {
+            if (siblingChild != RSTL_RBTREE_NULL) {
               siblingChild->set_color(kNC_Black);
             }
             sibling->set_color(kNC_Red);
@@ -278,7 +278,7 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
           }
           sibling->set_color(parent->get_color());
           parent->set_color(kNC_Black);
-          if (sibling->get_right() != nullptr) {
+          if (sibling->get_right() != RSTL_RBTREE_NULL) {
             sibling->get_right()->set_color(kNC_Black);
           }
           rbtree_rotate_left(header_void, parent);
@@ -309,7 +309,7 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
           }
           sibling->set_color(parent->get_color());
           parent->set_color(kNC_Black);
-          if (sibling->get_left() != nullptr) {
+          if (sibling->get_left() != RSTL_RBTREE_NULL) {
             sibling->get_left()->set_color(kNC_Black);
           }
           rbtree_rotate_right(header_void, parent);
@@ -317,7 +317,7 @@ void* rbtree_rebalance_for_erase(void* header_void, void* node_void) {
         }
       }
     }
-    if (replacement != nullptr) {
+    if (replacement != RSTL_RBTREE_NULL) {
       replacement->set_color(kNC_Black);
     }
   }
@@ -329,39 +329,52 @@ void* rbtree_traverse_forward(const void* header_void, void* node_void) {
   const fake_header* header = static_cast< const fake_header* >(header_void);
   fake_node* node = static_cast< fake_node* >(node_void);
 
-  if (node == nullptr) {
+  if (node == RSTL_RBTREE_NULL) {
     return header->mLeftmost;
   }
   fake_node* right = node->mRight;
-  if ((right == nullptr) && (node->mParent == nullptr)) {
-    return nullptr;
+#if RSTL_RBTREE_UNPARENTHESIZED_TRAVERSE_TESTS
+  if (right == RSTL_RBTREE_NULL && node->mParent == RSTL_RBTREE_NULL) {
+    return RSTL_RBTREE_NULL;
   }
-  if ((right == nullptr) && (node->mParent->mLeft == node)) {
+  if (right == RSTL_RBTREE_NULL && node->mParent->mLeft == node) {
+#else
+  if ((right == RSTL_RBTREE_NULL) && (node->mParent == RSTL_RBTREE_NULL)) {
+    return RSTL_RBTREE_NULL;
+  }
+  if ((right == RSTL_RBTREE_NULL) && (node->mParent->mLeft == node)) {
+#endif
     return node->mParent;
   }
 
-  if (right != nullptr) {
+  if (right != RSTL_RBTREE_NULL) {
     fake_node* result = right;
     goto enter_middle;
     do {
       result = right;
     enter_middle:
       right = result->mLeft;
-    } while (right != nullptr);
+    } while (right != RSTL_RBTREE_NULL);
     return result;
   }
 
-  fake_node* parent = nullptr;
+  fake_node* parent = RSTL_RBTREE_NULL;
   goto enter_final;
   do {
     node = parent;
   enter_final:
     parent = node->mParent;
+#if RSTL_RBTREE_UNPARENTHESIZED_TRAVERSE_TESTS
+    if (parent == RSTL_RBTREE_NULL) {
+      break;
+    }
+#else
     if (!parent)
       break;
+#endif
   } while (parent->mRight == node);
 
-  return parent != nullptr ? parent : nullptr;
+  return parent != RSTL_RBTREE_NULL ? parent : RSTL_RBTREE_NULL;
 }
 
 } // namespace rstl

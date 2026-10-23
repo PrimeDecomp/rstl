@@ -1,36 +1,22 @@
 #include "rstl/RstlVersions.h"
+// The prototype's string helpers live in RstlExtras.cpp.
+#if !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS
 #if !RSTL_PRIME1
 #include "EchoesNamespace.h"
 #endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/math.hpp"
 
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Basics/CCast.hpp"
-#else
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 #if RSTL_STRING_LIST_FACTORY
 #if RSTL_PRIME1
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/CFactoryMgr.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 #else
 #include "Echoes/Kyoto/CFactoryMgr.hpp"
 #endif
 #endif
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Streams/CInputStream.hpp"
-#else
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 #if RSTL_STRING_CREATE_FROM_REAL
 #include <stdio.h>
@@ -280,3 +266,4 @@ CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const C
 END_ECHOES_NAMESPACE
 #endif
 #endif
+#endif // !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS

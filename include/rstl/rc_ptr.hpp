@@ -49,7 +49,10 @@ template < typename T >
 class rc_ptr {
 public:
   rc_ptr() : mPtr(nullptr), mRefCount(&rc_ptr_private::sNull) { ++*mRefCount; }
-  rc_ptr(const T* ptr) : mPtr(ptr), mRefCount(rs_new int(1)) {}
+  rc_ptr(const T* ptr) : mPtr(ptr), mRefCount(RSTL_RC_PTR_NEW_COUNT_CTOR int(1)) {}
+#if RSTL_RC_PTR_UNCHECKED_COPY
+  rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mRefCount(other.mRefCount) { ++*mRefCount; }
+#else
   // The empty statements stand in for release-build precondition checks; they count toward
   // MWCC's inline size limit (rbtree node ctors holding rc_ptr pairs are outlined).
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mRefCount(other.mRefCount) {
@@ -57,15 +60,20 @@ public:
     RSTL_PRECONDITION(*mRefCount > 0);
     *mRefCount += 1;
   }
+#endif
   template < typename U >
   explicit rc_ptr(const rc_ptr< U >& other)
   : mPtr(static_cast< const T* >(other.GetPtr())), mRefCount(other.GetRefCountPtr()) {
     ++*mRefCount;
   }
+#if RSTL_RC_PTR_DTOR_PRECONDITION
   ~rc_ptr() {
     RSTL_PRECONDITION(mRefCount != nullptr);
     ReleaseData();
   }
+#else
+  ~rc_ptr() { ReleaseData(); }
+#endif
   rc_ptr& operator=(const rc_ptr& other) {
     if (mPtr != other.mPtr) {
       ReleaseData();
@@ -83,19 +91,21 @@ public:
     const T* base = ptr;
     ReleaseData();
     mPtr = base;
-    mRefCount = rs_new int(1);
+    mRefCount = RSTL_RC_PTR_NEW_COUNT_ASSIGN int(1);
   }
   void ReleaseData();
+#if RSTL_RC_PTR_CAST
   // Guessed name; shares the reference count with a pointer to a derived class.
   template < typename U >
   rc_ptr< U > Cast() const;
+#endif
   void reset() {
     ReleaseData();
     mPtr = nullptr;
     mRefCount = &rc_ptr_private::sNull;
     ++*mRefCount;
   }
-#if RSTL_PRIME1
+#if RSTL_RC_PTR_GET_PTR_ACCESS
   T* operator->() const { return GetPtr(); }
   T& operator*() const { return *GetPtr(); }
   operator bool() const { return GetPtr() != nullptr; }
@@ -114,7 +124,7 @@ template < typename T >
 void rc_ptr< T >::ReleaseData() {
   if (--*mRefCount <= 0) {
     delete GetPtr();
-#if RSTL_PRIME1
+#if RSTL_RC_PTR_GET_PTR_ACCESS
     delete mRefCount;
 #else
     delete GetRefCountPtr();
@@ -122,11 +132,13 @@ void rc_ptr< T >::ReleaseData() {
   }
 }
 
+#if RSTL_RC_PTR_CAST
 template < typename T >
 template < typename U >
 rc_ptr< U > rc_ptr< T >::Cast() const {
   return rc_ptr< U >(*this);
 }
+#endif
 
 #else
 template < typename T >
@@ -251,7 +263,7 @@ class ncrc_ptr : public rc_ptr< T > {
 public:
   ncrc_ptr() {}
   ncrc_ptr(T* ptr) : rc_ptr< T >(ptr) {}
-#if RSTL_RC_PTR_PRIVATE_COUNT
+#if RSTL_NCRC_PTR_COPY_CTOR
   // Explicit copy ctor; its size keeps list<ncrc_ptr<T>>::create_node out of line.
   ncrc_ptr(const ncrc_ptr& other) : rc_ptr< T >(other) {
     RSTL_PRECONDITION(this->mRefCount != nullptr);
@@ -259,8 +271,10 @@ public:
   }
 #endif
   ncrc_ptr(const rc_ptr< T >& other) : rc_ptr< T >(other) {}
+#if RSTL_NCRC_PTR_CONVERSION
   template < typename U >
   ncrc_ptr(const rc_ptr< U >& other) : rc_ptr< T >(other) {}
+#endif
   ncrc_ptr& operator=(const rc_ptr< T >& other) {
     rc_ptr< T >::operator=(other);
     return *this;

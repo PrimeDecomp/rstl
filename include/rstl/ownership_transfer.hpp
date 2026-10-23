@@ -1,6 +1,7 @@
 #ifndef _RSTL_OWNERSHIP_TRANSFER
 #define _RSTL_OWNERSHIP_TRANSFER
 
+#include "rstl/RstlVersions.h"
 #include "types.h"
 
 namespace rstl {
@@ -37,8 +38,16 @@ public:
     }
   }
   T* take_ownership() const {
+#if RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE
+    if (mOwns) {
+      mOwns = false;
+      return mPtr;
+    }
+    return nullptr;
+#else
     mOwns = false;
     return mPtr;
+#endif
   }
   T* get() const { return mPtr; }
   T* operator->() const { return get(); }

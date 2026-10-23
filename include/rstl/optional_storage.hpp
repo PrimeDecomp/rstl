@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "rstl/RstlVersions.h"
+
 #include "rstl/construct.hpp"
 
 namespace rstl {
@@ -34,7 +36,11 @@ public:
   operator bool() const { return m_valid; }
 
 private:
+#if RSTL_OPTIONAL_STORAGE_ALIGNED
   ALIGNAS(T) uchar m_data[sizeof(T)];
+#else
+  uchar m_data[sizeof(T)];
+#endif
   bool m_valid : 1;
 };
 } // namespace rstl

@@ -15,7 +15,11 @@ public:
   optional_object() : m_valid(false) {}
   optional_object(optional_object_null) : m_valid(false) {}
   optional_object(const T& item) : m_valid(true) { rstl::construct< T >(m_data, item); }
+#if RSTL_OPTIONAL_COPY_READS_VALID_CALL
+  optional_object(const optional_object& other) : m_valid(other.valid()) {
+#else
   optional_object(const optional_object& other) : m_valid(other.m_valid) {
+#endif
     if (other.valid()) {
       construct< T >(m_data, other.data());
     }
@@ -36,7 +40,16 @@ public:
       return *this;
     }
     if (other.valid()) {
+#if RSTL_OPTIONAL_ASSIGN_INLINE
+      if (!m_valid) {
+        construct< T >(m_data, other.data());
+        m_valid = true;
+      } else {
+        *get_ptr() = other.data();
+      }
+#else
       assign(other.data());
+#endif
     } else {
       clear();
     }
@@ -81,7 +94,10 @@ public:
   const T* operator->() const { return &data(); }
 
 private:
-#if RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE
+#if RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE
+  uchar m_data[sizeof(T)];
+  bool m_valid ATTRIBUTE_ALIGN(4);
+#elif RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE
   ALIGNAS(T) uchar m_data[sizeof(T)];
   ATTRIBUTE_ALIGN_DECL(4, bool m_valid);
 #else

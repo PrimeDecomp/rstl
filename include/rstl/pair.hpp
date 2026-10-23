@@ -35,10 +35,12 @@ public:
 };
 
 #if RSTL_CONSTRUCTION_POLICY
+#if RSTL_PAIR_MAKE_PAIR
 template < typename L, typename R >
 inline pair< L, R > make_pair(L first, R second) {
   return pair< L, R >(first, second);
 }
+#endif
 
 template < typename L, typename R >
 struct is_trivially_destructible< pair< L, R > > {
@@ -53,6 +55,20 @@ struct use_assignment_for_construction< pair< L, R > > {
   };
 };
 
+#endif
+
+#if RSTL_PAIR_INT_FLOAT_POLICY
+// These legacy element policies retain the native construction null checks and
+// destruction loops even though the individual members have trivial lifetimes.
+template <>
+struct is_trivially_destructible< pair< int, float > > {
+  enum { value = false };
+};
+
+template <>
+struct use_assignment_for_construction< pair< int, float > > {
+  enum { value = false };
+};
 #endif
 
 template < typename P >

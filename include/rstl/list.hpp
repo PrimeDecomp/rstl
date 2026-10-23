@@ -120,9 +120,13 @@ public:
   struct node {
     node* mPrev;
     node* mNext;
+#if RSTL_LIST_NODE_PLAIN
+    uchar mItem[sizeof(T)];
+#else
     ALIGNAS(T) uchar mItem[sizeof(T)];
 
     node(node* prev, node* next) : mPrev(prev), mNext(next) {}
+#endif
 
     node* get_prev() const { return mPrev; }
     node* get_next() const { return mNext; }
@@ -136,7 +140,9 @@ public:
     node* n;
 #if RSTL_ALLOCATOR_INSTANCE
     mAllocator.allocate(n, 1);
+#if RSTL_LIST_PRECONDITIONS
     RSTL_PRECONDITION(n != nullptr);
+#endif
     n->mPrev = prev;
     n->mNext = next;
     construct(n->get_value(), val);
@@ -149,7 +155,11 @@ public:
   }
 
   node* do_insert_before(node* n, const T& val) {
+#if RSTL_LIST_NODE_PLAIN
+    node* const nn = create_node(n->mPrev, n, val);
+#else
     node* const nn = create_node(n->get_prev(), n, val);
+#endif
     if (n == mStart) {
       mStart = nn;
     }
@@ -187,7 +197,19 @@ public:
 
   void remove(const T& val);
 
-#if RSTL_LIST_OUT_OF_CLASS
+#if RSTL_LIST_REMOVE_IF_IN_CLASS
+  template < typename Pred >
+  void remove_if(Pred pred) {
+    node* it = mStart;
+    while (it != mEnd) {
+      if (pred(*it->get_value())) {
+        it = do_erase(it);
+      } else {
+        it = it->get_next();
+      }
+    }
+  }
+#elif RSTL_LIST_OUT_OF_CLASS
   template < typename Pred >
   void remove_if(Pred pred);
 #else
@@ -224,7 +246,10 @@ public:
     }
   }
 
-  inline void exchange(node* nodeA, node* nodeB);
+#if !RSTL_LIST_EXCHANGE_DIRECT
+  inline
+#endif
+  void exchange(node* nodeA, node* nodeB);
 
 public:
   class const_iterator {
@@ -338,6 +363,7 @@ void list< T, Alloc >::remove(const T& val) {
   remove_if(rstl::bind1st(equal, val));
 }
 
+#if !RSTL_LIST_REMOVE_IF_IN_CLASS
 template < typename T, typename Alloc >
 template < typename Pred >
 void list< T, Alloc >::remove_if(Pred pred) {
@@ -350,6 +376,7 @@ void list< T, Alloc >::remove_if(Pred pred) {
     }
   }
 }
+#endif
 #else
 template < typename T, typename Alloc >
 inline typename list< T, Alloc >::iterator list< T, Alloc >::insert(const iterator& pos,
@@ -380,7 +407,10 @@ list< T, Alloc >::~list() {
     node* it = cur;
     node* next = cur->get_next();
     cur = next;
-#if RSTL_ALLOCATOR_INSTANCE
+#if RSTL_LIST_DIRECT_DTOR_CALL
+    it->get_value()->~T();
+    mAllocator.deallocate(it);
+#elif RSTL_ALLOCATOR_INSTANCE
     rstl::destroy(it->get_value());
     mAllocator.deallocate(it);
 #else
@@ -434,6 +464,27 @@ void list< T, Alloc >::exchange(node* nodeA, node* nodeB) {
   node* nodeBNext = nodeB->mNext;
   node* nodeBPrev = nodeB->mPrev;
 
+#if RSTL_LIST_EXCHANGE_DIRECT
+  if (nodeBNext != nodeA) {
+    nodeBNext->mPrev = nodeA;
+    nodeA->mNext = nodeBNext;
+    nodeAPrev->mNext = nodeB;
+    nodeB->mPrev = nodeAPrev;
+  } else {
+    nodeA->mNext = nodeB;
+    nodeB->mPrev = nodeA;
+  }
+
+  if (nodeBPrev != nodeA) {
+    nodeBPrev->mNext = nodeA;
+    nodeA->mPrev = nodeBPrev;
+    nodeANext->mPrev = nodeB;
+    nodeB->mNext = nodeANext;
+  } else {
+    nodeB->mNext = nodeA;
+    nodeA->mPrev = nodeB;
+  }
+#else
   if (nodeBNext != nodeA) {
     nodeBNext->set_prev(nodeA);
     nodeA->set_next(nodeBNext);
@@ -453,13 +504,16 @@ void list< T, Alloc >::exchange(node* nodeA, node* nodeB) {
     nodeB->set_next(nodeA);
     nodeA->set_prev(nodeB);
   }
+#endif
 }
 
 #if RSTL_LIST_OUT_OF_CLASS
 template < typename T, typename Alloc >
 inline typename list< T, Alloc >::iterator list< T, Alloc >::erase(const iterator& start,
                                                                    const iterator& end) {
+#if RSTL_LIST_PRECONDITIONS
   RSTL_PRECONDITION(start.get_node() != nullptr);
+#endif
   iterator it = start;
   while (it != end) {
     it = erase(it);

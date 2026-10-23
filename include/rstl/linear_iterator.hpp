@@ -1,6 +1,7 @@
 #ifndef _RSTL_LINEAR_ITERATOR
 #define _RSTL_LINEAR_ITERATOR
 
+#include "rstl/RstlVersions.h"
 #include "rstl/iterator.hpp"
 
 namespace rstl {
@@ -30,6 +31,15 @@ public:
     mIndex -= count;
     return *this;
   }
+#if RSTL_LINEAR_ITERATOR_DIRECT_ARITHMETIC
+  const_linear_iterator operator-(int count) const {
+    return const_linear_iterator(mOwner, mIndex - count);
+  }
+  const_linear_iterator operator+(int count) const {
+    return const_linear_iterator(mOwner, mIndex + count);
+  }
+  long operator-(const const_linear_iterator& other) const { return mIndex - other.mIndex; }
+#else
   const_linear_iterator operator+(int count) const {
     const_linear_iterator result = *this;
     result += count;
@@ -43,6 +53,7 @@ public:
   difference_type operator-(const const_linear_iterator& other) const {
     return mIndex - other.mIndex;
   }
+#endif
   bool operator==(const const_linear_iterator& other) const {
     return mOwner == other.mOwner && mIndex == other.mIndex;
   }

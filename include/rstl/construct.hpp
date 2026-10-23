@@ -63,7 +63,14 @@ struct is_trivially_destructible {
   enum { value = false };
 };
 
-#if !RSTL_PRIME1
+#if RSTL_SCALAR_TYPE_TRAITS
+template < typename T >
+struct is_trivially_destructible< T* > {
+  enum { value = true };
+};
+#endif
+
+#if RSTL_RANGE_DESTRUCTION_CHECKS
 template < typename T >
 struct range_destruction_checks { // Guessed name
   enum { value = false };
@@ -77,12 +84,57 @@ struct use_assignment_for_construction {
   enum { value = false };
 };
 
+#if RSTL_SCALAR_TYPE_TRAITS
+template < typename T >
+struct use_assignment_for_construction< T* > {
+  enum { value = true };
+};
+
+// Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
+// long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
+// assignment, but inside that class's own out-of-line copy constructor, which its users call. With
+// u32 listed our compiler inlines that copy into those users instead.
+template < typename T >
+struct is_scalar_type {
+  enum { value = false };
+};
+
+template < typename T >
+struct is_scalar_type< T* > {
+  enum { value = true };
+};
+
+#define RSTL_DECLARE_SCALAR_TYPE(T)                                                                \
+  template <>                                                                                      \
+  struct is_scalar_type< T > {                                                                     \
+    enum { value = true };                                                                         \
+  };
+
+RSTL_DECLARE_SCALAR_TYPE(char)
+RSTL_DECLARE_SCALAR_TYPE(signed char)
+RSTL_DECLARE_SCALAR_TYPE(uchar)
+RSTL_DECLARE_SCALAR_TYPE(bool)
+RSTL_DECLARE_SCALAR_TYPE(float)
+RSTL_DECLARE_SCALAR_TYPE(int)
+RSTL_DECLARE_SCALAR_TYPE(uint)
+RSTL_DECLARE_SCALAR_TYPE(short)
+RSTL_DECLARE_SCALAR_TYPE(ushort)
+
+#undef RSTL_DECLARE_SCALAR_TYPE
+#endif
+
 template < typename T, bool UseAssignment >
 struct construction_policy {
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+  static void construct(void* dest, const T& src) { new (dest) T(src); }
+  // Keep mutable range inputs mutable when selecting the copy constructor.
+  static void construct(void* dest, T& src) { new (dest) T(src); }
+#else
   static void construct(void* dest, const T& src) {
     RSTL_PRECONDITION(dest != nullptr);
     new (dest) T(src);
   }
+#endif
 };
 
 template < typename T >
@@ -137,10 +189,12 @@ RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(uint)
 #endif
 
 #if RSTL_TRIVIAL_SCALARS
+#if !RSTL_SCALAR_TYPE_TRAITS
 template < typename T >
 struct use_assignment_for_construction< T* > {
   enum { value = true };
 };
+#endif
 
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(char)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(signed char)
@@ -148,11 +202,19 @@ RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(uchar)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(bool)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(float)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(int)
+#if RSTL_SCALAR_TYPE_TRAITS
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(uint)
+#else
 RSTL_DECLARE_ASSIGNMENT_CONSTRUCTION(uint)
+#endif
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(unsigned long)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(short)
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(ushort)
+#if RSTL_SCALAR_TYPE_TRAITS
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(u64)
+#else
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(unsigned long long)
+#endif
 #endif
 
 template < typename T >
@@ -163,6 +225,13 @@ RSTL_CONSTRUCT_INLINE void construct(void* dest, const T& src) {
   new (dest) T(src);
 #endif
 }
+
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+template < typename T >
+RSTL_CONSTRUCT_INLINE void construct(void* dest, T& src) {
+  construction_policy< T, use_assignment_for_construction< T >::value >::construct(dest, src);
+}
+#endif
 
 #if RSTL_DIRECT_INT_CONSTRUCT
 // Scalars skip the policy dispatch, which keeps copies of scalar containers small enough to
@@ -195,6 +264,40 @@ inline void construct< float >(void* dest, const float& src) {
 }
 #endif
 
+#if RSTL_DESTROY_VIA_IMPL
+template < typename T >
+RSTL_CONSTRUCT_INLINE void destroy_impl(T* in) {
+  if (is_trivially_destructible< T >::value) {
+    return;
+  }
+  in->~T();
+}
+
+template < typename T >
+RSTL_CONSTRUCT_INLINE void destroy(RSTL_DESTROY_PTR(T) in) {
+  destroy_impl(in);
+}
+
+template < typename It >
+RSTL_CONSTRUCT_INLINE void destroy(It begin, It end);
+
+template < typename It >
+RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
+  RSTL_PRECONDITION(begin <= end);
+  if (is_trivially_destructible< typename iterator_traits< It >::value_type >::value) {
+    return;
+  }
+  It cur = begin;
+  for (; cur != end; ++cur) {
+    destroy(&*cur);
+  }
+}
+
+template < typename It >
+RSTL_CONSTRUCT_INLINE void destroy(It begin, It end) {
+  destroy_impl(begin, end);
+}
+#else
 template < typename T >
 struct destruction_policy { // Guessed name
   static void destroy(T* in) {
@@ -263,7 +366,7 @@ RSTL_CONSTRUCT_INLINE void destroy(T* begin, T* end) {
 }
 #endif
 
-#if !RSTL_PRIME1
+#if RSTL_RANGE_DESTRUCTION_CHECKS
 template < typename It >
 RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
   if (range_destruction_checks< typename iterator_traits< It >::value_type >::value) {
@@ -279,6 +382,7 @@ RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
     destroy(&*cur);
   }
 }
+#endif
 #endif
 
 template < typename It, typename T >
@@ -315,6 +419,9 @@ static inline T uninitialized_copy(S* begin, S* end, T out) {
 
 template < typename S, typename D >
 static inline D uninitialized_copy_n(S src, int n, D dest) {
+#if RSTL_COPY_N_PRECONDITION
+  RSTL_PRECONDITION(n >= 0);
+#endif
 #if RSTL_COPY_N_COUNTER_FIRST
   int remaining = n;
 #endif

@@ -2,6 +2,11 @@
 #include "rstl/string.hpp"
 
 #if RSTL_VERSION == RSTL_G2MEAB
+#include "rstl/math.hpp"
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#endif
+
+#if RSTL_VERSION == RSTL_G2MEAB
 #include "Corruption/Kyoto/Streams/CInputStream.hpp"
 #else
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -45,7 +50,7 @@ const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::
 #endif
     case_insensitive_char_traits< wchar_t >::eos();
 
-#if RSTL_STRING_EXTRA_API
+#if RSTL_STRING_EXTRA_API && !RSTL_STRINGS_PROTO_LAYOUT
 string string_l(const char* data) {
   string::literal_t literal;
   return string(literal, data);
@@ -62,17 +67,54 @@ istring istring_l(const char* data) {
 }
 
 #endif
+#if RSTL_STRINGS_PROTO_LAYOUT
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference() {
+  if (mCow && --mCow->mRefCount == 0) {
+    CMemory::Free(mCow);
+  }
+}
+
+#pragma dont_inline on
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size) {
+  mCow = reinterpret_cast< control* >(rmemory_allocator::allocate(sizeof(control) + size));
+  mPtr = reinterpret_cast< char* >(mCow + 1);
+  mCow->mCapacity = size;
+  mCow->mRefCount = 1;
+}
+#pragma dont_inline reset
+
+template <>
+basic_string< char, case_insensitive_char_traits< char > >::basic_string(
+    const char* data, int count, const rmemory_allocator& alloc)
+: mAllocator(alloc) {
+  if (count <= 0 && !*data) {
+    mPtr = &mNull;
+    mSize = 0;
+    mCow = 0;
+    return;
+  }
+  const pair< const char*, int > range = compute_length(data, count);
+  const int length = range.second;
+  internal_allocate(length + 1);
+  mSize = length;
+  char_traits< char >::copy(const_cast< char* >(mPtr), data, length);
+  const_cast< char& >(mPtr[length]) = 0;
+}
+
+#endif
 template <>
 basic_string< char >::basic_string(CInputStream& in, const rmemory_allocator& alloc)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(alloc), mPtr(&mNull), mCow(nullptr), mSize(0) {
+: rmemory_allocator(alloc), mPtr(&mNull), mCow(RSTL_STRING_NO_COW), mSize(0) {
 #else
-: mPtr(&mNull), mCow(nullptr), mSize(0), mAllocator(alloc) {
+: mPtr(&mNull), mCow(RSTL_STRING_NO_COW), mSize(0), mAllocator(alloc) {
 #endif
   char buffer[1025];
   int count = 0;
 #if RSTL_STRING_READ_INT8
-  char ch = in.ReadInt8();
+  RSTL_STRING_STREAM_CH_TYPE ch = in.ReadInt8();
 #else
   char ch = in.Get< schar >();
 #endif
@@ -105,7 +147,7 @@ basic_string< char >::basic_string(const char* data, int count, const rmemory_al
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = nullptr;
+    mCow = RSTL_STRING_NO_COW;
     return;
   }
 
@@ -134,6 +176,36 @@ basic_string< char >::basic_string(const basic_string& other)
   internal_reference();
 }
 
+#if RSTL_STRING_PROTO_API
+template <>
+basic_string< char >::basic_string(char value) {
+  internal_allocate(2);
+  const_cast< char& >(mPtr[0]) = value;
+  const_cast< char& >(mPtr[1]) = 0;
+  mSize = 1;
+}
+
+template <>
+void basic_string< char >::clear() {
+  internal_dereference();
+  mSize = 0;
+  mPtr = &mNull;
+  mCow = 0;
+}
+
+template <>
+basic_string< char >& basic_string< char >::erase(int pos, int count) {
+  const int start = pos > length() ? length() : pos;
+  const int removed = min_val(count == -1 ? length() : count, length() - start);
+
+  internal_prepare_to_write(length(), true);
+  char_traits< char >::copy(const_cast< char* >(mPtr + start), mPtr + start + removed,
+                            length() - start + 1 - removed);
+  mSize -= removed;
+  return *this;
+}
+
+#endif
 template <>
 basic_string< char >& basic_string< char >::append(const basic_string& other) {
   internal_prepare_to_write(length() + other.length(), true);
@@ -197,6 +269,16 @@ void basic_string< char >::PutTo(COutputStream& out) const {
   }
 }
 
+#if RSTL_STRINGS_PROTO_LAYOUT
+template <>
+pair< basic_string< char >::const_iterator, basic_string< char >::const_iterator >
+basic_string< char >::range_iterator(int pos, int count) const {
+  const_iterator first = position_iterator(pos);
+  const_iterator last = count != -1 && pos + count < length() ? first + count : end();
+  return pair< const_iterator, const_iterator >(first, last);
+}
+
+#endif
 template <>
 basic_string< char >::const_iterator basic_string< char >::position_iterator(int pos) const {
   if (pos == -1 || pos >= length()) {
@@ -206,6 +288,7 @@ basic_string< char >::const_iterator basic_string< char >::position_iterator(int
   return begin() + pos;
 }
 
+#if !RSTL_STRINGS_PROTO_LAYOUT
 template <>
 pair< basic_string< char >::const_iterator, basic_string< char >::const_iterator >
 basic_string< char >::range_iterator(int pos, int count) const {
@@ -213,6 +296,7 @@ basic_string< char >::range_iterator(int pos, int count) const {
   const_iterator last = count != -1 && pos + count < length() ? first + count : end();
   return pair< const_iterator, const_iterator >(first, last);
 }
+#endif
 
 template <>
 void basic_string< char >::internal_allocate(int size) {
@@ -237,7 +321,7 @@ void basic_string< char >::internal_dereference() {
 template <>
 void basic_string< char >::internal_prepare_to_write(int len, bool preserve) {
   const int required = len + 1;
-  if (mCow == nullptr || mCow->mRefCount != 1 || mCow->mCapacity < required) {
+  if (mCow == RSTL_STRING_NO_COW || mCow->mRefCount != 1 || mCow->mCapacity < required) {
     int capacity;
     if (mCow) {
       capacity = mCow->mCapacity < 4 ? 4 : mCow->mCapacity;
@@ -275,7 +359,7 @@ basic_string< wchar_t >::basic_string(const wchar_t* data, int count,
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = nullptr;
+    mCow = RSTL_STRING_NO_COW;
     return;
   }
 
@@ -365,7 +449,7 @@ basic_string< wchar_t >& basic_string< wchar_t >::assign(const wchar_t* data, in
 }
 
 template <>
-#if RSTL_STRING_EXTRA_API
+#if RSTL_STRING_WIDE_POSITION_ITERATOR
 basic_string< wchar_t >::const_iterator basic_string< wchar_t >::position_iterator(int pos) const {
   if (pos == -1 || pos >= length()) {
     return end();
@@ -406,7 +490,7 @@ void basic_string< wchar_t >::internal_dereference() {
 template <>
 void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve) {
   const int required = len + 1;
-  if (mCow == nullptr || mCow->mRefCount != 1 || mCow->mCapacity < required) {
+  if (mCow == RSTL_STRING_NO_COW || mCow->mRefCount != 1 || mCow->mCapacity < required) {
     int capacity;
     if (mCow) {
       capacity = mCow->mCapacity < 4 ? 4 : mCow->mCapacity;
@@ -433,6 +517,22 @@ void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve) 
   }
 }
 
+#if RSTL_STRINGS_PROTO_LAYOUT
+istring istring_l(const char* data) {
+  istring::literal_t literal;
+  return istring(literal, data);
+}
+
+wstring wstring_l(const wchar_t* data) {
+  wstring::literal_t literal;
+  return wstring(literal, data);
+}
+
+string string_l(const char* data) {
+  string::literal_t literal;
+  return string(literal, data);
+}
+#else
 template <>
 basic_string< char, case_insensitive_char_traits< char > >::basic_string(
     const char* data, int count, const rmemory_allocator& alloc)
@@ -444,7 +544,7 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = nullptr;
+    mCow = RSTL_STRING_NO_COW;
     return;
   }
 
@@ -491,5 +591,6 @@ void basic_string< char, case_insensitive_char_traits< char > >::internal_derefe
 #endif
   }
 }
+#endif
 
 } // namespace rstl

@@ -19,15 +19,25 @@ namespace rstl {
 // Guessed name
 class locked_cache_allocator {
 public:
+#if RSTL_LOCKED_CACHE_RAW_MODE
+  explicit locked_cache_allocator(int mode = 0)
+  : mHeapAfterCacheAttempt(mode == 0)
+  , mPreferHeap(mode == 2)
+#else
   // Guessed names; values follow the native allocation flags.
   enum EMode { kM_CacheThenHeap = 0, kM_PreferCache = 1, kM_HeapOnly = 2 };
   explicit locked_cache_allocator(EMode mode = kM_CacheThenHeap)
   : mHeapAfterCacheAttempt(mode == kM_CacheThenHeap)
   , mPreferHeap(mode == kM_HeapOnly)
+#endif
   , mHeapAllocation(false)
   , mPreviousHeapAllocation(false)
   , mAllocationCount(0) {}
+#if RSTL_LOCKED_CACHE_RAW_MODE
+  void Allocate(void*& out, uint size); // Guessed name
+#else
   void Allocate(void*& out, int size); // Guessed name
+#endif
 
   template < typename T >
   void allocate(T*& out, int count) {

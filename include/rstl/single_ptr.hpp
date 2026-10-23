@@ -8,7 +8,7 @@
 namespace rstl {
 template < typename T >
 class single_ptr {
-#if RSTL_PRIME1 && RSTL_SINGLE_PTR_TRANSFER
+#if RSTL_SINGLE_PTR_MUTABLE
   mutable T* mPtr;
 #else
   T* mPtr;
@@ -18,7 +18,7 @@ public:
   single_ptr() : mPtr(nullptr) {}
   single_ptr(T* ptr) : mPtr(ptr) {}
 #if RSTL_SINGLE_PTR_TRANSFER
-#if RSTL_PRIME1
+#if RSTL_SINGLE_PTR_MUTABLE
   single_ptr(const single_ptr& other) : mPtr(other.mPtr) { other.mPtr = nullptr; }
 #else
   single_ptr(const single_ptr& other) : mPtr(other.mPtr) {
@@ -55,10 +55,18 @@ public:
 
   T* get() const { return mPtr; }
   // const T* get() const { return mPtr; }
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  T* operator->() const { return mPtr; }
+#else
   T* const operator->() const { return mPtr; }
+#endif
 #ifndef CLANGD
   T& operator*() { return *mPtr; }
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  const T& operator*() const { return *mPtr; }
+#else
   T& operator*() const { return *mPtr; }
+#endif
 #endif
 
   bool null() const { return mPtr == nullptr; }
@@ -68,14 +76,18 @@ public:
     return ptr;
   }
 
+#if RSTL_SINGLE_PTR_RESET
   // This is certainly not real, but handy to force not-inline
   single_ptr& reset(T* ptr);
+#endif
 };
 
+#if RSTL_SINGLE_PTR_RESET
 template < typename T >
 single_ptr< T >& single_ptr< T >::reset(T* ptr) {
   return *this = ptr;
 }
+#endif
 
 #if RSTL_UNK_SINGLE_PTR_VOID
 typedef single_ptr< void > unk_singleptr;

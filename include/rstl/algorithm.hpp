@@ -7,11 +7,13 @@
 #include "rstl/pointer_iterator.hpp"
 
 namespace rstl {
+#if RSTL_ALGORITHM_MISMATCH
 template < typename I1, typename I2 >
 pair< I1, I2 > mismatch(I1 first, I1 last, I2 second) {
   for (; first != last && *first == *second; ++first, ++second) {}
   return pair< I1, I2 >(first, second);
 }
+#endif
 
 template < typename It, typename T >
 int count(It first, It last, const T& val) {
@@ -35,22 +37,42 @@ inline
 }
 
 template < class It, class Pred >
+#if RSTL_FIND_IF_PRED_BY_VALUE
+inline It find_if(It first, It last, Pred pred) {
+#else
 inline It find_if(It first, It last, const Pred& pred) {
+#endif
   while (first != last && !pred(*first))
     ++first;
   return first;
 }
 
 template < typename T >
+#if RSTL_SWAP_OPTIONAL_INLINE
+// Out of line by default. CActor.cpp defines RSTL_INLINE_SWAP: its fluid sort (0x80036D08,
+// 0x8003705C) swaps in place, while ScriptLoaderRegistry's sort calls both out of line.
+#ifdef RSTL_INLINE_SWAP
+inline
+#endif
+    void swap(T& a, T& b) {
+#else
 inline void swap(T& a, T& b) {
   RSTL_PRECONDITION(&a != &b);
+#endif
   T tmp(a);
   a = b;
   b = tmp;
 }
 
 template < typename I1, typename I2 >
+#if RSTL_SWAP_OPTIONAL_INLINE
+#ifdef RSTL_INLINE_SWAP
+inline
+#endif
+    void iter_swap(I1 a, I2 b) {
+#else
 inline void iter_swap(I1 a, I2 b) {
+#endif
   typename iterator_traits< I1 >::value_type tmp = *a;
   *a = *b;
   *b = tmp;
@@ -103,8 +125,12 @@ void __insertion_sort(const It first, It last, Cmp cmp) {
     --t1;
 #endif
     It t2 = next;
+#if RSTL_SORT_LESS_LOCAL
     bool less;
     while (first < t2 && (less = cmp(value, *t1))) {
+#else
+    while (first < t2 && cmp(value, *t1)) {
+#endif
       *t2 = *t1;
       --t2;
       --t1;
@@ -132,18 +158,29 @@ void sort(It first, It last, Cmp cmp) {
   It it = first + 1;
   --end;
 
+#if RSTL_SORT_LESS_LOCAL
   bool less;
-#if RSTL_SORT_ECHOES_LOOPS
+#endif
+#if RSTL_SORT_FOREVER_LOOP
   for (;;) {
 #else
   while (true) {
 #endif
+#if RSTL_SORT_LESS_LOCAL
     while ((less = cmp(*it, pivot))) {
       ++it;
     }
     while ((less = cmp(pivot, *end))) {
       --end;
     }
+#else
+    while (cmp(*it, pivot)) {
+      ++it;
+    }
+    while (cmp(pivot, *end)) {
+      --end;
+    }
+#endif
     if (it >= end) {
       break;
     }
@@ -164,6 +201,24 @@ It lower_bound(It start, It end, const T& value, Cmp cmp) {
   while (dist > 0) {
     int halfDist = dist / 2;
     it = start;
+    advance(it, halfDist);
+    if (cmp(*it, value)) {
+      start = it;
+      ++start;
+      dist = (dist - halfDist) - 1;
+    } else {
+      dist = halfDist;
+    }
+  }
+  return start;
+}
+#elif RSTL_LOWER_BOUND_CMP_BEFORE_SORT3
+template < typename It, typename T, typename Cmp >
+It lower_bound(It start, It end, const T& value, Cmp cmp) {
+  int dist = distance(start, end);
+  while (dist > 0) {
+    int halfDist = dist / 2;
+    It it = start;
     advance(it, halfDist);
     if (cmp(*it, value)) {
       start = it;
@@ -247,6 +302,11 @@ void sort(It first, It last) {
 template < typename It, typename T >
 It lower_bound(It start, It end, const T& value) {
   int dist = distance(start, end);
+#if RSTL_LOWER_BOUND_LOOP_LOCALS
+  while (dist > 0) {
+    int halfDist = dist / 2;
+    It it = start;
+#else
 #if !RSTL_PRIME1
   int halfDist;
 #endif
@@ -258,6 +318,7 @@ It lower_bound(It start, It end, const T& value) {
     halfDist = dist / 2;
 #endif
     it = start;
+#endif
     advance(it, halfDist);
     if (*it < value) {
       start = it;
@@ -270,7 +331,7 @@ It lower_bound(It start, It end, const T& value) {
   return start;
 }
 
-#if RSTL_LOWER_BOUND_ADVANCES_START
+#if RSTL_LOWER_BOUND_ADVANCES_START && !RSTL_LOWER_BOUND_CMP_BEFORE_SORT3
 template < typename It, typename T, typename Cmp >
 It lower_bound(It start, It end, const T& value, Cmp cmp) {
   int dist = distance(start, end);

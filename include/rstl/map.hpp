@@ -11,12 +11,12 @@
 
 namespace rstl {
 template < typename K, typename V, typename Cmp = less< K >, typename Alloc = rmemory_allocator >
-class map : public red_black_tree< K, pair< K, V >, false, select1st< pair< K, V > >, Cmp, Alloc > {
+class map : public red_black_tree< K, pair< K, V >, RSTL_RBTREE_UNIQUE_KEYS, select1st< pair< K, V > >, Cmp, Alloc > {
 public:
   typedef pair< K, V > value_type;
 
 private:
-  typedef red_black_tree< K, value_type, false, select1st< value_type >, Cmp, Alloc > rep_type;
+  typedef red_black_tree< K, value_type, RSTL_RBTREE_UNIQUE_KEYS, select1st< value_type >, Cmp, Alloc > rep_type;
 
 public:
   typedef typename rep_type::iterator iterator;

@@ -19,6 +19,17 @@ struct rmemory_allocator {
   rmemory_allocator(const rmemory_allocator&) {}
   static void* allocate(int size);
 
+#if RSTL_ALLOCATOR_LEGACY_SPELLING
+  template < typename T >
+  static void allocate(T*& output, int size) {
+    output = reinterpret_cast< T* >(allocate(size * sizeof(T)));
+  }
+  template < typename T >
+  static T* allocate2(int count) {
+    int size = count * sizeof(T);
+    return size == 0 ? 0 : reinterpret_cast< T* >(new uchar[size]);
+  }
+#else
   template < typename T >
   static void allocate(T*& out, int count) {
     int size = count * sizeof(T);
@@ -34,6 +45,7 @@ struct rmemory_allocator {
       return reinterpret_cast< T* >(new uchar[size]);
     }
   }
+#endif
   template < typename T >
   static void deallocate(T* ptr) {
     delete[] reinterpret_cast< uchar* >(ptr);
@@ -95,15 +107,22 @@ struct aligned_allocator {
   aligned_allocator() {}
   aligned_allocator(const aligned_allocator&) {}
 
-#if !RSTL_PRIME1
+#if !RSTL_ALIGNED_ALLOCATE_INLINE
   static void* allocate(int size) {
     return size == 0 ? nullptr : CMemory::Alloc(size, IAllocator::kHI_RoundUpLen);
   }
 #endif
 
+#if RSTL_ALLOCATOR_LEGACY_SPELLING
+  template < typename T >
+  static void allocate(T*& output, int count) {
+    const int size = count * sizeof(T);
+    output = size == 0 ? 0 : static_cast< T* >(CMemory::Alloc(size, IAllocator::kHI_RoundUpLen));
+  }
+#else
   template < typename T >
   static void allocate(T*& out, int count) {
-#if RSTL_PRIME1
+#if RSTL_ALIGNED_ALLOCATE_INLINE
     const int size = count * sizeof(T);
     out = size == 0 ? nullptr
                     : static_cast< T* >(CMemory::Alloc(size, IAllocator::kHI_RoundUpLen));
@@ -111,6 +130,7 @@ struct aligned_allocator {
     out = static_cast< T* >(allocate(count * sizeof(T)));
 #endif
   }
+#endif
 
   template < typename T >
   static void deallocate(T* ptr) {

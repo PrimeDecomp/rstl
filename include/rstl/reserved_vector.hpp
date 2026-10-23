@@ -12,6 +12,17 @@ class CInputStream;
 class COutputStream;
 
 namespace rstl {
+#if RSTL_RESERVED_VECTOR_FILL_TYPE
+// Guessed name; scalar byte fills pass their value directly.
+template < typename T >
+struct reserved_vector_fill_type {
+  typedef const T& type;
+};
+template <>
+struct reserved_vector_fill_type< uchar > {
+  typedef uchar type;
+};
+#endif
 #if RSTL_RESERVED_VECTOR_TRAITS
 // Scalar fill and destruction behavior recovered from Trilogy's input filters.
 template < typename T >
@@ -62,7 +73,11 @@ struct reserved_vector_traits< float > {
 template < typename T, int N >
 class reserved_vector {
   int mCount;
+#if RSTL_RESERVED_VECTOR_ALIGNED_DATA
   ALIGNAS(T) uchar mData[N * sizeof(T)];
+#else
+  uchar mData[N * sizeof(T)];
+#endif
 
 public:
   // typedef pointer_iterator< T, reserved_vector< T, N >, void > iterator;
@@ -104,6 +119,16 @@ public:
   };
 #endif
   reserved_vector(const reserved_vector& other) : mCount(other.mCount) {
+#if RSTL_RESERVED_VECTOR_POLICY_COPY
+    // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
+    // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
+    const T* it = other.data();
+    T* cur = data();
+    for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
+      construction_policy< T, is_scalar_type< T >::value >::construct(cur, *it);
+    }
+  }
+#else
     RSTL_PRECONDITION(mCount >= 0);
 #if RSTL_RESERVED_VECTOR_RAW_COPY
     uninitialized_copy_n(other.data(), mCount, data());
@@ -111,10 +136,13 @@ public:
     uninitialized_copy_n(const_iterator(other.data()), mCount, begin());
 #endif
   }
+#endif
+#if RSTL_RESERVED_VECTOR_RANGE_CTOR
   reserved_vector(const T* first, const T* last) : mCount(0) {
     mCount = last - first;
     uninitialized_copy(first, last, data());
   }
+#endif
   reserved_vector(CInputStream& in);
 
 #if RSTL_RESERVED_VECTOR_OUT_OF_CLASS
@@ -133,7 +161,11 @@ public:
   }
 
   void pop_back() {
+#if RSTL_RESERVED_VECTOR_POP_BACK_DATA_INDEX
+    destroy(&data()[mCount - 1]);
+#else
     destroy(end() - 1);
+#endif
     --mCount;
   }
 #else
@@ -205,9 +237,11 @@ public:
   inline bool empty() const { return size() == 0; }
   inline int size() const { return mCount; }
   inline int capacity() const { return N; }
+#if RSTL_RESERVED_VECTOR_SET_SIZE
   // Guessed name. Sets the count without constructing elements; the caller writes them
   // through data().
   inline void set_size(int count) { mCount = count; }
+#endif
   inline T& front() { return data()[0]; }
   inline const T& front() const { return data()[0]; }
   inline T& back() { return at(mCount - 1); }
@@ -220,7 +254,7 @@ public:
 #else
   inline T& operator[](int idx) { return data()[idx]; }
 #endif
-#if RSTL_PRECONDITION_MACRO
+#if RSTL_RESERVED_VECTOR_CONST_INDEX_PRECONDITION
   inline const T& operator[](int idx) const {
     RSTL_PRECONDITION(idx >= 0 && idx < mCount);
     return data()[idx];
@@ -247,7 +281,22 @@ public:
     return end();
   }
 
-#if RSTL_RESERVED_VECTOR_SHRINKING_RESIZE
+#if RSTL_RESERVED_VECTOR_FILL_TYPE
+  // Guessed name. For scalar storage that the caller fills before reading.
+  void resize_uninitialized(int count) { mCount = count; }
+
+  void resize(int count, typename reserved_vector_fill_type< T >::type item = T()) {
+    if (mCount == count) {
+      return;
+    }
+    if (mCount > count) {
+      destroy(data() + count, data() + mCount);
+    } else {
+      uninitialized_fill_n(data() + mCount, count - mCount, item);
+    }
+    mCount = count;
+  }
+#elif RSTL_RESERVED_VECTOR_SHRINKING_RESIZE
   void resize(int count, const T& item = T()) {
     if (mCount == count) {
       return;
@@ -278,12 +327,14 @@ private:
     }
 #if RSTL_PRIME1
     RSTL_PRECONDITION(mCount >= 0);
+#endif
+#if RSTL_RESERVED_VECTOR_DESTROY_INDEXED
     T* ptr = data();
 #else
     T* const ptr = data();
 #endif
     for (int i = 0; i < mCount; ++i) {
-#if RSTL_PRIME1
+#if RSTL_RESERVED_VECTOR_DESTROY_INDEXED
       destroy(&ptr[i]);
 #else
       destroy(ptr + i);
@@ -293,7 +344,14 @@ private:
 };
 
 template < typename T, int N >
+#if RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION
+#ifndef RSTL_DONT_INLINE_RESERVED_VECTOR
+inline
+#endif
+    reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserved_vector& other) {
+#else
 inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserved_vector& other) {
+#endif
   if (this != &other) {
     destroy_elements();
     uninitialized_copy(other.data(), other.data() + other.size(), data());

@@ -2,9 +2,60 @@
 #define _RSTL_AUTO_PTR
 
 #include "rstl/RstlVersions.h"
+#if RSTL_AUTO_PTR_PROTO
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#else
 #include "types.h"
+#endif
 
 namespace rstl {
+#if RSTL_AUTO_PTR_PROTO
+template < typename T >
+class auto_ptr {
+  mutable bool mOwns;
+  T* mPointer;
+
+public:
+  auto_ptr(T* pointer = 0) : mOwns(pointer != 0), mPointer(pointer) {}
+  auto_ptr(const auto_ptr& other) : mOwns(other.mOwns), mPointer(other.mPointer) {
+    other.mOwns = false;
+  }
+  ~auto_ptr() {
+    if (mOwns) {
+      delete mPointer;
+    }
+  }
+
+  auto_ptr& operator=(const auto_ptr& other) {
+    if (&other != this) {
+      if (mOwns) {
+        delete mPointer;
+      }
+      mOwns = other.mOwns;
+      mPointer = other.mPointer;
+      other.mOwns = false;
+    }
+    return *this;
+  }
+
+  T* get() const { return mPointer; }
+  T& operator*() const { return *mPointer; }
+  T* release() const {
+    if (mOwns) {
+      mOwns = false;
+      return mPointer;
+    }
+    return 0;
+  }
+  bool null() const { return mPointer == 0; }
+  void reset() {
+    mOwns = false;
+    mPointer = 0;
+  }
+  T* operator->() const { return mPointer; }
+  bool owner() const { return mOwns; }
+};
+#else
 template < typename T >
 class auto_ptr {
   mutable bool mHas;
@@ -66,6 +117,7 @@ public:
     mItem = nullptr;
   }
 };
+#endif
 } // namespace rstl
 
 #endif // _RSTL_AUTO_PTR

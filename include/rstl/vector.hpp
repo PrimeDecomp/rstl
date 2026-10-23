@@ -5,6 +5,11 @@
 
 #include "types.h"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Alloc/Assert.hpp"
+#include "Corruption/Kyoto/Basics/CBasics.hpp"
+#endif
+
 #include "rstl/allocator_auto_ptr.hpp"
 #include "rstl/iterator.hpp"
 #include "rstl/pointer_iterator.hpp"
@@ -63,7 +68,11 @@ public:
 #if RSTL_VECTOR_UNINITIALIZED_COUNT_CTOR
   // The count elements are uninitialized until the caller fills the storage.
   vector(int count) : mCount(0), mCapacity(0), mItems(0) {
+#if RSTL_VECTOR_COUNT_CTOR_POSITIVE_CHECK
+    if (count > 0)
+#else
     if (count > mCount)
+#endif
       reserve(count);
     mCount = count;
   }
@@ -167,14 +176,26 @@ public:
 #if !RSTL_PRIME1
   // Guessed name. Sets the count without constructing the new elements; the caller fills them.
   void resize_uninitialized(int size) {
+#if RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK
+    if (size > mCount) {
+      reserve(size);
+    }
+#else
     if (size > mCapacity)
       reserve(size);
+#endif
     mCount = size;
   }
 #endif
-  inline void assign(int size, const T& in = T());
+#if RSTL_VECTOR_INLINE_DECLS
+  inline
+#endif
+  void assign(int size, const T& in = T());
   void reserve(int size);
-  inline iterator insert(iterator it, const T& value);
+#if RSTL_VECTOR_INLINE_DECLS
+  inline
+#endif
+  iterator insert(iterator it, const T& value);
 
   template < typename from_iterator >
 #if RSTL_VECTOR_OUT_OF_CLASS
@@ -191,7 +212,33 @@ public:
   iterator erase(iterator it);
   iterator erase(iterator first, iterator last);
 
-#if RSTL_VECTOR_GROWING_PUSH_BACK
+#if RSTL_VECTOR_VERIFIED_PUSH_BACK
+  void push_back(const T& in) {
+    if (mCount >= mCapacity) {
+      verify_capacity_failed();
+    }
+    rstl::construct(mItems + mCount++, in);
+  }
+
+  void push_back_unsafe(const T& in) {
+    if (!(mCount < mCapacity)) {
+      verify_capacity_failed();
+    }
+    rstl::construct(mItems + mCount++, in);
+  }
+
+  void push_back_checked(const T& in) {
+    if (mCount >= mCapacity) {
+      verify_capacity_failed();
+    }
+    push_back_unsafe(in);
+  }
+
+  void pop_back() {
+    destroy(mItems + mCount - 1);
+    --mCount;
+  }
+#elif RSTL_VECTOR_GROWING_PUSH_BACK
   void push_back(const T& in) {
     if (mCount >= mCapacity) {
       reserve(mCapacity != 0 ? mCapacity * 2 : 4);
@@ -269,6 +316,19 @@ public:
 protected:
   template < typename In >
   inline void insert_into(iterator at, int n, In in);
+
+#if RSTL_VECTOR_VERIFIED_PUSH_BACK
+  // Dolphin vector.h (line 482): no auto resize, asserts when the capacity is exhausted.
+  void verify_capacity_failed() const {
+    CCallStack stack(0, "vector.h(482) : ", kUnknownType);
+    rs_log_assert_failure(&stack, "vector.h", 482, "Verify", "mSize < mCapacity",
+                          CBasics::Stringize("Auto vector resize is not supported on dolphin, "
+                                             "call reserve() yourself (capacity: %d)",
+                                             mCapacity));
+    rs_debugger_printf("Would have thrown exception: %s\n", "false");
+    rs_halt_cpu();
+  }
+#endif
 };
 
 #if RSTL_VECTOR_OUT_OF_CLASS
@@ -464,12 +524,18 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
 }
 
 template < typename T, typename Alloc >
-inline typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator it) {
+#if RSTL_VECTOR_INLINE_DECLS
+inline
+#endif
+typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator it) {
   return erase(it, it + 1);
 }
 
 template < typename T, typename Alloc >
-inline typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator first, iterator last) {
+#if RSTL_VECTOR_INLINE_DECLS
+inline
+#endif
+typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator first, iterator last) {
   destroy(first, last);
 
   const typename iterator::difference_type tmp = first - begin();
