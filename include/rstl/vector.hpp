@@ -164,12 +164,14 @@ public:
 #endif
 
   inline void resize(int size, const T& in = T());
+#if !RSTL_PRIME1
   // Guessed name. Sets the count without constructing the new elements; the caller fills them.
   void resize_uninitialized(int size) {
     if (size > mCapacity)
       reserve(size);
     mCount = size;
   }
+#endif
   inline void assign(int size, const T& in = T());
   void reserve(int size);
   inline iterator insert(iterator it, const T& value);

@@ -13,7 +13,11 @@ public:
 
   const_linear_iterator(const Container* owner, int index) : mOwner(owner), mIndex(index) {}
 
+#if RSTL_PRIME1
+  const T& operator*() const { return mOwner->mPtr[mIndex]; }
+#else
   const T& operator*() const { return (*mOwner)[mIndex]; }
+#endif
   const_linear_iterator& operator++() {
     ++mIndex;
     return *this;

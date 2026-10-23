@@ -80,6 +80,10 @@ public:
     const header* mHeader;
     const_iterator(node* node, const header* header, bool = false) : mNode(node), mHeader(header) {}
 
+#if RSTL_PRIME1
+    node* get_node() const { return mNode; }
+
+#endif
     const P* operator->() const { return mNode->get_value(); }
     const P& operator*() const { return *mNode->get_value(); }
     bool operator==(const const_iterator& other) const {
@@ -107,7 +111,9 @@ public:
 
     P* operator->() const { return const_iterator::mNode->get_value(); }
     P& operator*() const { return *const_iterator::mNode->get_value(); }
+#if !RSTL_PRIME1
     node* get_node() { return const_iterator::mNode; }
+#endif
 
     iterator& operator++() {
       const_iterator::operator++();
@@ -163,9 +169,21 @@ public:
   iterator begin() { return iterator(mHeader.get_leftmost(), &mHeader); }
   iterator end() { return iterator(nullptr, &mHeader); }
 
+#if RSTL_PRIME1
+  const_iterator find(const T& key) const {
+    node* const result = find_node(key);
+    return const_iterator(result, &mHeader);
+  }
+
+  iterator find(const T& key) {
+    node* const result = find_node(key);
+    return iterator(result, &mHeader);
+  }
+#else
   const_iterator find(const T& key) const { return const_iterator(find_node(key), &mHeader); }
 
   iterator find(const T& key) { return iterator(find_node(key), &mHeader); }
+#endif
 
   node* find_node(const T& key) const {
     node* n = mHeader.get_root();

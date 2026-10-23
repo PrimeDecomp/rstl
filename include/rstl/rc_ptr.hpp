@@ -3,7 +3,11 @@
 
 #include "rstl/RstlVersions.h"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#else
 #include "Kyoto/Alloc/CMemory.hpp"
+#endif
 #include "rstl/construct.hpp"
 #include "rstl/rmemory_allocator.hpp"
 #include "types.h"
@@ -91,9 +95,15 @@ public:
     mRefCount = &rc_ptr_private::sNull;
     ++*mRefCount;
   }
+#if RSTL_PRIME1
+  T* operator->() const { return GetPtr(); }
+  T& operator*() const { return *GetPtr(); }
+  operator bool() const { return GetPtr() != nullptr; }
+#else
   T* operator->() const { return const_cast< T* >(mPtr); }
   T& operator*() const { return *const_cast< T* >(mPtr); }
   operator bool() const { return mPtr != nullptr; }
+#endif
 
 private:
   const T* mPtr;
@@ -104,7 +114,11 @@ template < typename T >
 void rc_ptr< T >::ReleaseData() {
   if (--*mRefCount <= 0) {
     delete GetPtr();
+#if RSTL_PRIME1
+    delete mRefCount;
+#else
     delete GetRefCountPtr();
+#endif
   }
 }
 

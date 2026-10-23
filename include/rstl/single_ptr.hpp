@@ -8,15 +8,23 @@
 namespace rstl {
 template < typename T >
 class single_ptr {
+#if RSTL_PRIME1 && RSTL_SINGLE_PTR_TRANSFER
+  mutable T* mPtr;
+#else
   T* mPtr;
+#endif
 
 public:
   single_ptr() : mPtr(nullptr) {}
   single_ptr(T* ptr) : mPtr(ptr) {}
 #if RSTL_SINGLE_PTR_TRANSFER
+#if RSTL_PRIME1
+  single_ptr(const single_ptr& other) : mPtr(other.mPtr) { other.mPtr = nullptr; }
+#else
   single_ptr(const single_ptr& other) : mPtr(other.mPtr) {
     const_cast< single_ptr& >(other).mPtr = nullptr;
   }
+#endif
 #else
   single_ptr(single_ptr& other) : mPtr(other.mPtr) { other.mPtr = nullptr; }
 #endif

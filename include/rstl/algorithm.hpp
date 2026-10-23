@@ -247,10 +247,16 @@ void sort(It first, It last) {
 template < typename It, typename T >
 It lower_bound(It start, It end, const T& value) {
   int dist = distance(start, end);
+#if !RSTL_PRIME1
   int halfDist;
+#endif
   It it = start;
   while (dist > 0) {
+#if RSTL_PRIME1
+    int halfDist = dist / 2;
+#else
     halfDist = dist / 2;
+#endif
     it = start;
     advance(it, halfDist);
     if (*it < value) {

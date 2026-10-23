@@ -8,7 +8,8 @@
 #define RSTL_GM8E_48 3
 #define RSTL_GM8E_02 4
 #define RSTL_GM8P_00 5
-#define RSTL_GM8J_00 6
+#define RSTL_GM8J_DD 6
+#define RSTL_GM8J_00 7
 
 // Prime 2 GC
 #define RSTL_G2ME 10
@@ -35,6 +36,15 @@
 // RSTL_ECHOES_ERA is an internal helper: the GameCube Prime 2 versions (and the unbuilt Prime 3
 // standalone versions between them and the Wii versions).
 #define RSTL_ECHOES_ERA (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION < RSTL_R3IJ)
+
+// RSTL_PRIME1 is 1 when the code is built for Metroid Prime. The Trilogy versions (R3ME, R3MP) are
+// shared by Prime and Echoes, so they are told apart by the game's `PRIME1` define. Hunks that
+// only differ between the two games' otherwise identical code are gated on this.
+#if defined(PRIME1) || RSTL_VERSION < RSTL_G2ME || RSTL_VERSION == RSTL_R3IJ
+#define RSTL_PRIME1 1
+#else
+#define RSTL_PRIME1 0
+#endif
 
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
@@ -238,5 +248,13 @@
 #define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_G2ME)
 // `CStringExtras::CreateFromReal` exists.
 #define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_G2ME)
+
+// --- Corruption E3 prototype (RSTL_G2MEAB) ---
+// Feature macros that make the shared code produce the prototype's own tokens. Four sections, one
+// per group of files, so parallel edits do not collide.
+// -- group A: allocators, construct, iterators, algorithm
+// -- group B: strings and the .cpp sources
+// -- group C: vector, list and friends
+// -- group D: trees, pointers, optional
 
 #endif // _RSTL_VERSIONS_H

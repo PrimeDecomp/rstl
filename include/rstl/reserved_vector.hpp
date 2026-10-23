@@ -276,9 +276,18 @@ private:
     if (is_trivially_destructible< T >::value) {
       return;
     }
+#if RSTL_PRIME1
+    RSTL_PRECONDITION(mCount >= 0);
+    T* ptr = data();
+#else
     T* const ptr = data();
+#endif
     for (int i = 0; i < mCount; ++i) {
+#if RSTL_PRIME1
+      destroy(&ptr[i]);
+#else
       destroy(ptr + i);
+#endif
     }
   }
 };

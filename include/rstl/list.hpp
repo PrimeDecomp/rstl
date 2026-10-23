@@ -392,9 +392,17 @@ list< T, Alloc >::~list() {
 
 template < typename T, typename Alloc >
 typename list< T, Alloc >::node* list< T, Alloc >::do_erase(node* node) {
+#if RSTL_PRIME1
+  typename list< T, Alloc >::node* const result = node->get_next();
+#else
   typename list< T, Alloc >::node* result = node->get_next();
+#endif
   if (node == mStart) {
+#if RSTL_PRIME1
+    mStart = result;
+#else
     mStart = node->get_next();
+#endif
   }
   node->get_prev()->set_next(node->get_next());
   node->get_next()->set_prev(node->get_prev());

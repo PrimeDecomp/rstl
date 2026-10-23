@@ -5,7 +5,11 @@
 #include "rstl/iterator.hpp"
 #include "types.h"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#else
 #include "Kyoto/Alloc/CMemory.hpp"
+#endif
 
 // Release rstl keeps its precondition checks as empty statements. They still count
 // toward MWCC's inline size limit, which decides where uninitialized_copy is outlined.
@@ -59,10 +63,12 @@ struct is_trivially_destructible {
   enum { value = false };
 };
 
+#if !RSTL_PRIME1
 template < typename T >
 struct range_destruction_checks { // Guessed name
   enum { value = false };
 };
+#endif
 
 // Opt in only when assignment implements the required copy behavior. A trivial
 // destructor alone does not establish that the type is copyable or assignable.
@@ -216,7 +222,19 @@ RSTL_CONSTRUCT_INLINE void destroy(RSTL_DESTROY_PTR(T) in) {
 // external, leaving `inline` off this declaration makes out-of-line copies weak, so
 // translation units share one copy.
 template < typename It >
+#if RSTL_PRIME1
+RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
+  if (is_trivially_destructible< typename iterator_traits< It >::value_type >::value) {
+    return;
+  }
+  It cur = begin;
+  for (; cur != end; ++cur) {
+    destroy(&*cur);
+  }
+}
+#else
 RSTL_CONSTRUCT_DECL void destroy_impl(It begin, It end);
+#endif
 
 template < typename It >
 RSTL_CONSTRUCT_INLINE void destroy(It begin, It end) {
@@ -245,6 +263,7 @@ RSTL_CONSTRUCT_INLINE void destroy(T* begin, T* end) {
 }
 #endif
 
+#if !RSTL_PRIME1
 template < typename It >
 RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
   if (range_destruction_checks< typename iterator_traits< It >::value_type >::value) {
@@ -260,6 +279,7 @@ RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
     destroy(&*cur);
   }
 }
+#endif
 
 template < typename It, typename T >
 static inline T uninitialized_copy(It begin, It end, T out) {

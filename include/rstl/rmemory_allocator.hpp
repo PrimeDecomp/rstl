@@ -5,7 +5,11 @@
 
 #include "types.h"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#else
 #include "Kyoto/Alloc/CMemory.hpp"
+#endif
 
 namespace rstl {
 
@@ -91,13 +95,21 @@ struct aligned_allocator {
   aligned_allocator() {}
   aligned_allocator(const aligned_allocator&) {}
 
+#if !RSTL_PRIME1
   static void* allocate(int size) {
     return size == 0 ? nullptr : CMemory::Alloc(size, IAllocator::kHI_RoundUpLen);
   }
+#endif
 
   template < typename T >
   static void allocate(T*& out, int count) {
+#if RSTL_PRIME1
+    const int size = count * sizeof(T);
+    out = size == 0 ? nullptr
+                    : static_cast< T* >(CMemory::Alloc(size, IAllocator::kHI_RoundUpLen));
+#else
     out = static_cast< T* >(allocate(count * sizeof(T)));
+#endif
   }
 
   template < typename T >

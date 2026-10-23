@@ -1,8 +1,16 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/string.hpp"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Streams/CInputStream.hpp"
+#else
 #include "Kyoto/Streams/CInputStream.hpp"
+#endif
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Streams/COutputStream.hpp"
+#else
 #include "Kyoto/Streams/COutputStream.hpp"
+#endif
 
 namespace rstl {
 

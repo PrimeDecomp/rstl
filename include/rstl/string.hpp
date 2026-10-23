@@ -136,6 +136,9 @@ class basic_string
 
 public:
   typedef const_linear_iterator< _CharTp, basic_string, Alloc > const_iterator;
+#if RSTL_PRIME1
+  friend class const_linear_iterator< _CharTp, basic_string, Alloc >;
+#endif
 
   struct literal_t {};
 
@@ -161,10 +164,17 @@ public:
     const int len = rstl::distance(first, last);
     internal_allocate(len + 1);
     int i = 0;
+#if RSTL_PRIME1
+    for (It it = first; it != last; ++it) {
+      Traits::assign(const_cast< _CharTp& >(mPtr[i++]), *it);
+    }
+    Traits::assign(const_cast< _CharTp& >(mPtr[i]), Traits::eos());
+#else
     for (It it = first; it != last; it = it + 1, ++i) {
       const_cast< _CharTp& >(mPtr[i]) = *it;
     }
     const_cast< _CharTp& >(mPtr[i]) = 0;
+#endif
     mSize = len;
   }
 

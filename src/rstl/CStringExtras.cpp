@@ -1,14 +1,36 @@
-#include "EchoesNamespace.h"
 #include "rstl/RstlVersions.h"
+#if !RSTL_PRIME1
+#include "EchoesNamespace.h"
+#endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/math.hpp"
 
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#else
 #include "Kyoto/Alloc/CMemory.hpp"
+#endif
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Basics/CCast.hpp"
+#else
 #include "Kyoto/Basics/CCast.hpp"
+#endif
 #if RSTL_STRING_LIST_FACTORY
+#if RSTL_PRIME1
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/CFactoryMgr.hpp"
+#else
+#include "Kyoto/CFactoryMgr.hpp"
+#endif
+#else
 #include "Echoes/Kyoto/CFactoryMgr.hpp"
 #endif
+#endif
+#if RSTL_VERSION == RSTL_G2MEAB
+#include "Corruption/Kyoto/Streams/CInputStream.hpp"
+#else
 #include "Kyoto/Streams/CInputStream.hpp"
+#endif
 
 #if RSTL_STRING_CREATE_FROM_REAL
 #include <stdio.h>
@@ -246,11 +268,15 @@ rstl::vector< rstl::string > CStringExtras::TokenizeString(const rstl::string& s
 }
 
 #if RSTL_STRING_LIST_FACTORY
+#if !RSTL_PRIME1
 START_ECHOES_NAMESPACE
 
+#endif
 CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const CVParamTransfer&) {
   return rs_new rstl::vector< rstl::string >(in);
 }
+#if !RSTL_PRIME1
 
 END_ECHOES_NAMESPACE
+#endif
 #endif
