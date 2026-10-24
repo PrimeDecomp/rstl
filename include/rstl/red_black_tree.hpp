@@ -37,10 +37,10 @@ void* rbtree_traverse_forward(const void*, void*);
 void* rbtree_rebalance_for_erase(void* header_void, void* node_void);
 
 #if RSTL_RBTREE_PROTO_OUT_OF_LINE
-template < typename T, typename P, int U, typename S = select1st< P >, typename Cmp = less< T >,
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE U, typename S = select1st< P >, typename Cmp = less< T >,
            typename Alloc = rmemory_allocator >
 #else
-template < typename T, typename P, int IsMulti, typename S = select1st< P >,
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S = select1st< P >,
            typename Cmp = less< T >, typename Alloc = rmemory_allocator >
 #endif
 class red_black_tree {
@@ -252,10 +252,7 @@ public:
         (needle == nullptr || mCmp(key, mSelector(*needle->get_value()))) ? nullptr : needle;
     return result;
 #else
-    bool noResult = false;
-    if (needle == nullptr || mCmp(key, mSelector(*needle->get_value()))) {
-      noResult = true;
-    }
+    bool noResult = needle == nullptr || mCmp(key, mSelector(*needle->get_value()));
     return noResult ? nullptr : needle;
 #endif
   }
@@ -408,7 +405,7 @@ private:
 };
 
 #if RSTL_RBTREE_PROTO_OUT_OF_LINE
-template < typename T, typename P, int U, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE U, typename S, typename Cmp, typename Alloc >
 typename red_black_tree< T, P, U, S, Cmp, Alloc >::node*
 red_black_tree< T, P, U, S, Cmp, Alloc >::copy_from(node* n) {
   if (n == nullptr) {
@@ -432,7 +429,7 @@ red_black_tree< T, P, U, S, Cmp, Alloc >::copy_from(node* n) {
   return result;
 }
 
-template < typename T, typename P, int U, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE U, typename S, typename Cmp, typename Alloc >
 void red_black_tree< T, P, U, S, Cmp, Alloc >::free_node_and_sub_nodes(node* n) {
   if (node* left = n->get_left()) {
     free_node_and_sub_nodes(left);
@@ -443,7 +440,7 @@ void red_black_tree< T, P, U, S, Cmp, Alloc >::free_node_and_sub_nodes(node* n) 
   free_node(n);
 }
 
-template < typename T, typename P, int U, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE U, typename S, typename Cmp, typename Alloc >
 pair< typename red_black_tree< T, P, U, S, Cmp, Alloc >::iterator, bool >
 red_black_tree< T, P, U, S, Cmp, Alloc >::insert_into(node* start, const P& item) {
   if (start == nullptr) {
@@ -489,7 +486,7 @@ red_black_tree< T, P, U, S, Cmp, Alloc >::insert_into(node* start, const P& item
   }
 }
 #else
-template < typename T, typename P, int IsMulti, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S, typename Cmp, typename Alloc >
 pair< typename red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::iterator, bool >
 red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::insert_into(node* start, const P& item) {
   if (start == nullptr) {
@@ -535,7 +532,7 @@ red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::insert_into(node* start, const P
   }
 }
 
-template < typename T, typename P, int IsMulti, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S, typename Cmp, typename Alloc >
 void red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::free_node_and_sub_nodes(node* n) {
   if (node* left = n->mLeft) {
     free_node_and_sub_nodes(left);
@@ -546,7 +543,7 @@ void red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::free_node_and_sub_nodes(nod
   free_node(n);
 }
 
-template < typename T, typename P, int IsMulti, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S, typename Cmp, typename Alloc >
 typename red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::node*
 red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::copy_from(node* n) {
   if (n == nullptr) {

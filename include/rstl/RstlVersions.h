@@ -210,6 +210,13 @@
 #define RSTL_BIT_VECTOR_UNSAFE_GROW (RSTL_VERSION >= RSTL_R3ME_00)
 
 // --- Other containers ---
+// The tree's non-type template parameter is bool in GameCube Prime and int in Echoes/Corruption.
+// This must agree with the stream-constructor definitions in the consuming game's headers.
+#if RSTL_VERSION < RSTL_G2ME
+#define RSTL_RBTREE_MULTI_TYPE bool
+#else
+#define RSTL_RBTREE_MULTI_TYPE int
+#endif
 // `optional_object` stores its value in an aligned `uchar` array followed by an aligned `bool`
 // (otherwise a `uint` array and a plain `bool`).
 #define RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE RSTL_ECHOES_ERA
