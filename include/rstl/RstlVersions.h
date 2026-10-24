@@ -210,9 +210,9 @@
 #define RSTL_BIT_VECTOR_UNSAFE_GROW (RSTL_VERSION >= RSTL_R3ME_00)
 
 // --- Other containers ---
-// The tree's non-type template parameter is bool in GameCube Prime and int in Echoes/Corruption.
+// The tree's non-type template parameter is bool in Prime and int in Echoes/Corruption.
 // This must agree with the stream-constructor definitions in the consuming game's headers.
-#if RSTL_VERSION < RSTL_G2ME
+#if RSTL_PRIME1
 #define RSTL_RBTREE_MULTI_TYPE bool
 #else
 #define RSTL_RBTREE_MULTI_TYPE int
@@ -233,9 +233,6 @@
 // --- Strings ---
 // `basic_string::mNull` is a non-const static.
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME)
-// Adds `find(const char*)`, `compare(const char*)`, `string_l`, the wide `position_iterator` and
-// the case-insensitive `assign`.
-#define RSTL_STRING_EXTRA_API (RSTL_VERSION >= RSTL_G2ME)
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)
@@ -248,11 +245,11 @@
 #define RSTL_STRING_FREE_WITH_CMEMORY (RSTL_VERSION >= RSTL_G2ME)
 // rstl_strings.cpp specializes `basic_string< char >::assign(const char*, int)`.
 #define RSTL_STRING_ASSIGN_SPECIALIZATION (RSTL_VERSION >= RSTL_GM8P_00)
-// CStringExtras reads characters with `at()` and a `signed char` digit buffer.
+// CStringExtras reads characters with `at()` and a `signed char` digit buffer, and
+// declares the uppercase character parameter without top-level const (MWCC codegen).
 #define RSTL_STRING_EXTRAS_AT_ACCESS (RSTL_VERSION >= RSTL_G2ME)
-// CStringExtras has the `ConvertToLowerCase` and `ConvertToUpperCase(char)` overloads.
-#define RSTL_STRING_CASE_CONVERSION_API (RSTL_VERSION >= RSTL_G2ME)
-// CStringExtras.cpp defines `FStringListFactory`.
+// Emitting the unused factory also changes the string pool and existing conversion code
+// in PAL/Japanese Prime, so this is an emission boundary rather than just API availability.
 #define RSTL_STRING_LIST_FACTORY (RSTL_VERSION >= RSTL_G2ME)
 // `ConvertToUNICODE` returns early for an empty string.
 #define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_G2ME)
@@ -307,10 +304,9 @@
 // Strings and their source files.
 // Prototype `char_traits::assign(T*, int, T)` takes its value by value.
 #define RSTL_STRING_TRAITS_VALUE_PARAM (RSTL_VERSION == RSTL_G2MEAB)
-// The prototype's extra `basic_string` members: `reverse_iterator`, `empty`, `erase`, `clear`,
-// the writable `operator[]`, `rfind`, the `find_first_of(const char*)`/`find_first_not_of`/
-// `find_last_not_of` searches and `basic_string(_CharTp)`.
-#define RSTL_STRING_PROTO_API (RSTL_VERSION == RSTL_G2MEAB)
+// Non-const indexing detaches the COW buffer. This changes existing calls, unlike the
+// additional string methods, so retain the prototype's writable overload separately.
+#define RSTL_STRING_WRITABLE_INDEX (RSTL_VERSION == RSTL_G2MEAB)
 // The `literal_t` constructor measures with a plain `end` pointer loop.
 #define RSTL_STRING_SIMPLE_LITERAL_CTOR (RSTL_VERSION == RSTL_G2MEAB)
 // The iterator-range constructor terminates through `Traits::eos()` instead of `0`.
@@ -321,15 +317,14 @@
 #endif
 // `~basic_string` carries the (empty) pointer precondition.
 #define RSTL_STRING_DTOR_PRECONDITION (RSTL_PRECONDITION_MACRO && RSTL_VERSION != RSTL_G2MEAB)
-// `assign(const _CharTp*, int)` and `append(const _CharTp*, int)` default the count to -1.
-#define RSTL_STRING_DEFAULT_COUNT_ARGS (RSTL_VERSION == RSTL_G2MEAB)
 // `internal_search` is declared `static inline` in the class.
 #define RSTL_STRING_INLINE_SEARCH_DECL (RSTL_STRING_OUT_OF_CLASS && RSTL_VERSION != RSTL_G2MEAB)
 // `internal_search` walks a `match` and a `search` iterator in step (a third implementation).
+// Only this implementation supports the reverse iterators used by `rfind`.
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_VERSION == RSTL_G2MEAB)
 // `compare(const _CharTp*, int)` measures with a separate `rhsEnd` pointer (otherwise it advances
 // `rhs` itself and keeps `rhsStart`).
-#define RSTL_STRING_COMPARE_END_POINTER (RSTL_STRING_EXTRA_API && RSTL_VERSION != RSTL_G2MEAB)
+#define RSTL_STRING_COMPARE_END_POINTER (RSTL_STRING_OUT_OF_CLASS && RSTL_VERSION != RSTL_G2MEAB)
 // The string typedefs, specializations and `operator+` overloads come in the prototype's own
 // order.
 #define RSTL_STRING_PROTO_TAIL (RSTL_VERSION == RSTL_G2MEAB)
@@ -342,8 +337,6 @@
 #else
 #define RSTL_STRING_STREAM_CH_TYPE char
 #endif
-// rstl_strings.cpp specializes `position_iterator` and `range_iterator` for `wchar_t`.
-#define RSTL_STRING_WIDE_POSITION_ITERATOR (RSTL_STRING_EXTRA_API && RSTL_VERSION != RSTL_G2MEAB)
 // In CStringExtras the source file for the prototype is RstlExtras.cpp (CStringExtras.cpp is empty).
 #define RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS (RSTL_VERSION == RSTL_G2MEAB)
 // StringExtras has `ConvertToLowerCase(char)`, `ConvertToInteger`, `ConvertToReal`, `Format` and

@@ -11,7 +11,7 @@
 #include "Kyoto/Basics/CCast.hpp"
 #if RSTL_STRING_LIST_FACTORY
 #if RSTL_PRIME1
-#include "Kyoto/CFactoryMgr.hpp"
+#include "Prime/Kyoto/CFactoryMgr.hpp"
 #else
 #include "Echoes/Kyoto/CFactoryMgr.hpp"
 #endif
@@ -92,7 +92,6 @@ int CStringExtras::CompareCaseInsensitive(const rstl::string& left, const rstl::
   }
 }
 
-#if RSTL_STRING_CASE_CONVERSION_API
 rstl::string CStringExtras::ConvertToLowerCase(const rstl::string& str) {
   rstl::string ret(str);
   for (int i = 0; i < ret.length(); ++i) {
@@ -111,7 +110,6 @@ rstl::string CStringExtras::CreatePrefix(const rstl::string& str, int count) {
   }
   return rstl::string(data, count);
 }
-#endif
 
 char CStringExtras::ConvertToUpperCase(char c) {
   if (c >= CCast::ToChar('a') && c <= CCast::ToChar('z')) {
@@ -121,7 +119,6 @@ char CStringExtras::ConvertToUpperCase(char c) {
   return c;
 }
 
-#if RSTL_STRING_CASE_CONVERSION_API
 int CStringExtras::ConvertToLowerCase(int c) {
   const char value = static_cast< char >(c);
   if (value >= CCast::ToChar('A') && value <= CCast::ToChar('Z')) {
@@ -130,7 +127,6 @@ int CStringExtras::ConvertToLowerCase(int c) {
 
   return c;
 }
-#endif
 
 rstl::string CStringExtras::CreateFromInteger(int v) {
   int magnitude = v < 0 ? -v : v;
@@ -254,14 +250,18 @@ rstl::vector< rstl::string > CStringExtras::TokenizeString(const rstl::string& s
 }
 
 #if RSTL_STRING_LIST_FACTORY
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+START_PRIME_NAMESPACE
+#else
 START_ECHOES_NAMESPACE
 
 #endif
 CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const CVParamTransfer&) {
   return rs_new rstl::vector< rstl::string >(in);
 }
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+END_PRIME_NAMESPACE
+#else
 
 END_ECHOES_NAMESPACE
 #endif

@@ -100,7 +100,6 @@ struct case_insensitive_char_traits {
   static int compare(const _CharTp& lhs, const _CharTp& rhs) { return toupper(rhs) - toupper(lhs); }
 };
 
-#if RSTL_STRING_PROTO_API
 template < typename It >
 class reverse_iterator {
 public:
@@ -120,7 +119,6 @@ private:
   It mIt;
 };
 
-#endif
 template < typename _CharTp, typename Traits = char_traits< _CharTp >,
            typename Alloc = rmemory_allocator >
 class basic_string
@@ -196,9 +194,7 @@ public:
 #endif
   }
 
-#if RSTL_STRING_PROTO_API
   basic_string(_CharTp value);
-#endif
 
   basic_string(const basic_string& str);
 
@@ -236,37 +232,25 @@ public:
 
   size_t size() const { return mSize; }
   int length() const { return mSize; }
-#if RSTL_STRING_PROTO_API
   bool empty() const { return length() == 0; }
-#endif
   int refcount() { return mCow != nullptr ? mCow->mRefCount : -1; }
   void reserve(int len) { internal_prepare_to_write(len, true); }
 
   basic_string& assign(const basic_string&);
-#if RSTL_STRING_DEFAULT_COUNT_ARGS
   basic_string& assign(const _CharTp*, int = -1);
-#else
-  basic_string& assign(const _CharTp*, int);
-#endif
   basic_string& operator=(const basic_string& other) {
     assign(other);
     return *this;
   }
   basic_string& append(const basic_string& other);
   basic_string& append(int, _CharTp);
-#if RSTL_STRING_DEFAULT_COUNT_ARGS
   basic_string& append(const _CharTp*, int = -1);
-#else
-  basic_string& append(const _CharTp*, int);
-#endif
-#if RSTL_STRING_PROTO_API
   basic_string& erase(int pos, int count);
   void clear();
-#endif
 
   int compare(const _CharTp* rhs, int count = -1) const;
   const _CharTp& operator[](int idx) const { return mPtr[idx]; }
-#if RSTL_STRING_PROTO_API
+#if RSTL_STRING_WRITABLE_INDEX
   _CharTp& operator[](int idx) {
     // Unshares the buffer before handing out a writable character.
     internal_prepare_to_write(mSize, true);
@@ -285,10 +269,8 @@ public:
 #else
   static int internal_search(It first, It last, OtherIt otherFirst, OtherIt otherLast);
 #endif
-#if RSTL_STRING_PROTO_API
   template < typename It, typename OtherIt >
   static int internal_search_not_of(It first, It last, OtherIt otherFirst, OtherIt otherLast);
-#endif
   template < typename It, typename OtherIt >
   static int internal_search_of(It first, It last, OtherIt otherFirst, OtherIt otherLast);
   int compare(const basic_string& other) const;
@@ -296,20 +278,16 @@ public:
   bool operator!=(const basic_string& other) const;
 
   int find(const basic_string& other, int pos = 0) const;
-#if RSTL_STRING_EXTRA_API
   int find(const _CharTp* other, int pos = 0, int count = -1) const;
-#endif
   int find(_CharTp ch, int pos = 0) const;
-#if RSTL_STRING_PROTO_API
+#if RSTL_STRING_MATCH_LOOP_SEARCH
   int rfind(const _CharTp* other, int pos = -1, int count = -1) const;
   int rfind(_CharTp ch, int pos = -1) const;
 #endif
   int find_first_of(const basic_string& other, int pos = 0) const;
-#if RSTL_STRING_PROTO_API
   int find_first_of(const _CharTp* other, int pos = 0, int count = -1) const;
   int find_first_not_of(const basic_string& other, int pos = 0) const;
   int find_last_not_of(const basic_string& other, int pos = -1) const;
-#endif
   const_iterator position_iterator(int pos) const;
   pair< const_iterator, const_iterator > range_iterator(int pos, int count) const;
   basic_string substr(int pos = 0, int count = -1) const;
@@ -319,14 +297,12 @@ public:
     }
     return pos;
   }
-#if RSTL_STRING_PROTO_API
   int get_real_pos_for_end(int pos) const {
     if (pos == -1 || pos >= static_cast< int >(size())) {
       return size() - 1;
     }
     return pos;
   }
-#endif
   const _CharTp* c_str() const { return mPtr; }
   const _CharTp* data() const { return mPtr; }
   void PutTo(COutputStream& out) const;
@@ -361,7 +337,6 @@ inline int basic_string< _CharTp, Traits, Alloc >::find_first_of(const basic_str
   return result;
 }
 
-#if RSTL_STRING_PROTO_API
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::find_first_of(const _CharTp* other, int pos,
                                                           int count) const {
@@ -427,7 +402,6 @@ int basic_string< _CharTp, Traits, Alloc >::find_last_not_of(const basic_string&
   return result;
 }
 
-#endif
 #if RSTL_STRING_MATCH_LOOP_SEARCH
 template < typename _CharTp, typename Traits, typename Alloc >
 template < typename It, typename OtherIt >
@@ -533,7 +507,6 @@ int basic_string< _CharTp, Traits, Alloc >::find(const basic_string& other, int 
   return result;
 }
 
-#if RSTL_STRING_EXTRA_API
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::find(const _CharTp* other, int pos, int count) const {
   pos = get_real_pos_for_begin(pos);
@@ -551,7 +524,6 @@ int basic_string< _CharTp, Traits, Alloc >::find(const _CharTp* other, int pos, 
   return result;
 }
 
-#endif
 
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::find(_CharTp ch, int pos) const {
@@ -565,7 +537,7 @@ int basic_string< _CharTp, Traits, Alloc >::find(_CharTp ch, int pos) const {
   return result;
 }
 
-#if RSTL_STRING_PROTO_API
+#if RSTL_STRING_MATCH_LOOP_SEARCH
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::rfind(const _CharTp* other, int pos, int count) const {
   pos = get_real_pos_for_end(pos);
@@ -601,6 +573,7 @@ int basic_string< _CharTp, Traits, Alloc >::rfind(_CharTp ch, int pos) const {
 }
 
 #endif
+
 #if RSTL_STRING_COMPARE_END_POINTER
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {

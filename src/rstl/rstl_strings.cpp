@@ -1,8 +1,8 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/string.hpp"
+#include "rstl/math.hpp"
 
 #if RSTL_VERSION == RSTL_G2MEAB
-#include "rstl/math.hpp"
 #include "Corruption/Kyoto/Alloc/CMemory.hpp"
 #endif
 
@@ -50,7 +50,8 @@ const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::
 #endif
     case_insensitive_char_traits< wchar_t >::eos();
 
-#if RSTL_STRING_EXTRA_API && !RSTL_STRINGS_PROTO_LAYOUT
+// Prime owns its literal helpers in game translation units; later games define them here.
+#if RSTL_STRING_OUT_OF_CLASS && !RSTL_STRINGS_PROTO_LAYOUT
 string string_l(const char* data) {
   string::literal_t literal;
   return string(literal, data);
@@ -176,7 +177,6 @@ basic_string< char >::basic_string(const basic_string& other)
   internal_reference();
 }
 
-#if RSTL_STRING_PROTO_API
 template <>
 basic_string< char >::basic_string(char value) {
   internal_allocate(2);
@@ -205,7 +205,6 @@ basic_string< char >& basic_string< char >::erase(int pos, int count) {
   return *this;
 }
 
-#endif
 template <>
 basic_string< char >& basic_string< char >::append(const basic_string& other) {
   internal_prepare_to_write(length() + other.length(), true);
@@ -449,7 +448,6 @@ basic_string< wchar_t >& basic_string< wchar_t >::assign(const wchar_t* data, in
 }
 
 template <>
-#if RSTL_STRING_WIDE_POSITION_ITERATOR
 basic_string< wchar_t >::const_iterator basic_string< wchar_t >::position_iterator(int pos) const {
   if (pos == -1 || pos >= length()) {
     return end();
@@ -467,7 +465,6 @@ basic_string< wchar_t >::range_iterator(int pos, int count) const {
 }
 
 template <>
-#endif
 void basic_string< wchar_t >::internal_allocate(int size) {
   rmemory_allocator::allocate(reinterpret_cast< uchar*& >(mCow),
                               sizeof(control) + sizeof(wchar_t) * size);
@@ -557,7 +554,6 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
                                                case_insensitive_char_traits< char >::eos());
 }
 
-#if RSTL_STRING_EXTRA_API
 template <>
 basic_string< char, case_insensitive_char_traits< char > >&
 basic_string< char, case_insensitive_char_traits< char > >::assign(const char* data, int count) {
@@ -570,7 +566,6 @@ basic_string< char, case_insensitive_char_traits< char > >::assign(const char* d
                                                case_insensitive_char_traits< char >::eos());
   return *this;
 }
-#endif
 
 template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size) {

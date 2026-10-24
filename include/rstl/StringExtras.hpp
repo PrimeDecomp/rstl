@@ -9,8 +9,11 @@ class CStringExtras {
 public:
   static int IndexOfSubstring(const rstl::string&, const rstl::string&);
   static int CompareCaseInsensitive(const rstl::string&, const rstl::string&);
-#if RSTL_STRING_CASE_CONVERSION_API
+#if RSTL_STRING_EXTRAS_AT_ACCESS
   static char ConvertToUpperCase(char c);
+#else
+  static char ConvertToUpperCase(const char c);
+#endif
 #if RSTL_STRING_EXTRAS_PROTO_API
   static char ConvertToLowerCase(char c);  // Guessed name
 #else
@@ -18,9 +21,6 @@ public:
 #endif
   static rstl::string ConvertToLowerCase(const rstl::string& str);
   static rstl::string CreatePrefix(const rstl::string& str, int count);
-#else
-  static char ConvertToUpperCase(const char c);
-#endif
   static rstl::string CreateFromInteger(int v);
 #if RSTL_STRING_EXTRAS_PROTO_API
   static rstl::string CreateFromReal(float v, int precision);
