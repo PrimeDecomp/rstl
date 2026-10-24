@@ -192,17 +192,6 @@ public:
 
 #if !RSTL_RBTREE_DESTROY_HELPER
   red_black_tree& operator=(const red_black_tree& other) {
-#if RSTL_RBTREE_ASSIGN_IF_NOT_SELF
-    if (this != &other) {
-      clear();
-      node* root = copy_from(other.mHeader.get_root());
-      mHeader.set_leftmost(leftmost(root));
-      mHeader.set_rightmost(rightmost(root));
-      mHeader.set_root(root);
-      mCount = other.mCount;
-    }
-    return *this;
-#else
     if (this == &other) {
       return *this;
     }
@@ -213,7 +202,6 @@ public:
     mHeader.set_root(root);
     mCount = other.mCount;
     return *this;
-#endif
   }
 
   ~red_black_tree() { clear(); }
@@ -388,14 +376,6 @@ private:
   header mHeader;
 
   node* leftmost(node* n) {
-#if RSTL_RBTREE_SIMPLE_LEFTMOST
-    if (n != nullptr) {
-      while (n->get_left() != nullptr) {
-        n = n->get_left();
-      }
-    }
-    return n;
-#else
     node* ret;
     if ((ret = n) != nullptr) {
       while (node* next = ret->get_left()) {
@@ -403,7 +383,6 @@ private:
       }
     }
     return ret;
-#endif
   }
 
   node* rightmost(node* n) {

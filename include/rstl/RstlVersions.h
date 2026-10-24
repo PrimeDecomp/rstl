@@ -261,7 +261,7 @@
 // `aligned_allocator::allocate(T*&, int)` calls `CMemory::Alloc` directly and there is no
 // `aligned_allocator::allocate(int)`.
 #define RSTL_ALIGNED_ALLOCATE_INLINE (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
-// `locked_cache_allocator` takes a plain `int` mode (no `EMode`) and `Allocate` takes a `uint` size.
+// `locked_cache_allocator` takes a plain `int` mode (no `EMode`).
 #define RSTL_LOCKED_CACHE_RAW_MODE (RSTL_VERSION == RSTL_G2MEAB)
 // `pair` has `make_pair`.
 #define RSTL_PAIR_MAKE_PAIR (RSTL_VERSION != RSTL_G2MEAB)
@@ -280,6 +280,9 @@
 // `construct` also has an overload taking a mutable `T&`, and the placement-new policy has no
 // null precondition.
 #define RSTL_CONSTRUCT_MUTABLE_OVERLOAD (RSTL_VERSION == RSTL_G2MEAB)
+// A non-inline declaration before the inline const construct definition gives MWCC's
+// prototype instantiations external weak linkage, needed by native callers.
+#define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)
 // `destroy(T*)` and `destroy(begin, end)` forward to `destroy_impl` (which holds the trivial
 // destructor test and the range precondition) instead of `destruction_policy`.
 #define RSTL_DESTROY_VIA_IMPL (RSTL_VERSION == RSTL_G2MEAB)
@@ -389,6 +392,8 @@
 #define RSTL_LIST_EXCHANGE_DIRECT (RSTL_VERSION == RSTL_G2MEAB)
 // `~list` calls the element destructor directly instead of `rstl::destroy`.
 #define RSTL_LIST_DIRECT_DTOR_CALL (RSTL_VERSION == RSTL_G2MEAB)
+// Pointer elements are passed by value to list insertion helpers.
+#define RSTL_LIST_POINTER_VALUE_PARAM (RSTL_VERSION == RSTL_G2MEAB)
 // `bit_vector` is the reduced class with `reference` (word iterator plus `uint` mask), an
 // out-of-line `at` / `operator[]`, and no iterators or growth.
 #define RSTL_BIT_VECTOR_COMPACT (RSTL_VERSION == RSTL_G2MEAB)
@@ -425,8 +430,6 @@
 #define RSTL_RBTREE_NODE_ALIGNED (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor's `root` local is not `const`.
 #define RSTL_RBTREE_COPY_CONST_ROOT (RSTL_VERSION != RSTL_G2MEAB)
-// `red_black_tree::operator=` wraps the copy in `if (this != &other)` and returns afterwards.
-#define RSTL_RBTREE_ASSIGN_IF_NOT_SELF (RSTL_VERSION == RSTL_G2MEAB)
 // `find_node` returns the ternary directly instead of through a `result` local.
 #define RSTL_RBTREE_DIRECT_FIND_RETURN (RSTL_VERSION == RSTL_G2MEAB)
 // `red_black_tree::count` exists.
@@ -435,8 +438,6 @@
 #define RSTL_RBTREE_EMPTY (RSTL_VERSION == RSTL_G2MEAB)
 // `erase(iterator)` names its local `node` (shadowing the type) instead of `n`.
 #define RSTL_RBTREE_ERASE_NODE_LOCAL_NAMED_NODE (RSTL_VERSION == RSTL_G2MEAB)
-// `leftmost` walks `n` itself instead of keeping a `ret` local.
-#define RSTL_RBTREE_SIMPLE_LEFTMOST (RSTL_VERSION == RSTL_G2MEAB)
 // `create_node` carries the (empty) allocation precondition.
 #define RSTL_RBTREE_CREATE_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // The out-of-line members are defined in the prototype's own order (`copy_from`,
@@ -467,8 +468,6 @@
 #define RSTL_RC_PTR_NEW_COUNT_CTOR rs_new
 #define RSTL_RC_PTR_NEW_COUNT_ASSIGN rs_new
 #endif
-// The `rc_ptr` copy constructor only increments the count (no precondition statements).
-#define RSTL_RC_PTR_UNCHECKED_COPY (RSTL_VERSION == RSTL_G2MEAB)
 // `~rc_ptr` carries the (empty) count precondition.
 #define RSTL_RC_PTR_DTOR_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` accessors go through `GetPtr()` and `ReleaseData` deletes `mRefCount` directly.

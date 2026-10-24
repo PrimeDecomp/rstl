@@ -217,6 +217,11 @@ RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(unsigned long long)
 #endif
 #endif
 
+#if RSTL_CONSTRUCT_EXTERN_DECL
+template < typename T >
+void construct(void* dest, const T& src);
+#endif
+
 template < typename T >
 RSTL_CONSTRUCT_INLINE void construct(void* dest, const T& src) {
 #if RSTL_CONSTRUCTION_POLICY

@@ -9,6 +9,17 @@
 #include "rstl/iterator.hpp"
 #include "rstl/rmemory_allocator.hpp"
 namespace rstl {
+template < typename T >
+struct list_insert_param {
+  typedef const T& type;
+};
+#if RSTL_LIST_POINTER_VALUE_PARAM
+template < typename T >
+struct list_insert_param< T* > {
+  typedef T* type;
+};
+#endif
+
 template < typename T, typename Alloc = rmemory_allocator >
 class list
 #if RSTL_ALLOCATOR_BASE_CLASS
@@ -16,6 +27,7 @@ class list
 #endif
 {
 public:
+  typedef typename list_insert_param< T >::type insert_param;
   class iterator;
   class const_iterator;
 
@@ -85,8 +97,8 @@ public:
   ~list();
   node* do_erase(node* item);
 
-  void push_front(const T& val) { do_insert_before(mStart, val); }
-  void push_back(const T& val) { do_insert_before(mEnd, val); }
+  void push_front(insert_param val) { do_insert_before(mStart, val); }
+  void push_back(insert_param val) { do_insert_before(mEnd, val); }
   void clear() { erase(begin(), end()); }
 
   int size() const { return mCount; }
@@ -136,7 +148,7 @@ public:
     const T* get_value() const { return reinterpret_cast< const T* >(&mItem); }
   };
 
-  node* create_node(node* prev, node* next, const T& val) {
+  node* create_node(node* prev, node* next, insert_param val) {
     node* n;
 #if RSTL_ALLOCATOR_INSTANCE
     mAllocator.allocate(n, 1);
@@ -154,7 +166,7 @@ public:
     return n;
   }
 
-  node* do_insert_before(node* n, const T& val) {
+  node* do_insert_before(node* n, insert_param val) {
 #if RSTL_LIST_NODE_PLAIN
     node* const nn = create_node(n->mPrev, n, val);
 #else
@@ -171,7 +183,7 @@ public:
   }
 
 #if RSTL_LIST_OUT_OF_CLASS
-  iterator insert(const iterator& pos, const T& val) {
+  iterator insert(const iterator& pos, insert_param val) {
     node* const result = do_insert_before(pos.get_node(), val);
     return iterator(result);
   }
@@ -179,7 +191,7 @@ public:
   template < typename InputIterator >
   void insert(const iterator& pos, InputIterator first, InputIterator last);
 #else
-  iterator insert(const iterator& pos, const T& val);
+  iterator insert(const iterator& pos, insert_param val);
 
   template < typename InputIterator >
   inline void insert(const iterator& pos, InputIterator first, InputIterator last);
@@ -380,7 +392,7 @@ void list< T, Alloc >::remove_if(Pred pred) {
 #else
 template < typename T, typename Alloc >
 inline typename list< T, Alloc >::iterator list< T, Alloc >::insert(const iterator& pos,
-                                                                    const T& val) {
+                                                                    insert_param val) {
   node* const result = do_insert_before(pos.get_node(), val);
   return iterator(result);
 }

@@ -50,9 +50,6 @@ class rc_ptr {
 public:
   rc_ptr() : mPtr(nullptr), mRefCount(&rc_ptr_private::sNull) { ++*mRefCount; }
   rc_ptr(const T* ptr) : mPtr(ptr), mRefCount(RSTL_RC_PTR_NEW_COUNT_CTOR int(1)) {}
-#if RSTL_RC_PTR_UNCHECKED_COPY
-  rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mRefCount(other.mRefCount) { ++*mRefCount; }
-#else
   // The empty statements stand in for release-build precondition checks; they count toward
   // MWCC's inline size limit (rbtree node ctors holding rc_ptr pairs are outlined).
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mRefCount(other.mRefCount) {
@@ -60,7 +57,6 @@ public:
     RSTL_PRECONDITION(*mRefCount > 0);
     *mRefCount += 1;
   }
-#endif
   template < typename U >
   explicit rc_ptr(const rc_ptr< U >& other)
   : mPtr(static_cast< const T* >(other.GetPtr())), mRefCount(other.GetRefCountPtr()) {
@@ -107,11 +103,13 @@ public:
   }
 #if RSTL_RC_PTR_GET_PTR_ACCESS
   T* operator->() const { return GetPtr(); }
-  T& operator*() const { return *GetPtr(); }
-  operator bool() const { return GetPtr() != nullptr; }
 #else
   T* operator->() const { return const_cast< T* >(mPtr); }
+#endif
   T& operator*() const { return *const_cast< T* >(mPtr); }
+#if RSTL_RC_PTR_GET_PTR_ACCESS
+  operator bool() const { return GetPtr() != nullptr; }
+#else
   operator bool() const { return mPtr != nullptr; }
 #endif
 

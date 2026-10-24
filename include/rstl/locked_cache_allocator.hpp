@@ -33,11 +33,7 @@ public:
   , mHeapAllocation(false)
   , mPreviousHeapAllocation(false)
   , mAllocationCount(0) {}
-#if RSTL_LOCKED_CACHE_RAW_MODE
-  void Allocate(void*& out, uint size); // Guessed name
-#else
   void Allocate(void*& out, int size); // Guessed name
-#endif
 
   template < typename T >
   void allocate(T*& out, int count) {
