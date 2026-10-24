@@ -35,12 +35,10 @@ public:
 };
 
 #if RSTL_CONSTRUCTION_POLICY
-#if RSTL_PAIR_MAKE_PAIR
 template < typename L, typename R >
 inline pair< L, R > make_pair(L first, R second) {
   return pair< L, R >(first, second);
 }
-#endif
 
 template < typename L, typename R >
 struct is_trivially_destructible< pair< L, R > > {

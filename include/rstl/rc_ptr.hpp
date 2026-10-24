@@ -90,11 +90,9 @@ public:
     mRefCount = RSTL_RC_PTR_NEW_COUNT_ASSIGN int(1);
   }
   void ReleaseData();
-#if RSTL_RC_PTR_CAST
   // Guessed name; shares the reference count with a pointer to a derived class.
   template < typename U >
   rc_ptr< U > Cast() const;
-#endif
   void reset() {
     ReleaseData();
     mPtr = nullptr;
@@ -130,13 +128,11 @@ void rc_ptr< T >::ReleaseData() {
   }
 }
 
-#if RSTL_RC_PTR_CAST
 template < typename T >
 template < typename U >
 rc_ptr< U > rc_ptr< T >::Cast() const {
   return rc_ptr< U >(*this);
 }
-#endif
 
 #else
 template < typename T >
@@ -269,10 +265,8 @@ public:
   }
 #endif
   ncrc_ptr(const rc_ptr< T >& other) : rc_ptr< T >(other) {}
-#if RSTL_NCRC_PTR_CONVERSION
   template < typename U >
   ncrc_ptr(const rc_ptr< U >& other) : rc_ptr< T >(other) {}
-#endif
   ncrc_ptr& operator=(const rc_ptr< T >& other) {
     rc_ptr< T >::operator=(other);
     return *this;

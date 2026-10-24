@@ -20,20 +20,16 @@ private:
   typedef red_black_tree< K, value_type, RSTL_RBTREE_MULTI_KEYS, select1st< value_type >, Cmp, Alloc > rep_type;
 
 public:
-#if RSTL_MULTIMAP_ITERATOR_TYPEDEFS
   typedef typename rep_type::iterator iterator;
   typedef typename rep_type::const_iterator const_iterator;
 
-#endif
   explicit multimap(const Cmp& cmp = Cmp(), const Alloc& alloc = Alloc())
   : rep_type(select1st< value_type >(), cmp, alloc) {}
   ~multimap() {}
 };
 
-#if RSTL_MULTIMAP_UNK_TYPEDEF
 typedef multimap< char, char > unk_multimap;
 CHECK_SIZEOF(unk_multimap, 0x14)
-#endif
 } // namespace rstl
 
 #endif // _RSTL_MULTIMAP

@@ -263,8 +263,6 @@
 #define RSTL_ALIGNED_ALLOCATE_INLINE (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // `locked_cache_allocator` takes a plain `int` mode (no `EMode`).
 #define RSTL_LOCKED_CACHE_RAW_MODE (RSTL_VERSION == RSTL_G2MEAB)
-// `pair` has `make_pair`.
-#define RSTL_PAIR_MAKE_PAIR (RSTL_VERSION != RSTL_G2MEAB)
 // `pair< int, float >` is explicitly kept non-trivial for the construction policies.
 #define RSTL_PAIR_INT_FLOAT_POLICY (RSTL_VERSION == RSTL_G2MEAB)
 // `const_linear_iterator` builds its `+`/`-` results directly (and `operator-` returns `long`).
@@ -288,8 +286,6 @@
 #define RSTL_DESTROY_VIA_IMPL (RSTL_VERSION == RSTL_G2MEAB)
 // `uninitialized_copy_n` starts with the `n >= 0` precondition.
 #define RSTL_COPY_N_PRECONDITION (RSTL_VERSION == RSTL_G2MEAB)
-// `rstl::mismatch` exists.
-#define RSTL_ALGORITHM_MISMATCH (RSTL_VERSION != RSTL_G2MEAB)
 // `find_if` takes its predicate by value.
 #define RSTL_FIND_IF_PRED_BY_VALUE (RSTL_VERSION == RSTL_G2MEAB)
 // `swap` and `iter_swap` are inline only when the including file defines `RSTL_INLINE_SWAP`, and
@@ -365,12 +361,6 @@
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
 #define RSTL_RESERVED_VECTOR_POLICY_COPY (RSTL_VERSION == RSTL_G2MEAB)
-// `reserved_vector` has the `(const T*, const T*)` constructor.
-#define RSTL_RESERVED_VECTOR_RANGE_CTOR (RSTL_VERSION != RSTL_G2MEAB)
-// `pop_back` destroys `&data()[mCount - 1]` instead of `end() - 1`.
-#define RSTL_RESERVED_VECTOR_POP_BACK_DATA_INDEX (RSTL_VERSION == RSTL_G2MEAB)
-// `reserved_vector::set_size` exists.
-#define RSTL_RESERVED_VECTOR_SET_SIZE (RSTL_VERSION != RSTL_G2MEAB)
 // The const `operator[]` carries the index precondition.
 #define RSTL_RESERVED_VECTOR_CONST_INDEX_PRECONDITION                                                (RSTL_PRECONDITION_MACRO && RSTL_VERSION != RSTL_G2MEAB)
 // `destroy_elements` takes a plain `T*` and destroys `&ptr[i]` (the others use `T* const` and
@@ -415,8 +405,6 @@
 #else
 #define RSTL_RBTREE_KEY_ARGUMENT const T&
 #endif
-// `rbtree_rotate_left` and `rbtree_rotate_right` are declared next to `rbtree_rebalance`.
-#define RSTL_RBTREE_ROTATE_DECLS (RSTL_VERSION == RSTL_G2MEAB)
 // The `red_black_tree` iterators take a mandatory third `bool` constructor argument (always passed
 // as `false`), `const_iterator::value_type` is `P*`, and `iterator::operator->` / `operator*` are
 // non-const.
@@ -432,12 +420,6 @@
 #define RSTL_RBTREE_COPY_CONST_ROOT (RSTL_VERSION != RSTL_G2MEAB)
 // `find_node` returns the ternary directly instead of through a `result` local.
 #define RSTL_RBTREE_DIRECT_FIND_RETURN (RSTL_VERSION == RSTL_G2MEAB)
-// `red_black_tree::count` exists.
-#define RSTL_RBTREE_COUNT (RSTL_VERSION != RSTL_G2MEAB)
-// `red_black_tree::empty` exists.
-#define RSTL_RBTREE_EMPTY (RSTL_VERSION == RSTL_G2MEAB)
-// `erase(iterator)` names its local `node` (shadowing the type) instead of `n`.
-#define RSTL_RBTREE_ERASE_NODE_LOCAL_NAMED_NODE (RSTL_VERSION == RSTL_G2MEAB)
 // `create_node` carries the (empty) allocation precondition.
 #define RSTL_RBTREE_CREATE_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // The out-of-line members are defined in the prototype's own order (`copy_from`,
@@ -455,10 +437,6 @@
 #endif
 // `set` wraps a `red_black_tree` member (`inner`) and forwards to it, instead of deriving from it.
 #define RSTL_SET_INNER_TREE (RSTL_VERSION == RSTL_G2MEAB)
-// `multimap` re-exports the `iterator` and `const_iterator` typedefs.
-#define RSTL_MULTIMAP_ITERATOR_TYPEDEFS (RSTL_VERSION == RSTL_G2MEAB)
-// `unk_multimap` and its size check exist.
-#define RSTL_MULTIMAP_UNK_TYPEDEF (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` allocates its count with `rs_new_line_in("rc_ptr.h", 87)` (constructor) and
 // `rs_new_line_in("rc_ptr.h", 310)` (`Assign`), the lines of the prototype's original header.
 #if RSTL_VERSION == RSTL_G2MEAB
@@ -472,23 +450,18 @@
 #define RSTL_RC_PTR_DTOR_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` accessors go through `GetPtr()` and `ReleaseData` deletes `mRefCount` directly.
 #define RSTL_RC_PTR_GET_PTR_ACCESS (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
-// `rc_ptr::Cast` exists.
-#define RSTL_RC_PTR_CAST (RSTL_VERSION != RSTL_G2MEAB)
 // `ncrc_ptr` has an explicit copy constructor (with preconditions).
 #define RSTL_NCRC_PTR_COPY_CTOR (RSTL_RC_PTR_PRIVATE_COUNT && RSTL_VERSION != RSTL_G2MEAB)
-// `ncrc_ptr` converts from `rc_ptr< U >`.
-#define RSTL_NCRC_PTR_CONVERSION (RSTL_VERSION != RSTL_G2MEAB)
 // `single_ptr` has the `mutable` pointer and the const-ref ownership-transferring copy constructor
 // (Prime 1 and the prototype).
 #define RSTL_SINGLE_PTR_MUTABLE ((RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB) && RSTL_SINGLE_PTR_TRANSFER)
 // `single_ptr::operator->` returns a plain `T*` and the const `operator*` returns `const T&`.
 #define RSTL_SINGLE_PTR_PLAIN_ACCESS (RSTL_VERSION == RSTL_G2MEAB)
-// `single_ptr::reset` exists.
-#define RSTL_SINGLE_PTR_RESET (RSTL_VERSION != RSTL_G2MEAB)
 // `auto_ptr` is the prototype's own class (`mOwns` / `mPointer`, defaulted pointer constructor, no
 // `get()` overload or `owner()` ordering differences) and includes Corruption's `CMemory.hpp`.
 #define RSTL_AUTO_PTR_PROTO (RSTL_VERSION == RSTL_G2MEAB)
-// The `optional_object` copy constructor initializes `m_valid` from `other.valid()`.
+// Keep the accessor in the prototype: direct member access inlines away native
+// CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_object::operator=` inlines `assign` into its body.
 #define RSTL_OPTIONAL_ASSIGN_INLINE (RSTL_VERSION == RSTL_G2MEAB)
@@ -502,8 +475,5 @@
 #else
 #define RSTL_RBTREE_NULL nullptr
 #endif
-// `rbtree_traverse_forward` tests `right == 0 && ...` without parentheses and breaks out of its
-// loop through a braced `if (parent == 0)`.
-#define RSTL_RBTREE_UNPARENTHESIZED_TRAVERSE_TESTS (RSTL_VERSION == RSTL_G2MEAB)
 
 #endif // _RSTL_VERSIONS_H

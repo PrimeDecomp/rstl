@@ -30,10 +30,8 @@ enum node_color {
   kNC_Red,
 };
 
-#if RSTL_RBTREE_ROTATE_DECLS
 void rbtree_rotate_left(void* header, void* node);
 void rbtree_rotate_right(void* header, void* node);
-#endif
 void rbtree_rebalance(void*, void*);
 void* rbtree_traverse_forward(const void*, void*);
 void* rbtree_rebalance_for_erase(void* header_void, void* node_void);
@@ -293,23 +291,15 @@ public:
 #endif
   }
 
-#if RSTL_RBTREE_COUNT
   int count(const T& key) const {
     const pair< const_iterator, const_iterator > range = equal_range(key);
     return rstl::distance(range.first, range.second);
   }
-#endif
 
   iterator erase(iterator it) {
-#if RSTL_RBTREE_ERASE_NODE_LOCAL_NAMED_NODE
-    node* node = it.get_node();
-    ++it;
-    free_node(rebalance_for_erase(node));
-#else
     node* n = it.get_node();
     ++it;
     free_node(rebalance_for_erase(n));
-#endif
     mCount--;
     return it;
   }
@@ -336,9 +326,7 @@ public:
   }
 
   int size() const { return mCount; }
-#if RSTL_RBTREE_EMPTY
   bool empty() const { return mCount == 0; }
-#endif
 
 private:
   node* find_lower_bound(const T& key) const {

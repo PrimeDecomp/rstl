@@ -137,12 +137,10 @@ public:
 #endif
   }
 #endif
-#if RSTL_RESERVED_VECTOR_RANGE_CTOR
   reserved_vector(const T* first, const T* last) : mCount(0) {
     mCount = last - first;
     uninitialized_copy(first, last, data());
   }
-#endif
   reserved_vector(CInputStream& in);
 
 #if RSTL_RESERVED_VECTOR_OUT_OF_CLASS
@@ -161,11 +159,7 @@ public:
   }
 
   void pop_back() {
-#if RSTL_RESERVED_VECTOR_POP_BACK_DATA_INDEX
-    destroy(&data()[mCount - 1]);
-#else
     destroy(end() - 1);
-#endif
     --mCount;
   }
 #else
@@ -237,11 +231,9 @@ public:
   inline bool empty() const { return size() == 0; }
   inline int size() const { return mCount; }
   inline int capacity() const { return N; }
-#if RSTL_RESERVED_VECTOR_SET_SIZE
   // Guessed name. Sets the count without constructing elements; the caller writes them
   // through data().
   inline void set_size(int count) { mCount = count; }
-#endif
   inline T& front() { return data()[0]; }
   inline const T& front() const { return data()[0]; }
   inline T& back() { return at(mCount - 1); }

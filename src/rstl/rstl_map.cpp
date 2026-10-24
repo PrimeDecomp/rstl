@@ -333,17 +333,10 @@ void* rbtree_traverse_forward(const void* header_void, void* node_void) {
     return header->mLeftmost;
   }
   fake_node* right = node->mRight;
-#if RSTL_RBTREE_UNPARENTHESIZED_TRAVERSE_TESTS
-  if (right == RSTL_RBTREE_NULL && node->mParent == RSTL_RBTREE_NULL) {
-    return RSTL_RBTREE_NULL;
-  }
-  if (right == RSTL_RBTREE_NULL && node->mParent->mLeft == node) {
-#else
   if ((right == RSTL_RBTREE_NULL) && (node->mParent == RSTL_RBTREE_NULL)) {
     return RSTL_RBTREE_NULL;
   }
   if ((right == RSTL_RBTREE_NULL) && (node->mParent->mLeft == node)) {
-#endif
     return node->mParent;
   }
 
@@ -364,14 +357,8 @@ void* rbtree_traverse_forward(const void* header_void, void* node_void) {
     node = parent;
   enter_final:
     parent = node->mParent;
-#if RSTL_RBTREE_UNPARENTHESIZED_TRAVERSE_TESTS
-    if (parent == RSTL_RBTREE_NULL) {
-      break;
-    }
-#else
     if (!parent)
       break;
-#endif
   } while (parent->mRight == node);
 
   return parent != RSTL_RBTREE_NULL ? parent : RSTL_RBTREE_NULL;

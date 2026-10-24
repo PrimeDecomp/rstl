@@ -76,18 +76,14 @@ public:
     return ptr;
   }
 
-#if RSTL_SINGLE_PTR_RESET
   // This is certainly not real, but handy to force not-inline
   single_ptr& reset(T* ptr);
-#endif
 };
 
-#if RSTL_SINGLE_PTR_RESET
 template < typename T >
 single_ptr< T >& single_ptr< T >::reset(T* ptr) {
   return *this = ptr;
 }
-#endif
 
 #if RSTL_UNK_SINGLE_PTR_VOID
 typedef single_ptr< void > unk_singleptr;
