@@ -312,6 +312,126 @@ public:
   const _CharTp at(int idx) const { return data()[idx]; }
 };
 
+#ifndef __MWERKS__
+
+#if RSTL_STRING_MUTABLE_NULL
+template <>
+char basic_string< char >::mNull;
+template <>
+wchar_t basic_string< wchar_t >::mNull;
+template <>
+char basic_string< char, case_insensitive_char_traits< char > >::mNull;
+template <>
+wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull;
+
+#else
+template <>
+const char basic_string< char >::mNull;
+template <>
+const wchar_t basic_string< wchar_t >::mNull;
+template <>
+const char basic_string< char, case_insensitive_char_traits< char > >::mNull;
+template <>
+const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull;
+
+#endif
+
+// Keep modern compilers from implicitly instantiating members whose explicit
+// specializations are defined in rstl_strings.cpp or the game.
+// basic_string<char>
+template <>
+basic_string< char >::basic_string(CInputStream& in, const rmemory_allocator& alloc);
+template <>
+basic_string< char >::basic_string(const char* data, int count, const rmemory_allocator& alloc);
+template <>
+basic_string< char >::basic_string(const basic_string& other);
+template <>
+basic_string< char >::basic_string(char value);
+template <>
+void basic_string< char >::clear();
+template <>
+basic_string< char >& basic_string< char >::erase(int pos, int count);
+
+template <>
+basic_string< char >& basic_string< char >::append(const basic_string& other);
+template <>
+basic_string< char >& basic_string< char >::append(const char* data, int count);
+template <>
+basic_string< char >& basic_string< char >::append(int count, char value);
+template <>
+basic_string< char >& basic_string< char >::assign(const basic_string& other);
+
+template <>
+void basic_string< char >::PutTo(COutputStream& out) const;
+template <>
+basic_string< char >::const_iterator basic_string< char >::position_iterator(int pos) const;
+template <>
+pair< basic_string< char >::const_iterator, basic_string< char >::const_iterator >
+basic_string< char >::range_iterator(int pos, int count) const;
+#if !RSTL_STRING_OUT_OF_CLASS
+template <>
+basic_string< char > basic_string< char >::substr(int pos, int count) const;
+#endif
+
+template <>
+void basic_string< char >::internal_allocate(int size);
+template <>
+void basic_string< char >::internal_dereference();
+template <>
+void basic_string< char >::internal_prepare_to_write(int len, bool preserve);
+
+// basic_string<wchar_t>
+template <>
+basic_string< wchar_t >::basic_string(const wchar_t* data, int count,
+                                      const rmemory_allocator& alloc);
+template <>
+basic_string< wchar_t >::basic_string(const basic_string& other);
+
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const basic_string& other);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const wchar_t* data, int count);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(int count, wchar_t value);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::assign(const basic_string& other);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::assign(const wchar_t* data, int count);
+
+template <>
+void basic_string< wchar_t >::internal_allocate(int size);
+template <>
+void basic_string< wchar_t >::internal_dereference();
+template <>
+void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve);
+
+template <>
+basic_string< wchar_t >::const_iterator basic_string< wchar_t >::position_iterator(int pos) const;
+template <>
+pair< basic_string< wchar_t >::const_iterator, basic_string< wchar_t >::const_iterator >
+basic_string< wchar_t >::range_iterator(int pos, int count) const;
+
+#if RSTL_STRING_ASSIGN_SPECIALIZATION
+template <>
+basic_string< char >& basic_string< char >::assign(const char* data, int count);
+#if !RSTL_STRINGS_PROTO_LAYOUT
+template <>
+basic_string< char, case_insensitive_char_traits< char > >&
+basic_string< char, case_insensitive_char_traits< char > >::assign(const char* data, int count);
+#endif
+#endif
+
+// Case-insensitive basic_string<char>
+template <>
+basic_string< char, case_insensitive_char_traits< char > >::basic_string(
+    const char* data, int count, const rmemory_allocator& alloc);
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size);
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference();
+
+#endif
+
 template < typename _CharTp, typename Traits, typename Alloc >
 template < typename It, typename OtherIt >
 inline int basic_string< _CharTp, Traits, Alloc >::internal_search_of(It first, It last,

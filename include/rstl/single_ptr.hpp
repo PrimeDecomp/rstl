@@ -31,9 +31,9 @@ public:
 
   ~single_ptr() {
 #if RSTL_SINGLE_PTR_DELETE_VIA_GET
-    delete get();
+    RSTL_DELETE_PTR(T, get());
 #else
-    delete mPtr;
+    RSTL_DELETE_PTR(T, mPtr);
 #endif
   }
 
@@ -41,14 +41,14 @@ public:
     if (&other == this) {
       return *this;
     }
-    delete mPtr;
+    RSTL_DELETE_PTR(T, mPtr);
     mPtr = other.mPtr;
     other.mPtr = nullptr;
     return *this;
   }
 
   single_ptr& operator=(T* const ptr) {
-    delete mPtr;
+    RSTL_DELETE_PTR(T, mPtr);
     mPtr = ptr;
     return *this;
   }

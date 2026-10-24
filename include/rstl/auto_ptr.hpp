@@ -7,6 +7,9 @@
 #else
 #include "types.h"
 #endif
+#if defined(TARGET_PC)
+#include "rstl/rmemory_allocator.hpp"
+#endif
 
 namespace rstl {
 #if RSTL_AUTO_PTR_PROTO
@@ -22,14 +25,14 @@ public:
   }
   ~auto_ptr() {
     if (mOwns) {
-      delete mPointer;
+      RSTL_DELETE_PTR(T, mPointer);
     }
   }
 
   auto_ptr& operator=(const auto_ptr& other) {
     if (&other != this) {
       if (mOwns) {
-        delete mPointer;
+        RSTL_DELETE_PTR(T, mPointer);
       }
       mOwns = other.mOwns;
       mPointer = other.mPointer;
@@ -66,7 +69,7 @@ public:
   auto_ptr(T* ptr) : mHas(ptr != nullptr), mItem(ptr) {}
   ~auto_ptr() {
     if (mHas) {
-      delete mItem;
+      RSTL_DELETE_PTR(T, mItem);
     }
   }
   // TODO check
@@ -86,7 +89,7 @@ public:
   auto_ptr& operator=(const auto_ptr& other) {
     if (&other != this) {
       if (mHas) {
-        delete mItem;
+        RSTL_DELETE_PTR(T, mItem);
       }
       mHas = other.mHas;
       mItem = other.mItem;

@@ -446,4 +446,10 @@
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
 #define RSTL_OPTIONAL_STORAGE_ALIGNED (RSTL_VERSION != RSTL_G2MEAB)
 
+#if defined(TARGET_PC)
+#define RSTL_DELETE_PTR(TYPE, PTR) pointer_deleter< TYPE >::destroy(PTR)
+#else
+#define RSTL_DELETE_PTR(TYPE, PTR) delete PTR
+#endif
+
 #endif // _RSTL_VERSIONS_H
