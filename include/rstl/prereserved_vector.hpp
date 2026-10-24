@@ -5,9 +5,7 @@
 
 #include "types.h"
 
-#if RSTL_PRERESERVED_VECTOR_NAMESPACE
 namespace rstl {
-#endif
 
 template < typename T >
 class prereserved_vector {
@@ -30,8 +28,6 @@ private:
   T* mData;
 };
 
-#if RSTL_PRERESERVED_VECTOR_NAMESPACE
-} // namespace rstl
-#endif
+}
 
 #endif // _RSTL_PRERESERVED_VECTOR

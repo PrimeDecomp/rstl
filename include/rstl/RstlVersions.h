@@ -82,9 +82,6 @@
 // with CInputStream.hpp), so they stay Echoes-only.
 #define RSTL_BIT_VECTOR_OUT_OF_CLASS RSTL_ECHOES_ERA
 #define RSTL_SET_OUT_OF_CLASS RSTL_ECHOES_ERA
-// `prereserved_vector` is declared inside `namespace rstl`; the Prime 1 GameCube builds declare it
-// in the global namespace.
-#define RSTL_PRERESERVED_VECTOR_NAMESPACE (RSTL_VERSION >= RSTL_G2ME)
 // `construct`, `destroy` and `destroy_impl` are external `inline` templates instead of `static
 // inline` ones (the uninitialized_* helpers are `static inline` everywhere).
 #define RSTL_EXTERN_CONSTRUCT_FUNCTIONS RSTL_ECHOES_ERA
