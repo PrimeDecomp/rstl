@@ -6,8 +6,8 @@
 #include "types.h"
 
 #if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/Assert.hpp"
-#include "Corruption/Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #endif
 
 #include "rstl/allocator_auto_ptr.hpp"

@@ -3,9 +3,9 @@
 #if RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS
 #include "rstl/StringExtras.hpp"
 
-#include "Corruption/Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Corruption/Kyoto/CFactoryMgr.hpp"
-#include "Corruption/Kyoto/Streams/CMemoryInStream.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "rstl/vector.hpp"
 
 char CStringExtras::ConvertToLowerCase(char c) {

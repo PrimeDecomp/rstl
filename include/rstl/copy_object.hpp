@@ -1,7 +1,7 @@
 #ifndef _RSTL_COPY_OBJECT
 #define _RSTL_COPY_OBJECT
 
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/rmemory_allocator.hpp"
 
 namespace rstl {

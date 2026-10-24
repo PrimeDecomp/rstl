@@ -279,6 +279,9 @@ public:
 
   int find(const basic_string& other, int pos = 0) const;
   int find(const _CharTp* other, int pos = 0, int count = -1) const;
+#if !RSTL_STRING_OUT_OF_CLASS
+  inline
+#endif
   int find(_CharTp ch, int pos = 0) const;
 #if RSTL_STRING_MATCH_LOOP_SEARCH
   int rfind(const _CharTp* other, int pos = -1, int count = -1) const;
@@ -497,6 +500,9 @@ inline int basic_string< _CharTp, Traits, Alloc >::internal_search(It first, It 
 
 #endif
 template < typename _CharTp, typename Traits, typename Alloc >
+#if !RSTL_STRING_OUT_OF_CLASS
+inline
+#endif
 int basic_string< _CharTp, Traits, Alloc >::find(const basic_string& other, int pos) const {
   pos = get_real_pos_for_begin(pos);
   const int found = internal_search(begin() + pos, end(), other.begin(), other.end());
@@ -574,7 +580,14 @@ int basic_string< _CharTp, Traits, Alloc >::rfind(_CharTp ch, int pos) const {
 
 #endif
 
-#if RSTL_STRING_COMPARE_END_POINTER
+#if !RSTL_STRING_OUT_OF_CLASS
+template < typename _CharTp, typename Traits, typename Alloc >
+inline int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
+  const _CharTp* rhsEnd = compute_length(rhs, count).first;
+  return internal_compare(begin(), end(), rhs, rhsEnd);
+}
+
+#elif RSTL_STRING_COMPARE_END_POINTER
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
   int rhsCharCount = 0;

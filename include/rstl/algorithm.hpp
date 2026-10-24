@@ -159,11 +159,7 @@ void sort(It first, It last, Cmp cmp) {
 #if RSTL_SORT_LESS_LOCAL
   bool less;
 #endif
-#if RSTL_SORT_ECHOES_LOOPS
   for (;;) {
-#else
-  while (true) {
-#endif
 #if RSTL_SORT_LESS_LOCAL
     while ((less = cmp(*it, pivot))) {
       ++it;

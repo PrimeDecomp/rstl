@@ -3,11 +3,7 @@
 
 #include "rstl/RstlVersions.h"
 
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 #include "rstl/construct.hpp"
 #include "rstl/rmemory_allocator.hpp"
 #include "types.h"

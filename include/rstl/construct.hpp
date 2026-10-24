@@ -5,11 +5,7 @@
 #include "rstl/iterator.hpp"
 #include "types.h"
 
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 // Release rstl keeps its precondition checks as empty statements. They still count
 // toward MWCC's inline size limit, which decides where uninitialized_copy is outlined.

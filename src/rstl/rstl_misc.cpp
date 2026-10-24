@@ -1,4 +1,4 @@
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/rmemory_allocator.hpp"
 
 void* rstl::rmemory_allocator::allocate(int size) {

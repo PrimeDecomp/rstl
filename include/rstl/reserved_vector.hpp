@@ -129,7 +129,9 @@ public:
     }
   }
 #else
+#if RSTL_PRECONDITION_MACRO
     RSTL_PRECONDITION(mCount >= 0);
+#endif
 #if RSTL_RESERVED_VECTOR_RAW_COPY
     uninitialized_copy_n(other.data(), mCount, data());
 #else

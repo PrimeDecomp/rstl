@@ -78,6 +78,8 @@ public:
 
   // This is certainly not real, but handy to force not-inline
   single_ptr& reset(T* ptr);
+
+  operator bool() const { return !null(); }
 };
 
 template < typename T >

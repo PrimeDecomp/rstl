@@ -3,16 +3,8 @@
 
 #include "rstl/RstlVersions.h"
 
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/LockedCache.hpp"
-#else
 #include "Kyoto/Alloc/LockedCache.hpp"
-#endif
 #include "types.h"
 
 namespace rstl {

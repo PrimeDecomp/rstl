@@ -5,11 +5,7 @@
 
 #include "types.h"
 
-#if RSTL_VERSION == RSTL_G2MEAB
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 namespace rstl {
 

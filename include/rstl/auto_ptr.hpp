@@ -3,7 +3,7 @@
 
 #include "rstl/RstlVersions.h"
 #if RSTL_AUTO_PTR_PROTO
-#include "Corruption/Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #else
 #include "types.h"
 #endif
