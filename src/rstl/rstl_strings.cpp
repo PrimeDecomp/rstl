@@ -554,6 +554,9 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
                                                case_insensitive_char_traits< char >::eos());
 }
 
+#if RSTL_STRING_OUT_OF_CLASS
+// In Prime, emitting this unused specialization moves compute_length ahead of the
+// constructor under deferred inlining, changing the linked PAL/Japanese layout.
 template <>
 basic_string< char, case_insensitive_char_traits< char > >&
 basic_string< char, case_insensitive_char_traits< char > >::assign(const char* data, int count) {
@@ -566,6 +569,7 @@ basic_string< char, case_insensitive_char_traits< char > >::assign(const char* d
                                                case_insensitive_char_traits< char >::eos());
   return *this;
 }
+#endif
 
 template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size) {
