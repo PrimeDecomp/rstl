@@ -107,9 +107,9 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
 template <>
 basic_string< char >::basic_string(CInputStream& in, const rmemory_allocator& alloc)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(alloc), mPtr(&mNull), mCow(RSTL_STRING_NO_COW), mSize(0) {
+: rmemory_allocator(alloc), mPtr(&mNull), mCow(nullptr), mSize(0) {
 #else
-: mPtr(&mNull), mCow(RSTL_STRING_NO_COW), mSize(0), mAllocator(alloc) {
+: mPtr(&mNull), mCow(nullptr), mSize(0), mAllocator(alloc) {
 #endif
   char buffer[1025];
   int count = 0;
@@ -147,7 +147,7 @@ basic_string< char >::basic_string(const char* data, int count, const rmemory_al
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = RSTL_STRING_NO_COW;
+    mCow = nullptr;
     return;
   }
 
@@ -321,7 +321,7 @@ void basic_string< char >::internal_dereference() {
 template <>
 void basic_string< char >::internal_prepare_to_write(int len, bool preserve) {
   const int required = len + 1;
-  if (mCow == RSTL_STRING_NO_COW || mCow->mRefCount != 1 || mCow->mCapacity < required) {
+  if (mCow == nullptr || mCow->mRefCount != 1 || mCow->mCapacity < required) {
     int capacity;
     if (mCow) {
       capacity = mCow->mCapacity < 4 ? 4 : mCow->mCapacity;
@@ -359,7 +359,7 @@ basic_string< wchar_t >::basic_string(const wchar_t* data, int count,
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = RSTL_STRING_NO_COW;
+    mCow = nullptr;
     return;
   }
 
@@ -490,7 +490,7 @@ void basic_string< wchar_t >::internal_dereference() {
 template <>
 void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve) {
   const int required = len + 1;
-  if (mCow == RSTL_STRING_NO_COW || mCow->mRefCount != 1 || mCow->mCapacity < required) {
+  if (mCow == nullptr || mCow->mRefCount != 1 || mCow->mCapacity < required) {
     int capacity;
     if (mCow) {
       capacity = mCow->mCapacity < 4 ? 4 : mCow->mCapacity;
@@ -544,7 +544,7 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
-    mCow = RSTL_STRING_NO_COW;
+    mCow = nullptr;
     return;
   }
 

@@ -178,11 +178,7 @@ public:
   , mCmp(other.mCmp)
   , mAllocator(other.mAllocator)
   , mCount(other.mCount) {
-#if RSTL_RBTREE_COPY_CONST_ROOT
     node* const root = copy_from(other.mHeader.get_root());
-#else
-    node* root = copy_from(other.mHeader.get_root());
-#endif
     mHeader.set_leftmost(leftmost(root));
     mHeader.set_rightmost(rightmost(root));
     mHeader.set_root(root);

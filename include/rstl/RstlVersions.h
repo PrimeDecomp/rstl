@@ -33,8 +33,8 @@
 // Feature macros. Each is 1 when the selected RSTL_VERSION has the behavior and 0 otherwise;
 // the rstl sources test these instead of comparing RSTL_VERSION directly.
 //
-// RSTL_ECHOES_ERA is an internal helper: the GameCube Prime 2 versions (and the unbuilt Prime 3
-// standalone versions between them and the Wii versions).
+// RSTL_ECHOES_ERA groups GameCube Echoes with Corruption, including the built E3 prototype.
+// Retail Corruption selections are provisional; see docs/feature-flags.md for build coverage.
 #define RSTL_ECHOES_ERA (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION < RSTL_R3IJ)
 
 // RSTL_PRIME1 is 1 when the code is built for Metroid Prime. The Trilogy versions (R3ME, R3MP) are
@@ -88,7 +88,8 @@
 // `construct`, `destroy` and `destroy_impl` are external `inline` templates instead of `static
 // inline` ones (the uninitialized_* helpers are `static inline` everywhere).
 #define RSTL_EXTERN_CONSTRUCT_FUNCTIONS RSTL_ECHOES_ERA
-// Pointers and `uint` are trivially destructible.
+// Declare pointer/uint trivial-destructor traits here. The prototype supplies equivalent
+// traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers non-trivial.
 #define RSTL_TRIVIAL_POINTERS                                                                      \
   ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
 // The arithmetic types are declared trivially destructible and copied by assignment, and so are
@@ -251,12 +252,9 @@
 // `CStringExtras::CreateFromReal` exists.
 #define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_G2ME)
 
-// --- Corruption E3 prototype (RSTL_G2MEAB) ---
-// Feature macros that make the shared code produce the prototype's own tokens. Four sections, one
-// per group of files, so parallel edits do not collide.
-// -- group A: allocators, construct, iterators, algorithm
-// `rmemory_allocator` and `aligned_allocator` use the prototype's spelling: `allocate(T*&, int)`
-// takes the element count as `size`, and null results are written `0`.
+// --- Corruption prototype differences ---
+// Sharing Echoes' allocation expression (with a size local) outlines the
+// prototype's CEditorToGeometryMap fill constructor, so keep this source form.
 #define RSTL_ALLOCATOR_LEGACY_SPELLING (RSTL_VERSION == RSTL_G2MEAB)
 // `aligned_allocator::allocate(T*&, int)` calls `CMemory::Alloc` directly and there is no
 // `aligned_allocator::allocate(int)`.
@@ -291,28 +289,21 @@
 // `swap` and `iter_swap` are inline only when the including file defines `RSTL_INLINE_SWAP`, and
 // `swap` has no precondition.
 #define RSTL_SWAP_OPTIONAL_INLINE (RSTL_VERSION == RSTL_G2MEAB)
-// The comparison sorts keep the comparison result in a `bool less` local.
+// The comparison sorts keep the comparison result in a bool local. Sharing this
+// with the prototype changes CGuiFrame's emitted sort helpers.
 #define RSTL_SORT_LESS_LOCAL (RSTL_VERSION != RSTL_G2MEAB)
-// The comparison sort partitions with `for (;;)` instead of `while (true)`.
-#define RSTL_SORT_FOREVER_LOOP (RSTL_SORT_ECHOES_LOOPS && RSTL_VERSION != RSTL_G2MEAB)
 // `lower_bound` with a comparator comes right after the comparator `sort`, before the `__sort3`
 // without one (otherwise it follows the plain `lower_bound`).
 #define RSTL_LOWER_BOUND_CMP_BEFORE_SORT3 (RSTL_VERSION == RSTL_G2MEAB)
 // The plain `lower_bound` declares `halfDist` and `it` inside its loop.
 #define RSTL_LOWER_BOUND_LOOP_LOCALS (RSTL_VERSION == RSTL_G2MEAB)
-// -- group B: strings and the .cpp sources
+// Strings and their source files.
 // Prototype `char_traits::assign(T*, int, T)` takes its value by value.
 #define RSTL_STRING_TRAITS_VALUE_PARAM (RSTL_VERSION == RSTL_G2MEAB)
 // The prototype's extra `basic_string` members: `reverse_iterator`, `empty`, `erase`, `clear`,
 // the writable `operator[]`, `rfind`, the `find_first_of(const char*)`/`find_first_not_of`/
 // `find_last_not_of` searches and `basic_string(_CharTp)`.
 #define RSTL_STRING_PROTO_API (RSTL_VERSION == RSTL_G2MEAB)
-// The "no copy-on-write buffer" value stored in `mCow` is the literal `0` instead of `nullptr`.
-#if RSTL_VERSION == RSTL_G2MEAB
-#define RSTL_STRING_NO_COW 0
-#else
-#define RSTL_STRING_NO_COW nullptr
-#endif
 // The `literal_t` constructor measures with a plain `end` pointer loop.
 #define RSTL_STRING_SIMPLE_LITERAL_CTOR (RSTL_VERSION == RSTL_G2MEAB)
 // The iterator-range constructor terminates through `Traits::eos()` instead of `0`.
@@ -329,8 +320,6 @@
 #define RSTL_STRING_INLINE_SEARCH_DECL (RSTL_STRING_OUT_OF_CLASS && RSTL_VERSION != RSTL_G2MEAB)
 // `internal_search` walks a `match` and a `search` iterator in step (a third implementation).
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_VERSION == RSTL_G2MEAB)
-// `find(const _CharTp*)` increments `length` before `end`.
-#define RSTL_STRING_FIND_LENGTH_FIRST (RSTL_VERSION == RSTL_G2MEAB)
 // `compare(const _CharTp*, int)` measures with a separate `rhsEnd` pointer (otherwise it advances
 // `rhs` itself and keeps `rhsStart`).
 #define RSTL_STRING_COMPARE_END_POINTER (RSTL_STRING_EXTRA_API && RSTL_VERSION != RSTL_G2MEAB)
@@ -353,7 +342,7 @@
 // StringExtras has `ConvertToLowerCase(char)`, `ConvertToInteger`, `ConvertToReal`, `Format` and
 // names the `CreateFromReal` parameter `precision`.
 #define RSTL_STRING_EXTRAS_PROTO_API (RSTL_VERSION == RSTL_G2MEAB)
-// -- group C: vector, list and friends
+// Vector, list and related containers.
 // `reserved_vector_fill_type` exists, and `resize` takes it (shrinking with pointer-range
 // `destroy`), followed by `resize_uninitialized`.
 #define RSTL_RESERVED_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
@@ -387,7 +376,8 @@
 // `bit_vector` is the reduced class with `reference` (word iterator plus `uint` mask), an
 // out-of-line `at` / `operator[]`, and no iterators or growth.
 #define RSTL_BIT_VECTOR_COMPACT (RSTL_VERSION == RSTL_G2MEAB)
-// `vector(int)` reserves when `count > 0` instead of `count > mCount`.
+// `vector(int)` reserves when count > 0. Testing count > mCount changes the
+// prototype's CPFPointSearchState constructor; keep its existing form.
 #define RSTL_VECTOR_COUNT_CTOR_POSITIVE_CHECK (RSTL_VERSION == RSTL_G2MEAB)
 // `vector::resize_uninitialized` compares against `mCount` (in a braced block).
 #define RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK (RSTL_VERSION == RSTL_G2MEAB)
@@ -396,7 +386,7 @@
 // `vector::push_back` asserts through `verify_capacity_failed` instead of growing (and
 // `push_back_unsafe` checks too, with a `push_back_checked` wrapper).
 #define RSTL_VECTOR_VERIFIED_PUSH_BACK (RSTL_VERSION == RSTL_G2MEAB)
-// -- group D: trees, pointers, optional
+// Trees, pointers and optional values.
 // `red_black_tree` declares `tree_key_argument` (`const T&`, but `uint` by value) and takes its
 // lookup keys through it.
 #define RSTL_RBTREE_KEY_ARGUMENT_TRAITS (RSTL_VERSION == RSTL_G2MEAB)
@@ -416,8 +406,6 @@
 #endif
 // `red_black_tree::node::mValue` is a plain `uchar` array without `ALIGNAS`.
 #define RSTL_RBTREE_NODE_ALIGNED (RSTL_VERSION != RSTL_G2MEAB)
-// The copy constructor's `root` local is not `const`.
-#define RSTL_RBTREE_COPY_CONST_ROOT (RSTL_VERSION != RSTL_G2MEAB)
 // `find_node` returns the ternary directly instead of through a `result` local.
 #define RSTL_RBTREE_DIRECT_FIND_RETURN (RSTL_VERSION == RSTL_G2MEAB)
 // `create_node` carries the (empty) allocation precondition.
@@ -426,15 +414,6 @@
 // `free_node_and_sub_nodes`, `insert_into`), reach the children through `get_left()` /
 // `get_right()` and name the multi-flag template parameter `U`.
 #define RSTL_RBTREE_PROTO_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
-// `map` / `set` pass their uniqueness flag to `red_black_tree` as `0`/`1` instead of
-// `false`/`true`.
-#if RSTL_VERSION == RSTL_G2MEAB
-#define RSTL_RBTREE_UNIQUE_KEYS 0
-#define RSTL_RBTREE_MULTI_KEYS 1
-#else
-#define RSTL_RBTREE_UNIQUE_KEYS false
-#define RSTL_RBTREE_MULTI_KEYS true
-#endif
 // `set` wraps a `red_black_tree` member (`inner`) and forwards to it, instead of deriving from it.
 #define RSTL_SET_INNER_TREE (RSTL_VERSION == RSTL_G2MEAB)
 // `rc_ptr` allocates its count with `rs_new_line_in("rc_ptr.h", 87)` (constructor) and
@@ -469,11 +448,5 @@
 #define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
 #define RSTL_OPTIONAL_STORAGE_ALIGNED (RSTL_VERSION != RSTL_G2MEAB)
-// rstl_map.cpp spells null pointers as the literal `0` instead of `nullptr`.
-#if RSTL_VERSION == RSTL_G2MEAB
-#define RSTL_RBTREE_NULL 0
-#else
-#define RSTL_RBTREE_NULL nullptr
-#endif
 
 #endif // _RSTL_VERSIONS_H

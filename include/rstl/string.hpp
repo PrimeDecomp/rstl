@@ -175,11 +175,11 @@ public:
 
   struct literal_t {};
 
-  basic_string() : mPtr(&mNull), mCow(RSTL_STRING_NO_COW), mSize(0) {}
+  basic_string() : mPtr(&mNull), mCow(nullptr), mSize(0) {}
 
   basic_string(literal_t, const _CharTp* data) {
     mPtr = data;
-    mCow = RSTL_STRING_NO_COW;
+    mCow = nullptr;
 #if RSTL_STRING_SIMPLE_LITERAL_CTOR
     const _CharTp* end = data;
     while (*end) {
@@ -239,7 +239,7 @@ public:
 #if RSTL_STRING_PROTO_API
   bool empty() const { return length() == 0; }
 #endif
-  int refcount() { return mCow != RSTL_STRING_NO_COW ? mCow->mRefCount : -1; }
+  int refcount() { return mCow != nullptr ? mCow->mRefCount : -1; }
   void reserve(int len) { internal_prepare_to_write(len, true); }
 
   basic_string& assign(const basic_string&);
@@ -540,13 +540,8 @@ int basic_string< _CharTp, Traits, Alloc >::find(const _CharTp* other, int pos, 
   int length = 0;
   const _CharTp* end = other;
   while ((count == -1 || length < count) && *end != Traits::eos()) {
-#if RSTL_STRING_FIND_LENGTH_FIRST
-    ++length;
-    ++end;
-#else
     ++end;
     ++length;
-#endif
   }
   const int found = internal_search(begin() + pos, this->end(), other, end);
   int result = found + pos;
