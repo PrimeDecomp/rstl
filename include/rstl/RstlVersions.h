@@ -34,7 +34,7 @@
 // the rstl sources test these instead of comparing RSTL_VERSION directly.
 //
 // RSTL_ECHOES_ERA groups GameCube Echoes with Corruption, including the built E3 prototype.
-// Retail Corruption selections are provisional; see docs/feature-flags.md for build coverage.
+// Retail Corruption selections are provisional; see Prime's MCP shared-rstl.md for build coverage.
 #define RSTL_ECHOES_ERA (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION < RSTL_R3IJ)
 
 // RSTL_PRIME1 is 1 when the code is built for Metroid Prime. The Trilogy versions (R3ME, R3MP) are
