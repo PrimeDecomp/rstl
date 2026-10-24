@@ -654,11 +654,7 @@ inline int basic_string< _CharTp, Traits, Alloc >::compare(const basic_string& o
 }
 
 template < typename _CharTp, typename Traits, typename Alloc >
-#if RSTL_STRING_OUT_OF_CLASS
 inline bool basic_string< _CharTp, Traits, Alloc >::operator==(const basic_string& other) const {
-#else
-bool basic_string< _CharTp, Traits, Alloc >::operator==(const basic_string& other) const {
-#endif
   return compare(other) == 0;
 }
 
