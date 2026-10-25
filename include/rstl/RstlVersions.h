@@ -117,6 +117,8 @@
 #define RSTL_COPY_N_COUNTER_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
 #define RSTL_POINTER_FILL_OVERLOAD (RSTL_VERSION >= RSTL_R3IJ)
+// Byte fills take their scalar value directly.
+#define RSTL_BYTE_FILL_VALUE (RSTL_VERSION == RSTL_G2MEAB)
 // `uninitialized_fill_n` fills through `construct` instead of a placement new.
 #define RSTL_FILL_USES_CONSTRUCT RSTL_ECHOES_ERA
 // `uninitialized_fill_n` advances its `dest` parameter itself instead of a copy, and
@@ -343,6 +345,11 @@
 // `reserved_vector_fill_type` exists, and `resize` takes it (shrinking with pointer-range
 // `destroy`), followed by `resize_uninitialized`.
 #define RSTL_RESERVED_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
+
+// `vector` passes bool constructor fill values directly; class values remain references.
+#define RSTL_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
+// Byte-vector resize takes a signed-char fill value, rather than its address.
+#define RSTL_VECTOR_RESIZE_TYPE (RSTL_VERSION == RSTL_G2MEAB)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
