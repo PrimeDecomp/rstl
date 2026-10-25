@@ -77,7 +77,7 @@ inline void iter_swap(I1 a, I2 b) {
 }
 
 template < typename T, class Cmp >
-void __sort3(T& a, T& b, T& c, const Cmp comp) {
+void __sort3(T& a, T& b, T& c, Cmp comp) {
   if (comp(b, a)) {
     swap(a, b);
   }
