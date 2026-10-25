@@ -110,6 +110,8 @@
 #define RSTL_POINTER_RANGE_OVERLOADS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)
 // `destroy(begin, end)` over iterators tests `begin != end` before looping (pointer ranges do not).
 #define RSTL_DESTROY_RANGE_GUARD (RSTL_VERSION >= RSTL_R3IJ)
+// Generic range copies advance the output parameter directly in Echoes Trilogy.
+#define RSTL_COPY_RANGE_OUTPUT_PARAM (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
 // `uninitialized_copy` steps `++cur, ++tmp` (otherwise `tmp += 1, ++cur`), and
 // `uninitialized_copy_n` uses a pre-increment loop when it does not use the counted form below.
 #define RSTL_PREINCREMENT_COPY_LOOPS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)
@@ -281,7 +283,8 @@
 #define RSTL_RANGE_DESTRUCTION_CHECKS (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
 // `construct` also has an overload taking a mutable `T&`, and the placement-new policy has no
 // null precondition.
-#define RSTL_CONSTRUCT_MUTABLE_OVERLOAD (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_CONSTRUCT_MUTABLE_OVERLOAD                                                            \
+  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00))
 // A non-inline declaration before the inline const construct definition gives MWCC's
 // prototype instantiations external weak linkage, needed by native callers.
 #define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)

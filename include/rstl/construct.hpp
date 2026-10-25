@@ -230,7 +230,11 @@ RSTL_CONSTRUCT_INLINE void construct(void* dest, const T& src) {
 #if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
 template < typename T >
 RSTL_CONSTRUCT_INLINE void construct(void* dest, T& src) {
+#if RSTL_CONSTRUCTION_POLICY
   construction_policy< T, use_assignment_for_construction< T >::value >::construct(dest, src);
+#else
+  new (dest) T(src);
+#endif
 }
 #endif
 
@@ -262,6 +266,34 @@ inline void construct< bool >(void* dest, const bool& src) {
 template <>
 inline void construct< float >(void* dest, const float& src) {
   *static_cast< float* >(dest) = src;
+}
+#endif
+
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD && !RSTL_CONSTRUCTION_POLICY
+// Mutable range inputs retain the scalar and pointer assignment overloads.
+template <>
+inline void construct< int >(void* dest, int& src) {
+  *static_cast< int* >(dest) = src;
+}
+
+template <>
+inline void construct< uint >(void* dest, uint& src) {
+  *static_cast< uint* >(dest) = src;
+}
+
+template <>
+inline void construct< bool >(void* dest, bool& src) {
+  *static_cast< bool* >(dest) = src;
+}
+
+template <>
+inline void construct< float >(void* dest, float& src) {
+  *static_cast< float* >(dest) = src;
+}
+
+template < typename T >
+inline void construct(void* dest, T*& src) {
+  *static_cast< T** >(dest) = src;
 }
 #endif
 
@@ -387,12 +419,20 @@ RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
 #endif
 
 template < typename It, typename T >
+#if RSTL_COPY_RANGE_OUTPUT_PARAM
+static inline T uninitialized_copy(It begin, It end, T tmp) {
+#else
 static inline T uninitialized_copy(It begin, It end, T out) {
+#endif
 #if RSTL_RANGE_PRECONDITIONS
   RSTL_PRECONDITION(begin <= end);
 #endif
+#if RSTL_COPY_RANGE_OUTPUT_PARAM
+  RSTL_PRECONDITION(begin == end || tmp != nullptr);
+#else
   RSTL_PRECONDITION(begin == end || out != nullptr);
   T tmp = out;
+#endif
   It cur = begin;
 #if RSTL_PREINCREMENT_COPY_LOOPS
   for (; cur != end; ++cur, ++tmp) {
