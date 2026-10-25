@@ -189,7 +189,7 @@
 #define RSTL_VECTOR_GROWING_PUSH_BACK                                                              \
   (RSTL_VERSION >= RSTL_G2ME && !RSTL_VECTOR_UNCHECKED_PUSH_BACK)
 // `insert_into` indexes the leading elements with a `long`.
-#define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION != RSTL_G2MEAB)
+#define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME)
 // The `list` copy constructor guards the partial copy with a `destroy_helper`.
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_G2ME)
 // `list::destroy` calls `clear()` instead of erasing the range.
