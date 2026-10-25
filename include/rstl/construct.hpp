@@ -121,15 +121,15 @@ RSTL_DECLARE_SCALAR_TYPE(ushort)
 
 template < typename T, bool UseAssignment >
 struct construction_policy {
-#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
-  static void construct(void* dest, const T& src) { new (dest) T(src); }
-  // Keep mutable range inputs mutable when selecting the copy constructor.
-  static void construct(void* dest, T& src) { new (dest) T(src); }
-#else
   static void construct(void* dest, const T& src) {
+#if !RSTL_CONSTRUCT_MUTABLE_OVERLOAD
     RSTL_PRECONDITION(dest != nullptr);
+#endif
     new (dest) T(src);
   }
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+  // Keep mutable range inputs mutable when selecting the copy constructor.
+  static void construct(void* dest, T& src) { new (dest) T(src); }
 #endif
 };
 
@@ -230,40 +230,51 @@ RSTL_CONSTRUCT_INLINE void construct(void* dest, const T& src) {
 #if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
 template < typename T >
 RSTL_CONSTRUCT_INLINE void construct(void* dest, T& src) {
+#if RSTL_CONSTRUCTION_POLICY
   construction_policy< T, use_assignment_for_construction< T >::value >::construct(dest, src);
+#else
+  new (dest) T(src);
+#endif
 }
 #endif
 
-#if RSTL_DIRECT_INT_CONSTRUCT
-// Scalars skip the policy dispatch, which keeps copies of scalar containers small enough to
-// inline (CWeaponMgr::Add's pair copy on Echoes).
-template <>
-inline void construct< int >(void* dest, const int& src) {
-  *static_cast< int* >(dest) = src;
-}
+// Direct scalar stores skip policy dispatch so scalar container copies still inline.
+#define RSTL_DEFINE_DIRECT_CONSTRUCT(T, Reference)                                                  \
+  template <>                                                                                      \
+  inline void construct< T >(void* dest, Reference src) { *static_cast< T* >(dest) = src; }
+
+// Policy-based versions need the direct int specialization except for the prototype's
+// scalar type-trait path. Later versions extend the same direct path to other scalars.
+#if (RSTL_CONSTRUCTION_POLICY && !RSTL_SCALAR_TYPE_TRAITS) || RSTL_SCALAR_TRAITS
+RSTL_DEFINE_DIRECT_CONSTRUCT(int, const int&)
 #endif
 
 #if RSTL_SCALAR_TRAITS
-template <>
-inline void construct< uint >(void* dest, const uint& src) {
-  *static_cast< uint* >(dest) = src;
-}
+RSTL_DEFINE_DIRECT_CONSTRUCT(uint, const uint&)
 
 template < typename T >
 inline void construct(void* dest, T* const& src) {
   *static_cast< T** >(dest) = src;
 }
 
-template <>
-inline void construct< bool >(void* dest, const bool& src) {
-  *static_cast< bool* >(dest) = src;
-}
+RSTL_DEFINE_DIRECT_CONSTRUCT(bool, const bool&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(float, const float&)
 
-template <>
-inline void construct< float >(void* dest, const float& src) {
-  *static_cast< float* >(dest) = src;
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+// Mutable range inputs use the same scalar stores without converting to const references.
+RSTL_DEFINE_DIRECT_CONSTRUCT(int, int&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(uint, uint&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(bool, bool&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(float, float&)
+
+template < typename T >
+inline void construct(void* dest, T*& src) {
+  *static_cast< T** >(dest) = src;
 }
 #endif
+#endif
+
+#undef RSTL_DEFINE_DIRECT_CONSTRUCT
 
 #if RSTL_DESTROY_VIA_IMPL
 template < typename T >
@@ -387,12 +398,20 @@ RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
 #endif
 
 template < typename It, typename T >
+#if RSTL_COPY_RANGE_OUTPUT_PARAM
+static inline T uninitialized_copy(It begin, It end, T tmp) {
+#else
 static inline T uninitialized_copy(It begin, It end, T out) {
+#endif
 #if RSTL_RANGE_PRECONDITIONS
   RSTL_PRECONDITION(begin <= end);
 #endif
+#if RSTL_COPY_RANGE_OUTPUT_PARAM
+  RSTL_PRECONDITION(begin == end || tmp != nullptr);
+#else
   RSTL_PRECONDITION(begin == end || out != nullptr);
   T tmp = out;
+#endif
   It cur = begin;
 #if RSTL_PREINCREMENT_COPY_LOOPS
   for (; cur != end; ++cur, ++tmp) {

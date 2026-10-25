@@ -55,6 +55,8 @@
 // `rmemory_allocator::allocate(int)` is declared only and always called out of line (defined in
 // RstlExtras.cpp), `deallocate` deletes without a null check, and `allocate2` exists.
 #define RSTL_ALLOCATOR_EXTERN_ALLOCATE (RSTL_VERSION >= RSTL_G2ME)
+// Echoes Trilogy USA exports the allocation entry point as global_allocate.
+#define RSTL_ALLOCATOR_GLOBAL_ALLOCATE (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
 // Allocation calls the out-of-line `rmemory_allocator::allocate(int)` (MWCC only).
 #define RSTL_OUTLINED_ALLOCATE (RSTL_VERSION >= RSTL_GM8P_00)
 // rstl_allocator.cpp defines `rmemory_allocator::allocate(int)` (GM8E_02 defines it although
@@ -93,9 +95,6 @@
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
 #define RSTL_TRIVIAL_SCALARS RSTL_ECHOES_ERA
-// `construct< int >` stores directly.
-#define RSTL_DIRECT_INT_CONSTRUCT                                                                  \
-  ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
 #define RSTL_DESTROY_CONST_PARAM (!RSTL_ECHOES_ERA)
 // The direct `destroy(T*)` carries the (empty) null precondition, which Prime 1 from GM8P_00 on and
@@ -108,6 +107,8 @@
 #define RSTL_POINTER_RANGE_OVERLOADS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)
 // `destroy(begin, end)` over iterators tests `begin != end` before looping (pointer ranges do not).
 #define RSTL_DESTROY_RANGE_GUARD (RSTL_VERSION >= RSTL_R3IJ)
+// Generic range copies advance the output parameter directly in Echoes Trilogy.
+#define RSTL_COPY_RANGE_OUTPUT_PARAM (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
 // `uninitialized_copy` steps `++cur, ++tmp` (otherwise `tmp += 1, ++cur`), and
 // `uninitialized_copy_n` uses a pre-increment loop when it does not use the counted form below.
 #define RSTL_PREINCREMENT_COPY_LOOPS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)
@@ -124,7 +125,7 @@
 // `uninitialized_fill_n` advances its `dest` parameter itself instead of a copy, and
 // `bit_vector::insert` uses counted loops.
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
-// `construct` has direct overloads for `uint`, `bool`, `float` and pointers, and
+// `construct` extends its direct `int` overload to `uint`, `bool`, `float` and pointers, and
 // `reserved_vector_traits` has fill/push fast paths for scalar elements.
 #define RSTL_SCALAR_TRAITS (RSTL_VERSION >= RSTL_R3ME_00)
 
@@ -279,7 +280,8 @@
 #define RSTL_RANGE_DESTRUCTION_CHECKS (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
 // `construct` also has an overload taking a mutable `T&`, and the placement-new policy has no
 // null precondition.
-#define RSTL_CONSTRUCT_MUTABLE_OVERLOAD (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_CONSTRUCT_MUTABLE_OVERLOAD                                                            \
+  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00))
 // A non-inline declaration before the inline const construct definition gives MWCC's
 // prototype instantiations external weak linkage, needed by native callers.
 #define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)

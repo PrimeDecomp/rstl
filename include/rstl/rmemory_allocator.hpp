@@ -20,7 +20,12 @@ namespace rstl {
 struct rmemory_allocator {
   rmemory_allocator() {}
   rmemory_allocator(const rmemory_allocator&) {}
+#if RSTL_ALLOCATOR_GLOBAL_ALLOCATE
+  static void* global_allocate(int size);
+  static void* allocate(int size) { return global_allocate(size); }
+#else
   static void* allocate(int size);
+#endif
 
 #if RSTL_ALLOCATOR_LEGACY_SPELLING
   template < typename T >

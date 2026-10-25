@@ -77,7 +77,7 @@ inline void iter_swap(I1 a, I2 b) {
 }
 
 template < typename T, class Cmp >
-void __sort3(T& a, T& b, T& c, const Cmp comp) {
+void __sort3(T& a, T& b, T& c, Cmp comp) {
   if (comp(b, a)) {
     swap(a, b);
   }
@@ -187,32 +187,20 @@ void sort(It first, It last, Cmp cmp) {
   sort(it, last, cmp);
 }
 
+#if !RSTL_LOWER_BOUND_ADVANCES_START || RSTL_LOWER_BOUND_CMP_BEFORE_SORT3
+template < typename It, typename T, typename Cmp >
+It lower_bound(It start, It end, const T& value, Cmp cmp) {
+  int dist = distance(start, end);
 #if !RSTL_LOWER_BOUND_ADVANCES_START
-template < typename It, typename T, typename Cmp >
-It lower_bound(It start, It end, const T& value, Cmp cmp) {
-  int dist = distance(start, end);
   It it = start;
+#endif
   while (dist > 0) {
     int halfDist = dist / 2;
+#if !RSTL_LOWER_BOUND_ADVANCES_START
     it = start;
-    advance(it, halfDist);
-    if (cmp(*it, value)) {
-      start = it;
-      ++start;
-      dist = (dist - halfDist) - 1;
-    } else {
-      dist = halfDist;
-    }
-  }
-  return start;
-}
-#elif RSTL_LOWER_BOUND_CMP_BEFORE_SORT3
-template < typename It, typename T, typename Cmp >
-It lower_bound(It start, It end, const T& value, Cmp cmp) {
-  int dist = distance(start, end);
-  while (dist > 0) {
-    int halfDist = dist / 2;
+#else
     It it = start;
+#endif
     advance(it, halfDist);
     if (cmp(*it, value)) {
       start = it;
