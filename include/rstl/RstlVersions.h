@@ -120,6 +120,8 @@
 #define RSTL_COPY_N_COUNTER_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
 #define RSTL_POINTER_FILL_OVERLOAD (RSTL_VERSION >= RSTL_R3IJ)
+// Byte fills take their scalar value directly.
+#define RSTL_BYTE_FILL_VALUE (RSTL_VERSION == RSTL_G2MEAB)
 // `uninitialized_fill_n` fills through `construct` instead of a placement new.
 #define RSTL_FILL_USES_CONSTRUCT RSTL_ECHOES_ERA
 // `uninitialized_fill_n` advances its `dest` parameter itself instead of a copy, and

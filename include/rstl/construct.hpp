@@ -452,6 +452,14 @@ static inline void uninitialized_fill_n(T** dest, int n, T* const& value) {
 }
 #endif
 
+#if RSTL_BYTE_FILL_VALUE
+static inline void uninitialized_fill_n(signed char* dest, int n, signed char value) {
+  for (int i = 0; i < n; ++i, ++dest) {
+    *dest = value;
+  }
+}
+#endif
+
 template < typename D, typename S >
 #if RSTL_COUNTED_FILL_LOOPS
 static inline void uninitialized_fill_n(D cur, int n, const S& value) {
