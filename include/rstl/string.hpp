@@ -713,7 +713,7 @@ int basic_string< _CharTp, Traits, Alloc >::rfind(_CharTp ch, int pos) const {
 
 #endif
 
-#if !RSTL_STRING_OUT_OF_CLASS
+#if !RSTL_STRING_OUT_OF_CLASS || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
 template < typename _CharTp, typename Traits, typename Alloc >
 inline int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
   const _CharTp* rhsEnd = compute_length(rhs, count).first;
@@ -867,7 +867,11 @@ typedef basic_string< char, case_insensitive_char_traits< char > > istring;
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
+#if !RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+#else
 bool operator==(const string& lhs, const char* rhs);
+#endif
 
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
