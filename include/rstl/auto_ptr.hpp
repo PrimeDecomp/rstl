@@ -15,19 +15,14 @@ class auto_ptr {
   T* mItem;
 
 public:
-#if RSTL_AUTO_PTR_PROTO
-  auto_ptr(T* pointer = 0) : mHas(pointer != 0), mItem(pointer) {}
+#if RSTL_AUTO_PTR_CONSTRUCT_NULL
+  auto_ptr(T* ptr = nullptr) : mHas(ptr != nullptr), mItem(ptr) {}
 #else
   auto_ptr() : mHas(false), mItem(nullptr) {}
   auto_ptr(T* ptr) : mHas(ptr != nullptr), mItem(ptr) {}
 #endif
-
-  ~auto_ptr() {
-    if (mHas) {
-      RSTL_DELETE_PTR(T, mItem);
-    }
-  }
   auto_ptr(const auto_ptr& other) : mHas(other.mHas), mItem(other.mItem) { other.mHas = false; }
+  
 #if RSTL_AUTO_PTR_CONVERSION
   template < typename U >
   friend class auto_ptr;
@@ -37,6 +32,12 @@ public:
     other.mHas = false;
   }
 #endif
+
+  ~auto_ptr() {
+    if (mHas) {
+      RSTL_DELETE_PTR(T, mItem);
+    }
+  }
 
   auto_ptr& operator=(const auto_ptr& other) {
     if (&other != this) {
