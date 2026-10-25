@@ -31,6 +31,18 @@ struct vector_fill_type< bool > {
 };
 #endif
 
+#if RSTL_VECTOR_RESIZE_TYPE
+// Guessed name
+template < typename T >
+struct vector_resize_type {
+  typedef const T& type;
+};
+template <>
+struct vector_resize_type< signed char > {
+  typedef signed char type;
+};
+#endif
+
 template < typename T, typename Alloc = rmemory_allocator >
 class vector
 #if RSTL_ALLOCATOR_BASE_CLASS
@@ -187,7 +199,11 @@ public:
   }
 #endif
 
+#if RSTL_VECTOR_RESIZE_TYPE
+  inline void resize(int size, typename vector_resize_type< T >::type in = T());
+#else
   inline void resize(int size, const T& in = T());
+#endif
 #if !RSTL_PRIME1
   // Guessed name. Sets the count without constructing the new elements; the caller fills them.
   void resize_uninitialized(int size) {
@@ -396,7 +412,11 @@ void vector< T, Alloc >::assign(int size, const T& in) {
 }
 
 template < typename T, typename Alloc >
+#if RSTL_VECTOR_RESIZE_TYPE
+inline void vector< T, Alloc >::resize(int size, typename vector_resize_type< T >::type in) {
+#else
 inline void vector< T, Alloc >::resize(int size, const T& in) {
+#endif
   if (mCount != size) {
     if (size > mCount) {
       reserve(size);

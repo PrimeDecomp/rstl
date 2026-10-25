@@ -349,6 +349,8 @@
 
 // `vector` passes bool constructor fill values directly; class values remain references.
 #define RSTL_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
+// Byte-vector resize takes a signed-char fill value, rather than its address.
+#define RSTL_VECTOR_RESIZE_TYPE (RSTL_VERSION == RSTL_G2MEAB)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
