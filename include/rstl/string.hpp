@@ -194,7 +194,11 @@ public:
 #endif
   }
 
+#if RSTL_STRING_CHAR_CTOR_ALLOCATOR
+  basic_string(_CharTp value, const Alloc& = rmemory_allocator());
+#else
   basic_string(_CharTp value);
+#endif
 
   basic_string(const basic_string& str);
 
@@ -351,7 +355,11 @@ basic_string< char >::basic_string(const char* data, int count, const rmemory_al
 template <>
 basic_string< char >::basic_string(const basic_string& other);
 template <>
+#if RSTL_STRING_CHAR_CTOR_ALLOCATOR
+basic_string< char >::basic_string(char value, const rmemory_allocator& alloc);
+#else
 basic_string< char >::basic_string(char value);
+#endif
 template <>
 void basic_string< char >::clear();
 template <>
