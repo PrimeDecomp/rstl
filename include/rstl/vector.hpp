@@ -19,6 +19,17 @@ class CInputStream;
 class COutputStream;
 
 namespace rstl {
+#if RSTL_VECTOR_FILL_TYPE
+// Guessed name; bool fill values are passed directly.
+template < typename T >
+struct vector_fill_type {
+  typedef const T& type;
+};
+template <>
+struct vector_fill_type< bool > {
+  typedef bool type;
+};
+#endif
 
 template < typename T, typename Alloc = rmemory_allocator >
 class vector
@@ -85,7 +96,11 @@ public:
   vector(int count) : mCount(0), mCapacity(0), mItems(0) { reserve(count); }
 #endif
 #if RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR
+#if RSTL_VECTOR_FILL_TYPE
+  vector(int count, typename vector_fill_type< T >::type v, const Alloc& alloc = Alloc())
+#else
   vector(int count, const T& v, const Alloc& alloc = Alloc())
+#endif
   :
 #if RSTL_ALLOCATOR_BASE_CLASS
       Alloc(alloc)

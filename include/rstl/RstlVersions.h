@@ -346,6 +346,9 @@
 // `reserved_vector_fill_type` exists, and `resize` takes it (shrinking with pointer-range
 // `destroy`), followed by `resize_uninitialized`.
 #define RSTL_RESERVED_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
+
+// `vector` passes bool constructor fill values directly; class values remain references.
+#define RSTL_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.

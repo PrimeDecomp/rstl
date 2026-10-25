@@ -13,7 +13,7 @@ class COutputStream;
 
 namespace rstl {
 #if RSTL_RESERVED_VECTOR_FILL_TYPE
-// Guessed name; scalar byte fills pass their value directly.
+// Guessed name; byte and unsigned-long fills pass their values directly.
 template < typename T >
 struct reserved_vector_fill_type {
   typedef const T& type;
@@ -21,6 +21,10 @@ struct reserved_vector_fill_type {
 template <>
 struct reserved_vector_fill_type< uchar > {
   typedef uchar type;
+};
+template <>
+struct reserved_vector_fill_type< unsigned long > {
+  typedef unsigned long type;
 };
 #endif
 #if RSTL_RESERVED_VECTOR_TRAITS
@@ -110,7 +114,12 @@ public:
     reserved_vector_traits< T >::fill(data(), count, value);
   };
 #else
-  explicit reserved_vector(const T& value) : mCount(N) { uninitialized_fill_n(data(), N, value); }
+#if RSTL_RESERVED_VECTOR_FILL_TYPE
+  explicit reserved_vector(typename reserved_vector_fill_type< T >::type value)
+#else
+  explicit reserved_vector(const T& value)
+#endif
+  : mCount(N) { uninitialized_fill_n(data(), N, value); }
   explicit reserved_vector(int count, const T& value) : mCount(count) {
 #if !RSTL_PRECONDITION_MACRO
     RS_ASSERT(count <= N, "rstl precondition");
