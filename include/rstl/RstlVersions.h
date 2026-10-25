@@ -204,9 +204,11 @@
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)
-// `explicit reserved_vector(int)` exists. The Trilogy versions fill from a single value instead,
-// as the Echoes sources require (`reserved_vector< int, N >(0)` is otherwise ambiguous).
-#define RSTL_RESERVED_VECTOR_COUNT_CTOR (RSTL_RESERVED_VECTOR_TRAITS && RSTL_VERSION < RSTL_R3ME_00)
+// `explicit reserved_vector(int)` exists. Metroid Prime uses it on every version, including the
+// Trilogy; the Trilogy Echoes sources instead fill from a single value, which `(int)` would make
+// ambiguous for `reserved_vector< int, N >(0)`.
+#define RSTL_RESERVED_VECTOR_COUNT_CTOR \
+  (RSTL_RESERVED_VECTOR_TRAITS && (RSTL_VERSION < RSTL_R3ME_00 || RSTL_PRIME1))
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.
