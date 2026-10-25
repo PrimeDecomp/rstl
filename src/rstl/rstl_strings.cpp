@@ -170,7 +170,12 @@ basic_string< char >::basic_string(const basic_string& other)
 }
 
 template <>
+#if RSTL_STRING_CHAR_CTOR_ALLOCATOR
+basic_string< char >::basic_string(char value, const rmemory_allocator& alloc)
+: mAllocator(alloc) {
+#else
 basic_string< char >::basic_string(char value) {
+#endif
   internal_allocate(2);
   const_cast< char& >(mPtr[0]) = value;
   const_cast< char& >(mPtr[1]) = 0;

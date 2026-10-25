@@ -303,6 +303,8 @@
 // Strings and their source files.
 // Prototype `char_traits::assign(T*, int, T)` takes its value by value.
 #define RSTL_STRING_TRAITS_VALUE_PARAM (RSTL_VERSION == RSTL_G2MEAB)
+// The single-character string constructor accepts an allocator argument.
+#define RSTL_STRING_CHAR_CTOR_ALLOCATOR (RSTL_VERSION == RSTL_G2MEAB)
 // Non-const indexing detaches the COW buffer. This changes existing calls, unlike the
 // additional string methods, so retain the prototype's writable overload separately.
 #define RSTL_STRING_WRITABLE_INDEX (RSTL_VERSION == RSTL_G2MEAB)
