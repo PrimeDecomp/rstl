@@ -234,11 +234,6 @@ public:
     }
     push_back_unsafe(in);
   }
-
-  void pop_back() {
-    destroy(mItems + mCount - 1);
-    --mCount;
-  }
 #elif RSTL_VECTOR_GROWING_PUSH_BACK
   void push_back(const T& in) {
     if (mCount >= mCapacity) {
@@ -249,11 +244,6 @@ public:
   }
 
   void push_back_unsafe(const T& in) { rstl::construct(mItems + mCount++, in); }
-
-  void pop_back() {
-    destroy(mItems + mCount - 1);
-    --mCount;
-  }
 #else
 #if RSTL_VECTOR_UNCHECKED_PUSH_BACK
   void push_back(const T& in) { rstl::construct(mItems + mCount++, in); }
@@ -267,12 +257,14 @@ public:
     ++mCount;
   }
 #endif
+#endif
 
   void pop_back() {
     destroy(mItems + mCount - 1);
     --mCount;
   }
 
+#if !RSTL_VECTOR_VERIFIED_PUSH_BACK && !RSTL_VECTOR_GROWING_PUSH_BACK
   void push_back_unsafe(const T& in) { rstl::construct(mItems + mCount++, in); }
 #endif
 

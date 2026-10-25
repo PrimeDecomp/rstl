@@ -121,15 +121,15 @@ RSTL_DECLARE_SCALAR_TYPE(ushort)
 
 template < typename T, bool UseAssignment >
 struct construction_policy {
-#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
-  static void construct(void* dest, const T& src) { new (dest) T(src); }
-  // Keep mutable range inputs mutable when selecting the copy constructor.
-  static void construct(void* dest, T& src) { new (dest) T(src); }
-#else
   static void construct(void* dest, const T& src) {
+#if !RSTL_CONSTRUCT_MUTABLE_OVERLOAD
     RSTL_PRECONDITION(dest != nullptr);
+#endif
     new (dest) T(src);
   }
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+  // Keep mutable range inputs mutable when selecting the copy constructor.
+  static void construct(void* dest, T& src) { new (dest) T(src); }
 #endif
 };
 
