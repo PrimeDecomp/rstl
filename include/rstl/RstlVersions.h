@@ -95,9 +95,6 @@
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
 #define RSTL_TRIVIAL_SCALARS RSTL_ECHOES_ERA
-// `construct< int >` stores directly.
-#define RSTL_DIRECT_INT_CONSTRUCT                                                                  \
-  ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
 #define RSTL_DESTROY_CONST_PARAM (!RSTL_ECHOES_ERA)
 // The direct `destroy(T*)` carries the (empty) null precondition, which Prime 1 from GM8P_00 on and
@@ -128,7 +125,7 @@
 // `uninitialized_fill_n` advances its `dest` parameter itself instead of a copy, and
 // `bit_vector::insert` uses counted loops.
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
-// `construct` has direct overloads for `uint`, `bool`, `float` and pointers, and
+// `construct` extends its direct `int` overload to `uint`, `bool`, `float` and pointers, and
 // `reserved_vector_traits` has fill/push fast paths for scalar elements.
 #define RSTL_SCALAR_TRAITS (RSTL_VERSION >= RSTL_R3ME_00)
 
