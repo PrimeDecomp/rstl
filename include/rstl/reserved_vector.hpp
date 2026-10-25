@@ -82,7 +82,7 @@ public:
   inline const_iterator end() const { return const_iterator(data() + mCount); }
 
   reserved_vector() : mCount(0) {}
-#if RSTL_RESERVED_VECTOR_TRAITS && RSTL_PRIME1
+#if RSTL_RESERVED_VECTOR_COUNT_CTOR
   explicit reserved_vector(int count) : mCount(count) {
     int i;
     T* dest = data();

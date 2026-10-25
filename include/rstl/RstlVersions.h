@@ -145,6 +145,9 @@
 #define RSTL_RC_PTR_PRIVATE_COUNT RSTL_ECHOES_ERA
 // `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `CRefData::sNull`.
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
+// The Trilogy `rc_ptr` has the converting constructor and `Cast<U>()` of the Echoes class that
+// Echoes code calls.
+#define RSTL_RC_PTR_CONVERSION (RSTL_VERSION >= RSTL_R3ME_00)
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
@@ -201,6 +204,9 @@
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)
+// `explicit reserved_vector(int)` exists. The Trilogy versions fill from a single value instead,
+// as the Echoes sources require (`reserved_vector< int, N >(0)` is otherwise ambiguous).
+#define RSTL_RESERVED_VECTOR_COUNT_CTOR (RSTL_RESERVED_VECTOR_TRAITS && RSTL_VERSION < RSTL_R3ME_00)
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.

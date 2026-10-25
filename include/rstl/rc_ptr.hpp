@@ -138,7 +138,7 @@ public:
   rc_ptr() : mPtr(nullptr), mCount(&CRefData::sNull) { ++*mCount; }
   rc_ptr(const T* ptr) : mPtr(ptr), mCount(rs_new int(1)) {}
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mCount(other.mCount) { ++*mCount; }
-#if !RSTL_PRIME1
+#if RSTL_RC_PTR_CONVERSION
   template < typename U >
   explicit rc_ptr(const rc_ptr< U >& other)
   : mPtr(static_cast< const T* >(other.GetPtr())), mCount(other.GetRefCountPtr()) {
@@ -215,7 +215,7 @@ public:
     mRefData->AddRef();
 #endif
   }
-#if !RSTL_PRIME1 && RSTL_RC_PTR_INLINE_COUNT
+#if RSTL_RC_PTR_CONVERSION
   template < typename U >
   rc_ptr< U > Cast() const {
     return rc_ptr< U >(*this);
