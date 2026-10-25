@@ -71,6 +71,42 @@ struct reserved_vector_traits< u32 > {
     }
   }
 };
+
+template <>
+struct reserved_vector_traits< ushort > {
+  typedef ushort fill_type;
+  typedef ushort push_type;
+  enum { trivial_destructor = true };
+  static void fill(ushort* dest, int count, ushort value) {
+    for (int i = 0; i < count; ++i) {
+      dest[i] = value;
+    }
+  }
+};
+
+template <>
+struct reserved_vector_traits< short > {
+  typedef short fill_type;
+  typedef short push_type;
+  enum { trivial_destructor = true };
+  static void fill(short* dest, int count, short value) {
+    for (int i = 0; i < count; ++i) {
+      dest[i] = value;
+    }
+  }
+};
+
+template <>
+struct reserved_vector_traits< uint > {
+  typedef uint fill_type;
+  typedef uint push_type;
+  enum { trivial_destructor = true };
+  static void fill(uint* dest, int count, uint value) {
+    for (int i = 0; i < count; ++i) {
+      dest[i] = value;
+    }
+  }
+};
 #endif
 
 template <>
