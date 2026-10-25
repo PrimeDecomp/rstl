@@ -29,7 +29,12 @@ struct iterator_traits< T* > {
 
 template < typename It >
 typename iterator_traits< It >::difference_type __distance(It first, It last,
-                                                           input_iterator_tag) {
+#if RSTL_DISTANCE_FORWARD_TAG
+                                                           forward_iterator_tag
+#else
+                                                           input_iterator_tag
+#endif
+) {
   typename iterator_traits< It >::difference_type result = 0;
   It it = first;
   while (it != last) {

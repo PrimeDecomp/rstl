@@ -147,6 +147,8 @@
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
 
 // --- Iterators and algorithms ---
+// The prototype exports linear `__distance` with a forward tag instead of an input tag.
+#define RSTL_DISTANCE_FORWARD_TAG (RSTL_VERSION == RSTL_G2MEAB)
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
 #define RSTL_INLINE_ITERATOR_HELPERS (RSTL_VERSION >= RSTL_G2ME)
 // `advance_iterator` is `inline`.
