@@ -242,6 +242,11 @@ public:
     assign(other);
     return *this;
   }
+  basic_string& operator+=(const _CharTp* other) {
+    append(other, -1);
+    return *this;
+  }
+
   basic_string& append(const basic_string& other);
   basic_string& append(int, _CharTp);
   basic_string& append(const _CharTp*, int = -1);
