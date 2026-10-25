@@ -18,7 +18,7 @@ template <>
 struct type_traits< bool > {
   typedef bool vector_fill_type;
   typedef const bool& vector_resize_type;
-  typedef const bool& reserved_vector_fill_type;
+  typedef bool reserved_vector_fill_type;
 };
 
 template <>
