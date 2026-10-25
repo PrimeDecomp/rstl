@@ -14,34 +14,12 @@
 #include "rstl/iterator.hpp"
 #include "rstl/pointer_iterator.hpp"
 #include "rstl/rmemory_allocator.hpp"
+#include "rstl/type_traits.hpp"
 
 class CInputStream;
 class COutputStream;
 
 namespace rstl {
-#if RSTL_VECTOR_FILL_TYPE
-// Guessed name; bool fill values are passed directly.
-template < typename T >
-struct vector_fill_type {
-  typedef const T& type;
-};
-template <>
-struct vector_fill_type< bool > {
-  typedef bool type;
-};
-#endif
-
-#if RSTL_VECTOR_RESIZE_TYPE
-// Guessed name
-template < typename T >
-struct vector_resize_type {
-  typedef const T& type;
-};
-template <>
-struct vector_resize_type< signed char > {
-  typedef signed char type;
-};
-#endif
 
 template < typename T, typename Alloc = rmemory_allocator >
 class vector
@@ -108,11 +86,7 @@ public:
   vector(int count) : mCount(0), mCapacity(0), mItems(0) { reserve(count); }
 #endif
 #if RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR
-#if RSTL_VECTOR_FILL_TYPE
-  vector(int count, typename vector_fill_type< T >::type v, const Alloc& alloc = Alloc())
-#else
-  vector(int count, const T& v, const Alloc& alloc = Alloc())
-#endif
+  vector(int count, typename type_traits< T >::vector_fill_type v, const Alloc& alloc = Alloc())
   :
 #if RSTL_ALLOCATOR_BASE_CLASS
       Alloc(alloc)
@@ -199,11 +173,7 @@ public:
   }
 #endif
 
-#if RSTL_VECTOR_RESIZE_TYPE
-  inline void resize(int size, typename vector_resize_type< T >::type in = T());
-#else
-  inline void resize(int size, const T& in = T());
-#endif
+  inline void resize(int size, typename type_traits< T >::vector_resize_type in = T());
 #if !RSTL_PRIME1
   // Guessed name. Sets the count without constructing the new elements; the caller fills them.
   void resize_uninitialized(int size) {
@@ -412,11 +382,7 @@ void vector< T, Alloc >::assign(int size, const T& in) {
 }
 
 template < typename T, typename Alloc >
-#if RSTL_VECTOR_RESIZE_TYPE
-inline void vector< T, Alloc >::resize(int size, typename vector_resize_type< T >::type in) {
-#else
-inline void vector< T, Alloc >::resize(int size, const T& in) {
-#endif
+inline void vector< T, Alloc >::resize(int size, typename type_traits< T >::vector_resize_type in) {
   if (mCount != size) {
     if (size > mCount) {
       reserve(size);

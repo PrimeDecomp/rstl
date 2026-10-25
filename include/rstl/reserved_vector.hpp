@@ -7,26 +7,12 @@
 
 #include "rstl/construct.hpp"
 #include "rstl/pointer_iterator.hpp"
+#include "rstl/type_traits.hpp"
 
 class CInputStream;
 class COutputStream;
 
 namespace rstl {
-#if RSTL_RESERVED_VECTOR_FILL_TYPE
-// Guessed name; byte and unsigned-long fills pass their values directly.
-template < typename T >
-struct reserved_vector_fill_type {
-  typedef const T& type;
-};
-template <>
-struct reserved_vector_fill_type< uchar > {
-  typedef uchar type;
-};
-template <>
-struct reserved_vector_fill_type< unsigned long > {
-  typedef unsigned long type;
-};
-#endif
 #if RSTL_RESERVED_VECTOR_TRAITS
 // Scalar fill and destruction behavior recovered from Trilogy's input filters.
 template < typename T >
@@ -114,12 +100,9 @@ public:
     reserved_vector_traits< T >::fill(data(), count, value);
   };
 #else
-#if RSTL_RESERVED_VECTOR_FILL_TYPE
-  explicit reserved_vector(typename reserved_vector_fill_type< T >::type value)
-#else
-  explicit reserved_vector(const T& value)
-#endif
-  : mCount(N) { uninitialized_fill_n(data(), N, value); }
+  explicit reserved_vector(typename type_traits< T >::reserved_vector_fill_type value) : mCount(N) {
+    uninitialized_fill_n(data(), N, value);
+  }
   explicit reserved_vector(int count, const T& value) : mCount(count) {
 #if !RSTL_PRECONDITION_MACRO
     RS_ASSERT(count <= N, "rstl precondition");
@@ -288,7 +271,7 @@ public:
   // Guessed name. For scalar storage that the caller fills before reading.
   void resize_uninitialized(int count) { mCount = count; }
 
-  void resize(int count, typename reserved_vector_fill_type< T >::type item = T()) {
+  void resize(int count, typename type_traits< T >::reserved_vector_fill_type item = T()) {
     if (mCount == count) {
       return;
     }
@@ -300,7 +283,7 @@ public:
     mCount = count;
   }
 #elif RSTL_RESERVED_VECTOR_SHRINKING_RESIZE
-  void resize(int count, const T& item = T()) {
+  void resize(int count, typename type_traits< T >::reserved_vector_fill_type item = T()) {
     if (mCount == count) {
       return;
     }
@@ -312,7 +295,7 @@ public:
     mCount = count;
   }
 #else
-  void resize(int count, const T& item = T()) {
+  void resize(int count, typename type_traits< T >::reserved_vector_fill_type item = T()) {
     if (mCount < count) {
       uninitialized_fill_n(data() + mCount, count - mCount, item);
       mCount = count;
