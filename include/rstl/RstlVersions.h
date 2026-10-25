@@ -128,11 +128,14 @@
 // `reserved_vector_traits` has fill/push fast paths for scalar elements.
 #define RSTL_SCALAR_TRAITS (RSTL_VERSION >= RSTL_R3ME_00)
 
+// `auto_ptr` pointer constructor defaults to null.
+#define RSTL_AUTO_PTR_CONSTRUCT_NULL (RSTL_VERSION == RSTL_G2MEAB)
 // `auto_ptr` has a converting copy constructor from `auto_ptr< U >` (the GameCube compiler rejects
 // its template friend declaration).
 #define RSTL_AUTO_PTR_CONVERSION (RSTL_VERSION >= RSTL_R3IJ)
 // `auto_ptr::release` returns null when it does not own the item.
-#define RSTL_AUTO_PTR_CHECKED_RELEASE (RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_AUTO_PTR_CHECKED_RELEASE (RSTL_VERSION >= RSTL_G2MEAB)
+
 // `single_ptr` has a const-ref copy constructor that transfers ownership.
 #define RSTL_SINGLE_PTR_TRANSFER (RSTL_VERSION >= RSTL_G2ME)
 // `~single_ptr` deletes through `get()` instead of `mPtr`.
@@ -440,9 +443,6 @@
 #define RSTL_SINGLE_PTR_MUTABLE ((RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB) && RSTL_SINGLE_PTR_TRANSFER)
 // `single_ptr::operator->` returns a plain `T*` and the const `operator*` returns `const T&`.
 #define RSTL_SINGLE_PTR_PLAIN_ACCESS (RSTL_VERSION == RSTL_G2MEAB)
-// `auto_ptr` is the prototype's own class (`mOwns` / `mPointer`, defaulted pointer constructor, no
-// `get()` overload or `owner()` ordering differences) and includes Corruption's `CMemory.hpp`.
-#define RSTL_AUTO_PTR_PROTO (RSTL_VERSION == RSTL_G2MEAB)
 // Keep the accessor in the prototype: direct member access inlines away native
 // CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_VERSION == RSTL_G2MEAB)
