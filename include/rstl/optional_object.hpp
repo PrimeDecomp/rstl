@@ -76,7 +76,11 @@ public:
     m_valid = true;
     return get_ptr();
   }
+#if RSTL_DESTROY_CONST_PARAM
+  T* const get_ptr() { return reinterpret_cast< T* >(m_data); }
+#else
   T* get_ptr() { return reinterpret_cast< T* >(m_data); }
+#endif
   const T* get_ptr() const { return reinterpret_cast< const T* >(m_data); }
   const bool valid() const { return m_valid; }
   operator bool() const { return m_valid; } // replace with valid()?

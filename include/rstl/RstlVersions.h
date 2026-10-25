@@ -97,7 +97,7 @@
 #define RSTL_DIRECT_INT_CONSTRUCT                                                                  \
   ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
-#define RSTL_DESTROY_CONST_PARAM (RSTL_VERSION >= RSTL_GM8P_00 && !RSTL_ECHOES_ERA)
+#define RSTL_DESTROY_CONST_PARAM (!RSTL_ECHOES_ERA)
 // The direct `destroy(T*)` carries the (empty) null precondition, which Prime 1 from GM8P_00 on and
 // the Wii versions lack.
 #define RSTL_DESTROY_PRECONDITION (RSTL_VERSION < RSTL_GM8P_00)
@@ -170,7 +170,7 @@
 // `vector::end` and `insert_into` bind their pointers to `T* const` locals.
 #define RSTL_VECTOR_CONST_LOCALS (RSTL_VERSION >= RSTL_GM8P_00)
 // `insert_into` destroys the moved-from element through a `T* const item` local.
-#define RSTL_VECTOR_INSERT_CONST_ITEM (RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION < RSTL_G2ME)
+#define RSTL_VECTOR_INSERT_CONST_ITEM (RSTL_VERSION < RSTL_G2ME)
 // `vector(int)` sets the count and leaves the elements uninitialized.
 #define RSTL_VECTOR_UNINITIALIZED_COUNT_CTOR RSTL_ECHOES_ERA
 // `vector(int, const T&)` is one constructor with a defaulted allocator argument.
