@@ -298,7 +298,7 @@ public:
   T& back() { return at(mCount - 1); }
   const T& back() const { return at(mCount - 1); }
 #if RSTL_INDEX_PRECONDITION
-  T& operator[](int idx) {
+  T& operator[](const int idx) {
     RSTL_PRECONDITION(idx >= 0 && idx < mCount);
     return mItems[idx];
   }
