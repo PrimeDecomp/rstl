@@ -135,8 +135,6 @@
 #define RSTL_AUTO_PTR_CHECKED_RELEASE (RSTL_VERSION >= RSTL_R3IJ)
 // `single_ptr` has a const-ref copy constructor that transfers ownership.
 #define RSTL_SINGLE_PTR_TRANSFER (RSTL_VERSION >= RSTL_G2ME)
-// `unk_singleptr` is `single_ptr< void >` (the Wii compiler rejects `void&` from `operator*`).
-#define RSTL_UNK_SINGLE_PTR_VOID RSTL_ECHOES_ERA
 // `~single_ptr` deletes through `get()` instead of `mPtr`.
 #define RSTL_SINGLE_PTR_DELETE_VIA_GET (RSTL_VERSION >= RSTL_R3IJ)
 // `rc_ptr` is the standalone implementation counting through `rc_ptr_private::sNull`.

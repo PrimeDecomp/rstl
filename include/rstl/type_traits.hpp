@@ -44,6 +44,42 @@ struct type_traits< unsigned long > {
 
 #endif
 
+template < typename T >
+struct pointer_traits {
+  typedef T* get_type;
+
+  typedef T& dereference_type;
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  typedef const T& dereference_type_const;
+#else
+  typedef T& dereference_type_const;
+#endif
+
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  typedef T* arrow_type;
+#else
+  typedef T* const arrow_type;
+#endif
+};
+
+template <>
+struct pointer_traits< void > {
+  typedef void* get_type;
+
+  typedef void* dereference_type;
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  typedef const void* dereference_type_const;
+#else
+  typedef void* dereference_type_const;
+#endif
+
+#if RSTL_SINGLE_PTR_PLAIN_ACCESS
+  typedef void* arrow_type;
+#else
+  typedef void* const arrow_type;
+#endif
+};
+
 } // namespace rstl
 
 #endif // _RSTL_TYPE_TRAITS
