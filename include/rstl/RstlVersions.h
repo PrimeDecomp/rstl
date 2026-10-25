@@ -45,6 +45,9 @@
 #else
 #define RSTL_PRIME1 0
 #endif
+// The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
+// `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
+#define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
@@ -145,6 +148,9 @@
 #define RSTL_RC_PTR_PRIVATE_COUNT RSTL_ECHOES_ERA
 // `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `CRefData::sNull`.
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
+// The Trilogy `rc_ptr` has the converting constructor and `Cast<U>()` of the Echoes class that
+// Echoes code calls.
+#define RSTL_RC_PTR_CONVERSION (RSTL_VERSION >= RSTL_R3ME_00)
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
@@ -201,6 +207,13 @@
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)
+// `explicit reserved_vector(int)` exists. Trilogy Echoes has none: `reserved_vector< int, N >(0)` fills N
+// elements (Echoes `CWeaponMgr::Add`), which a count constructor beside the by-value fill cannot do.
+// Metroid Prime uses it on every version, including the Trilogy.
+#define RSTL_RESERVED_VECTOR_COUNT_CTOR \
+  (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
+// `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
+#define RSTL_RESERVED_VECTOR_INT_FILLS RSTL_TRILOGY_ECHOES
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.

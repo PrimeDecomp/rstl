@@ -47,6 +47,32 @@ struct reserved_vector_traits< uchar > {
   }
 };
 
+#if RSTL_RESERVED_VECTOR_INT_FILLS
+template <>
+struct reserved_vector_traits< int > {
+  typedef int fill_type;
+  typedef int push_type;
+  enum { trivial_destructor = true };
+  static void fill(int* dest, int count, int value) {
+    for (int i = 0; i < count; ++i) {
+      dest[i] = value;
+    }
+  }
+};
+
+template <>
+struct reserved_vector_traits< u32 > {
+  typedef u32 fill_type;
+  typedef u32 push_type;
+  enum { trivial_destructor = true };
+  static void fill(u32* dest, int count, u32 value) {
+    for (int i = 0; i < count; ++i) {
+      dest[i] = value;
+    }
+  }
+};
+#endif
+
 template <>
 struct reserved_vector_traits< float > {
   typedef float fill_type;
@@ -82,7 +108,7 @@ public:
   inline const_iterator end() const { return const_iterator(data() + mCount); }
 
   reserved_vector() : mCount(0) {}
-#if RSTL_RESERVED_VECTOR_TRAITS
+#if RSTL_RESERVED_VECTOR_COUNT_CTOR
   explicit reserved_vector(int count) : mCount(count) {
     int i;
     T* dest = data();

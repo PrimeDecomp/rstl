@@ -34,12 +34,12 @@ public:
   R second;
 };
 
-#if RSTL_CONSTRUCTION_POLICY
 template < typename L, typename R >
 inline pair< L, R > make_pair(L first, R second) {
   return pair< L, R >(first, second);
 }
 
+#if RSTL_CONSTRUCTION_POLICY
 template < typename L, typename R >
 struct is_trivially_destructible< pair< L, R > > {
   enum { value = is_trivially_destructible< L >::value && is_trivially_destructible< R >::value };
