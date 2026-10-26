@@ -223,7 +223,8 @@ public:
     if (!(mCount < mCapacity)) {
       verify_capacity_failed();
     }
-    rstl::construct(mItems + mCount++, in);
+    T* items = mItems;
+    rstl::construct(items + mCount++, in);
   }
 
   void push_back_checked(const T& in) {
