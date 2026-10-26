@@ -189,7 +189,7 @@ public:
 #if RSTL_VECTOR_INLINE_DECLS
   inline
 #endif
-  void assign(int size, const T& in = T());
+  void assign(int size, typename type_traits< T >::vector_fill_type in = T());
   void reserve(int size);
 #if RSTL_VECTOR_INLINE_DECLS
   inline
@@ -360,7 +360,7 @@ inline vector< T, Alloc >::~vector() {
 
 #endif
 template < typename T, typename Alloc >
-void vector< T, Alloc >::assign(int size, const T& in) {
+void vector< T, Alloc >::assign(int size, typename type_traits< T >::vector_fill_type in) {
   clear();
   reserve(size);
   for (int i = 0; i < size; ++i) {

@@ -370,15 +370,12 @@ public:
 
 private:
   void destroy_elements() {
-#if RSTL_RESERVED_VECTOR_PRECONDITION_BEFORE_TRIVIAL
+#if RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION
     RSTL_PRECONDITION(mCount >= 0);
 #endif
     if (is_trivially_destructible< T >::value) {
       return;
     }
-#if RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION && !RSTL_RESERVED_VECTOR_PRECONDITION_BEFORE_TRIVIAL
-    RSTL_PRECONDITION(mCount >= 0);
-#endif
 #if RSTL_RESERVED_VECTOR_DESTROY_INDEXED
     T* ptr = data();
 #else

@@ -503,12 +503,24 @@ static inline void uninitialized_fill_n(T** dest, int n, T* const& value) {
 }
 #endif
 
-#if RSTL_BYTE_FILL_VALUE
-static inline void uninitialized_fill_n(signed char* dest, int n, signed char value) {
-  for (int i = 0; i < n; ++i, ++dest) {
-    *dest = value;
-  }
-}
+#if RSTL_SCALAR_FILL_HELPERS || RSTL_BYTE_FILL_VALUE
+// Builtin values are filled by value with plain assignment.
+#define RSTL_FILL_BY_VALUE(T)                                                                        static inline void uninitialized_fill_n(T* dest, int n, T value) {                                   for (int i = 0; i < n; ++i, ++dest) {                                                                *dest = value;                                                                                   }                                                                                                }
+RSTL_FILL_BY_VALUE(signed char)
+#if RSTL_SCALAR_FILL_HELPERS
+RSTL_FILL_BY_VALUE(bool)
+RSTL_FILL_BY_VALUE(char)
+RSTL_FILL_BY_VALUE(unsigned char)
+RSTL_FILL_BY_VALUE(short)
+RSTL_FILL_BY_VALUE(unsigned short)
+RSTL_FILL_BY_VALUE(int)
+RSTL_FILL_BY_VALUE(unsigned int)
+RSTL_FILL_BY_VALUE(long)
+RSTL_FILL_BY_VALUE(unsigned long)
+RSTL_FILL_BY_VALUE(float)
+RSTL_FILL_BY_VALUE(double)
+#endif
+#undef RSTL_FILL_BY_VALUE
 #endif
 
 template < typename D, typename S >
