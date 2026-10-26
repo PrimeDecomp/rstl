@@ -9,13 +9,18 @@
 #include "types.h"
 
 namespace rstl {
-#if RSTL_RC_PTR_PRIVATE_COUNT
+#if RSTL_RC_PTR_PRIVATE_COUNT || RSTL_TRILOGY_ECHOES
 // Reference count shared by every null rc_ptr; it starts high so it is never released.
 // The name comes from the Wii SEL export sNull__Q24rstl14rc_ptr_private.
 class rc_ptr_private {
 public:
   static int sNull;
 };
+
+#if RSTL_TRILOGY_ECHOES
+// Keep the Trilogy pointer layout while retaining Echoes' exported counter owner.
+typedef rc_ptr_private CRefData;
+#endif
 
 #else
 class CRefData {
