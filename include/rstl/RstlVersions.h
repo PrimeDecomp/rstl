@@ -124,7 +124,9 @@
 #define RSTL_COPY_N_COUNTER_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
 #define RSTL_POINTER_FILL_OVERLOAD (RSTL_VERSION >= RSTL_R3IJ)
-// Byte fills take their scalar value directly.
+// `uninitialized_fill_n` takes builtin values by value and assigns them. G2MEAB does this only for
+// `signed char` (RSTL_BYTE_FILL_VALUE).
+#define RSTL_SCALAR_FILL_HELPERS (RSTL_VERSION >= RSTL_R3IJ)
 #define RSTL_BYTE_FILL_VALUE (RSTL_VERSION == RSTL_G2MEAB)
 // `uninitialized_fill_n` fills through `construct` instead of a placement new.
 #define RSTL_FILL_USES_CONSTRUCT RSTL_ECHOES_ERA
@@ -221,10 +223,9 @@
   (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
 #define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
-// Element destruction retains its nonnegative-count release precondition.
-#define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
-// G2MEAB checks the count even when the element type needs no destruction.
-#define RSTL_RESERVED_VECTOR_PRECONDITION_BEFORE_TRIVIAL (RSTL_VERSION == RSTL_G2MEAB)
+// `destroy_elements` checks the count (a release no-op that still counts toward the inline size)
+// before skipping trivially destructible types. GameCube Echoes has no such check.
+#define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_VERSION == RSTL_G2MEAB)
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.
@@ -385,10 +386,9 @@
 // `destroy`), followed by `resize_uninitialized`.
 #define RSTL_RESERVED_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
 
-// `vector` passes bool constructor fill values directly; class values remain references.
-#define RSTL_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
-// Byte-vector resize takes a signed-char fill value, rather than its address.
-#define RSTL_VECTOR_RESIZE_TYPE (RSTL_VERSION == RSTL_G2MEAB)
+// `vector` / `reserved_vector` fills, `resize` and `assign` take builtin values and pointers by
+// value (other types by const reference). GameCube Prime and Echoes pass everything by reference.
+#define RSTL_SCALAR_FILL_BY_VALUE (RSTL_VERSION == RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
@@ -397,7 +397,7 @@
 #define RSTL_RESERVED_VECTOR_CONST_INDEX_PRECONDITION                                                (RSTL_PRECONDITION_MACRO && RSTL_VERSION != RSTL_G2MEAB)
 // `destroy_elements` takes a plain `T*` and destroys `&ptr[i]` (the others use `T* const` and
 // `destroy(ptr + i)`).
-#define RSTL_RESERVED_VECTOR_DESTROY_INDEXED (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_RESERVED_VECTOR_DESTROY_INDEXED (RSTL_VERSION == RSTL_G2MEAB)
 // The out-of-line `operator=` is `inline` unless the translation unit defines
 // `RSTL_DONT_INLINE_RESERVED_VECTOR`.
 #define RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION (RSTL_VERSION == RSTL_G2MEAB)
