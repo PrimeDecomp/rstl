@@ -85,7 +85,9 @@ template < typename T >
 struct use_assignment_for_construction< T* > {
   enum { value = true };
 };
+#endif
 
+#if RSTL_SCALAR_TYPE_TRAITS || RSTL_RESERVED_VECTOR_TRAITS
 // Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
 // long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
 // assignment, but inside that class's own out-of-line copy constructor, which its users call. With

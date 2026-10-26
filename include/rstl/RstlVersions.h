@@ -306,7 +306,8 @@
 // `const_linear_iterator` builds its `+`/`-` results directly (and `operator-` returns `long`).
 #define RSTL_LINEAR_ITERATOR_DIRECT_ARITHMETIC (RSTL_VERSION == RSTL_G2MEAB)
 // `ownership_transfer::take_ownership` returns null when it does not own the object.
-#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE                                                       \
+  (RSTL_VERSION == RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
 // construct.hpp declares the pointer specializations of `is_trivially_destructible` and
 // `use_assignment_for_construction` right after the primary templates, has `is_scalar_type`, and
 // declares `uint`, `u64` and `s64` as trivially constructible.
