@@ -214,6 +214,8 @@
   (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
 #define RSTL_RESERVED_VECTOR_INT_FILLS RSTL_TRILOGY_ECHOES
+// Element destruction retains its nonnegative-count release precondition.
+#define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.
