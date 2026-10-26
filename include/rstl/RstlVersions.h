@@ -98,6 +98,9 @@
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
 #define RSTL_TRIVIAL_SCALARS RSTL_ECHOES_ERA
+// `int` and `bool` are trivially destructible without the assignment traits above, and so is a
+// `pair` of trivially destructible types.
+#define RSTL_TRIVIAL_INT_BOOL_DESTRUCTION RSTL_TRILOGY_ECHOES
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
 #define RSTL_DESTROY_CONST_PARAM (!RSTL_ECHOES_ERA)
 // The direct `destroy(T*)` carries the (empty) null precondition, which Prime 1 from GM8P_00 on and
@@ -171,6 +174,8 @@
 #define RSTL_INSERTION_SORT_NEXT_MINUS_ONE RSTL_ECHOES_ERA
 // `lower_bound` advances `start` itself with a loop-local iterator.
 #define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_G2ME)
+// `lower_bound` declares `halfDist` before its loop instead of inside it.
+#define RSTL_LOWER_BOUND_HOISTED_HALF_DIST (!RSTL_PRIME1)
 // `binary_find` and `equal_range` keep named `lower` / `found` locals.
 #define RSTL_NAMED_SEARCH_LOCALS (RSTL_VERSION >= RSTL_R3IJ)
 
@@ -196,6 +201,8 @@
   (RSTL_VERSION >= RSTL_G2ME && !RSTL_VECTOR_UNCHECKED_PUSH_BACK)
 // `insert_into` indexes the leading elements with a `long`.
 #define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME)
+// The `vector::erase` move loop declares its destination iterator before the source one.
+#define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // The `list` copy constructor guards the partial copy with a `destroy_helper`.
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_G2ME)
 // `list::destroy` calls `clear()` instead of erasing the range.
@@ -213,7 +220,7 @@
 #define RSTL_RESERVED_VECTOR_COUNT_CTOR \
   (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
-#define RSTL_RESERVED_VECTOR_INT_FILLS RSTL_TRILOGY_ECHOES
+#define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
 // Element destruction retains its nonnegative-count release precondition.
 #define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // The `reserved_vector` copy constructor copies through raw pointers.
@@ -238,6 +245,8 @@
 #define RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE RSTL_ECHOES_ERA
 // `~optional_object` destroys the value directly instead of calling `clear()`.
 #define RSTL_OPTIONAL_DTOR_DESTROYS (RSTL_VERSION >= RSTL_GM8P_00)
+// ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
+#define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R3ME_00)
 // The `set` copy constructor is `inline`.
 #define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00)
 // `red_black_tree::find_node` returns through a ternary instead of a `noResult` flag.
@@ -245,10 +254,18 @@
 // `red_black_tree` has `destroy()` and a destroy-based destructor; otherwise
 // copy/assign/destructor go through `clear()`.
 #define RSTL_RBTREE_DESTROY_HELPER (!RSTL_ECHOES_ERA)
+// `red_black_tree::iterator` has a non-const `get_node()`, which hides the `const_iterator` one
+// (`erase` then calls it and its codegen changes).
+#define RSTL_RBTREE_ITERATOR_MUTABLE_GET_NODE (!RSTL_PRIME1)
 
 // --- Strings ---
+// `basic_string::mNull` is a `const` static initialized in the class and defined by the template,
+// instead of the explicit specializations in rstl_strings.cpp.
+#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_R3ME_00)
 // `basic_string::mNull` is a non-const static.
-#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
+// `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
+#define RSTL_STRING_INLINE_CHAR_COMPARE (RSTL_VERSION >= RSTL_R3ME_00)
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)

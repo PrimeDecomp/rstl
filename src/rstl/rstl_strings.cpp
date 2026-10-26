@@ -11,6 +11,7 @@
 
 namespace rstl {
 
+#if !RSTL_STRING_INCLASS_NULL
 template <>
 #if RSTL_STRING_MUTABLE_NULL
 char basic_string< char >::mNull = char_traits< char >::eos();
@@ -41,6 +42,7 @@ wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull 
 const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull =
 #endif
     case_insensitive_char_traits< wchar_t >::eos();
+#endif
 
 // Prime owns its literal helpers in game translation units; later games define them here.
 #if RSTL_STRING_OUT_OF_CLASS && !RSTL_STRINGS_PROTO_LAYOUT
