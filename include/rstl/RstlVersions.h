@@ -245,8 +245,8 @@
 #define RSTL_RBTREE_DESTROY_HELPER (!RSTL_ECHOES_ERA)
 
 // --- Strings ---
-// `basic_string::mNull` is a non-const static.
-#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME)
+// `basic_string::mNull` is a non-const static. Trilogy Echoes instead instantiates a const null.
+#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_TRILOGY_ECHOES)
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)

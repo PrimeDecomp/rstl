@@ -161,6 +161,8 @@ class basic_string
 
 #if RSTL_STRING_MUTABLE_NULL
   static _CharTp mNull;
+#elif RSTL_TRILOGY_ECHOES
+  static const _CharTp mNull = 0;
 #else
   static const _CharTp mNull;
 #endif
@@ -321,8 +323,14 @@ public:
   const _CharTp at(int idx) const { return data()[idx]; }
 };
 
+#if RSTL_TRILOGY_ECHOES
+template < typename _CharTp, typename Traits, typename Alloc >
+const _CharTp basic_string< _CharTp, Traits, Alloc >::mNull;
+#endif
+
 #ifndef __MWERKS__
 
+#if !RSTL_TRILOGY_ECHOES
 #if RSTL_STRING_MUTABLE_NULL
 template <>
 char basic_string< char >::mNull;
@@ -342,6 +350,8 @@ template <>
 const char basic_string< char, case_insensitive_char_traits< char > >::mNull;
 template <>
 const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull;
+
+#endif
 
 #endif
 
