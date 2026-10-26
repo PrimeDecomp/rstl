@@ -202,7 +202,7 @@
 // `insert_into` indexes the leading elements with a `long`.
 #define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME)
 // The `vector::erase` move loop declares its destination iterator before the source one.
-#define RSTL_VECTOR_ERASE_DEST_FIRST RSTL_TRILOGY_ECHOES
+#define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // The `list` copy constructor guards the partial copy with a `destroy_helper`.
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_G2ME)
 // `list::destroy` calls `clear()` instead of erasing the range.
@@ -259,11 +259,11 @@
 // --- Strings ---
 // `basic_string::mNull` is a `const` static initialized in the class and defined by the template,
 // instead of the explicit specializations in rstl_strings.cpp.
-#define RSTL_STRING_INCLASS_NULL RSTL_TRILOGY_ECHOES
+#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_R3ME_00)
 // `basic_string::mNull` is a non-const static.
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
-#define RSTL_STRING_INLINE_CHAR_COMPARE RSTL_TRILOGY_ECHOES
+#define RSTL_STRING_INLINE_CHAR_COMPARE (RSTL_VERSION >= RSTL_R3ME_00)
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)
