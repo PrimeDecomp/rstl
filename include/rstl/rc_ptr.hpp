@@ -17,11 +17,6 @@ public:
   static int sNull;
 };
 
-#if RSTL_TRILOGY_ECHOES
-// Keep the Trilogy pointer layout while retaining Echoes' exported counter owner.
-typedef rc_ptr_private CRefData;
-#endif
-
 #else
 class CRefData {
 public:
@@ -140,7 +135,11 @@ template < typename T >
 class rc_ptr {
 public:
 #if RSTL_RC_PTR_INLINE_COUNT
+#if RSTL_TRILOGY_ECHOES
+  rc_ptr() : mPtr(nullptr), mCount(&rc_ptr_private::sNull) { ++*mCount; }
+#else
   rc_ptr() : mPtr(nullptr), mCount(&CRefData::sNull) { ++*mCount; }
+#endif
   rc_ptr(const T* ptr) : mPtr(ptr), mCount(rs_new int(1)) {}
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mCount(other.mCount) { ++*mCount; }
 #if RSTL_RC_PTR_CONVERSION
@@ -213,7 +212,11 @@ public:
     ReleaseData();
 #if RSTL_RC_PTR_INLINE_COUNT
     mPtr = nullptr;
+#if RSTL_TRILOGY_ECHOES
+    mCount = &rc_ptr_private::sNull;
+#else
     mCount = &CRefData::sNull;
+#endif
     ++*mCount;
 #else
     mRefData = &CRefData::sNull;
