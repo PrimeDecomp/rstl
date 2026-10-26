@@ -15,6 +15,13 @@ struct type_traits {
 
 #if RSTL_VERSION == RSTL_G2MEAB
 template <>
+struct type_traits< unsigned int > {
+  typedef const unsigned int& vector_fill_type;
+  typedef unsigned int vector_resize_type;
+  typedef const unsigned int& reserved_vector_fill_type;
+};
+
+template <>
 struct type_traits< bool > {
   typedef bool vector_fill_type;
   typedef const bool& vector_resize_type;

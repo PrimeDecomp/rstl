@@ -223,6 +223,8 @@
 #define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
 // Element destruction retains its nonnegative-count release precondition.
 #define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// G2MEAB checks the count even when the element type needs no destruction.
+#define RSTL_RESERVED_VECTOR_PRECONDITION_BEFORE_TRIVIAL (RSTL_VERSION == RSTL_G2MEAB)
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
 // `reserved_vector::resize` also shrinks.

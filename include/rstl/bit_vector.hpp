@@ -39,6 +39,10 @@ public:
   int size() const { return mSize; }
   reference at(int bit);
   reference operator[](int bit);
+  bool operator[](int bit) const {
+    const uint word = mData[bit / 32];
+    return (word & (1 << (bit % 32))) != 0;
+  }
 
 private:
   int get_real_index(int bit) { return bit / 32; }
