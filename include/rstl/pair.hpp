@@ -39,12 +39,14 @@ inline pair< L, R > make_pair(L first, R second) {
   return pair< L, R >(first, second);
 }
 
-#if RSTL_CONSTRUCTION_POLICY
+#if RSTL_CONSTRUCTION_POLICY || RSTL_TRILOGY_ECHOES
 template < typename L, typename R >
 struct is_trivially_destructible< pair< L, R > > {
   enum { value = is_trivially_destructible< L >::value && is_trivially_destructible< R >::value };
 };
+#endif
 
+#if RSTL_CONSTRUCTION_POLICY
 template < typename L, typename R >
 struct use_assignment_for_construction< pair< L, R > > {
   enum {
