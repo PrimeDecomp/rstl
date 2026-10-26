@@ -987,9 +987,10 @@ inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare
 istring istring_l(const char* data);
 inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
 
-bool operator==(const string& lhs, const char* rhs);
-bool operator==(const char* lhs, const string& rhs);
-bool operator!=(const string& lhs, const char* rhs);
+// MWCC keeps Prime's calls to these out of line; the linker keeps the first unit's weak copy.
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+inline bool operator==(const char* lhs, const string& rhs) { return rhs.compare(lhs, -1) == 0; }
+inline bool operator!=(const string& lhs, const char* rhs) { return lhs.compare(rhs) != 0; }
 
 inline wstring wstring_l(const wchar_t* data) {
   return wstring(wstring::literal_t(), data);
@@ -1041,7 +1042,11 @@ void basic_string< char, case_insensitive_char_traits< char > >::internal_alloca
 
 string string_l(const char* data);
 
-string operator+(const string& a, const string& b);
+inline string operator+(const string& a, const string& b) {
+  string result(a);
+  result.append(b);
+  return result;
+}
 inline wstring operator+(const wstring& a, const wstring& b) {
   wstring result(a);
   result.append(b);
