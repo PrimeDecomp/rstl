@@ -79,10 +79,8 @@ void* rstl::rmemory_allocator::allocate(int size) {
 #include <string.h>
 
 namespace rstl {
-#if RSTL_TRILOGY_ECHOES
+#if RSTL_RC_PTR_INLINE_COUNT
 int rc_ptr_private::sNull = 0x1000000 - 1;
-#elif RSTL_RC_PTR_INLINE_COUNT
-int CRefData::sNull = 0x1000000 - 1;
 #else
 CRefData CRefData::sNull(nullptr, 0x1000000 - 1);
 #endif
