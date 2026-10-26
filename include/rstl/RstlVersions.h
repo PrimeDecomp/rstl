@@ -174,6 +174,8 @@
 #define RSTL_INSERTION_SORT_NEXT_MINUS_ONE RSTL_ECHOES_ERA
 // `lower_bound` advances `start` itself with a loop-local iterator.
 #define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_G2ME)
+// `lower_bound` declares `halfDist` before its loop instead of inside it.
+#define RSTL_LOWER_BOUND_HOISTED_HALF_DIST (!RSTL_PRIME1)
 // `binary_find` and `equal_range` keep named `lower` / `found` locals.
 #define RSTL_NAMED_SEARCH_LOCALS (RSTL_VERSION >= RSTL_R3IJ)
 
@@ -218,7 +220,7 @@
 #define RSTL_RESERVED_VECTOR_COUNT_CTOR \
   (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
-#define RSTL_RESERVED_VECTOR_INT_FILLS RSTL_TRILOGY_ECHOES
+#define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
 // Element destruction retains its nonnegative-count release precondition.
 #define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // The `reserved_vector` copy constructor copies through raw pointers.
