@@ -28,7 +28,11 @@ public:
 #if RSTL_OPTIONAL_DTOR_DESTROYS
     // Makes ~CScriptHudMemo match (instead of clear())
     if (m_valid) {
+#if RSTL_OPTIONAL_DTOR_DIRECT_CALL
+      get_ptr()->~T();
+#else
       rstl::destroy(get_ptr());
+#endif
     }
 #else
     clear();
