@@ -9,9 +9,10 @@
 #include "types.h"
 
 namespace rstl {
-#if RSTL_RC_PTR_PRIVATE_COUNT
+#if RSTL_RC_PTR_PRIVATE_COUNT || RSTL_RC_PTR_INLINE_COUNT
 // Reference count shared by every null rc_ptr; it starts high so it is never released.
-// The name comes from the Wii SEL export sNull__Q24rstl14rc_ptr_private.
+// The name comes from the Wii SEL export sNull__Q24rstl14rc_ptr_private (Echoes Trilogy, and the
+// Trilogy and New Play Control front ends).
 class rc_ptr_private {
 public:
   static int sNull;
@@ -32,11 +33,7 @@ public:
   const void* mPtr;
   int mRefCount;
 
-#if RSTL_RC_PTR_INLINE_COUNT
-  static int sNull;
-#else
   static CRefData sNull;
-#endif
 };
 #endif
 
@@ -135,7 +132,7 @@ template < typename T >
 class rc_ptr {
 public:
 #if RSTL_RC_PTR_INLINE_COUNT
-  rc_ptr() : mPtr(nullptr), mCount(&CRefData::sNull) { ++*mCount; }
+  rc_ptr() : mPtr(nullptr), mCount(&rc_ptr_private::sNull) { ++*mCount; }
   rc_ptr(const T* ptr) : mPtr(ptr), mCount(rs_new int(1)) {}
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mCount(other.mCount) { ++*mCount; }
 #if RSTL_RC_PTR_CONVERSION
@@ -208,7 +205,7 @@ public:
     ReleaseData();
 #if RSTL_RC_PTR_INLINE_COUNT
     mPtr = nullptr;
-    mCount = &CRefData::sNull;
+    mCount = &rc_ptr_private::sNull;
     ++*mCount;
 #else
     mRefData = &CRefData::sNull;

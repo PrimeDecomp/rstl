@@ -80,7 +80,7 @@ void* rstl::rmemory_allocator::allocate(int size) {
 
 namespace rstl {
 #if RSTL_RC_PTR_INLINE_COUNT
-int CRefData::sNull = 0x1000000 - 1;
+int rc_ptr_private::sNull = 0x1000000 - 1;
 #else
 CRefData CRefData::sNull(nullptr, 0x1000000 - 1);
 #endif
