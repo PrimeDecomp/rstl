@@ -255,6 +255,9 @@
 // `red_black_tree` has `destroy()` and a destroy-based destructor; otherwise
 // copy/assign/destructor go through `clear()`.
 #define RSTL_RBTREE_DESTROY_HELPER (!RSTL_ECHOES_ERA)
+// `red_black_tree::iterator` has a non-const `get_node()`, which hides the `const_iterator` one
+// (`erase` then calls it and its codegen changes).
+#define RSTL_RBTREE_ITERATOR_MUTABLE_GET_NODE (!RSTL_PRIME1)
 
 // --- Strings ---
 // `basic_string::mNull` is a `const` static initialized in the class and defined by the template,
