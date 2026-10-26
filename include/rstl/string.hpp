@@ -161,6 +161,8 @@ class basic_string
 
 #if RSTL_STRING_MUTABLE_NULL
   static _CharTp mNull;
+#elif RSTL_STRING_INCLASS_NULL
+  static const _CharTp mNull = 0;
 #else
   static const _CharTp mNull;
 #endif
@@ -321,7 +323,10 @@ public:
   const _CharTp at(int idx) const { return data()[idx]; }
 };
 
-#ifndef __MWERKS__
+#if RSTL_STRING_INCLASS_NULL
+template < typename _CharTp, typename Traits, typename Alloc >
+const _CharTp basic_string< _CharTp, Traits, Alloc >::mNull;
+#elif !defined(__MWERKS__)
 
 #if RSTL_STRING_MUTABLE_NULL
 template <>
@@ -713,7 +718,7 @@ int basic_string< _CharTp, Traits, Alloc >::rfind(_CharTp ch, int pos) const {
 
 #endif
 
-#if !RSTL_STRING_OUT_OF_CLASS
+#if !RSTL_STRING_OUT_OF_CLASS || RSTL_STRING_INLINE_CHAR_COMPARE
 template < typename _CharTp, typename Traits, typename Alloc >
 inline int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
   const _CharTp* rhsEnd = compute_length(rhs, count).first;
@@ -867,7 +872,11 @@ typedef basic_string< char, case_insensitive_char_traits< char > > istring;
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
+#if RSTL_STRING_INLINE_CHAR_COMPARE
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+#else
 bool operator==(const string& lhs, const char* rhs);
+#endif
 
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
