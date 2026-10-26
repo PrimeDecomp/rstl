@@ -109,6 +109,20 @@ struct reserved_vector_traits< uint > {
 };
 #endif
 
+#if RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_RESERVED_VECTOR_INT_FILLS
+template <>
+struct reserved_vector_traits< uint > {
+  typedef uint fill_type;
+  typedef const uint& push_type;
+  enum { trivial_destructor = true };
+  static void fill(uint* dest, int count, uint value) {
+    for (int i = 0; i < count; ++i, ++dest) {
+      *dest = value;
+    }
+  }
+};
+#endif
+
 template <>
 struct reserved_vector_traits< float > {
   typedef float fill_type;
