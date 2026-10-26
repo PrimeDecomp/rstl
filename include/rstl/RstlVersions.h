@@ -306,7 +306,7 @@
 #define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE (RSTL_VERSION == RSTL_G2MEAB)
 // construct.hpp declares the pointer specializations of `is_trivially_destructible` and
 // `use_assignment_for_construction` right after the primary templates, has `is_scalar_type`, and
-// declares `uint` and `u64` as trivially constructible.
+// declares `uint`, `u64` and `s64` as trivially constructible.
 #define RSTL_SCALAR_TYPE_TRAITS (RSTL_VERSION == RSTL_G2MEAB)
 // `range_destruction_checks` and the destruction loop that consults it exist.
 #define RSTL_RANGE_DESTRUCTION_CHECKS (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
