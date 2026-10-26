@@ -959,6 +959,50 @@ bool operator!=(const string& lhs, const char* rhs);
 inline wstring wstring_l(const wchar_t* data) {
   return wstring(wstring::literal_t(), data);
 }
+template <>
+basic_string< char >::basic_string(const basic_string& other);
+
+template <>
+basic_string< char >& basic_string< char >::append(const basic_string& other);
+
+template <>
+basic_string< char >& basic_string< char >::append(const char* data, int count);
+
+template <>
+basic_string< char >& basic_string< char >::append(int count, char value);
+
+template <>
+void basic_string< char >::internal_allocate(int size);
+
+template <>
+void basic_string< char >::internal_dereference();
+
+template <>
+void basic_string< char >::internal_prepare_to_write(int len, bool preserve);
+
+template <>
+basic_string< wchar_t >::basic_string(const basic_string& other);
+
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const basic_string& other);
+
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const wchar_t* data, int count);
+
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(int count, wchar_t value);
+
+template <>
+void basic_string< wchar_t >::internal_allocate(int size);
+
+template <>
+void basic_string< wchar_t >::internal_dereference();
+
+template <>
+void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve);
+
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size);
 
 string string_l(const char* data);
 
@@ -989,6 +1033,7 @@ static inline wstring operator+(const wstring& a, const wchar_t* c) {
 
 CHECK_SIZEOF(string, (RSTL_ALLOCATOR_BASE_CLASS ? 0xc : 0x10))
 #endif
+
 } // namespace rstl
 
 #endif // _RSTL_STRING
