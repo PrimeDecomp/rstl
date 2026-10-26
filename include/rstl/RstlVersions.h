@@ -245,8 +245,7 @@
 #define RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE RSTL_ECHOES_ERA
 // `~optional_object` destroys the value directly instead of calling `clear()`.
 #define RSTL_OPTIONAL_DTOR_DESTROYS (RSTL_VERSION >= RSTL_GM8P_00)
-// ...and does so with a direct destructor call rather than through `destroy`, one inlining level
-// less (Echoes Trilogy inlines the nested `optional_object` destructors of `CImpactVisorEffect`).
+// ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
 #define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R3ME_00)
 // The `set` copy constructor is `inline`.
 #define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00)
