@@ -184,6 +184,11 @@ struct is_trivially_destructible< T* > {
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(uint)
 #endif
 
+#if RSTL_TRIVIAL_INT_BOOL_DESTRUCTION
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(int)
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(bool)
+#endif
+
 #if RSTL_TRIVIAL_SCALARS
 #if !RSTL_SCALAR_TYPE_TRAITS
 template < typename T >
@@ -275,6 +280,32 @@ inline void construct(void* dest, T*& src) {
 #endif
 
 #undef RSTL_DEFINE_DIRECT_CONSTRUCT
+
+// Copies of T assign through `construction_policy< T, true >` even where `construct` would
+// otherwise use the null-checked placement new, for the const and (where it exists) the mutable
+// reference overload.
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)                                                \
+  template <>                                                                                      \
+  inline void construct< T >(void* dest, T& src) {                                                 \
+    construction_policy< T, true >::construct(dest, src);                                          \
+  }
+#else
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)
+#endif
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION(T)                                                        \
+  template <>                                                                                      \
+  inline void construct< T >(void* dest, const T& src) {                                           \
+    construction_policy< T, true >::construct(dest, src);                                          \
+  }                                                                                                \
+  RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)
+
+#define ECHOES_RSTL_DECLARE_DIRECT_CONSTRUCTION(T)                                                 \
+  END_ECHOES_NAMESPACE                                                                             \
+  namespace rstl {                                                                                 \
+  RSTL_DECLARE_DIRECT_CONSTRUCTION(ECHOES_NAMESPACE T)                                             \
+  }                                                                                                \
+  START_ECHOES_NAMESPACE
 
 #if RSTL_DESTROY_VIA_IMPL
 template < typename T >

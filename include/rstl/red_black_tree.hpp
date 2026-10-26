@@ -154,7 +154,7 @@ public:
     P* operator->() const { return const_iterator::mNode->get_value(); }
     P& operator*() const { return *const_iterator::mNode->get_value(); }
 #endif
-#if !RSTL_PRIME1
+#if RSTL_RBTREE_ITERATOR_MUTABLE_GET_NODE
     node* get_node() { return const_iterator::mNode; }
 #endif
 

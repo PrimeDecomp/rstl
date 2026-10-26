@@ -289,15 +289,15 @@ It lower_bound(It start, It end, const T& value) {
     int halfDist = dist / 2;
     It it = start;
 #else
-#if !RSTL_PRIME1
+#if RSTL_LOWER_BOUND_HOISTED_HALF_DIST
   int halfDist;
 #endif
   It it = start;
   while (dist > 0) {
-#if RSTL_PRIME1
-    int halfDist = dist / 2;
-#else
+#if RSTL_LOWER_BOUND_HOISTED_HALF_DIST
     halfDist = dist / 2;
+#else
+    int halfDist = dist / 2;
 #endif
     it = start;
 #endif

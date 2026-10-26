@@ -174,7 +174,6 @@ public:
 #endif
 
   inline void resize(int size, typename type_traits< T >::vector_resize_type in = T());
-#if !RSTL_PRIME1
   // Guessed name. Sets the count without constructing the new elements; the caller fills them.
   void resize_uninitialized(int size) {
 #if RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK
@@ -187,7 +186,6 @@ public:
 #endif
     mCount = size;
   }
-#endif
 #if RSTL_VECTOR_INLINE_DECLS
   inline
 #endif
@@ -535,7 +533,11 @@ typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator first, 
 
   int newCount = tmp;
 
+#if RSTL_VECTOR_ERASE_DEST_FIRST
+  for (iterator moved = iterator(mItems + tmp), it = last; it != end(); ++moved, ++newCount, ++it) {
+#else
   for (iterator it = last, moved = iterator(mItems + tmp); it != end(); ++moved, ++newCount, ++it) {
+#endif
     construct(&*moved, *it);
     destroy(&*it);
   }
