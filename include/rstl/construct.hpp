@@ -27,9 +27,9 @@
 #define RSTL_DESTROY_PTR(T) T*
 #endif
 
-#define RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(T)                                                     \
+#define RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(...)                                                   \
   template <>                                                                                      \
-  struct is_trivially_destructible< T > {                                                          \
+  struct is_trivially_destructible< __VA_ARGS__ > {                                                \
     enum { value = true };                                                                         \
   };
 
@@ -286,20 +286,20 @@ inline void construct(void* dest, T*& src) {
 // otherwise use the null-checked placement new, for the const and (where it exists) the mutable
 // reference overload.
 #if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
-#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)                                                \
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(...)                                              \
   template <>                                                                                      \
-  inline void construct< T >(void* dest, T& src) {                                                 \
-    construction_policy< T, true >::construct(dest, src);                                          \
+  inline void construct< __VA_ARGS__ >(void* dest, __VA_ARGS__& src) {                             \
+    construction_policy< __VA_ARGS__, true >::construct(dest, src);                                \
   }
 #else
-#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(...)
 #endif
-#define RSTL_DECLARE_DIRECT_CONSTRUCTION(T)                                                        \
+#define RSTL_DECLARE_DIRECT_CONSTRUCTION(...)                                                      \
   template <>                                                                                      \
-  inline void construct< T >(void* dest, const T& src) {                                           \
-    construction_policy< T, true >::construct(dest, src);                                          \
+  inline void construct< __VA_ARGS__ >(void* dest, const __VA_ARGS__& src) {                       \
+    construction_policy< __VA_ARGS__, true >::construct(dest, src);                                \
   }                                                                                                \
-  RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(T)
+  RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(__VA_ARGS__)
 
 #define ECHOES_RSTL_DECLARE_DIRECT_CONSTRUCTION(T)                                                 \
   END_ECHOES_NAMESPACE                                                                             \
