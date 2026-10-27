@@ -570,7 +570,6 @@ red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::copy_from(node* n) {
 }
 #endif
 
-#if RSTL_STREAM_CONSTRUCTORS
 #ifndef __MWERKS__
 } // namespace rstl
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -585,7 +584,6 @@ inline red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::red_black_tree(
     insert(in.Get< P >());
   }
 }
-#endif
 
 }; // namespace rstl
 

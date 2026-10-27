@@ -93,7 +93,6 @@ inline
 : rep_type(other) {
 }
 
-#if RSTL_STREAM_CONSTRUCTORS
 #ifndef __MWERKS__
 } // namespace rstl
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -102,7 +101,6 @@ namespace rstl {
 template < typename T, typename Cmp, typename Alloc >
 inline set< T, Cmp, Alloc >::set(CInputStream& in, const Cmp& cmp, const Alloc& alloc)
 : rep_type(in, identity< T >(), cmp, alloc) {}
-#endif
 #endif
 
 typedef set< char, char > unk_set;

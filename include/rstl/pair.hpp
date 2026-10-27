@@ -83,7 +83,6 @@ struct select1st< pair< K, V > > : unary_function< pair< K, V >, K > {
   const K& operator()(const pair< K, V >& it) const { return it.first; }
 };
 
-#if RSTL_STREAM_CONSTRUCTORS
 #ifndef __MWERKS__
 } // namespace rstl
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -99,7 +98,6 @@ inline void pair< L, R >::PutTo(COutputStream& out) const {
   out.Put(first);
   out.Put(second);
 }
-#endif
 
 } // namespace rstl
 

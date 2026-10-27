@@ -554,7 +554,6 @@ inline void vector< T, Alloc >::clear() {
 }
 #endif
 
-#if RSTL_STREAM_CONSTRUCTORS
 } // namespace rstl
 #ifndef __MWERKS__
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -570,8 +569,16 @@ inline vector< T, Alloc >::vector(CInputStream& in, const Alloc& allocator)
   mAllocator(allocator),
 #endif
   mCount(0), mCapacity(0), mItems(nullptr) {
+#if RSTL_STREAM_READ_INT32
+  int count = in.ReadInt32();
+#else
   int count = in.Get(TGetType(0));
+#endif
+#if RSTL_PRECONDITION_MACRO
+  RSTL_PRECONDITION(count >= 0);
+#else
   RS_ASSERT(count >= 0, "rstl precondition");
+#endif
 #if RSTL_VECTOR_STREAM_RESERVE_APPEND
   reserve(count + mCount);
 #else
@@ -592,7 +599,6 @@ inline void vector< T, Alloc >::PutTo(COutputStream& out) const {
   out.Put(count);
   StreamObjects(out, begin(), end(), count);
 }
-#endif
 
 } // namespace rstl
 

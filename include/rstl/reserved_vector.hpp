@@ -417,7 +417,6 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 //   uninitialized_fill_n(data(), count, value);
 // }
 
-#if RSTL_STREAM_CONSTRUCTORS
 } // namespace rstl
 #ifndef __MWERKS__
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -426,7 +425,11 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 namespace rstl {
 template < typename T, int N >
 inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
+#if RSTL_STREAM_READ_INT32
+: mCount(in.ReadInt32()) {
+#else
 : mCount(in.Get(TGetType(0))) {
+#endif
   for (int i = 0; i < mCount; i++) {
     construct(&data()[i], in.Get(TType< T >()));
   }
@@ -438,7 +441,6 @@ inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
   out.Put(count);
   StreamObjects(out, begin(), end(), count);
 }
-#endif
 
 } // namespace rstl
 
