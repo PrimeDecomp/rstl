@@ -187,7 +187,9 @@ template < typename T >
 struct is_trivially_destructible< T* > {
   enum { value = true };
 };
+#endif
 
+#if RSTL_TRIVIAL_UINT_DESTRUCTION
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(uint)
 #endif
 
