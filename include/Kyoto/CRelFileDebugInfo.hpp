@@ -1,0 +1,34 @@
+#ifndef _CRELFILEDEBUGINFO
+#define _CRELFILEDEBUGINFO
+
+#include "types.h"
+#include <stdint.h>
+
+// Guessed class and method names. Address range of a linked REL file, kept in a global list so
+// the exception handler can report addresses as offsets into the file.
+class CRelFileDebugInfo {
+public:
+  CRelFileDebugInfo();
+  ~CRelFileDebugInfo();
+
+  void Register(const char* name, const void* start, uint size);
+  void Unregister();
+  bool Contains(uintptr_t address) const;
+
+  const char* GetName() const { return mName; }
+  uintptr_t GetStart() const { return mStart; }
+
+  static CRelFileDebugInfo* FindByAddress(uintptr_t address);
+
+private:
+  const char* mName;
+  uintptr_t mStart;
+  uint mSize;
+  CRelFileDebugInfo* mNext;
+  CRelFileDebugInfo* mPrev;
+
+  static CRelFileDebugInfo* mspHead;
+};
+CHECK_SIZEOF(CRelFileDebugInfo, 0x14)
+
+#endif // _CRELFILEDEBUGINFO

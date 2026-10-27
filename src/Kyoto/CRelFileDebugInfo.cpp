@@ -1,0 +1,53 @@
+#include "Kyoto/CRelFileDebugInfo.hpp"
+
+#include "Kyoto/Alloc/CMemory.hpp"
+
+START_ECHOES_NAMESPACE
+
+CRelFileDebugInfo* CRelFileDebugInfo::mspHead = nullptr;
+
+CRelFileDebugInfo::CRelFileDebugInfo()
+: mName(nullptr), mStart(0), mSize(0), mNext(nullptr), mPrev(nullptr) {}
+
+CRelFileDebugInfo::~CRelFileDebugInfo() { Unregister(); }
+
+void CRelFileDebugInfo::Register(const char* name, const void* start, uint size) {
+  if (mNext != nullptr) {
+    return;
+  }
+  mName = name;
+  mStart = reinterpret_cast< uintptr_t >(start);
+  mSize = size;
+  mNext = mspHead;
+  if (mNext != nullptr) {
+    mNext->mPrev = this;
+  }
+  mspHead = this;
+}
+
+void CRelFileDebugInfo::Unregister() {
+  if (mspHead == this) {
+    mspHead = mNext;
+  }
+  if (mNext != nullptr) {
+    mNext->mPrev = mPrev;
+  }
+  if (mPrev != nullptr) {
+    mPrev->mNext = mNext;
+  }
+  mNext = nullptr;
+  mPrev = nullptr;
+}
+
+bool CRelFileDebugInfo::Contains(uintptr_t address) const { return address - mStart < mSize; }
+
+CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(uintptr_t address) {
+  for (CRelFileDebugInfo* info = mspHead; info != nullptr; info = info->mNext) {
+    if (info->Contains(address)) {
+      return info;
+    }
+  }
+  return nullptr;
+}
+
+END_ECHOES_NAMESPACE
