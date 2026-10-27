@@ -417,6 +417,36 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 //   uninitialized_fill_n(data(), count, value);
 // }
 
+#if RSTL_STREAM_CONSTRUCTORS
+#ifndef __MWERKS__
+} // namespace rstl
+#include "Kyoto/Streams/CInputStream.hpp"
+#include "Kyoto/Streams/COutputStream.hpp"
+namespace rstl {
+#endif
+template < typename T, int N >
+inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
+: mCount(in.Get(TGetType(0))) {
+  for (int i = 0; i < mCount; i++) {
+    construct(&data()[i], in.Get(TType< T >()));
+  }
+}
+
+template < typename Iter >
+inline void StreamObjects(COutputStream& out, const Iter& begin, const Iter& end, int) {
+  Iter iterEnd = end;
+  for (Iter iter = begin; iter != iterEnd; ++iter) {
+    out.Put(*iter);
+  }
+}
+
+template < typename T, int N >
+inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
+  out.Put(size());
+  StreamObjects(out, begin(), end(), size());
+}
+#endif
+
 } // namespace rstl
 
 #endif // _RSTL_RESERVED_VECTOR

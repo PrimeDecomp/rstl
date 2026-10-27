@@ -97,6 +97,17 @@ inline
 typedef set< char, char > unk_set;
 CHECK_SIZEOF(unk_set, 0x14)
 
+#if RSTL_STREAM_CONSTRUCTORS
+#ifndef __MWERKS__
+} // namespace rstl
+#include "Kyoto/Streams/CInputStream.hpp"
+namespace rstl {
+#endif
+template < typename T, typename Cmp, typename Alloc >
+inline set< T, Cmp, Alloc >::set(CInputStream& in, const Cmp& cmp, const Alloc& alloc)
+: rep_type(in, identity< T >(), cmp, alloc) {}
+#endif
+
 } // namespace rstl
 
 #endif // _RSTL_SET

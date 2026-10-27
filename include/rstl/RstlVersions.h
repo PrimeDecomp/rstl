@@ -48,6 +48,9 @@
 // The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
 // `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
+// The containers' CInputStream constructors and reserved_vector::PutTo are defined here. Echoes and
+// Corruption define them in the game's stream headers.
+#define RSTL_STREAM_CONSTRUCTORS RSTL_PRIME1
 
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
