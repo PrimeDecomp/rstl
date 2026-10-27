@@ -30,8 +30,10 @@ enum node_color {
   kNC_Red,
 };
 
+#if !RSTL_RBTREE_STATIC_ROTATIONS
 void rbtree_rotate_left(void* header, void* node);
 void rbtree_rotate_right(void* header, void* node);
+#endif
 void rbtree_rebalance(void*, void*);
 void* rbtree_traverse_forward(const void*, void*);
 void* rbtree_rebalance_for_erase(void* header_void, void* node_void);
@@ -58,7 +60,7 @@ private:
 
     node(node* left, node* right, node* parent, node_color color, const P& value)
     : mLeft(left), mRight(right), mParent(parent), mColor(color) {
-#if RSTL_CONSTRUCTION_POLICY
+#if RSTL_CONSTRUCTION_POLICY || RSTL_RESERVED_VECTOR_TRAITS
       construct(get_value(), value);
 #else
       new (mValue) P(value);
@@ -567,6 +569,21 @@ red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::copy_from(node* n) {
   return result;
 }
 #endif
+
+#ifndef __MWERKS__
+} // namespace rstl
+#include "Kyoto/Streams/CInputStream.hpp"
+namespace rstl {
+#endif
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S, typename Cmp, typename Alloc >
+inline red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::red_black_tree(
+    CInputStream& in, const S& selector, const Cmp& cmp, const Alloc& alloc)
+: mSelector(selector), mCmp(cmp), mAllocator(alloc), mCount(0) {
+  const int count = in.Get< int >();
+  for (int i = 0; i < count; ++i) {
+    insert(in.Get< P >());
+  }
+}
 
 }; // namespace rstl
 

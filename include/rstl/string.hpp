@@ -386,10 +386,6 @@ basic_string< char >::const_iterator basic_string< char >::position_iterator(int
 template <>
 pair< basic_string< char >::const_iterator, basic_string< char >::const_iterator >
 basic_string< char >::range_iterator(int pos, int count) const;
-#if !RSTL_STRING_OUT_OF_CLASS
-template <>
-basic_string< char > basic_string< char >::substr(int pos, int count) const;
-#endif
 
 template <>
 void basic_string< char >::internal_allocate(int size);
@@ -984,12 +980,12 @@ typedef basic_string< char, case_insensitive_char_traits< char > > istring;
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
-istring istring_l(const char* data);
+inline istring istring_l(const char* data) { return istring(istring::literal_t(), data); }
 inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
 
-bool operator==(const string& lhs, const char* rhs);
-bool operator==(const char* lhs, const string& rhs);
-bool operator!=(const string& lhs, const char* rhs);
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+inline bool operator==(const char* lhs, const string& rhs) { return rhs.compare(lhs, -1) == 0; }
+inline bool operator!=(const string& lhs, const char* rhs) { return lhs.compare(rhs) != 0; }
 
 inline wstring wstring_l(const wchar_t* data) {
   return wstring(wstring::literal_t(), data);
@@ -1039,9 +1035,13 @@ void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve);
 template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size);
 
-string string_l(const char* data);
+inline string string_l(const char* data) { return string(string::literal_t(), data); }
 
-string operator+(const string& a, const string& b);
+inline string operator+(const string& a, const string& b) {
+  string result(a);
+  result.append(b);
+  return result;
+}
 inline wstring operator+(const wstring& a, const wstring& b) {
   wstring result(a);
   result.append(b);
@@ -1067,6 +1067,13 @@ static inline wstring operator+(const wstring& a, const wchar_t* c) {
 }
 
 CHECK_SIZEOF(string, (RSTL_ALLOCATOR_BASE_CLASS ? 0xc : 0x10))
+
+template < typename _CharTp, typename Traits, typename Alloc >
+basic_string< _CharTp, Traits, Alloc >
+basic_string< _CharTp, Traits, Alloc >::substr(int pos, int count) const {
+  const pair< const_iterator, const_iterator > range = range_iterator(pos, count);
+  return basic_string(range.first, range.second);
+}
 #endif
 
 } // namespace rstl

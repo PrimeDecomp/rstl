@@ -210,7 +210,11 @@ public:
   ~reserved_vector() { destroy_elements(); }
 
   void push_back(const T& in) {
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
@@ -272,7 +276,11 @@ public:
   void push_back(const T& in) {
 #endif
     RS_ASSERT(mCount < N, "rstl precondition");
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
@@ -416,6 +424,41 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 // reserved_vector< T, N >::reserved_vector(int count, const T& value) : x0_count(count) {
 //   uninitialized_fill_n(data(), count, value);
 // }
+
+#if RSTL_RESERVED_VECTOR_TRAITS
+// Registered fixed-storage types retain their explicit construction policy.
+template < typename T, int N >
+inline typename construction_result<
+    use_assignment_for_construction< reserved_vector< T, N > >::value >::type
+construct(reserved_vector< T, N >* dest, const reserved_vector< T, N >& src) {
+  construction_policy< reserved_vector< T, N >, true >::construct(dest, src);
+}
+#endif
+
+} // namespace rstl
+#ifndef __MWERKS__
+#include "Kyoto/Streams/CInputStream.hpp"
+#endif
+#include "rstl/stream_objects.hpp"
+namespace rstl {
+template < typename T, int N >
+inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
+#if RSTL_STREAM_READ_INT32
+: mCount(in.ReadInt32()) {
+#else
+: mCount(in.Get(TGetType(0))) {
+#endif
+  for (int i = 0; i < mCount; i++) {
+    construct(&data()[i], in.Get(TType< T >()));
+  }
+}
+
+template < typename T, int N >
+inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
+  const int count = size();
+  out.Put(count);
+  StreamObjects(out, begin(), end(), count);
+}
 
 } // namespace rstl
 

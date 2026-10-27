@@ -14,7 +14,13 @@ class optional_object {
 public:
   optional_object() : m_valid(false) {}
   optional_object(optional_object_null) : m_valid(false) {}
-  optional_object(const T& item) : m_valid(true) { rstl::construct< T >(m_data, item); }
+  optional_object(const T& item) : m_valid(true) {
+    if (optional_object_value_policy< T >::value) {
+      optional_object_value_policy< T >::construct_element(m_data, item);
+    } else {
+      rstl::construct< T >(m_data, item);
+    }
+  }
 #if RSTL_OPTIONAL_COPY_READS_VALID_CALL
   optional_object(const optional_object& other) : m_valid(other.valid()) {
 #else

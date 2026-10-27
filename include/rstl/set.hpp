@@ -92,6 +92,15 @@ inline
     set< T, Cmp, Alloc >::set(const set& other)
 : rep_type(other) {
 }
+
+#ifndef __MWERKS__
+} // namespace rstl
+#include "Kyoto/Streams/CInputStream.hpp"
+namespace rstl {
+#endif
+template < typename T, typename Cmp, typename Alloc >
+inline set< T, Cmp, Alloc >::set(CInputStream& in, const Cmp& cmp, const Alloc& alloc)
+: rep_type(in, identity< T >(), cmp, alloc) {}
 #endif
 
 typedef set< char, char > unk_set;

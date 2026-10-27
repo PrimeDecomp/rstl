@@ -48,6 +48,9 @@
 // The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
 // `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
+// The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
+// instead of `Get(TGetType(0))`.
+#define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
 
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
@@ -90,10 +93,13 @@
 // `construct`, `destroy` and `destroy_impl` are external `inline` templates instead of `static
 // inline` ones (the uninitialized_* helpers are `static inline` everywhere).
 #define RSTL_EXTERN_CONSTRUCT_FUNCTIONS RSTL_ECHOES_ERA
-// Declare pointer/uint trivial-destructor traits here. The prototype supplies equivalent
-// traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers non-trivial.
+// Declare pointer trivial-destructor traits here. The prototype supplies equivalent
+// traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers
+// non-trivial.
 #define RSTL_TRIVIAL_POINTERS                                                                      \
   ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
+// UInt destruction is also trivial in NPC Echoes; keep pointer policies independent.
+#define RSTL_TRIVIAL_UINT_DESTRUCTION (RSTL_TRIVIAL_POINTERS || RSTL_VERSION >= RSTL_R32J)
 // The arithmetic types are declared trivially destructible and copied by assignment, and so are
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
@@ -194,6 +200,8 @@
 #define RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR (RSTL_VERSION >= RSTL_G2ME)
 // `vector(int)` only reserves, with `mCount` assigned in the body.
 #define RSTL_VECTOR_RESERVE_CTOR (RSTL_VERSION >= RSTL_R3ME_00)
+// The stream constructor reserves `count + mCount` elements instead of `count`.
+#define RSTL_VECTOR_STREAM_RESERVE_APPEND (RSTL_VERSION >= RSTL_R32J)
 // `vector::assign` and CStringExtras fill with `push_back_unsafe`.
 #define RSTL_VECTOR_PUSH_BACK_UNSAFE (RSTL_VERSION >= RSTL_G2ME)
 // `vector::push_back` appends without growing or checking capacity.
@@ -250,8 +258,10 @@
 #define RSTL_OPTIONAL_DTOR_DESTROYS (RSTL_VERSION >= RSTL_GM8P_00)
 // ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
 #define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R3ME_00)
+// `rbtree_rotate_left` and `rbtree_rotate_right` are `static` in rstl_map.cpp.
+#define RSTL_RBTREE_STATIC_ROTATIONS RSTL_PRIME1
 // The `set` copy constructor is `inline`.
-#define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00)
+#define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00 || RSTL_PRIME1)
 // `red_black_tree::find_node` returns through a ternary instead of a `noResult` flag.
 #define RSTL_RBTREE_TERNARY_FIND (RSTL_VERSION >= RSTL_G2ME)
 // `red_black_tree` has `destroy()` and a destroy-based destructor; otherwise
@@ -306,7 +316,8 @@
 // `const_linear_iterator` builds its `+`/`-` results directly (and `operator-` returns `long`).
 #define RSTL_LINEAR_ITERATOR_DIRECT_ARITHMETIC (RSTL_VERSION == RSTL_G2MEAB)
 // `ownership_transfer::take_ownership` returns null when it does not own the object.
-#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE                                                       \
+  (RSTL_VERSION == RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
 // construct.hpp declares the pointer specializations of `is_trivially_destructible` and
 // `use_assignment_for_construction` right after the primary templates, has `is_scalar_type`, and
 // declares `uint`, `u64` and `s64` as trivially constructible.
@@ -388,7 +399,7 @@
 
 // `vector` / `reserved_vector` fills, `resize` and `assign` take builtin values and pointers by
 // value (other types by const reference). GameCube Prime and Echoes pass everything by reference.
-#define RSTL_SCALAR_FILL_BY_VALUE (RSTL_VERSION == RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_SCALAR_FILL_BY_VALUE (RSTL_VERSION >= RSTL_G2MEAB)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
