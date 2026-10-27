@@ -254,7 +254,7 @@
 // ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
 #define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R3ME_00)
 // The `set` copy constructor is `inline`.
-#define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00)
+#define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00 || RSTL_PRIME1)
 // `red_black_tree::find_node` returns through a ternary instead of a `noResult` flag.
 #define RSTL_RBTREE_TERNARY_FIND (RSTL_VERSION >= RSTL_G2ME)
 // `red_black_tree` has `destroy()` and a destroy-based destructor; otherwise
