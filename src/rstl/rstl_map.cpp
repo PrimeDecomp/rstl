@@ -47,7 +47,11 @@ struct fake_header {
 
 namespace rstl {
 
-void rbtree_rotate_left(void* header_void, void* node_void) {
+#if RSTL_RBTREE_STATIC_ROTATIONS
+static
+#endif
+    void
+    rbtree_rotate_left(void* header_void, void* node_void) {
   fake_header* header = static_cast< fake_header* >(header_void);
   fake_node* node = static_cast< fake_node* >(node_void);
 
@@ -74,7 +78,11 @@ void rbtree_rotate_left(void* header_void, void* node_void) {
   node->mRight = l;
 }
 
-void rbtree_rotate_right(void* header_void, void* node_void) {
+#if RSTL_RBTREE_STATIC_ROTATIONS
+static
+#endif
+    void
+    rbtree_rotate_right(void* header_void, void* node_void) {
   fake_header* header = static_cast< fake_header* >(header_void);
   fake_node* node = static_cast< fake_node* >(node_void);
 

@@ -30,8 +30,10 @@ enum node_color {
   kNC_Red,
 };
 
+#if !RSTL_RBTREE_STATIC_ROTATIONS
 void rbtree_rotate_left(void* header, void* node);
 void rbtree_rotate_right(void* header, void* node);
+#endif
 void rbtree_rebalance(void*, void*);
 void* rbtree_traverse_forward(const void*, void*);
 void* rbtree_rebalance_for_erase(void* header_void, void* node_void);

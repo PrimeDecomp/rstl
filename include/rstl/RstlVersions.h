@@ -253,6 +253,8 @@
 #define RSTL_OPTIONAL_DTOR_DESTROYS (RSTL_VERSION >= RSTL_GM8P_00)
 // ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
 #define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R3ME_00)
+// `rbtree_rotate_left` and `rbtree_rotate_right` are `static` in rstl_map.cpp.
+#define RSTL_RBTREE_STATIC_ROTATIONS RSTL_PRIME1
 // The `set` copy constructor is `inline`.
 #define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00 || RSTL_PRIME1)
 // `red_black_tree::find_node` returns through a ternary instead of a `noResult` flag.
