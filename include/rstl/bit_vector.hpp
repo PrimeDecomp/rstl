@@ -33,8 +33,34 @@ public:
     uint mMask;
   };
 
+  class const_iterator {
+  public:
+    const_iterator(typename storage_type::const_iterator data, int bit, int)
+    : mData(data), mCurrentBit(bit) {}
+    int get_current_bit() const { return mCurrentBit; }
+
+  protected:
+    typename storage_type::const_iterator mData;
+    int mCurrentBit;
+  };
+
+  class iterator : public const_iterator {
+  public:
+    iterator(typename storage_type::iterator data, int bit, int offset)
+    : const_iterator(data, bit, offset), mData(data) {}
+
+  private:
+    typename storage_type::iterator mData;
+  };
+
   bit_vector() : mSize(0) {}
   bit_vector(int count, bool value);
+
+  iterator begin();
+  iterator end();
+  void reserve(int count) { mData.reserve(get_data_size(count)); }
+  inline void push_back(bool value);
+  void insert(iterator at, int count, bool value);
 
   int size() const { return mSize; }
   reference at(int bit);
@@ -45,7 +71,18 @@ public:
   }
 
 private:
+  bool get_bit(int bit) { return (mData[get_real_index(bit)] & get_real_bit_mask(bit)) != 0; }
+  void set_bit(int bit, bool value) {
+    if (value) {
+      mData[get_real_index(bit)] |= get_real_bit_mask(bit);
+    } else {
+      mData[get_real_index(bit)] &= ~get_real_bit_mask(bit);
+    }
+  }
   int get_real_index(int bit) { return bit / 32; }
+  uint get_real_bit_mask(int bit) { return 1 << (bit % 32); }
+  int get_data_size(int count) { return count / 32 + (count % 32 ? 1 : 0); }
+  void make_room(int bit, int count);
 #else
   class bit_reference {
   public:
@@ -184,6 +221,57 @@ private:
 };
 
 #if RSTL_BIT_VECTOR_COMPACT
+// G2MEAB CMapWorldInfo: 8011B10C, 8011B1D0, 8011A070, 8011B47C,
+// 80119B9C and 80119E94. Both growth paths require explicitly reserved storage.
+template < typename Alloc >
+bit_vector< Alloc >::bit_vector(int count, bool value) : mSize(0) {
+  reserve(count);
+  insert(begin(), count, value);
+}
+
+template < typename Alloc >
+typename bit_vector< Alloc >::iterator bit_vector< Alloc >::begin() {
+  return iterator(mData.begin(), 0, 0);
+}
+
+template < typename Alloc >
+typename bit_vector< Alloc >::iterator bit_vector< Alloc >::end() {
+  return iterator(mData.begin(), mSize, 0);
+}
+
+template < typename Alloc >
+void bit_vector< Alloc >::push_back(bool value) {
+  if (mSize % 32 == 0) {
+    uint zero = 0;
+    mData.push_back_unsafe(zero);
+  }
+  set_bit(mSize++, value);
+}
+
+template < typename Alloc >
+void bit_vector< Alloc >::insert(iterator at, int count, bool value) {
+  int bit = at.get_current_bit();
+  make_room(bit, count);
+  while (count-- > 0) {
+    set_bit(bit, value);
+    ++bit;
+  }
+}
+
+template < typename Alloc >
+void bit_vector< Alloc >::make_room(int bit, int count) {
+  int available = mData.size() * 32 - mSize;
+  while (available < count) {
+    uint zero = 0;
+    mData.push_back_unsafe(zero);
+    available += 32;
+  }
+  for (int i = mSize - 1; i >= bit; --i) {
+    set_bit(i + count, get_bit(i));
+  }
+  mSize += count;
+}
+
 template < typename Alloc >
 typename bit_vector< Alloc >::reference bit_vector< Alloc >::at(int bit) {
   return reference(mData.begin() + get_real_index(bit), bit % 32);
