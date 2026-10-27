@@ -11,7 +11,7 @@
 COutputStream::COutputStream(const int len)
 : mUnwrittenLen(0)
 , mBufLen(len)
-, mBufPtr(len > 64 ? RSTL_KYOTO_NEW(22) uchar[len]
+, mBufPtr(len > 64 ? rs_new_line(22) uchar[len]
                    : &mScratch[32 - reinterpret_cast< uintptr_t >(mScratch) % 31])
 , mNumWrites(0)
 #if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER

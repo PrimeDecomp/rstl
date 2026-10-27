@@ -13,6 +13,7 @@ char* Stringize(const char* fmt, ...);
 void ZeroMemory(void* dst, uint size);
 void CopyMemory(void* dst, const void* src, uint size);
 
+// Convert between serialized big-endian values and host byte order.
 #if TARGET_LITTLE_ENDIAN
 namespace detail {
 template < typename T >
@@ -26,89 +27,37 @@ inline T SwapBytes(T value) {
   return value;
 }
 } // namespace detail
+#define CBASICS_SWAPPED(x) detail::SwapBytes(x)
+#else
+#define CBASICS_SWAPPED(x) (x)
 #endif
 
+// Where the declarations say const changes code generation. Prime returns every scalar const and
+// also takes uint, short and ushort as const parameters; Echoes returns only int const; the
+// prototype says const nowhere.
 #if RSTL_KYOTO_CONST_SCALAR_RETURNS
-// Convert between serialized big-endian values and host byte order.
-inline const int SwapBytes(int x) {
-#if TARGET_BIG_ENDIAN
-  return x;
+#define CBASICS_PRIME_CONST const
 #else
-  return detail::SwapBytes(x);
+#define CBASICS_PRIME_CONST
 #endif
-}
-
-inline const uint SwapBytes(const uint x) {
-#if TARGET_BIG_ENDIAN
-  return x;
-#else
-  return detail::SwapBytes(x);
-#endif
-}
-
-inline const float SwapBytes(float x) {
-#if TARGET_BIG_ENDIAN
-  return x;
-#else
-  return detail::SwapBytes(x);
-#endif
-}
-
-inline const short SwapBytes(const short x) {
-#if TARGET_BIG_ENDIAN
-  return x;
-#else
-  return detail::SwapBytes(x);
-#endif
-}
-
-inline const ushort SwapBytes(const ushort x) {
-#if TARGET_BIG_ENDIAN
-  return x;
-#else
-  return detail::SwapBytes(x);
-#endif
-}
-
-inline const u64 SwapBytes(u64 x) {
-#if TARGET_BIG_ENDIAN
-  return x;
-#else
-  return detail::SwapBytes(x);
-#endif
-}
-
-#else
-// Convert between serialized big-endian values and host byte order. The big-endian bodies keep
-// their original shape; changing them alters code generation in console callers.
-inline uint SwapBytes(uint x) {
-#if TARGET_LITTLE_ENDIAN
-  x = detail::SwapBytes(x);
-#endif
-  return x;
-}
 #if RSTL_KYOTO_PROTO_SOURCE_FORMS
-inline int SwapBytes(int x) {
+#define CBASICS_INT_CONST
 #else
-inline const int SwapBytes(int x) {
+#define CBASICS_INT_CONST const
 #endif
-#if TARGET_LITTLE_ENDIAN
-  x = detail::SwapBytes(x);
-#endif
-  return x;
-}
-inline short SwapBytes(short x) {
-#if TARGET_LITTLE_ENDIAN
-  x = detail::SwapBytes(x);
-#endif
-  return x;
-}
-inline ushort SwapBytes(ushort x) {
-#if TARGET_LITTLE_ENDIAN
-  x = detail::SwapBytes(x);
-#endif
-  return x;
-}
+#define CBASICS_SWAP_BYTES(returnConst, T, parameterConst)                                         \
+  inline returnConst T SwapBytes(parameterConst T x) { return CBASICS_SWAPPED(x); }
+
+CBASICS_SWAP_BYTES(CBASICS_INT_CONST, int, )
+CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, uint, CBASICS_PRIME_CONST)
+CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, short, CBASICS_PRIME_CONST)
+CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, ushort, CBASICS_PRIME_CONST)
+CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, u64, )
+#if RSTL_KYOTO_CONST_SCALAR_RETURNS
+CBASICS_SWAP_BYTES(const, float, )
+#else
+// Echoes and the prototype swap a float through its bits. Even on big-endian targets the body
+// keeps that shape: a plain return changes code generation in console callers.
 inline float SwapBytes(float x) {
   union {
     float f;
@@ -120,14 +69,12 @@ inline float SwapBytes(float x) {
 #endif
   return f;
 }
-inline u64 SwapBytes(u64 x) {
-#if TARGET_LITTLE_ENDIAN
-  x = detail::SwapBytes(x);
 #endif
-  return x;
-}
 
-#endif
+#undef CBASICS_SWAP_BYTES
+#undef CBASICS_INT_CONST
+#undef CBASICS_PRIME_CONST
+#undef CBASICS_SWAPPED
 
 } // namespace CBasics
 

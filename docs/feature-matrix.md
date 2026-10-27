@@ -207,7 +207,5 @@
 | `RSTL_RBTREE_ITERATOR_FLAG` | (empty) | (empty) | `, false` |
 | `RSTL_RBTREE_KEY_ARGUMENT` | `const T&` | `const T&` | `typename tree_key_argument< T >::type` |
 | `RSTL_RBTREE_MULTI_TYPE` | `int` | `int` | `int` |
-| `RSTL_RC_PTR_NEW_COUNT_ASSIGN` | `rs_new` | `rs_new` | `rs_new_line_in("rc_ptr.h", 310)` |
-| `RSTL_RC_PTR_NEW_COUNT_CTOR` | `rs_new` | `rs_new` | `rs_new_line_in("rc_ptr.h", 87)` |
 | `RSTL_STRING_RANGE_CTOR_EOS` | `0` | `0` | `Traits::eos()` |
 | `RSTL_STRING_STREAM_CH_TYPE` | `char` | `char` | `int` |

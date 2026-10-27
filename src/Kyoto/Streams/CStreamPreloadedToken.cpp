@@ -9,9 +9,7 @@
 #include "Echoes/Kyoto/CDvdRequest.hpp"
 #include "EchoesNamespace.h"
 #endif
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/StringExtras.hpp"
 #include "rstl/auto_ptr.hpp"
@@ -52,11 +50,9 @@ static void CopyAndFlush(void* dest, const void* src, int length) {
 
 CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
 : mPath(filename), mSize(0), mRefCount(1), mBuffers(), mRequests() {
-#if RSTL_KYOTO_DEBUG_BUILD
   // clang-format off
   RS_VERIFY_THROW(66, CDvdFile::FileExists( filename.c_str() ), false, "CStreamPreloadedData: Invalid file name\n");
   // clang-format on
-#endif
   ECHOES_NAMESPACE CDvdFile file(filename.data());
   mSize = file.GetFileSize();
   int offset;
@@ -74,7 +70,7 @@ CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
     }
     const uint alignedLength = (length + 31) & ~31;
     rstl::auto_ptr< uchar > buffer(
-        static_cast< uchar* >(RSTL_KYOTO_ALIGNED_NEW(alignedLength, 78)));
+        static_cast< uchar* >(rs_aligned_new_line(alignedLength, 78)));
     rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > request(
         file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Set, offset));
     mBuffers.push_back_unsafe(buffer);
@@ -150,7 +146,7 @@ FindFile(const rstl::string& path) {
 static CStreamPreloadedData* AcquireFile(const rstl::string& path) {
   rstl::list< rstl::auto_ptr< CStreamPreloadedData > >::iterator it = FindFile(path);
   if (it == mPreloadedDatas.end()) {
-    rstl::auto_ptr< CStreamPreloadedData > data(RSTL_KYOTO_NEW(184) CStreamPreloadedData(path));
+    rstl::auto_ptr< CStreamPreloadedData > data(rs_new_line(184) CStreamPreloadedData(path));
     it = mPreloadedDatas.insert(mPreloadedDatas.end(), data);
   } else {
     ++(*it)->mRefCount;
@@ -160,10 +156,8 @@ static CStreamPreloadedData* AcquireFile(const rstl::string& path) {
 
 static void ReleaseFile(const rstl::string& path) {
   rstl::list< rstl::auto_ptr< CStreamPreloadedData > >::iterator it = FindFile(path);
-#if RSTL_KYOTO_DEBUG_BUILD
   RS_VERIFY_THROW(198, it != mPreloadedDatas.end(), false,
                   "CStreamPreloadedToken: Tried to delref nonexistant data");
-#endif
   if (it != mPreloadedDatas.end()) {
     --(*it)->mRefCount;
     if ((*it)->mRefCount == 0) {

@@ -3,15 +3,11 @@
 
 #include "Kyoto/Alloc/CGameAllocator.hpp"
 
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "Kyoto/Alloc/CCallStack.hpp"
 #include "Kyoto/Alloc/CMediumAllocPool.hpp"
 #include "Kyoto/Alloc/CSmallAllocPool.hpp"
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
 
@@ -82,12 +78,10 @@ CGameAllocator::CGameAllocator()
 , mPhysicalAddr(nullptr)
 , mFakeStatics(0)
 , mSmallPoolReservedBytes(0) {
-#if RSTL_KYOTO_DEBUG_BUILD
   SGameMemInfo testSGameMemInfo(nullptr, nullptr, nullptr, 0, string_NULL, string_NULL);
   // clang-format off
   RS_VERIFY_THROW(172, (reinterpret_cast<uint>(&testSGameMemInfo.mGuardBlockStart) - reinterpret_cast<uint>(&testSGameMemInfo)) == 28, kXCP_InvalidSGameMemInfo, "SGameMemInfo must have mGuardBlockStart at end of structure.");
   // clang-format on
-#endif
 }
 
 CGameAllocator::~CGameAllocator() {
@@ -487,7 +481,6 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
   if (pNextMemInfo) {
     paddedSize = reinterpret_cast< size_t >(pNextMemInfo) - reinterpret_cast< size_t >(pMemInfo) -
                  sizeof(SGameMemInfo);
-#if RSTL_KYOTO_DEBUG_BUILD
     RS_VERIFY_THROW(
         857, pNextMemInfo->IsPostGuardBlockIntact(), kXCP_GuardBlockDamage_Post,
         CBasics::Stringize("Damage detected: overwrite detected after block %p of %d bytes",
@@ -496,9 +489,7 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
         858, pNextMemInfo->IsPriorGuardBlockIntact(), kXCP_GuardBlockDamage_Prior,
         CBasics::Stringize("Damage detected: overwrite detected prior to block %p of %d bytes",
                            pNextMemInfo, pNextMemInfo->mSize));
-#endif
   }
-#if RSTL_KYOTO_DEBUG_BUILD
   RS_VERIFY_THROW(
       863, pMemInfo->IsPriorGuardBlockIntact(), kXCP_GuardBlockDamage_Prior,
       CBasics::Stringize("Damage detected: overwrite detected prior to block %p of %d bytes", p,
@@ -510,7 +501,6 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
   // clang-format off
   RS_VERIFY_THROW(865, memcmp( kPostGuard, reinterpret_cast<uint8 const *>(p) + pMemInfo->mSize, paddedSize - pMemInfo->mSize ) == 0, kXCP_GuardBlockDamage_Post, CBasics::Stringize("Damage detected: overwrite detected after block %p of %d bytes", p, pMemInfo->mSize));
   // clang-format on
-#endif
   pMemInfo->SetLength(paddedSize);
 #if RSTL_KYOTO_DEBUG_BUILD
   memset(pMemInfo + 1, 0xde, pMemInfo->mSize);

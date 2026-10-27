@@ -1,9 +1,7 @@
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 CCircularBuffer::CCircularBuffer(void* buf, const int len, const EOwnership ownership)
 : mPtr(static_cast< char* >(buf)), mMemorySize(len), xc_(0), mNextFreeAddr(0), x14_(-1) {
@@ -21,11 +19,9 @@ bool CCircularBuffer::IsWrappedMemory(const int offset, const int len) {
 }
 
 void* CCircularBuffer::Alloc(const int size) {
-#if RSTL_KYOTO_DEBUG_BUILD
   RS_VERIFY_THROW_DIRECT(
       28, size <= mMemorySize, false,
       CBasics::Stringize("The size %d is larger than can be allocated %d", size, mMemorySize));
-#endif
 
   if ((mMemorySize - mNextFreeAddr) >= size && !IsWrappedMemory(mNextFreeAddr, size)) {
     const int offset = mNextFreeAddr;

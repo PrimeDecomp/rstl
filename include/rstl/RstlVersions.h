@@ -470,15 +470,6 @@
 #define RSTL_RBTREE_PROTO_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
 // `set` wraps a `red_black_tree` member (`inner`) and forwards to it, instead of deriving from it.
 #define RSTL_SET_INNER_TREE (RSTL_VERSION == RSTL_G2MEAB)
-// `rc_ptr` allocates its count with `rs_new_line_in("rc_ptr.h", 87)` (constructor) and
-// `rs_new_line_in("rc_ptr.h", 310)` (`Assign`), the lines of the prototype's original header.
-#if RSTL_VERSION == RSTL_G2MEAB
-#define RSTL_RC_PTR_NEW_COUNT_CTOR rs_new_line_in("rc_ptr.h", 87)
-#define RSTL_RC_PTR_NEW_COUNT_ASSIGN rs_new_line_in("rc_ptr.h", 310)
-#else
-#define RSTL_RC_PTR_NEW_COUNT_CTOR rs_new
-#define RSTL_RC_PTR_NEW_COUNT_ASSIGN rs_new
-#endif
 // `~rc_ptr` carries the (empty) count precondition.
 #define RSTL_RC_PTR_DTOR_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` accessors go through `GetPtr()` and `ReleaseData` deletes `mRefCount` directly.
@@ -639,13 +630,6 @@
 // line ("File.cpp(22) : "); the allocator fills freed blocks with 0xDE and reports damaged guard
 // words. Prime and Echoes compile the checks out and allocate at "??(??)".
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
-#if RSTL_KYOTO_DEBUG_BUILD
-#define RSTL_KYOTO_NEW(line) rs_new_line(line)
-#define RSTL_KYOTO_ALIGNED_NEW(size, line) rs_aligned_new_line(size, line)
-#else
-#define RSTL_KYOTO_NEW(line) rs_new
-#define RSTL_KYOTO_ALIGNED_NEW(size, line) CMemory::Alloc(size, IAllocator::kHI_RoundUpLen)
-#endif
 // Out-of-line stream helpers only the prototype's units contain (64-bit bit stream reads and
 // writes, low word first, and `CStreamPreloadedToken::GetReferenceCount`). Echoes' matching units
 // end without them.

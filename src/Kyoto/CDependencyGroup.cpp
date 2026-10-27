@@ -61,7 +61,7 @@ CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
                                          const rstl::auto_ptr< uchar >& buffer, int size,
                                          const CVParamTransfer& xfer) {
   CMemoryInStream in(buffer.get(), size);
-  return RSTL_KYOTO_NEW(87) CDependencyGroup(in);
+  return rs_new_line(87) CDependencyGroup(in);
 }
 #else
 CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,

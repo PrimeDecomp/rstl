@@ -2,6 +2,11 @@
 #define KYOTO_ALLOC_ASSERT_HPP
 
 #include "Kyoto/Alloc/CCallStack.hpp"
+#include "rstl/RstlVersions.h"
+
+// Verify asserts and debugger warnings. Every game's Kyoto has them; only the prototype (a debug
+// build) compiles them in.
+#if RSTL_KYOTO_DEBUG_BUILD
 
 extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* source, int line,
                                       const char* kind, const char* condition, const char* message);
@@ -35,9 +40,6 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
     gpfnWarningPrintf(message, arg);                                                               \
   } while (0)
 
-#define RS_STRINGIZE_IMPL(x) #x
-#define RS_STRINGIZE(x) RS_STRINGIZE_IMPL(x)
-
 // The failure path every G2MEAB "Verify" assert expands to. The exception is only stringized:
 // this build logs "Would have thrown exception" and traps instead of throwing.
 // The original macros use __LINE__; the line is explicit here so the original line numbers
@@ -48,7 +50,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 // Same, for sources whose original file name differs from ours (Main.cpp, TOneStatic.h).
 #define RS_VERIFY_FAILURE_IN(file, line, conditionText, exceptionText, message)                    \
   {                                                                                                \
-    CCallStack stack(0, file "(" RS_STRINGIZE(line) ") : ", kUnknownType);                         \
+    CCallStack stack(0, RS_SOURCE_POSITION(file, line), kUnknownType);                             \
     rs_log_assert_failure(&stack, file, line, "Verify", conditionText, message);                   \
     rs_debugger_printf("Would have thrown exception: %s\n", exceptionText);                        \
     rs_halt_cpu();                                                                                 \
@@ -90,5 +92,19 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 #define RS_VERIFY_THROW_DIRECT_IN(file, line, condition, exception, message)                       \
   if (!(condition))                                                                                \
   RS_VERIFY_FAILURE_IN(file, line, #condition, #exception, message)
+#else
+// Builds without asserts keep every assert in the source; each one compiles to nothing and does
+// not evaluate its arguments.
+#define RS_DEBUGGER_WARNING(...) (void)(0)
+#define RS_WARNING_DEBUGGER_PRINT(...) (void)(0)
+#define RS_DEBUGGER_WARNING_ARG(message, arg) (void)(0)
+#define RS_VERIFY_FAILURE(line, conditionText, exceptionText, message) (void)(0)
+#define RS_VERIFY_FAILURE_IN(file, line, conditionText, exceptionText, message) (void)(0)
+#define RS_VERIFY_THROW_DIRECT(line, condition, exception, message) (void)(0)
+#define RS_VERIFY_THROW(line, condition, exception, message) (void)(0)
+#define RS_VERIFY_THROW_AS(line, condition, conditionText, exception, message) (void)(0)
+#define RS_VERIFY_THROW_IN(file, line, condition, exception, message) (void)(0)
+#define RS_VERIFY_THROW_DIRECT_IN(file, line, condition, exception, message) (void)(0)
+#endif
 
 #endif

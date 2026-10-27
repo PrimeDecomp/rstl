@@ -1,9 +1,7 @@
 #include "Kyoto/Streams/CZipOutputStream.hpp"
 #include "rstl/RstlVersions.h"
 
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "rstl/math.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -14,7 +12,7 @@ CZipOutputStream::CZipOutputStream(COutputStream* out, int level)
 : COutputStream(1024)
 , mOutput(out)
 , mCompressedBytesWritten(0)
-, mZStream(RSTL_KYOTO_NEW(14) z_stream)
+, mZStream(rs_new_line(14) z_stream)
 , mFinished(false) {
   mZStream->zalloc = CZipSupport::Alloc;
   mZStream->zfree = CZipSupport::Free;
@@ -33,11 +31,9 @@ bool CZipOutputStream::Process(bool finish) {
   mZStream->avail_out = sizeof(output);
   mZStream->next_out = output;
   const int result = deflate(mZStream.get(), finish ? 4 : 0);
-#if RSTL_KYOTO_DEBUG_BUILD
   if (result != 0 && result != 1) {
     RS_VERIFY_THROW(40, false, kException_OutputError, "kException_OutputError");
   }
-#endif
   const unsigned int remaining = mZStream->avail_out;
   if (sizeof(output) - remaining != 0) {
     mOutput->DoPut(output, sizeof(output) - mZStream->avail_out);

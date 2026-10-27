@@ -1,9 +1,7 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/CMemorySys.hpp"
 
-#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "Kyoto/Alloc/CCallStack.hpp"
 #include "Kyoto/Alloc/CGameAllocator.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
@@ -70,7 +68,6 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
     rs_debugger_printf("**************************************************\n");
     rs_debugger_printf("***************** Alloc Failed! ******************\n");
     rs_debugger_printf("Size:%d\n", len);
-    RS_VERIFY_THROW(239, false, kXCP_BadAlloc, "kXCP_BadAlloc");
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
     const IAllocator::SMetrics metrics = mpAllocator->GetMetrics(0, false);
     rs_debugger_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len, metrics.x10_,
@@ -78,6 +75,7 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
 #else
     rs_debugger_printf("Alloc failed - Size: %d", len);
 #endif
+    RS_VERIFY_THROW(239, false, kXCP_BadAlloc, "kXCP_BadAlloc");
   }
 
   OSRestoreInterrupts(enabled);
@@ -86,13 +84,8 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
 
 void CMemory::Free(const void* ptr) {
   volatile bool enabled = OSDisableInterrupts();
-#if RSTL_KYOTO_DEBUG_BUILD
   if (ptr != nullptr && !mpAllocator->Free(ptr)) {
     RS_VERIFY_THROW(280, false, CMemory::kXCP_BadFree, "CMemory::kXCP_BadFree");
-#else
-  if (ptr != nullptr) {
-    mpAllocator->Free(ptr);
-#endif
   }
   OSRestoreInterrupts(enabled);
 }

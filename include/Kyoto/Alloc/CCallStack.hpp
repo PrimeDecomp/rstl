@@ -23,4 +23,9 @@ private:
   const char* mType;
 };
 
+// The "File.cpp(line) : " text that debug builds record for asserts and allocations.
+#define RS_STRINGIZE_IMPL(x) #x
+#define RS_STRINGIZE(x) RS_STRINGIZE_IMPL(x)
+#define RS_SOURCE_POSITION(file, line) file "(" RS_STRINGIZE(line) ") : "
+
 #endif // _CCALLSTACK

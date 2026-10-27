@@ -66,34 +66,35 @@ inline
 void operator delete[](void* ptr) {
   CMemory::Free(ptr);
 }
-#define NEW new ("??(??)", nullptr)
-// Allocations without a source position ("??(??)", escaped so it is not read as trigraphs).
-#define rs_new new ("\?\?(\?\?)", nullptr)
-// Allocations that record their source position, as Prime's and Echoes' rs_new does with
-// __FILE__ and __LINE__. The line is explicit here so the original line numbers survive in the
-// strings.
-#define RS_NEW_STRINGIZE_IMPL(x) #x
-#define RS_NEW_STRINGIZE(x) RS_NEW_STRINGIZE_IMPL(x)
-#define rs_new_line(line) rs_new_line_in(__FILE__, line)
-// Same, for sources whose original file name differs from ours (Main.cpp, DolphinCFont.cpp).
-#define rs_new_line_in(file, line) new (file "(" RS_NEW_STRINGIZE(line) ") : ", nullptr)
-// Raw block rounded up to the allocator's alignment, for buffers that are read into directly.
-// Records the source position the way rs_new_line_in does.
-#define rs_aligned_new_line_in(file, line, size)                                                   \
-  CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,     \
-                 CCallStack(-1, file "(" RS_NEW_STRINGIZE(line) ") : ", kUnknownType))
-#define rs_aligned_new_line(size, line) rs_aligned_new_line_in(__FILE__, line, size)
 #else
 #if RSTL_KYOTO_INLINE_GLOBAL_NEW
 __attribute__((weak)) void operator delete(void* ptr) { CMemory::Free(ptr); }
 __attribute__((weak)) void operator delete[](void* ptr) { CMemory::Free(ptr); }
 #endif
-#define NEW new
-#define rs_new new
-#define rs_new_line(line) new
-#define rs_new_line_in(file, line) new
-#define rs_aligned_new_line_in(file, line, size) CMemory::Alloc(size, IAllocator::kHI_RoundUpLen)
-#define rs_aligned_new_line(size, line) CMemory::Alloc(size, IAllocator::kHI_RoundUpLen)
 #endif
+
+// Allocations without a source position ("??(??)", escaped so it is not read as trigraphs).
+#ifdef __MWERKS__
+#define rs_new new ("\?\?(\?\?)", nullptr)
+#else
+#define rs_new new
+#endif
+// Raw block rounded up to the allocator's alignment, for buffers that are read into directly.
+#define rs_aligned_new(size) CMemory::Alloc(size, IAllocator::kHI_RoundUpLen)
+
+// Allocations at a source position. Debug builds record "File.cpp(line) : " (the line is explicit
+// so the original line numbers survive; the _in forms name an original file other than ours, such
+// as "rc_ptr.h"). Other builds allocate exactly as rs_new and rs_aligned_new do.
+#if RSTL_KYOTO_DEBUG_BUILD && defined(__MWERKS__)
+#define rs_new_line_in(file, line) new (RS_SOURCE_POSITION(file, line), nullptr)
+#define rs_aligned_new_line_in(file, line, size)                                                   \
+  CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,     \
+                 CCallStack(-1, RS_SOURCE_POSITION(file, line), kUnknownType))
+#else
+#define rs_new_line_in(file, line) rs_new
+#define rs_aligned_new_line_in(file, line, size) rs_aligned_new(size)
+#endif
+#define rs_new_line(line) rs_new_line_in(__FILE__, line)
+#define rs_aligned_new_line(size, line) rs_aligned_new_line_in(__FILE__, line, size)
 
 #endif // _CMEMORY

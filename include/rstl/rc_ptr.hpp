@@ -42,7 +42,7 @@ template < typename T >
 class rc_ptr {
 public:
   rc_ptr() : mPtr(nullptr), mRefCount(&rc_ptr_private::sNull) { ++*mRefCount; }
-  rc_ptr(const T* ptr) : mPtr(ptr), mRefCount(RSTL_RC_PTR_NEW_COUNT_CTOR int(1)) {}
+  rc_ptr(const T* ptr) : mPtr(ptr), mRefCount(rs_new_line_in("rc_ptr.h", 87) int(1)) {}
   // The empty statements stand in for release-build precondition checks; they count toward
   // MWCC's inline size limit (rbtree node ctors holding rc_ptr pairs are outlined).
   rc_ptr(const rc_ptr& other) : mPtr(other.mPtr), mRefCount(other.mRefCount) {
@@ -80,7 +80,7 @@ public:
     const T* base = ptr;
     ReleaseData();
     mPtr = base;
-    mRefCount = RSTL_RC_PTR_NEW_COUNT_ASSIGN int(1);
+    mRefCount = rs_new_line_in("rc_ptr.h", 310) int(1);
   }
   void ReleaseData();
   // Guessed name; shares the reference count with a pointer to a derived class.
