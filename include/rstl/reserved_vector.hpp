@@ -6,6 +6,7 @@
 #include "types.h"
 
 #include "rstl/construct.hpp"
+#include "rstl/pair.hpp"
 #include "rstl/pointer_iterator.hpp"
 #include "rstl/type_traits.hpp"
 
@@ -14,26 +15,6 @@ class COutputStream;
 
 namespace rstl {
 #if RSTL_RESERVED_VECTOR_TRAITS
-template < typename L, typename R >
-class pair;
-
-// Guessed name. Scalar pairs use assignment; other elements use the shared helper.
-namespace reserved_vector_detail {
-using rstl::construct;
-template < bool Enabled >
-struct pair_construction_result {};
-template <>
-struct pair_construction_result< true > {
-  typedef void type;
-};
-template < typename L, typename R >
-inline typename pair_construction_result< is_scalar_type< L >::value &&
-                                          is_scalar_type< R >::value >::type
-construct(pair< L, R >* dest, const pair< L, R >& src) {
-  *dest = src;
-}
-} // namespace reserved_vector_detail
-
 // Scalar fill and destruction behavior recovered from Trilogy's input filters.
 template < typename T >
 struct reserved_vector_traits {
@@ -292,11 +273,7 @@ public:
   void push_back(const T& in) {
 #endif
     RS_ASSERT(mCount < N, "rstl precondition");
-#if RSTL_RESERVED_VECTOR_TRAITS
-    reserved_vector_detail::construct(data() + mCount, in);
-#else
     construct(data() + mCount, in);
-#endif
     ++mCount;
   }
 
@@ -441,6 +418,17 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 //   uninitialized_fill_n(data(), count, value);
 // }
 
+// Scalar-pair storage copies its full capacity, including the count and trailing word.
+template < typename L, typename R, int N >
+inline typename pair_construction_result< is_scalar_type< L >::value &&
+                                          is_scalar_type< R >::value >::type
+construct(reserved_vector< pair< L, R >, N >* dest, const reserved_vector< pair< L, R >, N >& src) {
+  bitwise_copy< sizeof(*dest) / sizeof(double) >(dest, &src);
+  if (sizeof(*dest) % sizeof(double) != 0) {
+    reinterpret_cast< uint* >(dest)[sizeof(*dest) / sizeof(uint) - 1] =
+        reinterpret_cast< const uint* >(&src)[sizeof(*dest) / sizeof(uint) - 1];
+  }
+}
 } // namespace rstl
 
 #endif // _RSTL_RESERVED_VECTOR

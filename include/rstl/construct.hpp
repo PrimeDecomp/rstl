@@ -87,7 +87,6 @@ struct use_assignment_for_construction< T* > {
 };
 #endif
 
-#if RSTL_SCALAR_TYPE_TRAITS || RSTL_RESERVED_VECTOR_TRAITS
 // Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
 // long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
 // assignment, but inside that class's own out-of-line copy constructor, which its users call. With
@@ -119,7 +118,6 @@ RSTL_DECLARE_SCALAR_TYPE(short)
 RSTL_DECLARE_SCALAR_TYPE(ushort)
 
 #undef RSTL_DECLARE_SCALAR_TYPE
-#endif
 
 template < typename T, bool UseAssignment >
 struct construction_policy {
@@ -533,7 +531,7 @@ static inline void uninitialized_fill_n(D dest, int n, const S& value) {
   D cur = dest;
 #endif
   for (int i = 0; i < n; ++i, ++cur) {
-#if RSTL_FILL_USES_CONSTRUCT
+#if RSTL_FILL_USES_CONSTRUCT || RSTL_RESERVED_VECTOR_TRAITS
     construct(&*cur, value);
 #else
     void* ptr = &*cur;
