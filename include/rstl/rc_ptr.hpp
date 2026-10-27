@@ -8,6 +8,12 @@
 #include "rstl/rmemory_allocator.hpp"
 #include "types.h"
 
+// Prime's and Echoes' own CMemory.hpp, used until they take Kyoto from RSTL, have no positioned
+// allocations. Outside the prototype these allocate exactly as rs_new does.
+#ifndef rs_new_line_in
+#define rs_new_line_in(file, line) rs_new
+#endif
+
 namespace rstl {
 #if RSTL_RC_PTR_PRIVATE_COUNT || RSTL_RC_PTR_INLINE_COUNT
 // Reference count shared by every null rc_ptr; it starts high so it is never released.
