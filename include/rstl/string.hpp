@@ -787,6 +787,41 @@ inline bool basic_string< _CharTp, Traits, Alloc >::operator!=(const basic_strin
   return compare(other) != 0;
 }
 
+#ifndef __MWERKS__
+// Modern compilers require these specializations before the inline operators or
+// out-of-line string methods can implicitly instantiate them.
+template <>
+basic_string< char >::basic_string(const basic_string& other);
+template <>
+basic_string< char >& basic_string< char >::append(const char* data, int count);
+template <>
+basic_string< char >& basic_string< char >::append(int count, char value);
+template <>
+void basic_string< char >::internal_allocate(int size);
+template <>
+void basic_string< char >::internal_dereference();
+template <>
+void basic_string< char >::internal_prepare_to_write(int len, bool preserve);
+
+template <>
+basic_string< wchar_t >::basic_string(const basic_string& other);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const basic_string& other);
+template <>
+basic_string< wchar_t >& basic_string< wchar_t >::append(const wchar_t* data, int count);
+template <>
+void basic_string< wchar_t >::internal_allocate(int size);
+template <>
+void basic_string< wchar_t >::internal_dereference();
+template <>
+void basic_string< wchar_t >::internal_prepare_to_write(int len, bool preserve);
+
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size);
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference();
+#endif
+
 #if RSTL_STRING_PROTO_TAIL
 typedef basic_string< wchar_t > wstring;
 typedef basic_string< char > string;
