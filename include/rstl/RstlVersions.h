@@ -416,8 +416,8 @@
 #define RSTL_LIST_DIRECT_DTOR_CALL (RSTL_VERSION == RSTL_G2MEAB)
 // Pointer elements are passed by value to list insertion helpers.
 #define RSTL_LIST_POINTER_VALUE_PARAM (RSTL_VERSION == RSTL_G2MEAB)
-// `bit_vector` is the reduced class with `reference` (word iterator plus `uint` mask), an
-// out-of-line `at` / `operator[]`, and no iterators or growth.
+// `bit_vector` uses compact `reference`/iterator records, out-of-line `at` / `operator[]`,
+// and explicit reserve/growth through its word vector.
 #define RSTL_BIT_VECTOR_COMPACT (RSTL_VERSION == RSTL_G2MEAB)
 // `vector(int)` reserves when count > 0. Testing count > mCount changes the
 // prototype's CPFPointSearchState constructor; keep its existing form.
