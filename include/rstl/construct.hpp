@@ -402,6 +402,15 @@ RSTL_CONSTRUCT_INLINE void destroy(It begin, It end) {
 #endif
 }
 
+// Ranges of these iterators are destroyed without the `begin != end` guard.
+#define RSTL_DECLARE_UNGUARDED_RANGE_DESTRUCTION(...)                                              \
+  template <>                                                                                      \
+  inline void destroy< __VA_ARGS__ >(__VA_ARGS__ begin, __VA_ARGS__ end) {                         \
+    for (; begin != end; ++begin) {                                                                \
+      destroy(&*begin);                                                                            \
+    }                                                                                              \
+  }
+
 #if RSTL_POINTER_RANGE_OVERLOADS
 // Unlike iterator ranges, pointer ranges skip the precondition check and the guard.
 template < typename T >
