@@ -34,24 +34,17 @@ public:
   R second;
 };
 
-// Guessed name. Keep class-valued pairs on their ordinary copy-constructor path.
-template < bool Enabled >
-struct pair_construction_result {};
-template <>
-struct pair_construction_result< true > {
-  typedef void type;
-};
 #if RSTL_RESERVED_VECTOR_TRAITS
 template < typename L, typename R >
-inline typename pair_construction_result< is_scalar_type< L >::value &&
-                                          is_scalar_type< R >::value >::type
-construct(pair< L, R >* dest, const pair< L, R >& src) {
+inline
+    typename construction_result< is_scalar_type< L >::value && is_scalar_type< R >::value >::type
+    construct(pair< L, R >* dest, const pair< L, R >& src) {
   *dest = src;
 }
 template < typename L, typename R >
-inline typename pair_construction_result< is_scalar_type< L >::value &&
-                                          is_scalar_type< R >::value >::type
-construct(pair< L, R >* dest, pair< L, R >& src) {
+inline
+    typename construction_result< is_scalar_type< L >::value && is_scalar_type< R >::value >::type
+    construct(pair< L, R >* dest, pair< L, R >& src) {
   *dest = src;
 }
 

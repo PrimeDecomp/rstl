@@ -119,6 +119,13 @@ RSTL_DECLARE_SCALAR_TYPE(ushort)
 
 #undef RSTL_DECLARE_SCALAR_TYPE
 
+// Guessed name. Enable only explicitly supported construction overloads.
+template < bool Enabled >
+struct construction_result {};
+template <>
+struct construction_result< true > {
+  typedef void type;
+};
 template < typename T, bool UseAssignment >
 struct construction_policy {
   static void construct(void* dest, const T& src) {
