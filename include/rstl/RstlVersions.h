@@ -327,7 +327,7 @@
 // `construct` also has an overload taking a mutable `T&`, and the placement-new policy has no
 // null precondition.
 #define RSTL_CONSTRUCT_MUTABLE_OVERLOAD                                                            \
-  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00))
+  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J))
 // A non-inline declaration before the inline const construct definition gives MWCC's
 // prototype instantiations external weak linkage, needed by native callers.
 #define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)

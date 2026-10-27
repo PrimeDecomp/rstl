@@ -533,6 +533,7 @@ static inline T uninitialized_copy(S* begin, S* end, T out) {
 }
 #endif
 
+// Read counted-copy elements as const without changing the source iterator type.
 template < typename S, typename D >
 static inline D uninitialized_copy_n(S src, int n, D dest) {
 #if RSTL_COPY_N_PRECONDITION
@@ -552,7 +553,7 @@ static inline D uninitialized_copy_n(S src, int n, D dest) {
 #else
   for (int i = 0; i < n; ++cur, ++i, ++it) {
 #endif
-    construct(&*cur, *it);
+    construct(&*cur, static_cast< const typename iterator_traits< S >::value_type& >(*it));
   }
 
   return cur;
