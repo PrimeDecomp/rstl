@@ -315,6 +315,29 @@ inline void construct(void* dest, T*& src) {
   }                                                                                                \
   START_ECHOES_NAMESPACE
 
+// Guessed policy name. Whole-container copies retain the generic construct path.
+template < typename T >
+struct reserved_vector_push_policy {
+  enum { value = false };
+  static void construct_element(T* dest, const T& src) { construct(dest, src); }
+};
+
+#define RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(T)                                          \
+  template <>                                                                                      \
+  struct reserved_vector_push_policy< T > {                                                        \
+    enum { value = true };                                                                         \
+    static void construct_element(T* dest, const T& src) {                                         \
+      construction_policy< T, true >::construct(dest, src);                                        \
+    }                                                                                              \
+  };
+
+#define ECHOES_RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(T)                                   \
+  END_ECHOES_NAMESPACE                                                                             \
+  namespace rstl {                                                                                 \
+  RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(ECHOES_NAMESPACE T)                               \
+  }                                                                                                \
+  START_ECHOES_NAMESPACE
+
 #if RSTL_DESTROY_VIA_IMPL
 template < typename T >
 RSTL_CONSTRUCT_INLINE void destroy_impl(T* in) {

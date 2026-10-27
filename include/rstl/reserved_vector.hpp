@@ -210,7 +210,11 @@ public:
   ~reserved_vector() { destroy_elements(); }
 
   void push_back(const T& in) {
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
@@ -272,7 +276,11 @@ public:
   void push_back(const T& in) {
 #endif
     RS_ASSERT(mCount < N, "rstl precondition");
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
