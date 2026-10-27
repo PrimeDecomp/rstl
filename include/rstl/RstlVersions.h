@@ -61,8 +61,8 @@
 // `rmemory_allocator::allocate(int)` is declared only and always called out of line (defined in
 // RstlExtras.cpp), `deallocate` deletes without a null check, and `allocate2` exists.
 #define RSTL_ALLOCATOR_EXTERN_ALLOCATE (RSTL_VERSION >= RSTL_G2ME)
-// Echoes Trilogy USA exports the allocation entry point as global_allocate.
-#define RSTL_ALLOCATOR_GLOBAL_ALLOCATE (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
+// Echoes on Wii exports the allocation entry point as global_allocate, including NPC.
+#define RSTL_ALLOCATOR_GLOBAL_ALLOCATE (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // Allocation calls the out-of-line `rmemory_allocator::allocate(int)` (MWCC only).
 #define RSTL_OUTLINED_ALLOCATE (RSTL_VERSION >= RSTL_GM8P_00)
 // rstl_allocator.cpp defines `rmemory_allocator::allocate(int)` (GM8E_02 defines it although
