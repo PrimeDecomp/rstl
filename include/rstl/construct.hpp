@@ -85,6 +85,7 @@ template < typename T >
 struct use_assignment_for_construction< T* > {
   enum { value = true };
 };
+#endif
 
 // Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
 // long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
@@ -117,8 +118,14 @@ RSTL_DECLARE_SCALAR_TYPE(short)
 RSTL_DECLARE_SCALAR_TYPE(ushort)
 
 #undef RSTL_DECLARE_SCALAR_TYPE
-#endif
 
+// Guessed name. Enable only explicitly supported construction overloads.
+template < bool Enabled >
+struct construction_result {};
+template <>
+struct construction_result< true > {
+  typedef void type;
+};
 template < typename T, bool UseAssignment >
 struct construction_policy {
   static void construct(void* dest, const T& src) {
@@ -180,7 +187,9 @@ template < typename T >
 struct is_trivially_destructible< T* > {
   enum { value = true };
 };
+#endif
 
+#if RSTL_TRIVIAL_UINT_DESTRUCTION
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(uint)
 #endif
 
@@ -305,6 +314,52 @@ inline void construct(void* dest, T*& src) {
   END_ECHOES_NAMESPACE                                                                             \
   namespace rstl {                                                                                 \
   RSTL_DECLARE_DIRECT_CONSTRUCTION(ECHOES_NAMESPACE T)                                             \
+  }                                                                                                \
+  START_ECHOES_NAMESPACE
+
+// Guessed policy name. Whole-container copies retain the generic construct path.
+template < typename T >
+struct reserved_vector_push_policy {
+  enum { value = false };
+  static void construct_element(T* dest, const T& src) { construct(dest, src); }
+};
+
+#define RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(T)                                          \
+  template <>                                                                                      \
+  struct reserved_vector_push_policy< T > {                                                        \
+    enum { value = true };                                                                         \
+    static void construct_element(T* dest, const T& src) {                                         \
+      construction_policy< T, true >::construct(dest, src);                                        \
+    }                                                                                              \
+  };
+
+#define ECHOES_RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(T)                                   \
+  END_ECHOES_NAMESPACE                                                                             \
+  namespace rstl {                                                                                 \
+  RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(ECHOES_NAMESPACE T)                               \
+  }                                                                                                \
+  START_ECHOES_NAMESPACE
+
+// Guessed policy name. Constructing a value does not establish whole-container copy policy.
+template < typename T >
+struct optional_object_value_policy {
+  enum { value = false };
+  static void construct_element(void* dest, const T& src) { construct(dest, src); }
+};
+
+#define RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(T)                                                \
+  template <>                                                                                      \
+  struct optional_object_value_policy< T > {                                                       \
+    enum { value = true };                                                                         \
+    static void construct_element(void* dest, const T& src) {                                      \
+      construction_policy< T, true >::construct(dest, src);                                        \
+    }                                                                                              \
+  };
+
+#define ECHOES_RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(T)                                         \
+  END_ECHOES_NAMESPACE                                                                             \
+  namespace rstl {                                                                                 \
+  RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(ECHOES_NAMESPACE T)                                     \
   }                                                                                                \
   START_ECHOES_NAMESPACE
 
@@ -540,7 +595,7 @@ static inline void uninitialized_fill_n(D dest, int n, const S& value) {
   D cur = dest;
 #endif
   for (int i = 0; i < n; ++i, ++cur) {
-#if RSTL_FILL_USES_CONSTRUCT
+#if RSTL_FILL_USES_CONSTRUCT || RSTL_RESERVED_VECTOR_TRAITS
     construct(&*cur, value);
 #else
     void* ptr = &*cur;

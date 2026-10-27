@@ -60,7 +60,7 @@ private:
 
     node(node* left, node* right, node* parent, node_color color, const P& value)
     : mLeft(left), mRight(right), mParent(parent), mColor(color) {
-#if RSTL_CONSTRUCTION_POLICY
+#if RSTL_CONSTRUCTION_POLICY || RSTL_RESERVED_VECTOR_TRAITS
       construct(get_value(), value);
 #else
       new (mValue) P(value);

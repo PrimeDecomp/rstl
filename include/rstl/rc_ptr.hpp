@@ -165,7 +165,7 @@ public:
   }
   rc_ptr& operator=(const rc_ptr& other) {
 #if RSTL_RC_PTR_INLINE_COUNT
-    if (mCount != other.mCount) {
+    if (mPtr != other.mPtr) {
       ReleaseData();
       mPtr = other.mPtr;
       mCount = other.mCount;

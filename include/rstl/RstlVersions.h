@@ -93,10 +93,13 @@
 // `construct`, `destroy` and `destroy_impl` are external `inline` templates instead of `static
 // inline` ones (the uninitialized_* helpers are `static inline` everywhere).
 #define RSTL_EXTERN_CONSTRUCT_FUNCTIONS RSTL_ECHOES_ERA
-// Declare pointer/uint trivial-destructor traits here. The prototype supplies equivalent
-// traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers non-trivial.
+// Declare pointer trivial-destructor traits here. The prototype supplies equivalent
+// traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers
+// non-trivial.
 #define RSTL_TRIVIAL_POINTERS                                                                      \
   ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
+// UInt destruction is also trivial in NPC Echoes; keep pointer policies independent.
+#define RSTL_TRIVIAL_UINT_DESTRUCTION (RSTL_TRIVIAL_POINTERS || RSTL_VERSION >= RSTL_R32J)
 // The arithmetic types are declared trivially destructible and copied by assignment, and so are
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
@@ -313,7 +316,8 @@
 // `const_linear_iterator` builds its `+`/`-` results directly (and `operator-` returns `long`).
 #define RSTL_LINEAR_ITERATOR_DIRECT_ARITHMETIC (RSTL_VERSION == RSTL_G2MEAB)
 // `ownership_transfer::take_ownership` returns null when it does not own the object.
-#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_OWNERSHIP_TRANSFER_CHECKED_TAKE                                                       \
+  (RSTL_VERSION == RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
 // construct.hpp declares the pointer specializations of `is_trivially_destructible` and
 // `use_assignment_for_construction` right after the primary templates, has `is_scalar_type`, and
 // declares `uint`, `u64` and `s64` as trivially constructible.

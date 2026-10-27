@@ -210,7 +210,11 @@ public:
   ~reserved_vector() { destroy_elements(); }
 
   void push_back(const T& in) {
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
@@ -272,7 +276,11 @@ public:
   void push_back(const T& in) {
 #endif
     RS_ASSERT(mCount < N, "rstl precondition");
-    construct(data() + mCount, in);
+    if (reserved_vector_push_policy< T >::value) {
+      reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
+    } else {
+      construct(data() + mCount, in);
+    }
     ++mCount;
   }
 
@@ -416,6 +424,16 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 // reserved_vector< T, N >::reserved_vector(int count, const T& value) : x0_count(count) {
 //   uninitialized_fill_n(data(), count, value);
 // }
+
+#if RSTL_RESERVED_VECTOR_TRAITS
+// Registered fixed-storage types retain their explicit construction policy.
+template < typename T, int N >
+inline typename construction_result<
+    use_assignment_for_construction< reserved_vector< T, N > >::value >::type
+construct(reserved_vector< T, N >* dest, const reserved_vector< T, N >& src) {
+  construction_policy< reserved_vector< T, N >, true >::construct(dest, src);
+}
+#endif
 
 } // namespace rstl
 #ifndef __MWERKS__

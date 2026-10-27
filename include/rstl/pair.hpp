@@ -34,15 +34,37 @@ public:
   R second;
 };
 
+#if RSTL_RESERVED_VECTOR_TRAITS
+template < typename L, typename R >
+inline
+    typename construction_result< is_scalar_type< L >::value && is_scalar_type< R >::value >::type
+    construct(pair< L, R >* dest, const pair< L, R >& src) {
+  *dest = src;
+}
+template < typename L, typename R >
+inline
+    typename construction_result< is_scalar_type< L >::value && is_scalar_type< R >::value >::type
+    construct(pair< L, R >* dest, pair< L, R >& src) {
+  *dest = src;
+}
+
+#endif
+
 template < typename L, typename R >
 inline pair< L, R > make_pair(L first, R second) {
   return pair< L, R >(first, second);
 }
 
-#if RSTL_CONSTRUCTION_POLICY || RSTL_TRIVIAL_INT_BOOL_DESTRUCTION
+#if RSTL_CONSTRUCTION_POLICY || RSTL_TRIVIAL_INT_BOOL_DESTRUCTION || RSTL_RESERVED_VECTOR_TRAITS
 template < typename L, typename R >
 struct is_trivially_destructible< pair< L, R > > {
-  enum { value = is_trivially_destructible< L >::value && is_trivially_destructible< R >::value };
+  enum {
+    value =
+#if RSTL_RESERVED_VECTOR_TRAITS
+        (is_scalar_type< L >::value && is_scalar_type< R >::value) ||
+#endif
+    (is_trivially_destructible< L >::value && is_trivially_destructible< R >::value)
+  };
 };
 #endif
 
