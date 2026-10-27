@@ -418,12 +418,12 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 // }
 
 #if RSTL_STREAM_CONSTRUCTORS
-#ifndef __MWERKS__
 } // namespace rstl
+#ifndef __MWERKS__
 #include "Kyoto/Streams/CInputStream.hpp"
-#include "Kyoto/Streams/COutputStream.hpp"
-namespace rstl {
 #endif
+#include "rstl/stream_objects.hpp"
+namespace rstl {
 template < typename T, int N >
 inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
 : mCount(in.Get(TGetType(0))) {
@@ -432,18 +432,11 @@ inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
   }
 }
 
-template < typename Iter >
-inline void StreamObjects(COutputStream& out, const Iter& begin, const Iter& end, int) {
-  Iter iterEnd = end;
-  for (Iter iter = begin; iter != iterEnd; ++iter) {
-    out.Put(*iter);
-  }
-}
-
 template < typename T, int N >
 inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
-  out.Put(size());
-  StreamObjects(out, begin(), end(), size());
+  const int count = size();
+  out.Put(count);
+  StreamObjects(out, begin(), end(), count);
 }
 #endif
 

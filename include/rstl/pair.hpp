@@ -87,11 +87,18 @@ struct select1st< pair< K, V > > : unary_function< pair< K, V >, K > {
 #ifndef __MWERKS__
 } // namespace rstl
 #include "Kyoto/Streams/CInputStream.hpp"
+#include "Kyoto/Streams/COutputStream.hpp"
 namespace rstl {
 #endif
 template < typename L, typename R >
 inline pair< L, R >::pair(CInputStream& in)
 : first(in.Get(TGetType(first))), second(in.Get(TGetType(second))) {}
+
+template < typename L, typename R >
+inline void pair< L, R >::PutTo(COutputStream& out) const {
+  out.Put(first);
+  out.Put(second);
+}
 #endif
 
 } // namespace rstl

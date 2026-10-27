@@ -48,9 +48,9 @@
 // The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
 // `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
-// The containers' CInputStream constructors and reserved_vector::PutTo are defined here. Echoes and
-// Corruption define them in the game's stream headers.
-#define RSTL_STREAM_CONSTRUCTORS RSTL_PRIME1
+// The containers' CInputStream constructors and `PutTo` are defined here. Corruption defines them in
+// the game's stream headers.
+#define RSTL_STREAM_CONSTRUCTORS (RSTL_VERSION < RSTL_G2MEAB || RSTL_VERSION >= RSTL_R3IJ)
 
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
@@ -197,6 +197,8 @@
 #define RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR (RSTL_VERSION >= RSTL_G2ME)
 // `vector(int)` only reserves, with `mCount` assigned in the body.
 #define RSTL_VECTOR_RESERVE_CTOR (RSTL_VERSION >= RSTL_R3ME_00)
+// The stream constructor reserves `count + mCount` elements instead of `count`.
+#define RSTL_VECTOR_STREAM_RESERVE_APPEND (RSTL_VERSION >= RSTL_R32J)
 // `vector::assign` and CStringExtras fill with `push_back_unsafe`.
 #define RSTL_VECTOR_PUSH_BACK_UNSAFE (RSTL_VERSION >= RSTL_G2ME)
 // `vector::push_back` appends without growing or checking capacity.

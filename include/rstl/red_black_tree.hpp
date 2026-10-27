@@ -576,7 +576,7 @@ red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::copy_from(node* n) {
 #include "Kyoto/Streams/CInputStream.hpp"
 namespace rstl {
 #endif
-template < typename T, typename P, bool IsMulti, typename S, typename Cmp, typename Alloc >
+template < typename T, typename P, RSTL_RBTREE_MULTI_TYPE IsMulti, typename S, typename Cmp, typename Alloc >
 inline red_black_tree< T, P, IsMulti, S, Cmp, Alloc >::red_black_tree(
     CInputStream& in, const S& selector, const Cmp& cmp, const Alloc& alloc)
 : mSelector(selector), mCmp(cmp), mAllocator(alloc), mCount(0) {

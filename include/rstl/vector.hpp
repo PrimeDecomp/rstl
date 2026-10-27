@@ -555,15 +555,16 @@ inline void vector< T, Alloc >::clear() {
 #endif
 
 #if RSTL_STREAM_CONSTRUCTORS
-#ifndef __MWERKS__
 } // namespace rstl
+#ifndef __MWERKS__
 #include "Kyoto/Streams/CInputStream.hpp"
-namespace rstl {
 #endif
+#include "rstl/stream_objects.hpp"
+namespace rstl {
 template < typename T, typename Alloc >
 inline vector< T, Alloc >::vector(CInputStream& in, const Alloc& allocator)
 :
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_ALLOCATOR_BASE_CLASS
   Alloc(allocator),
 #else
   mAllocator(allocator),
@@ -571,14 +572,25 @@ inline vector< T, Alloc >::vector(CInputStream& in, const Alloc& allocator)
   mCount(0), mCapacity(0), mItems(nullptr) {
   int count = in.Get(TGetType(0));
   RS_ASSERT(count >= 0, "rstl precondition");
-#if RSTL_VERSION >= RSTL_R3ME_00
+#if RSTL_VECTOR_STREAM_RESERVE_APPEND
   reserve(count + mCount);
 #else
   reserve(count);
 #endif
   for (int i = 0; i < count; i++) {
+#if RSTL_VECTOR_PUSH_BACK_UNSAFE
+    push_back_unsafe(in.Get< T >());
+#else
     push_back(in.Get< T >());
+#endif
   }
+}
+
+template < typename T, typename Alloc >
+inline void vector< T, Alloc >::PutTo(COutputStream& out) const {
+  const int count = size();
+  out.Put(count);
+  StreamObjects(out, begin(), end(), count);
 }
 #endif
 

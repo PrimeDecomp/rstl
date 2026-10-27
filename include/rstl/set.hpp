@@ -92,10 +92,6 @@ inline
     set< T, Cmp, Alloc >::set(const set& other)
 : rep_type(other) {
 }
-#endif
-
-typedef set< char, char > unk_set;
-CHECK_SIZEOF(unk_set, 0x14)
 
 #if RSTL_STREAM_CONSTRUCTORS
 #ifndef __MWERKS__
@@ -107,6 +103,10 @@ template < typename T, typename Cmp, typename Alloc >
 inline set< T, Cmp, Alloc >::set(CInputStream& in, const Cmp& cmp, const Alloc& alloc)
 : rep_type(in, identity< T >(), cmp, alloc) {}
 #endif
+#endif
+
+typedef set< char, char > unk_set;
+CHECK_SIZEOF(unk_set, 0x14)
 
 } // namespace rstl
 
