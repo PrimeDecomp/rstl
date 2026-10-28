@@ -11,21 +11,31 @@
 COutputStream::COutputStream(const int len)
 : mUnwrittenLen(0)
 , mBufLen(len)
+#if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
 , mBufPtr(len > 64 ? rs_new_line(22) uchar[len]
                    : &mScratch[32 - reinterpret_cast< uintptr_t >(mScratch) % 31])
+#else
+, mBufPtr(rs_new_line(22) uchar[len])
+#endif
 , mNumWrites(0)
 #if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
 , mShiftRegister(0)
 , mShiftRegisterOffset(32)
+#if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
 , mScratch()
+#endif
 #endif
 {
 }
 
 COutputStream::~COutputStream() {
+#if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
   if (mBufLen > 64) {
     delete[] static_cast< const uchar* >(mBufPtr);
   }
+#else
+  delete[] static_cast< const uchar* >(mBufPtr);
+#endif
 }
 
 void COutputStream::DoPut(const void* ptr, const size_t len) {
