@@ -623,6 +623,11 @@
 // before every byte write, and value-initializes its scratch buffer. Echoes moved bit writing
 // into `CBitStreamWriter` and dropped both members (0x74 bytes instead of 0x7C).
 #define RSTL_KYOTO_OUTPUT_SHIFT_REGISTER RSTL_PRIME1
+// `COutputStream` keeps its small buffers (64 bytes or fewer) in an inline scratch array. The demo
+// has no such array (0x1C bytes) and allocates every buffer, so its constructor and destructor
+// always allocate and free (GM8EAB_00 0x8029D1AC allocates unconditionally; 0x8029D14C frees
+// without a length check).
+#define RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER (RSTL_VERSION != RSTL_GM8EAB_00)
 // `COutputStream` writes `rstl::pair` with its own helper overload instead of `pair::PutTo`.
 #define RSTL_KYOTO_OUTPUT_PAIR_HELPER RSTL_PRIME1
 // The bit writer's shift register offset is `volatile` (Prime's `COutputStream` and Echoes'

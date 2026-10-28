@@ -96,10 +96,16 @@ private:
   uint mShiftRegister;
   volatile uint mShiftRegisterOffset;
 #endif
+#if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
   uchar mScratch[96];
+#endif
 };
 
+#if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
 DECLARE_FULL_SIZE_FOR(COutputStream, RSTL_KYOTO_OUTPUT_SHIFT_REGISTER ? 0x7C : 0x74)
+#else
+DECLARE_FULL_SIZE_FOR(COutputStream, 0x1C)
+#endif
 CHECK_SIZEOF(COutputStream, COutputStream_FULL_SIZE)
 
 template < typename T >
