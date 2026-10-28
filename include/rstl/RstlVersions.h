@@ -473,15 +473,6 @@
 #define RSTL_RBTREE_PROTO_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
 // `set` wraps a `red_black_tree` member (`inner`) and forwards to it, instead of deriving from it.
 #define RSTL_SET_INNER_TREE (RSTL_VERSION == RSTL_G2MEAB)
-// `rc_ptr` allocates its count with `rs_new_line_in("rc_ptr.h", 87)` (constructor) and
-// `rs_new_line_in("rc_ptr.h", 310)` (`Assign`), the lines of the prototype's original header.
-#if RSTL_VERSION == RSTL_G2MEAB
-#define RSTL_RC_PTR_NEW_COUNT_CTOR rs_new_line_in("rc_ptr.h", 87)
-#define RSTL_RC_PTR_NEW_COUNT_ASSIGN rs_new_line_in("rc_ptr.h", 310)
-#else
-#define RSTL_RC_PTR_NEW_COUNT_CTOR rs_new
-#define RSTL_RC_PTR_NEW_COUNT_ASSIGN rs_new
-#endif
 // `~rc_ptr` carries the (empty) count precondition.
 #define RSTL_RC_PTR_DTOR_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` accessors go through `GetPtr()` and `ReleaseData` deletes `mRefCount` directly.
@@ -502,6 +493,158 @@
 #define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
 #define RSTL_OPTIONAL_STORAGE_ALIGNED (RSTL_VERSION != RSTL_G2MEAB)
+
+// --- Shared Kyoto ---
+// include/Kyoto and src/Kyoto hold the engine code every game shares (allocators, basics,
+// streams). Prime's copy is selected by RSTL_PRIME1, including Prime Trilogy; Echoes' copy also
+// builds Echoes Trilogy and Wii de Asobu Echoes, and the prototype's builds G2MEAB.
+// Basics, object tags, dependency groups.
+// Game selection, for the few sources that name a game's own headers or namespace (Corruption's
+// prototype is the only Corruption build).
+#define RSTL_KYOTO_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION < RSTL_R3IJ)
+#if RSTL_PRIME1
+#define KYOTO_START_GAME_NAMESPACE START_PRIME_NAMESPACE
+#define KYOTO_END_GAME_NAMESPACE END_PRIME_NAMESPACE
+#elif RSTL_KYOTO_CORRUPTION
+#define KYOTO_START_GAME_NAMESPACE
+#define KYOTO_END_GAME_NAMESPACE
+#else
+#define KYOTO_START_GAME_NAMESPACE START_ECHOES_NAMESPACE
+#define KYOTO_END_GAME_NAMESPACE END_ECHOES_NAMESPACE
+#endif
+// Prime on the Wii (Wii de Asobu and Trilogy) runs on the Revolution SDK: CBasics::Init also
+// calls NANDInit and CStopwatch::Wait uses fabsf. Echoes' Wii builds come from Echoes' copy,
+// which has neither (those builds do not compile these units yet).
+#define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
+// The Wii COsContext is 0xA8 bytes; only its size is reconstructed (Prime Wii).
+#define RSTL_KYOTO_WII_OS_CONTEXT RSTL_KYOTO_REVOLUTION_SDK
+// By-value scalar returns are declared const: the CBasics::SwapBytes overloads (which also take
+// const uint/short/ushort, and whose float overload returns its operand instead of going through
+// a union) and SObjectTag::GetType. MWCC allocates registers differently around the non-const
+// forms (CCubeModel, CWallWalker and CAreaOctTree in Prime GC; CParticleDatabase in Trilogy).
+#define RSTL_KYOTO_CONST_SCALAR_RETURNS RSTL_PRIME1
+// CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
+// The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
+#define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1
+// CStopwatch::Wait skips waits at or below FLT_EPSILON instead of waiting zero for |wait| < 1ms.
+#define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
+// CBasics::Stringize formats with vsnprintf (Prime: vsprintf).
+#define RSTL_KYOTO_STRINGIZE_VSNPRINTF (!RSTL_PRIME1)
+// CBasics::ZeroMemory/CopyMemory (dcbz block fill and copy) are defined in CBasicsDolphin.cpp.
+// Prime Trilogy has its own, larger versions that are not reconstructed.
+#define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)
+// COsContext stores OSGetLanguage() and reserves a fixed arena block in its constructor; window
+// opening and key states are no longer part of it (field layout changes from 0x10 on).
+#define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK (!RSTL_PRIME1)
+// The fatal error handler pivots to a clean OSContext and waits for a controller on port 1.
+// Absent in the Prime demo and Prime USA 0-00.
+#define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
+// Echoes' fatal error handler: halts audio and DVD, resets after 10 idle seconds, skips "SKIP<n>"
+// frames and names REL addresses through CRelFileDebugInfo. Its last parameter is `uint dar`
+// (mangled differently from Prime's `int`).
+#define RSTL_KYOTO_REL_ERROR_HANDLER (!RSTL_PRIME1)
+// BUILD_TIME_DUMMY holds a real build string (Echoes and the prototype); Prime pads it.
+#define RSTL_KYOTO_BUILD_TIME_STRING (!RSTL_PRIME1)
+// Echoes PAL's build string.
+#define RSTL_KYOTO_BUILD_TIME_PAL (RSTL_VERSION == RSTL_G2MP)
+// CCast overloads that only Prime declares; declaring them elsewhere would change which overload
+// existing calls select (ToUint32(uint), ToReal32(const short&), ToInt32(double)).
+#define RSTL_KYOTO_CAST_PRIME_OVERLOADS RSTL_PRIME1
+// CCast::ToReal32(int) and ToReal32(double) (not in the prototype, where int arguments would
+// otherwise change overload).
+#define RSTL_KYOTO_CAST_REAL32_INT_DOUBLE (RSTL_VERSION != RSTL_G2MEAB)
+// CCast::ToUint32(int) (prototype only).
+#define RSTL_KYOTO_CAST_UINT32_INT (RSTL_VERSION == RSTL_G2MEAB)
+// CAssetId is the prototype's class (Corruption/Kyoto/CAssetId.hpp, read from the stream by its
+// own constructor) instead of a `uint`.
+#define RSTL_KYOTO_ASSET_ID_CLASS (RSTL_VERSION == RSTL_G2MEAB)
+// SObjectTag is declared trivially constructible for rstl containers (Echoes and the prototype).
+// Prime instead gives it a user-declared assignment operator.
+#define RSTL_KYOTO_OBJECT_TAG_TRIVIAL (!RSTL_PRIME1)
+// SObjectTag has a user-declared copy constructor (Prime and the prototype).
+#define RSTL_KYOTO_OBJECT_TAG_COPY_CTOR (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// Resource factories receive the loaded buffer and its size and build their own CMemoryInStream
+// (prototype); otherwise they receive a CInputStream.
+#define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_VERSION == RSTL_G2MEAB)
+// CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).
+#define RSTL_KYOTO_DEPENDENCY_GROUP_TOKEN (!RSTL_PRIME1)
+// Echoes' CDependencyGroup forms: ReadFromStream reads the tag type with `Get< FourCC >()` (its
+// default TType argument is a 1-byte .sbss temporary that Prime's and the prototype's ReadInt32
+// form does not emit), and CDependencyGroupToken::IsLoaded is const, with a mutable cache bit.
+#define RSTL_KYOTO_ECHOES_DEPENDENCY_GROUP (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
+// CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
+// prototype; Prime, including Prime Trilogy, uses push_back).
+#define RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE (!RSTL_PRIME1)
+// Allocation.
+// The allocator reports metrics through `GetMetrics(bool resetPeriodicPeak, bool resetPeak)`:
+// `SMetrics` gains the periodic peak (x2c) and its trailing unknowns move by a word, CGameAllocator
+// tracks that peak, CMemory forwards GetMetrics and an allocation failure reports used/free bytes.
+// Prime's `GetMetrics()` takes no arguments (all Prime versions, including Trilogy).
+#define RSTL_KYOTO_ALLOCATOR_METRICS_RESET (!RSTL_PRIME1)
+// `SMetrics` declares a copy constructor (Echoes defines it in CMemoryDrawEnum.cpp). The
+// prototype's metrics are trivially copied.
+#define RSTL_KYOTO_METRICS_COPY_CTOR (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
+// Plain `new` / `new[]` are inline wrappers that pass "??(??)" to the source-position operator new.
+// Prime calls the global allocation functions directly.
+#define RSTL_KYOTO_INLINE_GLOBAL_NEW (!RSTL_PRIME1)
+// `CCallStack` also declares the prototype's (int, const char*, const char*) constructor, which
+// `CCallStack(-1, ...)` then selects. Declaring it elsewhere would change those calls' mangled
+// callee.
+#define RSTL_KYOTO_CALLSTACK_SIGNED_CTOR (RSTL_VERSION == RSTL_G2MEAB)
+// CGameAllocator::Alloc queries the medium pool's statistics the first time it fails and reads the
+// call stack's text on an out-of-memory retry (calls whose results are unused). Echoes' binary
+// lacks these calls.
+#define RSTL_KYOTO_ALLOCATOR_DEBUG_QUERIES (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// CGameAllocator::DumpAllocations calls `GetLargestFreeChunk`, which the TU defines (Prime only).
+#define RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK RSTL_PRIME1
+// CCircularBuffer.cpp defines `GetAllocatedAmount` (Echoes' unit does not emit it).
+#define RSTL_KYOTO_CIRCULAR_BUFFER_ALLOCATED_AMOUNT (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// Spellings only the prototype's units use, where Echoes' equivalent source compiles differently.
+// CStreamPreloadedData::Read declares its first length with its initializer and clamps each chunk
+// with an if. CBasics::SwapBytes(int) returns a plain int (Echoes' `const int` adds dead field
+// loads in CMappableObject::PostConstruct). The prototype's CGameAllocator (a NonMatching unit)
+// also keeps its own forms: SGameMemInfo takes `prev` by value and stores literal guard words,
+// Initialize computes the tail through `mFirst - 1` and does not reset the periodic peak, the
+// medium pool's initial puddle size is computed in a local, and FixupAllocPtrs reads the split
+// block's free link through GetNextFree.
+#define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_VERSION == RSTL_G2MEAB)
+// Streams.
+// `CInputStream` is Prime's abstract block-buffered stream (a derived stream supplies the virtual
+// `Read`; it reads bits and typed values through `cinput_stream_helper`). Echoes and Corruption
+// replaced it with a stream over one memory buffer, a different class with a different layout.
+// The zip input stream follows: Prime inflates blocks as they are read, the prototype inflates the
+// whole buffer up front with `CZipSupport::Decompress`.
+#define RSTL_KYOTO_BLOCK_INPUT_STREAM RSTL_PRIME1
+// The memory-buffer `CInputStream` steps its cursor through typed union members (`*p16++`,
+// `*p32++`, `*pc8++`) in its inline reads, as the prototype's code does; Echoes casts the byte
+// cursor instead. Inline in every stream reader, so the spelling can reach any object.
+#define RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR (RSTL_VERSION == RSTL_G2MEAB)
+// `COutputStream` carries the bit shift register (`WriteBits`, `FlushShiftRegister`), flushes it
+// before every byte write, and value-initializes its scratch buffer. Echoes moved bit writing
+// into `CBitStreamWriter` and dropped both members (0x74 bytes instead of 0x7C).
+#define RSTL_KYOTO_OUTPUT_SHIFT_REGISTER RSTL_PRIME1
+// `COutputStream` writes `rstl::pair` with its own helper overload instead of `pair::PutTo`.
+#define RSTL_KYOTO_OUTPUT_PAIR_HELPER RSTL_PRIME1
+// The bit writer's shift register offset is `volatile` (Prime's `COutputStream` and Echoes'
+// `CBitStreamWriter`); the prototype's is a plain member.
+#define RSTL_KYOTO_VOLATILE_SHIFT_OFFSET (RSTL_VERSION != RSTL_G2MEAB)
+// The prototype is a debug build of Kyoto: Verify asserts (`RS_VERIFY_THROW`,
+// Kyoto/Alloc/Assert.hpp) and debugger prints are compiled in, and allocations record their source
+// line ("File.cpp(22) : "); the allocator fills freed blocks with 0xDE and reports damaged guard
+// words. Prime and Echoes compile the checks out and allocate at "??(??)".
+#define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
+// Out-of-line stream helpers only the prototype's units contain (64-bit bit stream reads and
+// writes, low word first, and `CStreamPreloadedToken::GetReferenceCount`). Echoes' matching units
+// end without them.
+#define RSTL_KYOTO_PROTO_STREAM_HELPERS (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype declares its own zlib interface (Kyoto/Streams/ZipTypes.hpp, `struct z_stream`)
+// instead of including zlib's header (`typedef z_stream_s z_stream`). The type name is part of
+// the `auto_ptr< z_stream >` symbols, so this is not only an include path choice.
+#define RSTL_KYOTO_ZIP_TYPES_DECLARED (RSTL_VERSION == RSTL_G2MEAB)
+// `CZipOutputStream` has `Finish`, ends deflate in its destructor, checks deflate's result, and
+// finishes the stream before reporting the compressed size (out of line, with a `bool mFinished`).
+// Echoes' header still has Prime's form; neither Echoes copy has the source.
+#define RSTL_KYOTO_ZIP_OUTPUT_FINISH (RSTL_VERSION == RSTL_G2MEAB)
 
 #if defined(TARGET_PC)
 #define RSTL_DELETE_PTR(TYPE, PTR) pointer_deleter< TYPE >::destroy(PTR)
