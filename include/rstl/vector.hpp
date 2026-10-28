@@ -194,7 +194,7 @@ public:
 #if RSTL_VECTOR_INLINE_DECLS
   inline
 #endif
-  iterator insert(iterator it, const T& value);
+  iterator insert(iterator it, typename type_traits< T >::vector_insert_type value);
 
   template < typename from_iterator >
 #if RSTL_VECTOR_OUT_OF_CLASS
@@ -409,7 +409,8 @@ void vector< T, Alloc >::reserve(int newSize) {
 }
 
 template < typename T, typename Alloc >
-typename vector< T, Alloc >::iterator vector< T, Alloc >::insert(iterator it, const T& value) {
+typename vector< T, Alloc >::iterator vector< T, Alloc >::insert(
+    iterator it, typename type_traits< T >::vector_insert_type value) {
   typename iterator::difference_type diff = it.operator->() - mItems;
   const_counting_iterator< T > in(&value, 0);
   insert_into(it, 1, in);

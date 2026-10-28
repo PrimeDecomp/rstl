@@ -39,6 +39,11 @@ template < typename T >
 struct type_traits {
   typedef typename fill_argument< T >::type vector_fill_type;
   typedef typename fill_argument< T >::type vector_resize_type;
+#if RSTL_VECTOR_INSERT_SCALAR_BY_VALUE
+  typedef typename fill_argument< T >::type vector_insert_type;
+#else
+  typedef const T& vector_insert_type;
+#endif
   typedef typename fill_argument< T >::type reserved_vector_fill_type;
 };
 #else
@@ -47,6 +52,7 @@ template < typename T >
 struct type_traits {
   typedef const T& vector_fill_type;
   typedef const T& vector_resize_type;
+  typedef const T& vector_insert_type;
   typedef const T& reserved_vector_fill_type;
 };
 #endif

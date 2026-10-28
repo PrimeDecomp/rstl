@@ -64,6 +64,15 @@ inline float StoF(register const short& in) {
   return r;
 }
 
+// Guessed name; unsigned counterpart of StoF.
+inline float UStoF(register const ushort& in) {
+  register float r;
+  asm {
+    psq_l r, 0(in), 1, OS_FASTCAST_U16
+  }
+  return r;
+}
+
 inline int FtoL(float in) { return static_cast< int >(in); }
 #else
 namespace detail {
@@ -85,6 +94,7 @@ inline float ToReal32(uchar in) { return static_cast< float >(in); }
 inline short FtoS(float in) { return detail::Quantize< short >(in, -32768, 32767); }
 inline ushort FtoUS(float in) { return detail::Quantize< ushort >(in, 0, 65535); }
 inline float StoF(const short& in) { return static_cast< float >(in); }
+inline float UStoF(const ushort& in) { return static_cast< float >(in); } // Guessed name
 inline int FtoL(float in) {
   // Match fctiwz overflow and NaN results before converting to an integer.
   if (!(in >= -2147483648.0)) {

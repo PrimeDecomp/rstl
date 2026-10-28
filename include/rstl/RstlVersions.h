@@ -403,6 +403,8 @@
 // `vector` / `reserved_vector` fills, `resize` and `assign` take builtin values and pointers by
 // value (other types by const reference). GameCube Prime and Echoes pass everything by reference.
 #define RSTL_SCALAR_FILL_BY_VALUE (RSTL_VERSION >= RSTL_G2MEAB)
+// The prototype's single-element vector insertion uses the same scalar argument policy.
+#define RSTL_VECTOR_INSERT_SCALAR_BY_VALUE (RSTL_VERSION == RSTL_G2MEAB)
 // `reserved_vector` storage is an unaligned `uchar` array.
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (RSTL_VERSION != RSTL_G2MEAB)
 // The copy constructor placement-constructs each element through `construction_policy`.
