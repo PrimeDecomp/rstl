@@ -224,11 +224,12 @@
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)
-// `explicit reserved_vector(int)` exists. Trilogy Echoes has none: `reserved_vector< int, N >(0)` fills N
+// `explicit reserved_vector(int)` exists; the Corruption prototype default-constructs camera
+// behavior slots through it. Trilogy Echoes has none: `reserved_vector< int, N >(0)` fills N
 // elements (Echoes `CWeaponMgr::Add`), which a count constructor beside the by-value fill cannot do.
 // Metroid Prime uses it on every version, including the Trilogy.
 #define RSTL_RESERVED_VECTOR_COUNT_CTOR \
-  (RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES)
+  ((RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES) || RSTL_VERSION == RSTL_G2MEAB)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
 #define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
 // `destroy_elements` checks the count (a release no-op that still counts toward the inline size)

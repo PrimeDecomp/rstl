@@ -165,7 +165,8 @@ public:
   explicit reserved_vector(typename type_traits< T >::reserved_vector_fill_type value) : mCount(N) {
     uninitialized_fill_n(data(), N, value);
   }
-  explicit reserved_vector(int count, const T& value) : mCount(count) {
+  explicit reserved_vector(int count, typename type_traits< T >::reserved_vector_fill_type value)
+  : mCount(count) {
 #if !RSTL_PRECONDITION_MACRO
     RS_ASSERT(count <= N, "rstl precondition");
 #endif
