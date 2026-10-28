@@ -86,6 +86,10 @@ int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool f
   mRight = mRenderMode.viWidth;
   mBottom = mRenderMode.viHeight;
 
+#if defined(TARGET_PC)
+  mFrameBuffer1 = reinterpret_cast< void* >(0xDEADBABEu);
+  mFrameBuffer2 = reinterpret_cast< void* >(0xBABEDEADu);
+#else
   mFrameBufferSize = (ushort)((mRenderMode.fbWidth + 15) & ~15) * mRenderMode.xfbHeight * 2;
   mFrameBuffer1 = OSAllocFromArenaLo(mFrameBufferSize, 32);
   mFrameBuffer2 = OSAllocFromArenaLo(mFrameBufferSize, 32);
@@ -94,6 +98,7 @@ int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool f
   mArenaHi = OSGetArenaHi();
   mRenderMode.viWidth += 20;
   mRenderMode.viXOrigin -= 10;
+#endif
 
   if (mProgressiveMode) {
     mRenderMode.viTVmode = VI_TVMODE_NTSC_PROG;
@@ -108,12 +113,16 @@ int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool f
 #endif
 
 void* COsContext::AllocFromArena(size_t sz) {
+#if defined(TARGET_PC)
+  return operator new(sz);
+#else
   void* ret = OSAllocFromArenaLo(sz, 32);
 
   mArenaLo2 = OSGetArenaLo();
   mArenaLo1 = OSGetArenaLo();
   mArenaHi = OSGetArenaHi();
   return ret;
+#endif
 }
 
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK

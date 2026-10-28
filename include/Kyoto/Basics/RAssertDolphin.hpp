@@ -20,11 +20,14 @@ extern const char* const BuildTime;
 #define BUILD_INFO BUILD_INFO_TAG BUILD_TIME_DUMMY
 #define BUILD_INFO_TAG_SIZE sizeof(BUILD_INFO_TAG) - 1
 
+// The faulting data address (DAR) parameter.
 #if RSTL_KYOTO_REL_ERROR_HANDLER
-void ErrorHandler(OSError code, OSContext* context, int, uint);
+typedef uint ErrorDataAddress;
 #else
-void ErrorHandler(OSError code, OSContext* context, int, int);
+typedef int ErrorDataAddress;
 #endif
+
+void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar);
 void SetErrorHandlers();
 void rs_debugger_printf(const char* format, ...);
 
