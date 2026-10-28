@@ -327,10 +327,13 @@
 // `construct` also has an overload taking a mutable `T&`, and the placement-new policy has no
 // null precondition.
 #define RSTL_CONSTRUCT_MUTABLE_OVERLOAD                                                            \
-  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00))
+  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J))
 // A non-inline declaration before the inline const construct definition gives MWCC's
 // prototype instantiations external weak linkage, needed by native callers.
 #define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)
+// With the external const declaration, counted copies must retain mutable overload
+// selection: switching to const changes local helpers into coalesced weak helpers.
+#define RSTL_COPY_N_CONST_SOURCE (!RSTL_CONSTRUCT_EXTERN_DECL)
 // `destroy(T*)` and `destroy(begin, end)` forward to `destroy_impl` (which holds the trivial
 // destructor test and the range precondition) instead of `destruction_policy`.
 #define RSTL_DESTROY_VIA_IMPL (RSTL_VERSION == RSTL_G2MEAB)
