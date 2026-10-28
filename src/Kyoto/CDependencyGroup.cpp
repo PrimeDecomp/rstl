@@ -1,17 +1,21 @@
 #include "Kyoto/CDependencyGroup.hpp"
 
 #include "rstl/RstlVersions.h"
+
 #if RSTL_PRIME1
 #include "Prime/Kyoto/CResFactory.hpp"
+#define RSTL_CONST_FACTORY_FN_RETURN const
 #elif RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CFactoryMgr.hpp"
 #include "Corruption/Kyoto/IObjectStore.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CDependencyGroupToken.hpp"
+#define RSTL_CONST_FACTORY_FN_RETURN
 #else
 #include "Echoes/Kyoto/CDependencyGroupToken.hpp"
 #include "Echoes/Kyoto/CFactoryMgr.hpp"
 #include "Echoes/Kyoto/IObjectStore.hpp"
+#define RSTL_CONST_FACTORY_FN_RETURN
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
 #if RSTL_KYOTO_BUFFER_FACTORIES
@@ -64,7 +68,7 @@ CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
   return rs_new_line(87) CDependencyGroup(in);
 }
 #else
-CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
+RSTL_CONST_FACTORY_FN_RETURN CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
                                          const CVParamTransfer& xfer) {
   return rs_new CDependencyGroup(in);
 }

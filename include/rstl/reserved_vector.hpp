@@ -437,35 +437,5 @@ construct(reserved_vector< T, N >* dest, const reserved_vector< T, N >& src) {
 #endif
 
 } // namespace rstl
-#ifndef __MWERKS__
-#include "Kyoto/Streams/CInputStream.hpp"
-#endif
-#include "rstl/stream_objects.hpp"
-namespace rstl {
-template < typename T, int N >
-inline reserved_vector< T, N >::reserved_vector(CInputStream& in)
-#if RSTL_STREAM_READ_INT32
-: mCount(in.ReadInt32()) {
-#else
-: mCount(in.Get(TGetType(0))) {
-#endif
-  for (int i = 0; i < mCount; i++) {
-    const TType< T >& type = TType< T >();
-    if (reserved_vector_push_policy< T >::value) {
-      reserved_vector_push_policy< T >::construct_element(&data()[i], in.Get(type));
-    } else {
-      construct(&data()[i], in.Get(type));
-    }
-  }
-}
-
-template < typename T, int N >
-inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
-  const int count = size();
-  out.Put(count);
-  StreamObjects(out, begin(), end(), count);
-}
-
-} // namespace rstl
 
 #endif // _RSTL_RESERVED_VECTOR
