@@ -114,10 +114,10 @@ inline uint ToUint32(float in) { return static_cast< uint >(in); }
 inline uint ToUint32(int in) { return static_cast< uint >(in); }
 #endif
 inline float ToReal32(uint in) { return static_cast< float >(in); }
-#if RSTL_KYOTO_CAST_REAL32_INT_DOUBLE
+#if RSTL_KYOTO_CAST_REAL32_INT
 inline float ToReal32(int in) { return static_cast< float >(in); }
-inline float ToReal32(double in) { return static_cast< float >(in); }
 #endif
+inline float ToReal32(double in) { return static_cast< float >(in); }
 inline int ToInt32(float in) { return static_cast< int >(in); }
 #if RSTL_KYOTO_CAST_PRIME_OVERLOADS
 inline uint ToUint32(uint in) { return in; }

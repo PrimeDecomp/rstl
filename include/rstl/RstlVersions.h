@@ -553,9 +553,8 @@
 // CCast overloads that only Prime declares; declaring them elsewhere would change which overload
 // existing calls select (ToUint32(uint), ToReal32(const short&), ToInt32(double)).
 #define RSTL_KYOTO_CAST_PRIME_OVERLOADS RSTL_PRIME1
-// CCast::ToReal32(int) and ToReal32(double) (not in the prototype, where int arguments would
-// otherwise change overload).
-#define RSTL_KYOTO_CAST_REAL32_INT_DOUBLE (RSTL_VERSION != RSTL_G2MEAB)
+// CCast::ToReal32(int) (not in the prototype, where int arguments would otherwise change overload).
+#define RSTL_KYOTO_CAST_REAL32_INT (RSTL_VERSION != RSTL_G2MEAB)
 // CCast::ToUint32(int) (prototype only).
 #define RSTL_KYOTO_CAST_UINT32_INT (RSTL_VERSION == RSTL_G2MEAB)
 // CAssetId is the prototype's class (Corruption/Kyoto/CAssetId.hpp, read from the stream by its
