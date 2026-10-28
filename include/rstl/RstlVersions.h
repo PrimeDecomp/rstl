@@ -125,7 +125,7 @@
 // `uninitialized_copy_n` uses a pre-increment loop when it does not use the counted form below.
 #define RSTL_PREINCREMENT_COPY_LOOPS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)
 // `uninitialized_copy_n` counts down a `remaining` variable.
-#define RSTL_COUNTED_COPY_N_LOOP (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_COUNTED_COPY_N_LOOP (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R32J)
 // ...and declares that counter before the iterator copies (instead of in the `for` header).
 #define RSTL_COPY_N_COUNTER_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
@@ -141,7 +141,10 @@
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
 // `construct` extends its direct `int` overload to `uint`, `bool`, `float` and pointers, and
 // `reserved_vector_traits` has fill/push fast paths for scalar elements.
-#define RSTL_SCALAR_TRAITS (RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_SCALAR_TRAITS (RSTL_VERSION >= RSTL_R32J)
+// `reserved_vector::erase` destroys and reconstructs shifted elements. NPC retains
+// assignment here even though its scalar construction helpers match Trilogy.
+#define RSTL_RESERVED_VECTOR_ERASE_CONSTRUCT (RSTL_VERSION >= RSTL_R3ME_00)
 
 // `auto_ptr` pointer constructor defaults to null.
 #define RSTL_AUTO_PTR_CONSTRUCT_NULL (RSTL_VERSION == RSTL_G2MEAB)
