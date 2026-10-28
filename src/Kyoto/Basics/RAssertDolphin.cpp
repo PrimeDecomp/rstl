@@ -1,14 +1,7 @@
 #include "Kyoto/Basics/RAssertDolphin.hpp"
-#include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_REL_ERROR_HANDLER
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/CRelFileDebugInfo.hpp"
-#else
-#include "Kyoto/CRelFileDebugInfo.hpp"
-#endif
-#endif
 
 #if RSTL_KYOTO_REL_ERROR_HANDLER
+#include "Kyoto/CRelFileDebugInfo.hpp"
 #include "dolphin/ai.h"
 #include "dolphin/dvd.h"
 #include "dolphin/os/OSReset.h"
@@ -23,10 +16,6 @@
 #include <stdio.h>
 #if RSTL_KYOTO_REL_ERROR_HANDLER
 #include <string.h>
-
-extern "C" void fn_803816B4(int);
-extern "C" void fn_80362EC4(void*);
-extern "C" void fn_80377118(int);
 
 // rs_debugger_printf formats the message on its own stack; ErrorHandler copies it into `buffer`.
 static bool SkipFatal = false;
@@ -59,6 +48,11 @@ static void hack() {
 }
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar) {
+#if defined(TARGET_PC)
+  OSPanic(__FILE__, __LINE__, "Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
+          rs_debugger_buffer_size > 0 ? ": " : "",
+          rs_debugger_buffer_size > 0 ? rs_debugger_buffer : "");
+#else
 #if RSTL_KYOTO_REL_ERROR_HANDLER
   char buffer[1024];
 #endif
@@ -244,13 +238,16 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
   if (!SkipFatal) {
     OSFatal(fg, bg, FATAL_MESSAGE);
   }
+#endif
 }
 
 void SetErrorHandlers() {
+#if !defined(TARGET_PC)
   OSSetErrorHandler(OS_ERROR_DSI, (OSErrorHandler)ErrorHandler);
   OSSetErrorHandler(OS_ERROR_ISI, (OSErrorHandler)ErrorHandler);
   OSSetErrorHandler(OS_ERROR_ALIGNMENT, (OSErrorHandler)ErrorHandler);
   OSSetErrorHandler(OS_ERROR_PROTECTION, (OSErrorHandler)ErrorHandler);
+#endif
 }
 
 void rs_debugger_printf(const char* format, ...) {
