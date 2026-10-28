@@ -1,11 +1,9 @@
 #ifndef _RSTL_STREAM_OBJECTS
 #define _RSTL_STREAM_OBJECTS
 
-#ifdef __MWERKS__
-class COutputStream;
-#else
 #include "Kyoto/Streams/COutputStream.hpp"
-#endif
+
+#include "rstl/reserved_vector.hpp"
 
 namespace rstl {
 
@@ -15,6 +13,13 @@ inline void StreamObjects(COutputStream& out, const Iter& begin, const Iter& end
   for (Iter iter = begin; iter != iterEnd; ++iter) {
     out.Put(*iter);
   }
+}
+
+template < typename T, int N >
+inline void reserved_vector< T, N >::PutTo(COutputStream& out) const {
+  const int count = size();
+  out.Put(count);
+  StreamObjects(out, begin(), end(), count);
 }
 
 } // namespace rstl

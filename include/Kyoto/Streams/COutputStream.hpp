@@ -6,9 +6,7 @@
 #include "Kyoto/Basics/CBasics.hpp"
 #include "types.h"
 
-#if RSTL_KYOTO_OUTPUT_PAIR_HELPER
 #include "rstl/pair.hpp"
-#endif
 #include "stddef.h"
 
 class COutputStream;
@@ -162,12 +160,14 @@ inline void coutput_stream_helper(const bool& t, COutputStream& out) {
   out.WriteChar(static_cast< u8 >(t));
 }
 
-#if RSTL_KYOTO_OUTPUT_PAIR_HELPER
-#include "rstl/reserved_vector.hpp"
-#else
-#include "rstl/pair.hpp"
-#include "rstl/reserved_vector.hpp"
-#include "rstl/vector.hpp"
-#endif
+namespace rstl {
+  
+template < typename L, typename R >
+inline void pair< L, R >::PutTo(COutputStream& out) const {
+  out.Put(first);
+  out.Put(second);
+}
+
+}
 
 #endif // _COUTPUTSTREAM

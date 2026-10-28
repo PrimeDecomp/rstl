@@ -4,9 +4,10 @@
 #include "Kyoto/Basics/CBasics.hpp"
 #include "rstl/RstlVersions.h"
 
+#include "dolphin/gx.h"
 #include "dolphin/os.h"
-#if !RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 #include "dolphin/vi.h"
+#if !RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 #include <string.h>
 #endif
 
