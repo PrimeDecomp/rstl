@@ -317,6 +317,8 @@
 #define RSTL_LOCKED_CACHE_RAW_MODE (RSTL_VERSION == RSTL_G2MEAB)
 // `pair< int, float >` is explicitly kept non-trivial for the construction policies.
 #define RSTL_PAIR_INT_FLOAT_POLICY (RSTL_VERSION == RSTL_G2MEAB)
+// `pair` also accepts a mutable second argument by reference.
+#define RSTL_PAIR_MUTABLE_SECOND (RSTL_VERSION == RSTL_G2MEAB)
 // `const_linear_iterator` builds its `+`/`-` results directly (and `operator-` returns `long`).
 #define RSTL_LINEAR_ITERATOR_DIRECT_ARITHMETIC (RSTL_VERSION == RSTL_G2MEAB)
 // `ownership_transfer::take_ownership` returns null when it does not own the object.

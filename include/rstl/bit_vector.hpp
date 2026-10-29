@@ -13,8 +13,6 @@ public:
   typedef Alloc allocator_type;
 
 #if RSTL_BIT_VECTOR_COMPACT
-  // G2MEAB's `at()` reads the word storage at +0x10 (mSize, then the vector) and builds a
-  // word/mask reference; `operator[]` forwards to it out of line.
   class reference {
   public:
     reference(typename storage_type::iterator word, int bit) : mWord(word), mMask(1 << bit) {}
@@ -54,17 +52,17 @@ public:
   };
 
   bit_vector() : mSize(0) {}
-  bit_vector(int count, bool value);
+  inline bit_vector(int count, bool value);
 
-  iterator begin();
-  iterator end();
+  inline iterator begin();
+  inline iterator end();
   void reserve(int count) { mData.reserve(get_data_size(count)); }
   inline void push_back(bool value);
-  void insert(iterator at, int count, bool value);
+  inline void insert(iterator at, int count, bool value);
 
   int size() const { return mSize; }
-  reference at(int bit);
-  reference operator[](int bit);
+  inline reference at(int bit);
+  inline reference operator[](int bit);
   bool operator[](int bit) const {
     const uint word = mData[bit / 32];
     return (word & (1 << (bit % 32))) != 0;
@@ -82,7 +80,7 @@ private:
   int get_real_index(int bit) { return bit / 32; }
   uint get_real_bit_mask(int bit) { return 1 << (bit % 32); }
   int get_data_size(int count) { return count / 32 + (count % 32 ? 1 : 0); }
-  void make_room(int bit, int count);
+  inline void make_room(int bit, int count);
 #else
   class bit_reference {
   public:
@@ -221,8 +219,7 @@ private:
 };
 
 #if RSTL_BIT_VECTOR_COMPACT
-// G2MEAB CMapWorldInfo: 8011B10C, 8011B1D0, 8011A070, 8011B47C,
-// 80119B9C and 80119E94. Both growth paths require explicitly reserved storage.
+// Both growth paths require explicitly reserved storage.
 template < typename Alloc >
 bit_vector< Alloc >::bit_vector(int count, bool value) : mSize(0) {
   reserve(count);

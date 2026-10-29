@@ -16,6 +16,9 @@ public:
   pair() {}
   pair(CInputStream& in);
   pair(const L& first, const R& second) : first(first), second(second) {}
+#if RSTL_PAIR_MUTABLE_SECOND
+  pair(const L& first, R& second) : first(first), second(second) {}
+#endif
   void PutTo(COutputStream& out) const;
 
   bool operator==(const pair& other) const {
