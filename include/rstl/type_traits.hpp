@@ -5,16 +5,18 @@
 
 namespace rstl {
 
-// Guessed name. Ordinary vector append passes float by value, other types by const reference.
+// Guessed name. Ordinary append has a separate float argument policy.
 template < typename T >
 struct push_argument {
   typedef const T& type;
 };
 
+#if RSTL_SCALAR_FILL_BY_VALUE
 template <>
 struct push_argument< float > {
   typedef float type;
 };
+#endif
 
 #if RSTL_SCALAR_FILL_BY_VALUE
 // Guessed name. Builtin values and pointers are passed by value; other types by const reference.
