@@ -577,7 +577,7 @@
 #define RSTL_KYOTO_DEPENDENCY_GROUP_TOKEN (!RSTL_PRIME1)
 // Echoes' CDependencyGroup forms: ReadFromStream reads the tag type with `Get< FourCC >()` (its
 // default TType argument is a 1-byte .sbss temporary that Prime's and the prototype's ReadInt32
-// form does not emit), and CDependencyGroupToken::IsLoaded is const, with a mutable cache bit.
+// form does not emit).
 #define RSTL_KYOTO_ECHOES_DEPENDENCY_GROUP (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
 // CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
 // prototype; Prime, including Prime Trilogy, uses push_back).

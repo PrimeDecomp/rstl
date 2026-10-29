@@ -212,7 +212,7 @@ public:
   iterator erase(iterator first, iterator last);
 
 #if RSTL_VECTOR_VERIFIED_PUSH_BACK
-  void push_back(const T& in) {
+  void push_back(typename type_traits< T >::vector_push_type in) {
     if (mCount >= mCapacity) {
       verify_capacity_failed();
     }
@@ -234,7 +234,7 @@ public:
     push_back_unsafe(in);
   }
 #elif RSTL_VECTOR_GROWING_PUSH_BACK
-  void push_back(const T& in) {
+  void push_back(typename type_traits< T >::vector_push_type in) {
     if (mCount >= mCapacity) {
       reserve(mCapacity != 0 ? mCapacity * 2 : 4);
     }
@@ -245,9 +245,9 @@ public:
   void push_back_unsafe(const T& in) { rstl::construct(mItems + mCount++, in); }
 #else
 #if RSTL_VECTOR_UNCHECKED_PUSH_BACK
-  void push_back(const T& in) { rstl::construct(mItems + mCount++, in); }
+  void push_back(typename type_traits< T >::vector_push_type in) { rstl::construct(mItems + mCount++, in); }
 #else
-  void push_back(const T& in) {
+  void push_back(typename type_traits< T >::vector_push_type in) {
     if (mCount >= mCapacity) {
       reserve(mCapacity ? mCapacity * 2 : 4);
     }
