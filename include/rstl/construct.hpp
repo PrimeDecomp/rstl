@@ -537,6 +537,17 @@ static inline T uninitialized_copy(S* begin, S* end, T out) {
 }
 #endif
 
+// Match the scalar-assignment path already selected by construct(float).
+#if RSTL_TRIVIAL_SCALARS || RSTL_SCALAR_TRAITS
+inline float* uninitialized_copy_n(float* src, int n, float* dest) {
+  float* cur = dest;
+  for (int remaining = n; remaining != 0; --remaining, ++src, ++cur) {
+    *cur = *src;
+  }
+  return cur;
+}
+#endif
+
 // Keep the source iterator type while selecting the required construction overload.
 template < typename S, typename D >
 static inline D uninitialized_copy_n(S src, int n, D dest) {
