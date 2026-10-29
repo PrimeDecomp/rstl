@@ -26,7 +26,7 @@ public:
   explicit set(const Cmp& cmp = Cmp(), const Alloc& alloc = Alloc())
   : inner(identity< T >(), cmp, alloc) {}
 
-  iterator insert(const value_type& item) { return inner.insert(item).first; }
+  pair< iterator, bool > insert(const value_type& item) { return inner.insert(item); }
 
   const_iterator begin() const { return inner.begin(); }
   const_iterator end() const { return inner.end(); }

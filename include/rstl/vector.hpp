@@ -336,7 +336,11 @@ inline vector< T, Alloc >::vector(const vector& other)
 #endif
 mCount(other.mCount)
 , mCapacity(other.mCapacity) {
+#if RSTL_VERSION == RSTL_G2MEAB
+  if (other.mCapacity == 0 && other.mCount == 0) {
+#else
   if (other.mCount == 0 && other.mCapacity == 0) {
+#endif
     mItems = nullptr;
   } else {
 #if RSTL_ALLOCATOR_INSTANCE

@@ -177,6 +177,10 @@ public:
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
     // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
     // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
+    RSTL_PRECONDITION(other.mCount >= 0);
+    RSTL_PRECONDITION(other.mCount <= N);
+    RSTL_PRECONDITION(mCount == other.mCount);
+    RSTL_PRECONDITION(other.data() != nullptr);
     const T* it = other.data();
     T* cur = data();
     for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
