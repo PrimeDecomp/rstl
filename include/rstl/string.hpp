@@ -169,9 +169,7 @@ class basic_string
 
 public:
   typedef const_linear_iterator< _CharTp, basic_string, Alloc > const_iterator;
-#if RSTL_PRIME1
   friend class const_linear_iterator< _CharTp, basic_string, Alloc >;
-#endif
 
   struct literal_t {};
 
