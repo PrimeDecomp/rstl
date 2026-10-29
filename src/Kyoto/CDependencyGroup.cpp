@@ -35,7 +35,8 @@ void CDependencyGroup::ReadFromStream(CInputStream& in) {
     FourCC type = in.ReadInt32();
 #endif
 #if RSTL_KYOTO_ASSET_ID_CLASS
-    mObjectTags.push_back_unsafe(SObjectTag(type, CAssetId(in)));
+    CAssetId id(in);
+    mObjectTags.push_back_unsafe(SObjectTag(type, id));
 #elif RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE
     CAssetId id = in.ReadInt32();
     mObjectTags.push_back_unsafe(SObjectTag(type, id));
