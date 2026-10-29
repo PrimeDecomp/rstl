@@ -71,9 +71,14 @@ inline
 #else
 inline void iter_swap(I1 a, I2 b) {
 #endif
+#if RSTL_VERSION == RSTL_G2MEAB && defined(RSTL_ITER_SWAP_VIA_SWAP)
+  // CUniverseInfo.cpp (0x8019AD9C) retains this forwarding form of iter_swap.
+  swap(*a, *b);
+#else
   typename iterator_traits< I1 >::value_type tmp = *a;
   *a = *b;
   *b = tmp;
+#endif
 }
 
 template < typename T, class Cmp >
