@@ -17,8 +17,12 @@ class single_ptr {
 #endif
 
 public:
+#if RSTL_SINGLE_PTR_DEFAULT_ARGUMENT
+  single_ptr(T* ptr = nullptr) : mPtr(ptr) {}
+#else
   single_ptr() : mPtr(nullptr) {}
   single_ptr(T* ptr) : mPtr(ptr) {}
+#endif
 #if RSTL_SINGLE_PTR_TRANSFER
   single_ptr(const single_ptr& other) : mPtr(other.mPtr) {
 #if RSTL_SINGLE_PTR_MUTABLE
