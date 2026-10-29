@@ -41,7 +41,7 @@ COsContext::COsContext(bool, bool)
   }
 
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
-  mArenaBlockSize = 0x1fe000;
+  mArenaBlockSize = RSTL_VERSION == RSTL_GM8P_00 ? 0x23e000 : 0x1fe000;
   mArenaBlock = AllocFromArena(mArenaBlockSize);
 #endif
 }
