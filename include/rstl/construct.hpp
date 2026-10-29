@@ -325,6 +325,25 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(short, const short&)
   }                                                                                                \
   START_ECHOES_NAMESPACE
 
+// Guessed policy name. Vector element assignment is independent of reserved_vector.
+template < typename T > struct vector_construction_policy {
+  enum { value = false };
+  static void construct_element(T* dest, const T& src) { rstl::construct(dest, src); }
+  static void construct_element(T* dest, T& src) { rstl::construct(dest, src); }
+};
+
+#define RSTL_DECLARE_VECTOR_CONSTRUCTION(T) \
+  template <> struct vector_construction_policy< T > { \
+    enum { value = true }; \
+    static void construct_element(T* dest, const T& src) { \
+      construction_policy< T, true >::construct(dest, src); \
+    } \
+  };
+#define ECHOES_RSTL_DECLARE_VECTOR_CONSTRUCTION(T) \
+  END_ECHOES_NAMESPACE \
+  namespace rstl { RSTL_DECLARE_VECTOR_CONSTRUCTION(ECHOES_NAMESPACE T) } \
+  START_ECHOES_NAMESPACE
+
 // Guessed policy name. Whole-container copies retain the generic construct path.
 template < typename T >
 struct reserved_vector_push_policy {
