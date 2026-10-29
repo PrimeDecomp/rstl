@@ -324,7 +324,7 @@ public:
   iterator erase(iterator it) {
     if (it >= begin() && it < end()) {
       for (iterator j = it; j < end() - 1; ++j) {
-#if RSTL_SCALAR_TRAITS
+#if RSTL_RESERVED_VECTOR_ERASE_CONSTRUCT
         destroy(j);
         construct(j, *(j + 1));
 #else
