@@ -50,16 +50,7 @@ public:
       return *this;
     }
     if (other.valid()) {
-#if RSTL_OPTIONAL_ASSIGN_INLINE
-      if (!m_valid) {
-        construct< T >(m_data, other.data());
-        m_valid = true;
-      } else {
-        *get_ptr() = other.data();
-      }
-#else
       assign(other.data());
-#endif
     } else {
       clear();
     }
