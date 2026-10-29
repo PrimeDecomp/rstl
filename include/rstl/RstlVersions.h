@@ -103,6 +103,9 @@
 // Echoes skips float element cleanup, including NPC and Trilogy. Older Prime
 // callers retain their native empty element traversal.
 #define RSTL_TRIVIAL_FLOAT_DESTRUCTION (!RSTL_PRIME1)
+// Wii Echoes skips trivial cleanup before constructing iterators. GC needs the
+// existing expansion and weak destructor providers.
+#define RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // The arithmetic types are declared trivially destructible and copied by assignment, and so are
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.

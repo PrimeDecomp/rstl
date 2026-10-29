@@ -168,7 +168,9 @@ public:
   ~vector() {
     RS_ASSERT(mCount <= mCapacity, "rstl invariant");
     RS_ASSERT(mCapacity == 0 || mItems != nullptr, "rstl invariant");
-    destroy(begin(), end());
+    if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
+      destroy(begin(), end());
+    }
     Alloc::deallocate(mItems);
   }
 #endif
@@ -354,7 +356,9 @@ mCount(other.mCount)
 
 template < typename T, typename Alloc >
 inline vector< T, Alloc >::~vector() {
-  destroy(begin(), end());
+  if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
+    destroy(begin(), end());
+  }
 #if RSTL_ALLOCATOR_INSTANCE
   mAllocator.deallocate(mItems);
 #else
