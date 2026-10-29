@@ -100,6 +100,9 @@
   ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
 // UInt destruction is also trivial in NPC Echoes; keep pointer policies independent.
 #define RSTL_TRIVIAL_UINT_DESTRUCTION (RSTL_TRIVIAL_POINTERS || RSTL_VERSION >= RSTL_R32J)
+// Echoes skips float element cleanup, including NPC and Trilogy. Older Prime
+// callers retain their native empty element traversal.
+#define RSTL_TRIVIAL_FLOAT_DESTRUCTION (!RSTL_PRIME1)
 // The arithmetic types are declared trivially destructible and copied by assignment, and so are
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
