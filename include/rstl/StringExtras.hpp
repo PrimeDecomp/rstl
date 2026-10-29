@@ -32,9 +32,7 @@ public:
   static rstl::string ConvertToANSI(const rstl::wstring& str);
   static rstl::wstring ConvertToUNICODE(const rstl::string& str);
   static rstl::string ReadString(CInputStream& in);
-#if RSTL_STRING_EXTRAS_PROTO_API
   static rstl::string Format(const char* fmt, ...);  // Guessed name
-#endif
   static rstl::vector< rstl::string > TokenizeString(const rstl::string&, const char*, int);
 };
 
