@@ -494,6 +494,8 @@
 // `single_ptr` has the `mutable` pointer and the const-ref ownership-transferring copy constructor
 // (Prime 1 and the prototype).
 #define RSTL_SINGLE_PTR_MUTABLE ((RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB) && RSTL_SINGLE_PTR_TRANSFER)
+// The prototype uses a default pointer argument, including compiler-generated array constructor thunks.
+#define RSTL_SINGLE_PTR_DEFAULT_ARGUMENT (RSTL_VERSION == RSTL_G2MEAB)
 // `single_ptr::operator->` returns a plain `T*` and the const `operator*` returns `const T&`.
 #define RSTL_SINGLE_PTR_PLAIN_ACCESS (RSTL_VERSION == RSTL_G2MEAB)
 // The prototype copy owner keeps allocation and cloning in a separate member helper.
