@@ -289,11 +289,8 @@ public:
   bool operator!=(const basic_string& other) const;
 
   int find(const basic_string& other, int pos = 0) const;
-  int find(const _CharTp* other, int pos = 0, int count = -1) const;
-#if !RSTL_STRING_OUT_OF_CLASS
-  inline
-#endif
-  int find(_CharTp ch, int pos = 0) const;
+  inline int find(const _CharTp* other, int pos = 0, int count = -1) const;
+  inline int find(_CharTp ch, int pos = 0) const;
 #if RSTL_STRING_MATCH_LOOP_SEARCH
   int rfind(const _CharTp* other, int pos = -1, int count = -1) const;
   int rfind(_CharTp ch, int pos = -1) const;
@@ -650,13 +647,8 @@ int basic_string< _CharTp, Traits, Alloc >::find(const basic_string& other, int 
 template < typename _CharTp, typename Traits, typename Alloc >
 int basic_string< _CharTp, Traits, Alloc >::find(const _CharTp* other, int pos, int count) const {
   pos = get_real_pos_for_begin(pos);
-  int length = 0;
-  const _CharTp* end = other;
-  while ((count == -1 || length < count) && *end != Traits::eos()) {
-    ++end;
-    ++length;
-  }
-  const int found = internal_search(begin() + pos, this->end(), other, end);
+  const pair< const _CharTp*, int > length = compute_length(other, count);
+  const int found = internal_search(begin() + pos, this->end(), other, length.first);
   int result = found + pos;
   if (found == -1) {
     result = found;

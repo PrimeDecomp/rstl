@@ -12,6 +12,11 @@ class bit_vector {
 public:
   typedef Alloc allocator_type;
 
+  bool operator[](int bit) const {
+    const uint word = mData[bit / 32];
+    return (word & (1 << (bit % 32))) != 0;
+  }
+
 #if RSTL_BIT_VECTOR_COMPACT
   class reference {
   public:
@@ -63,10 +68,6 @@ public:
   int size() const { return mSize; }
   inline reference at(int bit);
   inline reference operator[](int bit);
-  bool operator[](int bit) const {
-    const uint word = mData[bit / 32];
-    return (word & (1 << (bit % 32))) != 0;
-  }
 
 private:
   bool get_bit(int bit) { return (mData[get_real_index(bit)] & get_real_bit_mask(bit)) != 0; }
