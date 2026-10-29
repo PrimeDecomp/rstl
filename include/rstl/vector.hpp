@@ -19,6 +19,15 @@
 class CInputStream;
 class COutputStream;
 
+#define RSTL_VECTOR_CONSTRUCT(dest, src) \
+  do { \
+    if (vector_construction_policy< T >::value) { \
+      vector_construction_policy< T >::construct_element((dest), (src)); \
+    } else { \
+      construct((dest), (src)); \
+    } \
+  } while (false)
+
 namespace rstl {
 
 template < typename T, typename Alloc = rmemory_allocator >
@@ -215,7 +224,7 @@ public:
     if (mCount >= mCapacity) {
       verify_capacity_failed();
     }
-    rstl::construct(mItems + mCount++, in);
+    RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in);
   }
 
   void push_back_unsafe(const T& in) {
@@ -223,7 +232,7 @@ public:
       verify_capacity_failed();
     }
     T* items = mItems;
-    rstl::construct(items + mCount++, in);
+    RSTL_VECTOR_CONSTRUCT(items + mCount++, in);
   }
 
   void push_back_checked(const T& in) {
@@ -237,21 +246,21 @@ public:
     if (mCount >= mCapacity) {
       reserve(mCapacity != 0 ? mCapacity * 2 : 4);
     }
-    rstl::construct(mItems + mCount, in);
+    RSTL_VECTOR_CONSTRUCT(mItems + mCount, in);
     ++mCount;
   }
 
-  void push_back_unsafe(const T& in) { rstl::construct(mItems + mCount++, in); }
+  void push_back_unsafe(const T& in) { RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in); }
 #else
 #if RSTL_VECTOR_UNCHECKED_PUSH_BACK
-  void push_back(typename type_traits< T >::vector_push_type in) { rstl::construct(mItems + mCount++, in); }
+  void push_back(typename type_traits< T >::vector_push_type in) { RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in); }
 #else
   void push_back(typename type_traits< T >::vector_push_type in) {
     if (mCount >= mCapacity) {
       reserve(mCapacity ? mCapacity * 2 : 4);
     }
     RS_ASSERT(mCount < mCapacity, "rstl invariant");
-    rstl::construct(mItems + mCount, in);
+    RSTL_VECTOR_CONSTRUCT(mItems + mCount, in);
     ++mCount;
   }
 #endif
@@ -263,7 +272,7 @@ public:
   }
 
 #if !RSTL_VECTOR_VERIFIED_PUSH_BACK && !RSTL_VECTOR_GROWING_PUSH_BACK
-  void push_back_unsafe(const T& in) { rstl::construct(mItems + mCount++, in); }
+  void push_back_unsafe(const T& in) { RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in); }
 #endif
 
   inline vector& operator=(const vector& other);
@@ -441,7 +450,7 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
     int moveCount = mCount - atIdx;
     int i = moveCount - 1;
     for (; i >= 0; --i) {
-      construct(oldData + atIdx + n + i, data()[atIdx + i]);
+      RSTL_VECTOR_CONSTRUCT(oldData + atIdx + n + i, data()[atIdx + i]);
 #if RSTL_VECTOR_INSERT_CONST_ITEM
       T* const item = oldData + atIdx + i;
       destroy(item);
@@ -450,7 +459,7 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
 #endif
     }
     for (i = 0; i < n; ++input, ++i) {
-      construct(oldData + atIdx + i, *input);
+      RSTL_VECTOR_CONSTRUCT(oldData + atIdx + i, *input);
     }
     mCount += n;
   } else {
@@ -478,13 +487,13 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
 #else
     for (int i = 0; i < atIdx; ++newIdx, ++i) {
 #endif
-      construct(newItems + newIdx, data()[i]);
+      RSTL_VECTOR_CONSTRUCT(newItems + newIdx, data()[i]);
     }
     for (int i = 0; i < n; ++input, ++newIdx, ++i) {
-      construct(newItems + newIdx, *input);
+      RSTL_VECTOR_CONSTRUCT(newItems + newIdx, *input);
     }
     for (int i = atIdx; i < size(); ++newIdx, ++i) {
-      construct(newItems + newIdx, data()[i]);
+      RSTL_VECTOR_CONSTRUCT(newItems + newIdx, data()[i]);
     }
 
     destroy(oldData, oldData + size());
@@ -545,7 +554,7 @@ typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator first, 
 #else
   for (iterator it = last, moved = iterator(mItems + tmp); it != end(); ++moved, ++newCount, ++it) {
 #endif
-    construct(&*moved, *it);
+    RSTL_VECTOR_CONSTRUCT(&*moved, *it);
     destroy(&*it);
   }
   mCount = newCount;
@@ -607,5 +616,7 @@ inline void vector< T, Alloc >::PutTo(COutputStream& out) const {
 }
 
 } // namespace rstl
+
+#undef RSTL_VECTOR_CONSTRUCT
 
 #endif // _RSTL_VECTOR
