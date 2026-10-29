@@ -14,13 +14,13 @@ public:
   void Lock();
   void Unlock();
   bool IsLocked() const;
-  bool IsLoaded();
+  bool IsLoaded() const;
 
 private:
   TToken< CDependencyGroup > mGroup;
   rstl::vector< CToken > mDependencies;
   uint mLockCount;
-  bool mLoaded : 1;
+  mutable bool mLoaded : 1;
 };
 CHECK_SIZEOF(CDependencyGroupToken, 0x20)
 
