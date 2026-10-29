@@ -107,11 +107,7 @@ void CDependencyGroupToken::Unlock() {
 
 bool CDependencyGroupToken::IsLocked() const { return mLockCount != 0; }
 
-#if RSTL_KYOTO_ECHOES_DEPENDENCY_GROUP
 bool CDependencyGroupToken::IsLoaded() const {
-#else
-bool CDependencyGroupToken::IsLoaded() {
-#endif
   if (mLockCount == 0) {
     return false;
   }
