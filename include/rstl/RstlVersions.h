@@ -533,9 +533,9 @@
 // CBasics::ZeroMemory/CopyMemory (dcbz block fill and copy) are defined in CBasicsDolphin.cpp.
 // Prime Trilogy has its own, larger versions that are not reconstructed.
 #define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)
-// COsContext stores OSGetLanguage() and reserves a fixed arena block in its constructor; window
-// opening and key states are no longer part of it (field layout changes from 0x10 on).
-#define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK (!RSTL_PRIME1)
+// PAL Prime and Echoes store OSGetLanguage() and reserve a graphics arena block in the
+// constructor (field layout changes from 0x10 on). PAL Prime reserves 0x23e000 bytes.
+#define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
 // The fatal error handler pivots to a clean OSContext and waits for a controller on port 1.
 // Absent in the Prime demo and Prime USA 0-00.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)

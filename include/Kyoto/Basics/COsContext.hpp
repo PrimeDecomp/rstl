@@ -83,7 +83,7 @@ private:
   int mLeft;
   int mTop;
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
-  // Echoes moves the console type to 0x10 and stores OSGetLanguage() at 0x14; the
+  // PAL Prime and Echoes put the console type at 0x10 and OSGetLanguage() at 0x14; the
   // constructor reserves a fixed arena block (0x24/0x2c). Other fields follow Prime.
   int mConsoleType;
   int mLanguage;
