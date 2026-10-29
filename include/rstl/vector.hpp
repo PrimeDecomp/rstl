@@ -191,10 +191,7 @@ public:
 #endif
   void assign(int size, typename type_traits< T >::vector_fill_type in = T());
   void reserve(int size);
-#if RSTL_VECTOR_INLINE_DECLS
-  inline
-#endif
-  iterator insert(iterator it, typename type_traits< T >::vector_insert_type value);
+  inline iterator insert(iterator it, typename type_traits< T >::vector_insert_type value);
 
   template < typename from_iterator >
 #if RSTL_VECTOR_OUT_OF_CLASS
