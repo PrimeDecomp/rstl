@@ -487,6 +487,8 @@
 #define RSTL_SINGLE_PTR_MUTABLE ((RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB) && RSTL_SINGLE_PTR_TRANSFER)
 // `single_ptr::operator->` returns a plain `T*` and the const `operator*` returns `const T&`.
 #define RSTL_SINGLE_PTR_PLAIN_ACCESS (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype copy owner keeps allocation and cloning in a separate member helper.
+#define RSTL_COPY_OBJECT_CLONE_HELPER (RSTL_VERSION == RSTL_G2MEAB)
 // Keep the accessor in the prototype: direct member access inlines away native
 // CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_VERSION == RSTL_G2MEAB)

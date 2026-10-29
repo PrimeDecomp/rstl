@@ -3,6 +3,7 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/rmemory_allocator.hpp"
+#include "rstl/RstlVersions.h"
 
 namespace rstl {
 // Guessed name. Empty allocation policy of copy_object.
@@ -27,7 +28,11 @@ public:
   copy_object(const copy_object& other)
   : mAlloc(other.mAlloc)
   , mClone(other.mClone)
+#if RSTL_COPY_OBJECT_CLONE_HELPER
+  , mPtr(other.mPtr == nullptr ? nullptr : Copy(other.mPtr)) {}
+#else
   , mPtr(other.mPtr != nullptr ? rs_new_line_in("copy_object.h", 31) T(*other.mPtr) : nullptr) {}
+#endif
 
   ~copy_object() { delete mPtr; }
 
@@ -37,6 +42,11 @@ public:
   const T* operator->() const { return mPtr; }
 
 private:
+#if RSTL_COPY_OBJECT_CLONE_HELPER
+  // Guessed name. Duplicates the supplied object using the owner allocation policy.
+  T* Copy(const T* source) const { return rs_new_line_in("copy_object.h", 31) T(*source); }
+#endif
+
   copy_object& operator=(const copy_object&);
 
   Alloc mAlloc;
