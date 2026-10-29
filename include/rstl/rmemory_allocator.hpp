@@ -56,7 +56,7 @@ struct rmemory_allocator {
 #endif
   template < typename T >
   static void deallocate(T* ptr) {
-    delete[] reinterpret_cast< uchar* >(ptr);
+    CMemory::Free(ptr);
   }
 };
 #else
