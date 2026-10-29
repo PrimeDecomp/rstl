@@ -840,7 +840,7 @@ inline wstring::basic_string(wstring::literal_t, const wchar_t* data) {
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
-inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+bool operator==(const string& lhs, const char* rhs);
 
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
