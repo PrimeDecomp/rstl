@@ -505,8 +505,6 @@
 // Keep the accessor in the prototype: direct member access inlines away native
 // CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_VERSION == RSTL_G2MEAB)
-// `optional_object::operator=` inlines `assign` into its body.
-#define RSTL_OPTIONAL_ASSIGN_INLINE (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_object` stores a plain `uchar` array followed by `bool m_valid ATTRIBUTE_ALIGN(4)`.
 #define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
