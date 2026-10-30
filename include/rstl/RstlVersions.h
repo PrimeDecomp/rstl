@@ -653,9 +653,8 @@
 // line ("File.cpp(22) : "); the allocator fills freed blocks with 0xDE and reports damaged guard
 // words. Prime and Echoes compile the checks out and allocate at "??(??)".
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
-// Out-of-line stream helpers only the prototype's units contain (64-bit bit stream reads and
-// writes, low word first, and `CStreamPreloadedToken::GetReferenceCount`). Echoes' matching units
-// end without them.
+// Out-of-line 64-bit bit stream reads and writes, low word first, that only the prototype's
+// units contain. Echoes' matching units end without them.
 #define RSTL_KYOTO_PROTO_STREAM_HELPERS (RSTL_VERSION == RSTL_G2MEAB)
 // The prototype declares its own zlib interface (Kyoto/Streams/ZipTypes.hpp, `struct z_stream`)
 // instead of including zlib's header (`typedef z_stream_s z_stream`). The type name is part of
