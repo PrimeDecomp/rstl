@@ -24,7 +24,7 @@
 #define CGX_INLINE_HEADER
 #endif
 
-// Setters wrapped in "!defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00" are only
+// Setters wrapped in "!defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00" are only
 // defined in CGX.cpp from PAL on, so callers no longer inline them.
 #endif
 
@@ -100,7 +100,7 @@ CGX_INLINE void CGX::SetChanMatColor(EChannelId channel, const GXColor& color) {
 }
 
 #if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc ambSrc,
                                  GXColorSrc matSrc, GXLightID lights, GXDiffuseFn diffFn,
                                  GXAttnFn attnFn) {
@@ -118,7 +118,7 @@ CGX_INLINE void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc a
 }
 #endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl) {
   ushort& state = sGXState.mChanCtrls[channel];
   ushort prevFlags = sGXState.mPrevChanCtrls[channel];
@@ -174,7 +174,7 @@ inline void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
 }
 
 #if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b,
                                    GXTevColorArg c, GXTevColorArg d) {
   const uint flags = (a & 0x1F) | ((b & 0x1F) << 5) | ((c & 0x1F) << 10) | ((d & 0x1F) << 15);
@@ -219,7 +219,7 @@ CGX_INLINE void CGX::SetTevAlphaIn_Compressed(GXTevStageID stageId, uint flags) 
 }
 #endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTevColorOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias,
                                    GXTevScale scale, GXBool clamp, GXTevRegID outReg) {
   const uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
@@ -245,7 +245,7 @@ CGX_INLINE void CGX::SetTevColorOp_Compressed(GXTevStageID stageId, uint flags) 
   }
 }
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTevAlphaOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias,
                                    GXTevScale scale, GXBool clamp, GXTevRegID outReg) {
   uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
@@ -367,7 +367,7 @@ CGX_INLINE void CGX::SetZMode(const GXBool compareEnable, GXCompare func,
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                                      uchar ref1) {
   uint flags = MaskAndShiftLeft(comp0, 7, 0) | MaskAndShiftLeft(ref0, 0xFF, 3) |
@@ -381,7 +381,7 @@ CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, 
 }
 #endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTevIndirect(const GXTevStageID stageId, const GXIndTexStageID indStage,
                                     const GXIndTexFormat fmt, const GXIndTexBiasSel biasSel,
                                     const GXIndTexMtxID mtxSel, const GXIndTexWrap wrapS,
@@ -434,7 +434,7 @@ CGX_INLINE void CGX::SetTevDirect(GXTevStageID stageId) {
 }
 
 #if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src,
                                     GXTexMtx mtx, GXBool normalize, GXPTTexMtx postMtx) {
   STexState& state = sGXState.mTexStates[dstCoord];
@@ -453,7 +453,7 @@ CGX_INLINE void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTe
 }
 #endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < VERSION_GM8P_00
+#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags) {
   STexState& state = sGXState.mTexStates[dstCoord];
   if (state.mCoordGen != flags) {

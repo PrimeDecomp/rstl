@@ -20,7 +20,7 @@ public:
   virtual uint GetAssetCount() const { return 0; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   virtual bool IsLineInstruction() const { return false; }
 #endif
 #else

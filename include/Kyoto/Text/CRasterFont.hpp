@@ -86,7 +86,7 @@ public:
   , mEndV(endV)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   , mLayer(layer)
 #endif
 #else
@@ -120,7 +120,7 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetLayer() const {
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     return mLayer;
 #else
     return 0;
@@ -140,7 +140,7 @@ private:
   float mEndV;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   uchar mLayer;
   uchar mCellWidth;
   uchar mCellHeight;
@@ -182,7 +182,7 @@ public:
   EFontMode GetMode() const;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   int GetMonoWidth() const { return mMonoWidth; }
   int GetMonoHeight() const { return mMonoHeight; }
 #else
@@ -191,7 +191,7 @@ public:
 #endif
   int GetCarriageAdvance();
 
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   const CGlyph* GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }
 #else
   const CGlyph* GetGlyph(wchar_t c) const;
@@ -226,7 +226,7 @@ public:
 
   void SetupRenderState();
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   int GetBaseLine() const { return mBaseline; }
   int GetLineMargin() { return mLineMargin; }
 #else

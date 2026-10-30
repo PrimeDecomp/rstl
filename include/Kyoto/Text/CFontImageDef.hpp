@@ -29,7 +29,7 @@ public:
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION < VERSION_GM8P_00
+#if RSTL_VERSION < RSTL_GM8P_00
   int GetWidth() const { return GetMonoWidth(); }
   int GetHeight() const { return GetMonoHeight(); }
 #else

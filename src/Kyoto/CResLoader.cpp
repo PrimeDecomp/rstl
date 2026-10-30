@@ -235,7 +235,7 @@ FourCC CResLoader::GetResourceTypeById(const CAssetId asset) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (const_cast< CResLoader& >(*this).ResourceExists(asset)) {
-#if RSTL_VERSION >= VERSION_GM8E_02
+#if RSTL_VERSION >= RSTL_GM8E_02
     const_cast< CResLoader& >(*this).FindResourceForLoad(asset);
 #endif
 #else
@@ -266,7 +266,7 @@ uint CResLoader::ResourceSize(const SObjectTag& tag) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())) {
-#if RSTL_VERSION >= VERSION_GM8E_02
+#if RSTL_VERSION >= RSTL_GM8E_02
     const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId());
 #endif
 #else
@@ -293,7 +293,7 @@ CResLoader::ECompressionType CResLoader::GetResourceCompression(const SObjectTag
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())) {
-#if RSTL_VERSION >= VERSION_GM8E_02
+#if RSTL_VERSION >= RSTL_GM8E_02
     const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId());
 #endif
 #else

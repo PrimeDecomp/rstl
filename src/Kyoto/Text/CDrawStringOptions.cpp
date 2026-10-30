@@ -8,7 +8,7 @@ CDrawStringOptions::CDrawStringOptions()
 #if RSTL_PRIME1
 : mDirection(kTD_Horizontal)
 , mColors(col)
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
 , mExtraCharacterSpacing(0)
 #endif
 {}

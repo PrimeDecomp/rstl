@@ -208,7 +208,7 @@ public:
 
   static void SetStereoMode(const bool mode);
   static void SetSurroundMode(const ESurroundModes mode);
-#if RSTL_VERSION == VERSION_GM8E_02 || RSTL_VERSION == VERSION_GM8J_00
+#if RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
   static ESurroundModes GetSurroundMode();
 #else
   static ESurroundModes GetSurroundMode() { return mSurroundMode; }

@@ -49,7 +49,7 @@ public:
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void InvokeTTB(CFontRenderState& state) const;
   void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   bool IsLineInstruction() const override { return true; }
 #endif
 #if RSTL_VERSION >= RSTL_R3ME_00

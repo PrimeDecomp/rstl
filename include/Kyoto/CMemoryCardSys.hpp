@@ -24,7 +24,7 @@
 #endif
 
 #if RSTL_PRIME1
-#if RSTL_VERSION < VERSION_GM8P_00
+#if RSTL_VERSION < RSTL_GM8P_00
 
 typedef rstl::vector< uchar, rstl::aligned_allocator > TCardFileBuffer;
 
@@ -90,7 +90,7 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION == VERSION_GM8EAB_00
+#if RSTL_VERSION == RSTL_GM8EAB_00
   struct CCardFileInfo {
     CARDFileInfo mFileInfo;
   };
@@ -132,14 +132,14 @@ public:
       void Check();
     };
 
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     int mBlockCount;
     int mBlockSize;
     int mWriteBlock;
     uint mSequence;
 #endif
     EStatus mStatus;
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     bool mWriteBothBlocks;
 #endif
     CARDFileInfo mFileInfo;
@@ -149,12 +149,12 @@ public:
     CAssetId mBannerTex;
     rstl::optional_object< TLockedToken< CTexture > > mBannerTok;
     rstl::reserved_vector< Icon, 8 > mIconToks;
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     rstl::vector< uchar, rstl::aligned_allocator > mHeaderBuffer;
     rstl::reserved_vector< SSaveBlock, 2 > mSaveBlocks;
 #endif
     rstl::vector< u8 > mSaveBuffer;
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     rstl::vector< u8 > mCardBuffer;
 #else
     TCardFileBuffer mCardBuffer;
@@ -162,7 +162,7 @@ public:
 
   public:
     CCardFileInfo(EMemoryCardPort port, const rstl::string& name);
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     ~CCardFileInfo();
 #else
     ~CCardFileInfo() {}
@@ -294,7 +294,7 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION == VERSION_GM8EAB_00
+#if RSTL_VERSION == RSTL_GM8EAB_00
   ECardResult MountCard(EMemoryCardPort port);
   ECardResult UnmountCard(EMemoryCardPort port);
   ECardResult FormatCard(EMemoryCardPort port);
@@ -367,8 +367,8 @@ private:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION != VERSION_GM8EAB_00
-NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, RSTL_VERSION >= VERSION_GM8P_00 ? 0x16c : 0x114)
+#if RSTL_VERSION != RSTL_GM8EAB_00
+NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, RSTL_VERSION >= RSTL_GM8P_00 ? 0x16c : 0x114)
 #endif
 
 struct SMemoryCardFileInfo {
@@ -396,7 +396,7 @@ struct SMemoryCardFileInfo {
 };
 CHECK_SIZEOF(SMemoryCardFileInfo, 0x44);
 
-#if RSTL_VERSION == VERSION_GM8EAB_00
+#if RSTL_VERSION == RSTL_GM8EAB_00
 extern CMemoryCardSys* gpMemoryCardSys;
 #endif
 #else

@@ -485,7 +485,7 @@ void CGX::ResetGXStates() {
   GXSetZTexture(GX_ZT_DISABLE, GX_TF_Z8, 0);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION == VERSION_GM8J_00
+#if RSTL_VERSION == RSTL_GM8J_00
   GXSetMisc(GX_MT_XF_FLUSH, 8);
   GXSetDither(GX_FALSE);
 #endif

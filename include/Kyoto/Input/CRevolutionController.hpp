@@ -108,7 +108,7 @@ private:
   float mPointerMaxScale;
   bool mAcceptAdditionalConnections;
 };
-#if RSTL_VERSION >= VERSION_R3MP_00
+#if RSTL_VERSION >= RSTL_R3MP_00
 CHECK_SIZEOF(CRevolutionController, 0xd40)
 #else
 CHECK_SIZEOF(CRevolutionController, 0xc90)

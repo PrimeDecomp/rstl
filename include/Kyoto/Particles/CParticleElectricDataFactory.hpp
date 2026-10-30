@@ -1,0 +1,36 @@
+#ifndef _CPARTICLEELECTRICDATAFACTORY
+#define _CPARTICLEELECTRICDATAFACTORY
+#include "rstl/RstlVersions.h"
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#include "Kyoto/CFactoryFnReturn.hpp"
+#else
+#include "Kyoto/CFactoryMgr.hpp"
+#endif
+
+class CInputStream;
+
+class CElectricDescription;
+class CSimplePool;
+
+class CParticleElectricDataFactory {
+public:
+  static CElectricDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool);
+
+private:
+  static CElectricDescription* CreateGeneratorDescription(CInputStream& in, CSimplePool* pool);
+  static void LoadELSMTokens(CElectricDescription* desc);
+  static bool CreateELSM(CElectricDescription* desc, CInputStream& in, CSimplePool* pool);
+};
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+const CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
+#else
+CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
+#endif
+
+                                              const CVParamTransfer& transfer);
+
+#endif // _CPARTICLEELECTRICDATAFACTORY

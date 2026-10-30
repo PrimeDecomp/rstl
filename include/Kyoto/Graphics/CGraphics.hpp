@@ -335,7 +335,7 @@ public:
 
   static GXTexRegion* TexRegionCallback(const GXTexObj* obj, GXTexMapID id);
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8J_00
+#if RSTL_VERSION >= RSTL_GM8J_00
   static void InitGraphicsFifo(GXFifoObj* obj, void* base, uint fifoSize);
 #endif
 #endif
@@ -488,7 +488,7 @@ public:
 
   static const CViewport& GetViewport() { return mViewport; }
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8E_02
+#if RSTL_VERSION >= RSTL_GM8E_02
   static float GetPixelAspectRatio() { return mPixelAspectRatio; }
 #endif
   static int GetViewportWidth() { return mViewport.mWidth; }
@@ -678,7 +678,7 @@ private:
   static GXFifoObj* mpFifoObj;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8J_00
+#if RSTL_VERSION >= RSTL_GM8J_00
   static uint mFifoSize;
 #endif
 #else
@@ -732,7 +732,7 @@ private:
   static u32 mClearDepthValue; // = GX_MAX_Z24
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= VERSION_GM8E_02
+#if RSTL_VERSION >= RSTL_GM8E_02
   static float mPixelAspectRatio;
 #endif
 #else

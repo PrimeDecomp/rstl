@@ -3,7 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1
-#include "Prime/Kyoto/CResFactory.hpp"
+#include "Kyoto/CResFactory.hpp"
 #define RSTL_CONST_FACTORY_FN_RETURN const
 #elif RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CFactoryMgr.hpp"
@@ -13,7 +13,7 @@
 #define RSTL_CONST_FACTORY_FN_RETURN
 #else
 #include "Kyoto/CDependencyGroupToken.hpp"
-#include "Echoes/Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #define RSTL_CONST_FACTORY_FN_RETURN
 #endif

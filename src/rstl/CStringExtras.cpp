@@ -11,9 +11,9 @@
 #include "Kyoto/Basics/CCast.hpp"
 #if RSTL_STRING_LIST_FACTORY
 #if RSTL_PRIME1
-#include "Prime/Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
 #else
-#include "Echoes/Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
 #endif
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"

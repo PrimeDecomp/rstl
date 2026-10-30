@@ -1,0 +1,68 @@
+#ifndef _CPARTICLEDATAFACTORY
+#define _CPARTICLEDATAFACTORY
+#include "rstl/RstlVersions.h"
+
+#if RSTL_PRIME1
+#include "Kyoto/CSimplePool.hpp"
+#include "Kyoto/Particles/CElectricDescription.hpp"
+#include "Kyoto/Particles/CGenDescription.hpp"
+#endif
+
+#include "Kyoto/Particles/IElement.hpp"
+#if !RSTL_PRIME1
+#include "Kyoto/TToken.hpp"
+#endif
+
+#include "Kyoto/SObjectTag.hpp"
+#if !RSTL_PRIME1
+#include "rstl/optional_object.hpp"
+#include "rstl/vector.hpp"
+#endif
+
+class CInputStream;
+
+#if !RSTL_PRIME1
+class CElectricDescription;
+class CGenDescription;
+class CModel;
+class CSimplePool;
+class CSwooshDescription;
+#endif
+
+class CParticleDataFactory {
+public:
+  static CGenDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool, uint id);
+  static CGenDescription* CreateGeneratorDescription(CInputStream&, rstl::vector< uint >& assets,
+                                                     uint id, CSimplePool* pool);
+  static void LoadGPSMTokens(CGenDescription* desc);
+  static bool CreateGPSM(CGenDescription* desc, CInputStream& in,
+                         rstl::vector< CAssetId >& resources, CSimplePool* pool);
+  static CUVElement* GetTextureElement(CInputStream& in, CSimplePool* resPool);
+  static CColorElement* GetColorElement(CInputStream& in);
+  static CModVectorElement* GetModVectorElement(CInputStream& in);
+  static CEmitterElement* GetEmitterElement(CInputStream& in);
+  static CVectorElement* GetVectorElement(CInputStream& in);
+  static CRealElement* GetRealElement(CInputStream& in);
+  static CIntElement* GetIntElement(CInputStream& in);
+
+  static float GetReal(CInputStream& in);
+  static int GetInt(CInputStream& in);
+  static bool GetBool(CInputStream& in);
+#if !RSTL_PRIME1
+  static int GetBitflag(CInputStream& in);
+#endif
+
+  static FourCC GetClassID(CInputStream& in);
+  static rstl::optional_object< TToken< CModel > > GetModel(CInputStream& in, CSimplePool* pool);
+  static rstl::optional_object< TToken< CGenDescription > >
+  GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
+                        const rstl::vector< CAssetId >& resources);
+  static rstl::optional_object< TToken< CGenDescription > >
+  GetChildGeneratorDesc(CAssetId id, CSimplePool* pool, const rstl::vector< CAssetId >& resources);
+  static rstl::optional_object< TToken< CSwooshDescription > >
+  GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool);
+  static rstl::optional_object< TToken< CElectricDescription > >
+  GetElectricGeneratorDesc(CInputStream& in, CSimplePool* pool);
+};
+
+#endif // _CPARTICLEDATAFACTORY

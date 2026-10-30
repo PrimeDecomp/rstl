@@ -21,7 +21,7 @@ public:
 #if RSTL_PRIME1
   uint GetPaletteEntry(int idx) const { return mColors[idx]; }
   int GetExtraCharacterSpacing() const {
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
     return mExtraCharacterSpacing;
 #else
     return 0;
@@ -42,7 +42,7 @@ private:
 #else
   rstl::reserved_vector< u32, 16 > mColors;
 #endif
-#if RSTL_VERSION >= VERSION_GM8P_00
+#if RSTL_VERSION >= RSTL_GM8P_00
   int mExtraCharacterSpacing;
 #endif
 #else
