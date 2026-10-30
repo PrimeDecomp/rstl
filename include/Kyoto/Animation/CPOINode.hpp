@@ -91,8 +91,6 @@ protected:
   int mCharIdx;
   int mFlags;
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CPOINode, RSTL_PRIME1 ? 0x38 : 0x2c)
-#endif
 
 #endif // _CPOINODE

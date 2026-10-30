@@ -41,8 +41,6 @@ private:
   TToken< CAnimationDatabase > mAnimDB;
   CAnimSysContext mSysCtx;
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CAnimationManager, RSTL_PRIME1 ? 0x18 : 0x20)
-#endif
 
 #endif // _CANIMATIONMANAGER

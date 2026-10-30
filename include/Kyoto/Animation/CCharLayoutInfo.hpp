@@ -55,9 +55,7 @@ private:
 
   rstl::vector< CSegId > mConnectedParts;
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CCharLayoutNode, RSTL_PRIME1 ? 0x20 : 0x40)
-#endif
 
 class CCharLayoutInfo {
 public:
@@ -138,8 +136,6 @@ private:
   rstl::vector< CQuaternion > mLinearLocalRotations;
 #endif
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CCharLayoutInfo, RSTL_PRIME1 ? 0x2c : 0x7c)
-#endif
 
 #endif // _CCHARLAYOUTINFO

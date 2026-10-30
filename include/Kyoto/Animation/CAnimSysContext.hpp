@@ -61,8 +61,6 @@ private:
 #endif
 
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CAnimSysContext, RSTL_PRIME1 ? 0x10 : 0x18)
-#endif
 
 #endif // _CANIMSYSCONTEXT

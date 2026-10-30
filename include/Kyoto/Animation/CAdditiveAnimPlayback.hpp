@@ -55,8 +55,6 @@ private:
   EPlaybackPhase mPhase;
   bool mNeedsFadeOut;
 };
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CAdditiveAnimPlayback, RSTL_PRIME1 ? 0x24 : 0x28)
-#endif
 
 #endif // _CADDITIVEANIMPLAYBACK

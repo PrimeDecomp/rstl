@@ -148,12 +148,10 @@ private:
   rstl::map< SObjectTag, LoadList::iterator > mLoadMap;
   LoadList mCancelledList;
 };
-#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
+#if RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CResFactory, SLoadingData, 0x38)
 #endif
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CResFactory, RSTL_PRIME1 ? 0xc8 : 0xe0)
-#endif
 
 extern CResFactory* gpResourceFactory;
 
