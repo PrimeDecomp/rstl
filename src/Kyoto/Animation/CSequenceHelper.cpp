@@ -127,12 +127,7 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
       CCharAnimTime remaining = node->GetTimeRemaining();
       while (remaining != CCharAnimTime::ZeroFlat() && !close_enough(remaining.GetSeconds(), 0.f)) {
         CCharAnimTime previous = remaining;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        CAdvancementResults result = node->AdvanceView(previous);
-#else
         SAdvancementResults result = node->AdvanceView(previous);
-#endif
 
         rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simplified =
             node->Simplified();

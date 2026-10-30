@@ -21,11 +21,7 @@ private:
 };
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
 
                                               const CVParamTransfer& transfer);
 

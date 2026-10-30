@@ -72,12 +72,7 @@ CAnimTreeSequence::CAnimTreeSequence(const rstl::ncrc_ptr< CAnimTreeNode >& curN
   mChild->VGetTimeRemaining();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
-#else
 SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
-#endif
 
   CCharAnimTime totalDelta(0.f);
   CVector3f posDelta(0.f, 0.f, 0.f);
@@ -123,12 +118,7 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
     }
     curChild = mChild;
     if (mCurIdx < seqSize) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      CAdvancementResults res = curChild->VAdvanceView(remTime);
-#else
       SAdvancementResults res = curChild->VAdvanceView(remTime);
-#endif
 
       rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simp =
           curChild->Simplified();
@@ -140,12 +130,7 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
       CCharAnimTime prevRemTime = remTime;
       remTime = res.mRemTime;
       totalDelta += prevRemTime - remTime;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const CAdvancementDeltas& deltas = res.mDeltas;
-#else
-      const SAdvancementDeltas& deltas = res.mDeltas;
-#endif
 
       posDelta += deltas.mPosDelta;
       rotDelta *= deltas.mRotDelta;
@@ -153,12 +138,7 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
   }
 
   mCurTime += totalDelta;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return CAdvancementResults(dt - totalDelta, CAdvancementDeltas(posDelta, rotDelta));
-#else
-  return SAdvancementResults(dt - totalDelta, SAdvancementDeltas(posDelta, rotDelta));
-#endif
+  return SAdvancementResults(dt - totalDelta, CAdvancementDeltas(posDelta, rotDelta));
 
 }
 

@@ -4,7 +4,7 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeSingleChild::VAdvanceView(const CCharAnimTime& dt) {
+SAdvancementResults CAnimTreeSingleChild::VAdvanceView(const CCharAnimTime& dt) {
   return mChild->VAdvanceView(dt);
 #else
 SAdvancementResults CAnimTreeSingleChild::VAdvanceView(const CCharAnimTime& time) {
@@ -159,7 +159,7 @@ void CAnimTreeSingleChild::VSetPhase(float phase) { mChild->VSetPhase(phase); }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeSingleChild::VGetAdvancementResults(const CCharAnimTime& a,
+SAdvancementResults CAnimTreeSingleChild::VGetAdvancementResults(const CCharAnimTime& a,
                                                                  const CCharAnimTime& b) const {
   return mChild->VGetAdvancementResults(a, b);
 #else

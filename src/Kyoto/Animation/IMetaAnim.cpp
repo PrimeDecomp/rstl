@@ -102,7 +102,7 @@ void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
   while (remaining > CCharAnimTime::ZeroFlat()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CAdvancementResults result = anim.AdvanceView(remaining);
+    SAdvancementResults result = anim.AdvanceView(remaining);
     remaining = result.GetRemainder();
 #else
     SAdvancementResults result = anim.VAdvanceView(remaining);

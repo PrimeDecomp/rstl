@@ -4,8 +4,8 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #include "types.h"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "EchoesNamespace.h"
 #endif
 

@@ -20,12 +20,7 @@ public:
 #endif
 
   ~CAnimTreeTransition() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#else
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#endif
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
@@ -58,12 +53,7 @@ public:
 #endif
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::pair< CCharAnimTime, CAdvancementDeltas >
-#else
-  rstl::pair< CCharAnimTime, SAdvancementDeltas >
-#endif
 
   AdvanceViewForTransitionalPeriod(const CCharAnimTime& time);
 #if !RSTL_PRIME1

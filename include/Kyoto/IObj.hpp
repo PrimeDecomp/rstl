@@ -25,6 +25,7 @@ public:
   template < typename T >
   CObjOwnerDerivedFromIObjUntyped(const rstl::auto_ptr< T >& obj) : m_objPtr(obj.release()) {}
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void* GetContents() const { return m_objPtr; }
 #else

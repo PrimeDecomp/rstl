@@ -3108,13 +3108,8 @@ void CElementGen::RenderParticles() {
     } else {
       // ORNT
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      const CVector3f fwd = systemViewCopy.GetForward();
-      const CVector3f origin = systemViewCopy.GetTranslation();
-#else
-      CVector3f fwd = systemViewCopy.GetForward();
-      CVector3f origin = systemViewCopy.GetTranslation();
-#endif
+      RSTL_PRIME1_CONST CVector3f fwd = systemViewCopy.GetForward();
+      RSTL_PRIME1_CONST CVector3f origin = systemViewCopy.GetTranslation();
 
       float canBeNormEps = FLT_EPSILON;
 #if RSTL_PRIME1

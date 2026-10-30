@@ -4,9 +4,9 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Graphics/CGX.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "CGX.hpp"
-#else
 #endif
 
 #include "Kyoto/Alloc/CMemory.hpp"

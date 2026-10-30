@@ -28,8 +28,8 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/TToken.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
 #endif

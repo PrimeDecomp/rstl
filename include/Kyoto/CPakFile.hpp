@@ -72,11 +72,7 @@ public:
 #pragma pack(pop)
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPakFile(const rstl::string& filename, const bool buildDepList, const bool worldPak);
-#else
-  CPakFile(const rstl::string& filename, bool buildDepList, bool worldPak);
-#endif
+  CPakFile(const rstl::string& filename, RSTL_PRIME1_CONST bool buildDepList, RSTL_PRIME1_CONST bool worldPak);
 
   ~CPakFile();
 

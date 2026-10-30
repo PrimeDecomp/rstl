@@ -39,6 +39,7 @@ public:
   bool GreaterThanZero() const;
   bool EqualsZero() const;
   void PutTo(COutputStream& out) const;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static CCharAnimTime Infinity() { return CCharAnimTime(kT_Infinity, 1.0f); }
 #else
@@ -71,6 +72,7 @@ public:
     return kT_ZeroIncreasing;
   }
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimTime ZeroSignScale(float other) const {
     if (other > 0.f) {

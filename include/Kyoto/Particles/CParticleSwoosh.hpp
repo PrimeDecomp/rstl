@@ -13,6 +13,7 @@
 #include "Kyoto/TToken.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #include "rstl/vector.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CParticleDatabase.hpp"
 #else

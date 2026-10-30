@@ -10,11 +10,7 @@ class CPASAnimParmData {
 
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPASAnimParmData(const pas::EAnimationState stateId,
-#else
-  CPASAnimParmData(pas::EAnimationState stateId,
-#endif
+  CPASAnimParmData(RSTL_PRIME1_CONST pas::EAnimationState stateId,
 
                    const CPASAnimParm& parm1 = CPASAnimParm::NoParameter(),
                    const CPASAnimParm& parm2 = CPASAnimParm::NoParameter(),

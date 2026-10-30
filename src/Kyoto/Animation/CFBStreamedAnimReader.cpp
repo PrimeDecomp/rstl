@@ -5,8 +5,8 @@
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
 #endif
 
@@ -530,24 +530,18 @@ CQuaternion CFBStreamedAnimReader::VGetRotation(const CSegId& seg) const {
 
 bool CFBStreamedAnimReader::VSupportsReverseView() const { return false; }
 
+SAdvancementResults CFBStreamedAnimReader::VReverseView(const CCharAnimTime&) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CFBStreamedAnimReader::VReverseView(const CCharAnimTime&) {
-  return CAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
+  return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
 #else
-SAdvancementResults CFBStreamedAnimReader::VReverseView(const CCharAnimTime&) {
   return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                             SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                             CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& time) {
-#else
 SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& time) {
-#endif
 
   const CCharAnimTime curTime = mCurTime;
   const CCharAnimTime& duration = mSource->GetAnimationDuration();
@@ -560,20 +554,20 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
     mPassedSoundCount = 0;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return CAdvancementResults(time, CAdvancementDeltas());
+    return SAdvancementResults(time, CAdvancementDeltas());
 #else
     return SAdvancementResults(time,
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
 
   }
   if (time.EqualsZero()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return CAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
+    return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
 #else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
 
   }
@@ -640,12 +634,7 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
     const CQuaternion nextInverse = nextRotation.BuildInverted();
     offset = nextInverse.Transform(offset);
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return CAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
-#else
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
-#endif
+  return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 
 }
 
@@ -794,10 +783,8 @@ inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
   }
 }
 
-CAdvancementResults
-#else
-SAdvancementResults
 #endif
+SAdvancementResults
 
 CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
                                               const CCharAnimTime& startOffset) const {
@@ -807,20 +794,20 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
   if (startTime >= duration) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return CAdvancementResults(time, CAdvancementDeltas());
+    return SAdvancementResults(time, CAdvancementDeltas());
 #else
     return SAdvancementResults(time,
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
 
   }
   if (time.EqualsZero()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return CAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
+    return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
 #else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
 
   }
@@ -879,11 +866,9 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
     offset = nextInverse.Transform(offset);
   }
   SetReadTime(mCurTime);
+  return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return CAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
-#else
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
+#if !RSTL_PRIME1
 }
 
 inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,

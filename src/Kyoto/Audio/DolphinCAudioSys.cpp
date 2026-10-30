@@ -778,11 +778,7 @@ void CAudioSys::S3dFlushUnusedEmitters() {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CAudioSys::S3dCheckEmitter(const uint handle) {
-#else
-bool CAudioSys::S3dCheckEmitter(const uint handle) {
-#endif
+RSTL_PRIME1_CONST bool CAudioSys::S3dCheckEmitter(const uint handle) {
 
   if (handle == -1) {
     return false;

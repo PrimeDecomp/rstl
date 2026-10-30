@@ -4,14 +4,15 @@
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #endif
 
 #include "Kyoto/Graphics/CModel.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #include "rstl/math.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "dolphin/os/OSCache.h"
 #else

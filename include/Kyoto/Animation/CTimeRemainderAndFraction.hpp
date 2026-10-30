@@ -28,6 +28,7 @@ private:
   uint mIntegerTime;
   float mRemainder;
 };
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CIntegerTimeAndRemainder, 0xc)
 #else
@@ -52,6 +53,7 @@ private:
   float mFraction;
   float mFinestSample;
 };
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CTimeRemainderAndFraction, 0x14)
 #else

@@ -10,12 +10,7 @@ class CAnimTreeLoopIn : public CAnimTreeSingleChild {
 public:
   // IAnimReader
   ~CAnimTreeLoopIn() override {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#else
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#endif
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;

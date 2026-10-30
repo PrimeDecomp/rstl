@@ -173,11 +173,7 @@ public:
   virtual void SetGlobalScale(const CVector3f& scale) override;
   virtual void SetLocalScale(const CVector3f& scale) override;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  virtual void SetParticleEmission(const bool emission) override;
-#else
-  virtual void SetParticleEmission(bool emission) override;
-#endif
+  virtual void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
   virtual void SetModulationColor(const CColor& col) override;
   virtual void SetGeneratorRate(float rate) override;

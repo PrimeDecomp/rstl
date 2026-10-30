@@ -58,20 +58,10 @@ CAnimTreeLoopIn::CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 , mFundamentals(fundamentals)
 , mCurTime(time) {}
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAdvancementResults CAnimTreeLoopIn::VAdvanceView(const CCharAnimTime& dt) {
-#else
 SAdvancementResults CAnimTreeLoopIn::VAdvanceView(const CCharAnimTime& dt) {
-#endif
 
   rstl::ncrc_ptr< CAnimTreeNode > origChild = mChild;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults res = origChild->AdvanceView(dt);
-#else
   SAdvancementResults res = origChild->AdvanceView(dt);
-#endif
 
   CCharAnimTime remainder = res.GetRemainder();
   mCurTime += dt - remainder;

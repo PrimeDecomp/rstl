@@ -8,6 +8,7 @@
 class CVector3i {
 public:
   CVector3i(int x, int y, int z);
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int operator[](int index) const { return (&mX)[index]; }
 #else

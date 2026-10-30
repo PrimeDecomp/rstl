@@ -20,6 +20,7 @@ public:
   CUnitVector3f(CInputStream& in) : CVector3f(in) { Normalize(); }
 #endif
   CUnitVector3f(const float x, const float y, const float z) : CVector3f(x, y, z) {}
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CUnitVector3f(const float x, const float y, const float z, const ENormalize)
   : CVector3f(x, y, z) {
@@ -50,6 +51,7 @@ public:
   }
 #endif
 };
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CUnitVector3f, 0xc)
 #else

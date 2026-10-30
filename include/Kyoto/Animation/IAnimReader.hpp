@@ -18,55 +18,34 @@
 #include "rstl/ownership_transfer.hpp"
 #include "rstl/string.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-struct CAdvancementResults {
-#else
-typedef CAdvancementDeltas SAdvancementDeltas;
-
 struct SAdvancementResults {
-#endif
 
   CCharAnimTime mRemTime;
+  CAdvancementDeltas mDeltas;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementDeltas mDeltas;
   const CCharAnimTime& GetRemainder() const { return mRemTime; }
   const CAdvancementDeltas& GetAdvancementDeltas() const { return mDeltas; }
-  CAdvancementResults() {}
-  CAdvancementResults(const CCharAnimTime& time) : mRemTime(time) {}
-  CAdvancementResults(const CCharAnimTime& time, const CAdvancementDeltas& deltas)
-#else
-  SAdvancementDeltas mDeltas;
-
-  SAdvancementResults() {}
-  SAdvancementResults(const CCharAnimTime& time, const SAdvancementDeltas& deltas)
 #endif
-
+  SAdvancementResults() {}
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  SAdvancementResults(const CCharAnimTime& time) : mRemTime(time) {}
+#endif
+  SAdvancementResults(const CCharAnimTime& time, const CAdvancementDeltas& deltas)
   : mRemTime(time), mDeltas(deltas) {}
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CAdvancementResults RemainderOnly(const CCharAnimTime& time) {
-    return CAdvancementResults(time);
-#else
+#if !RSTL_PRIME1
   const CCharAnimTime& GetRemainder() const { return mRemTime; }
   explicit SAdvancementResults(const CCharAnimTime& time)
   : mRemTime(time), mDeltas(CVector3f::Zero(), CQuaternion::NoRotation()) {}
-
+#endif
   static SAdvancementResults RemainderOnly(const CCharAnimTime& time) {
     return SAdvancementResults(time);
-#endif
-
   }
 };
-#if !RSTL_PRIME1
 CHECK_SIZEOF(SAdvancementResults, 0x24)
-#endif
-
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAdvancementResults, 0x24)
-#endif
 
 struct CAnimTreeEffectiveContribution {
   float mContributionWeight;
@@ -116,12 +95,7 @@ class IAnimReader {
 public:
   virtual ~IAnimReader();
   virtual bool IsCAnimTreeNode() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  virtual CAdvancementResults VAdvanceView(const CCharAnimTime& a) = 0;
-#else
   virtual SAdvancementResults VAdvanceView(const CCharAnimTime& a) = 0;
-#endif
 
   virtual CCharAnimTime VGetTimeRemaining() const = 0;
   virtual CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const = 0;
@@ -183,7 +157,7 @@ public:
 #if RSTL_PRIME1
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified();
   virtual void VSetPhase(float) = 0;
-  virtual CAdvancementResults VGetAdvancementResults(const CCharAnimTime& aTime,
+  virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& aTime,
                                                      const CCharAnimTime& bTime) const;
 #else
   virtual void VSetPhase(float phase) = 0;
@@ -234,7 +208,7 @@ public:
   bool HasOffset(const CSegId& seg) const { return VHasOffset(seg); }
   CVector3f GetOffset(const CSegId& seg) const { return VGetOffset(seg); }
   CQuaternion GetRotation(const CSegId& seg) const { return VGetRotation(seg); }
-  CAdvancementResults GetAdvancementResults(const CCharAnimTime& a, const CCharAnimTime& b) const {
+  SAdvancementResults GetAdvancementResults(const CCharAnimTime& a, const CCharAnimTime& b) const {
     return VGetAdvancementResults(a, b);
   }
   CSteadyStateAnimInfo GetSteadyStateAnimInfo() const { return VGetSteadyStateAnimInfo(); }
@@ -246,7 +220,7 @@ public:
     VGetSegStatementSet(list, setOut, time);
   }
   void SetPhase(float phase) { VSetPhase(phase); }
-  CAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
+  SAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
   bool GetBoolPOIState(const char* name) const { return VGetBoolPOIState(name); }
   s32 GetInt32POIState(const char* name) const { return VGetInt32POIState(name); }
   CParticleData::EParentedMode GetParticlePOIState(const char* name) const {

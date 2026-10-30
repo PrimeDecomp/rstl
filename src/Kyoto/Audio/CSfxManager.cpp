@@ -13,10 +13,10 @@
 #include "Kyoto/Audio/CSfxHandle.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "dolphin/types.h"
 #include "musyx/musyx.h"
-#else
 #endif
 
 #include "rstl/algorithm.hpp"
@@ -25,6 +25,7 @@
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 #include "types.h"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #else
@@ -168,11 +169,7 @@ void CSfxManager::CBaseSfxWrapper::Release() {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const float CSfxManager::CBaseSfxWrapper::GetTimeRemaining() { return mTimeRemaining; }
-#else
-float CSfxManager::CBaseSfxWrapper::GetTimeRemaining() { return mTimeRemaining; }
-#endif
+RSTL_PRIME1_CONST float CSfxManager::CBaseSfxWrapper::GetTimeRemaining() { return mTimeRemaining; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -210,18 +207,10 @@ void CSfxManager::CBaseSfxWrapper::SetRank(short rank) { mRank = rank; }
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CSfxManager::CBaseSfxWrapper::IsLooped() const { return mLooped; }
-#else
-bool CSfxManager::CBaseSfxWrapper::IsLooped() const { return mLooped; }
-#endif
+RSTL_PRIME1_CONST bool CSfxManager::CBaseSfxWrapper::IsLooped() const { return mLooped; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CSfxManager::CBaseSfxWrapper::IsInArea() const { return mInArea; }
-#else
-bool CSfxManager::CBaseSfxWrapper::IsInArea() const { return mInArea; }
-#endif
+RSTL_PRIME1_CONST bool CSfxManager::CBaseSfxWrapper::IsInArea() const { return mInArea; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -238,18 +227,10 @@ bool CSfxManager::CBaseSfxWrapper::IsActive() const { return mActive; }
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CSfxManager::CBaseSfxWrapper::UseAcoustics() const { return mUseAcoustics; }
-#else
-bool CSfxManager::CBaseSfxWrapper::UseAcoustics() const { return mUseAcoustics; }
-#endif
+RSTL_PRIME1_CONST bool CSfxManager::CBaseSfxWrapper::UseAcoustics() const { return mUseAcoustics; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const int CSfxManager::CBaseSfxWrapper::GetRank() const { return mRank; }
-#else
-int CSfxManager::CBaseSfxWrapper::GetRank() const { return mRank; }
-#endif
+RSTL_PRIME1_CONST int CSfxManager::CBaseSfxWrapper::GetRank() const { return mRank; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -259,18 +240,10 @@ int CSfxManager::CBaseSfxWrapper::GetPriority() const { return mPriority; }
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CSfxHandle CSfxManager::CBaseSfxWrapper::GetSfxHandle() const { return mHandle; }
-#else
-CSfxHandle CSfxManager::CBaseSfxWrapper::GetSfxHandle() const { return mHandle; }
-#endif
+RSTL_PRIME1_CONST CSfxHandle CSfxManager::CBaseSfxWrapper::GetSfxHandle() const { return mHandle; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const int CSfxManager::CBaseSfxWrapper::GetArea() const { return mArea; }
-#else
-int CSfxManager::CBaseSfxWrapper::GetArea() const { return mArea; }
-#endif
+RSTL_PRIME1_CONST int CSfxManager::CBaseSfxWrapper::GetArea() const { return mArea; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -575,11 +548,7 @@ bool CSfxManager::CSfxWrapper::IsPlaying() const {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CSfxManager::CSfxWrapper::Ready() { return IsLooped() || mReady; }
-#else
-bool CSfxManager::CSfxWrapper::Ready() { return IsLooped() || mReady; }
-#endif
+RSTL_PRIME1_CONST bool CSfxManager::CSfxWrapper::Ready() { return IsLooped() || mReady; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -589,11 +558,7 @@ short CSfxManager::CSfxWrapper::GetAudible(const CVector3f&) { return kSA_High; 
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const SND_VOICEID CSfxManager::CSfxWrapper::GetVoice() const { return mVoiceHandle; }
-#else
-SND_VOICEID CSfxManager::CSfxWrapper::GetVoice() const { return mVoiceHandle; }
-#endif
+RSTL_PRIME1_CONST SND_VOICEID CSfxManager::CSfxWrapper::GetVoice() const { return mVoiceHandle; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

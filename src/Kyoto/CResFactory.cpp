@@ -11,8 +11,8 @@
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Streams/CZipSupport.hpp"
 #include "rstl/math.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "dolphin/os.h"
 #endif
 

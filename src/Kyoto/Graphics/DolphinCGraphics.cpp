@@ -12,8 +12,8 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CSkinnedModel.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
 

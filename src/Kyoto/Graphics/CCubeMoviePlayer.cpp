@@ -696,11 +696,7 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
 
   MOVIE_DEBUG_WARN(offset > 55 * 1024, "WARNING: Movie frame size > 55k! %d\n", offset);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const int next = mDecodedTexSlot + 1;
-#else
-  int next = mDecodedTexSlot + 1;
-#endif
+  RSTL_PRIME1_CONST int next = mDecodedTexSlot + 1;
 
   mDecodedTexSlot = next;
   if (next == mTextures.size()) {
@@ -711,11 +707,7 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
 #undef MOVIE_DEBUG_WARN
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CMoviePlayer::Update(const float dt) {
-#else
-void CMoviePlayer::Update(float dt) {
-#endif
+void CMoviePlayer::Update(RSTL_PRIME1_CONST float dt) {
 
   if (mCurLoadFrame < mPreLoadFrames) {
     if (!mRequest.null() && mRequest->IsComplete()) {
@@ -1061,11 +1053,7 @@ uint CMoviePlayer::GetWidth() const { return mVideoInfo.mXSize; }
 uint CMoviePlayer::GetHeight() const { return mVideoInfo.mYSize; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CMoviePlayer::SetAudioEnabled(const bool enabled) { sAudioEnabled = enabled; }
-#else
-void CMoviePlayer::SetAudioEnabled(bool enabled) { sAudioEnabled = enabled; }
-#endif
+void CMoviePlayer::SetAudioEnabled(RSTL_PRIME1_CONST bool enabled) { sAudioEnabled = enabled; }
 
 bool CMoviePlayer::GetAudioEnabled() { return sAudioEnabled; }
 

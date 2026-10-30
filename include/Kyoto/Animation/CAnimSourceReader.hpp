@@ -68,15 +68,14 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ~CAnimSourceReader() override {}
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 #else
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time,
                     const CAnimPOIData* poiData);
 
   // IAnimReader
   ~CAnimSourceReader() override;
-  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 #endif
+  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
@@ -104,7 +103,7 @@ public:
   void VSetPhase(float phase) override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
+  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
                                              const CCharAnimTime& b) const override;
 #else
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
@@ -113,13 +112,11 @@ public:
 
   virtual CVector3f VGetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   virtual bool VSupportsReverseView() const;
+  virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  virtual CAdvancementResults VReverseView(const CCharAnimTime& time);
 
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time);
-#else
-  virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 #endif
 
 private:

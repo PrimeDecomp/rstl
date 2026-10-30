@@ -11,9 +11,9 @@ rstl::optional_object< rstl::ownership_transfer< IAnimReader > > IAnimReader::VS
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults IAnimReader::VGetAdvancementResults(const CCharAnimTime& aTime,
+SAdvancementResults IAnimReader::VGetAdvancementResults(const CCharAnimTime& aTime,
                                                         const CCharAnimTime& bTime) const {
-  return CAdvancementResults::RemainderOnly(aTime);
+  return SAdvancementResults::RemainderOnly(aTime);
 };
 #else
 SAdvancementResults IAnimReader::VGetAdvancementResults(const CCharAnimTime& time,

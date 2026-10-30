@@ -14,6 +14,7 @@ class CPVSVisOctree;
 class CVector3f;
 class CPVSVisSet {
 public:
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CPVSVisSet(int numBits, int numLights, const rstl::auto_ptr< const char >& leafPtr);
 #else

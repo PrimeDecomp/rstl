@@ -29,13 +29,11 @@ public:
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#else
+#if !RSTL_PRIME1
   // IAnimReader
   ~CAnimTreeAnimReaderContainer() override {}
-  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 #endif
+  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
@@ -99,7 +97,7 @@ public:
   void VSetPhase(float phase) override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
+  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
                                              const CCharAnimTime& b) const override;
 #else
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,

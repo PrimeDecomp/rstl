@@ -35,6 +35,7 @@ float CLinearAnimationTimeScale::VTimeScaleIntegral(const float& lowerLimit,
   if (lowerLimit <= upperLimit) {
     return TimeScaleIntegralWithSortedLimits(mDesc, lowerLimit, upperLimit);
   }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   else {
     return -TimeScaleIntegralWithSortedLimits(mDesc, upperLimit, lowerLimit);
@@ -56,6 +57,7 @@ float CLinearAnimationTimeScale::FindUpperLimitFromRoot(const CFunctionDescripti
         (halfSlope * upperLimit * upperLimit + yIntercept * upperLimit - lowerIntegral - root) /
         (2.f * halfSlope * upperLimit + yIntercept);
     upperLimit -= step;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (fabs(step) < 0.00001f) {
 #else

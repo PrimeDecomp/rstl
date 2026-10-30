@@ -80,6 +80,7 @@ public:
   const float& operator[](EDimY) const { return mY; }
   const float& operator[](EDimZ) const { return mZ; }
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float& operator[](const int i) { return reinterpret_cast< float* >(this)[i]; }
   const float operator[](const int i) const { return (&mX)[i]; }
@@ -90,6 +91,7 @@ public:
   const float* GetArrayPtr() const { return &mX; } // Guessed name
   bool IsNonZero() const { return mX != 0.f || mY != 0.f || mZ != 0.f; }
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector2f DropZ() const { return CVector2f(mX, mY); }
 #else
@@ -114,6 +116,7 @@ public:
     mZ *= v;
     return *this;
   }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f& operator/=(const float v) { return *this *= (1.f / v); }
 #else
@@ -127,6 +130,7 @@ public:
 
   CVector2f ToVec2f() const { return CVector2f(mX, mY); }
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static const float Dot(const CVector3f& a, const CVector3f& b) {
 #if RSTL_VERSION >= RSTL_R3IJ
@@ -134,12 +138,11 @@ public:
 #else
     return (a.GetX() * b.GetX()) + (a.GetY() * b.GetY()) + (a.GetZ() * b.GetZ());
 #endif
-  }
 #else
   static float Dot(const CVector3f& a, const CVector3f& b) {
     return (a.mX * b.mX) + (a.mY * b.mY) + (a.mZ * b.mZ);
-  }
 #endif
+  }
 
   static const CVector3f& Zero() { return sZeroVector; }
 #if RSTL_PRIME1
@@ -202,6 +205,7 @@ RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(CVector3f)
 // close_enough__FRC9CVector3fRC9CVector3ff in CloseEnough.cpp
 
 inline bool operator==(const CVector3f& lhs, const CVector3f& rhs) {
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return lhs.mX == rhs.mX && lhs.mY == rhs.mY && lhs.mZ == rhs.mZ;
 #else
@@ -263,6 +267,7 @@ inline CVector3f operator*(const float f, const CVector3f& vec) {
 }
 
 inline CVector3f operator/(const CVector3f& vec, const float f) {
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float n = (1.f / f);
   float x = vec.GetX() * n;

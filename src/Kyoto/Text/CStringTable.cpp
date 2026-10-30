@@ -20,8 +20,8 @@
 #include "rstl/vector.hpp"
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "string.h"
 #endif
 

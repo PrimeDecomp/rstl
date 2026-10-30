@@ -24,11 +24,7 @@ public:
   static CBoolPOINode CopyNodeMinusStartTime(const CBoolPOINode& node,
                                              const CCharAnimTime& startTime);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const bool GetValue() const { return mVal; }
-#else
-  bool GetValue() const { return mVal; }
-#endif
+  RSTL_PRIME1_CONST bool GetValue() const { return mVal; }
 
 private:
   bool mVal;

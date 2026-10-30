@@ -109,12 +109,7 @@ CAnimTreeTransition::VReverseSimplified() {
   return CAnimTreeTweenBase::VReverseSimplified();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 rstl::pair< CCharAnimTime, CAdvancementDeltas >
-#else
-rstl::pair< CCharAnimTime, SAdvancementDeltas >
-#endif
 
 CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time) {
   IncAdvancementDepth();
@@ -122,20 +117,10 @@ CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time)
   DecAdvancementDepth();
   const CCharAnimTime& trueAdvancement = res.GetTrueAdvancement();
   if (trueAdvancement.EqualsZero())
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
-#else
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
-#endif
 
         CCharAnimTime::ZeroFlat(),
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
-        SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
   float oldWeight = GetBlendingWeight();
   mTimeInTrans += trueAdvancement;
@@ -146,41 +131,19 @@ CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time)
     else
       mCullSelector = 2;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   const CAdvancementDeltas& leftDeltas = res.GetLeftAdvancementDeltas();
   const CAdvancementDeltas& rightDeltas = res.GetRightAdvancementDeltas();
-#else
-  const SAdvancementDeltas& leftDeltas = res.GetLeftAdvancementDeltas();
-  const SAdvancementDeltas& rightDeltas = res.GetRightAdvancementDeltas();
-#endif
 
   if (GetBlendRoot() & kBlendRoot_Offset)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
-#else
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
-#endif
 
         trueAdvancement,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         CAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
   return rstl::pair< CCharAnimTime, CAdvancementDeltas >(trueAdvancement, rightDeltas);
-#else
-        SAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
-  return rstl::pair< CCharAnimTime, SAdvancementDeltas >(trueAdvancement, rightDeltas);
-#endif
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time) {
-#else
 SAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time) {
-#endif
 
   if (time.EqualsZero()) {
     IncAdvancementDepth();
@@ -190,57 +153,29 @@ SAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time)
     DecAdvancementDepth();
     if (ShouldCullTree())
       mCullSelector = 1;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return CAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 
   }
   if (!mInitialized)
     mInitialized = true;
   if (mTimeInTrans + time < mTransDur) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     rstl::pair< CCharAnimTime, CAdvancementDeltas > res = AdvanceViewForTransitionalPeriod(time);
-    return CAdvancementResults(time - res.first, res.second);
-#else
-    rstl::pair< CCharAnimTime, SAdvancementDeltas > res = AdvanceViewForTransitionalPeriod(time);
     return SAdvancementResults(time - res.first, res.second);
-#endif
 
   }
   CCharAnimTime transTimeRem = mTransDur - mTimeInTrans;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::pair< CCharAnimTime, CAdvancementDeltas > res(
       CCharAnimTime(0.f), CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
-  rstl::pair< CCharAnimTime, SAdvancementDeltas > res(
-      CCharAnimTime(0.f), SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
   if (transTimeRem.GreaterThanZero()) {
     res = AdvanceViewForTransitionalPeriod(transTimeRem);
     if (res.first != transTimeRem)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      return CAdvancementResults(res.first, res.second);
-#else
       return SAdvancementResults(res.first, res.second);
-#endif
 
   }
   CCharAnimTime remainder = time - transTimeRem;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return CAdvancementResults(remainder, res.second);
-#else
   return SAdvancementResults(remainder, res.second);
-#endif
 
 }
 

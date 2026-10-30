@@ -542,6 +542,12 @@
 // GetSeed first, const parameters on Range), as MWCC codegen of CFlyingPirate::CoverCheck,
 // CShrieker::ShouldDodge and CSpacePirate::Lurk depends on them.
 #define RSTL_KYOTO_CONST_SCALAR_RETURNS RSTL_PRIME1
+// `const` on by-value scalar parameters follows the same split.
+#if RSTL_KYOTO_CONST_SCALAR_RETURNS
+#define RSTL_PRIME1_CONST const
+#else
+#define RSTL_PRIME1_CONST
+#endif
 // CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
 // The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
 #define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1

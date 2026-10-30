@@ -544,11 +544,7 @@ public:
   static void SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op, ERglAlphaFunc comp1,
                               uchar ref1);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SetDepthWriteMode(const bool test, ERglEnum comp, const bool write);
-#else
-  static void SetDepthWriteMode(bool test, ERglEnum comp, bool write);
-#endif
+  static void SetDepthWriteMode(RSTL_PRIME1_CONST bool test, ERglEnum comp, RSTL_PRIME1_CONST bool write);
 
   static void SetBlendMode(ERglBlendMode mode, ERglBlendFactor src, ERglBlendFactor dst,
                            ERglLogicOp op);
@@ -560,11 +556,7 @@ public:
   static void SetTevStates(uchar);
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SetUseVideoFilter(const bool b);
-#else
-  static void SetUseVideoFilter(bool b);
-#endif
+  static void SetUseVideoFilter(RSTL_PRIME1_CONST bool b);
 
   static bool GetDolphinLastFrameAbove() { return mLastFrameUsedAbove; }
   static bool GetUseVideoFilter();

@@ -6,12 +6,11 @@
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
 
+SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
   if (dt.EqualsZero() && dt > CCharAnimTime::ZeroFlat())
 #else
-SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
   if (dt.EqualsZero() && dt > CCharAnimTime::ZeroFlat()) {
 #endif
 
@@ -24,43 +23,28 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
   CCharAnimTime newTime = mCurAccelTime + dt;
   if (newTime < mTargetAccelTime) {
     CCharAnimTime integral = mTimeScale->TimeScaleIntegral(origAccelTime, newTime);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CAdvancementResults res = mChild->AdvanceView(integral);
-#else
     SAdvancementResults res = mChild->AdvanceView(integral);
-#endif
 
     if (res.mRemTime.EqualsZero()) {
       mCurAccelTime = newTime;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      return CAdvancementResults(CCharAnimTime::ZeroFlat(), res.mDeltas);
-#else
       return SAdvancementResults(CCharAnimTime::ZeroFlat(), res.mDeltas);
-#endif
 
     } else {
       mCurAccelTime = mTimeScale->FindUpperLimit(origAccelTime, integral - res.mRemTime);
       CCharAnimTime elapsed = mCurAccelTime - origAccelTime;
       CCharAnimTime remaining = dt - elapsed;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      return CAdvancementResults(remaining, res.mDeltas);
-#else
       return SAdvancementResults(remaining, res.mDeltas);
-#endif
 
     }
   } else {
     CCharAnimTime newDt = mTimeScale->TimeScaleIntegral(origAccelTime, mTargetAccelTime);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas());
+    SAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas());
     if (newDt.GreaterThanZero())
 #else
     SAdvancementResults res(CCharAnimTime(0.f),
-                           SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                           CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
     if (newDt.GreaterThanZero()) {
 #endif
 
@@ -71,12 +55,7 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
 
     CCharAnimTime remTime = res.mRemTime + (newTime - mTargetAccelTime);
     mCurAccelTime = mTargetAccelTime;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return CAdvancementResults(remTime, res.mDeltas);
-#else
     return SAdvancementResults(remTime, res.mDeltas);
-#endif
 
   }
 }

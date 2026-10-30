@@ -40,13 +40,8 @@ public:
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CRelAngle FromDegrees(const float deg) { return CRelAngle(deg * (M_PIF / 180.f)); }
-  static CRelAngle FromRadians(const float rad) { return CRelAngle(rad); }
-#else
-  static CRelAngle FromDegrees(float deg) { return CRelAngle(deg * (M_PIF / 180.f)); }
-  static CRelAngle FromRadians(float rad) { return CRelAngle(rad); }
-#endif
+  static CRelAngle FromDegrees(RSTL_PRIME1_CONST float deg) { return CRelAngle(deg * (M_PIF / 180.f)); }
+  static CRelAngle FromRadians(RSTL_PRIME1_CONST float rad) { return CRelAngle(rad); }
 
 private:
 #if !RSTL_PRIME1

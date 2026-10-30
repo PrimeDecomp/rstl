@@ -75,11 +75,7 @@ CAllFormatsAnimSource::CAllFormatsAnimSource(CInputStream& in, IObjectStore& sto
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
 
                                    const CVParamTransfer& param) {
 // TODO: verify that this Prime/Echoes difference is real

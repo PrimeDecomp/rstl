@@ -5,8 +5,8 @@
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #endif
 

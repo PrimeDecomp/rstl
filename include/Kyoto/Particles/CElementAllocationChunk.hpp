@@ -20,6 +20,7 @@ private:
   uint mCapacity;
   uint mAllocatedWords;
   uint mAllocationCount;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ALIGNAS(16) uint mData[256];
 #else

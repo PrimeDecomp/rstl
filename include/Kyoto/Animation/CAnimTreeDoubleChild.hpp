@@ -10,20 +10,20 @@ public:
   class CDoubleChildAdvancementResult {
 #if !RSTL_PRIME1
   public:
-    CDoubleChildAdvancementResult(const CCharAnimTime& time, const SAdvancementDeltas& left,
-                                  const SAdvancementDeltas& right);
+    CDoubleChildAdvancementResult(const CCharAnimTime& time, const CAdvancementDeltas& left,
+                                  const CAdvancementDeltas& right);
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
-    const SAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
-    const SAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
+    const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
+    const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
 
   private:
 #endif
 
     CCharAnimTime mTrueAdvancement;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     CAdvancementDeltas mLeftDeltas;
     CAdvancementDeltas mRightDeltas;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 
   public:
     CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
@@ -32,9 +32,6 @@ public:
     const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
     const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
-#else
-    SAdvancementDeltas mLeftDeltas;
-    SAdvancementDeltas mRightDeltas;
 #endif
 
   };
@@ -53,7 +50,7 @@ public:
   ~CAnimTreeDoubleChild() override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& a) override;
+  SAdvancementResults VAdvanceView(const CCharAnimTime& a) override;
 #else
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 #endif
@@ -90,7 +87,7 @@ public:
   s32 VGetInt32POIState(const char* name) const override;
   CParticleData::EParentedMode VGetParticlePOIState(const char* name) const override;
   void VSetPhase(float) override;
-  CAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
+  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
                                              const CCharAnimTime& b) const override;
 #else
                         uint iterator, int additive) const override;

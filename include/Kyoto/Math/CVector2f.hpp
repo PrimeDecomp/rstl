@@ -15,6 +15,7 @@ public:
   CVector2f() {}
 #endif
   CVector2f(float x, float y);
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector2f(CInputStream& in) : mX(in.Get< float >()), mY(in.Get< float >()) {}
 #else
@@ -47,11 +48,8 @@ public:
 
   static const CVector2f& Zero() { return skZeroVector; }
 
-#if RSTL_PRIME1
-  static CVector2f Lerp(const CVector2f& a, const CVector2f& b, const float t) {
-#else
-  static CVector2f Lerp(const CVector2f& a, const CVector2f& b, float t) {
-#endif
+// TODO: verify that this Prime/Echoes difference is real
+  static CVector2f Lerp(const CVector2f& a, const CVector2f& b, RSTL_PRIME1_CONST float t) {
     const float negT = 1.f - t;
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     // Wii rounds each product before adding the two contributions.
@@ -69,6 +67,7 @@ public:
   }
 
   void PutTo(COutputStream& out) const {
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put(GetX());
     out.Put(GetY());

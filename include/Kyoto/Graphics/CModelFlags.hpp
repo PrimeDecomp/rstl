@@ -73,11 +73,7 @@ public:
   : mBlendMode(blendMode), mMatSetIdx(shadIdx), mFlags(flags), mColor(col) {}
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CModelFlags(const CModelFlags& flags, const uint otherFlags)
-#else
-  CModelFlags(const CModelFlags& flags, uint otherFlags)
-#endif
+  CModelFlags(const CModelFlags& flags, RSTL_PRIME1_CONST uint otherFlags)
 
   : mBlendMode(flags.mBlendMode)
   , mMatSetIdx(flags.mMatSetIdx)
@@ -205,11 +201,7 @@ public:
 
   static CModelFlags Normal() { return CModelFlags(kT_Opaque, 1.f); }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CModelFlags AlphaBlended(const float alpha) { return CModelFlags(kT_Blend, alpha); }
-#else
-  static CModelFlags AlphaBlended(float alpha) { return CModelFlags(kT_Blend, alpha); }
-#endif
+  static CModelFlags AlphaBlended(RSTL_PRIME1_CONST float alpha) { return CModelFlags(kT_Blend, alpha); }
 
   static CModelFlags AlphaBlended(const CColor& color) { return CModelFlags(kT_Blend, color); }
 // TODO: verify that this Prime/Echoes difference is real

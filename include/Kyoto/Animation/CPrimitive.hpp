@@ -15,6 +15,7 @@ public:
   CPrimitive(CInputStream& in);
   void PutTo(COutputStream& out) const;
   CAssetId GetResourceId() const { return mAnimId; }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint GetAnimDatabaseIndex() const { return mAnimIdx; }
 #else
@@ -27,6 +28,7 @@ public:
 
 private:
   CAssetId mAnimId;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint mAnimIdx;
 #else

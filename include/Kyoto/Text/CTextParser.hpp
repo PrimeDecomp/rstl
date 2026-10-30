@@ -75,11 +75,7 @@ public:
 
   static int FromHex(wchar_t c);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static const int GetColorValue(const wchar_t* str);
-#else
-  static int GetColorValue(const wchar_t* str);
-#endif
+  static RSTL_PRIME1_CONST int GetColorValue(const wchar_t* str);
 
   CTextColor ParseColor(const wchar_t* str, int len);
 

@@ -89,11 +89,7 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInputStream& in,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInputStream& in,
 
                                   const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real

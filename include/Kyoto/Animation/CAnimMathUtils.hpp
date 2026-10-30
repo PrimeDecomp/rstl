@@ -4,8 +4,8 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Math/CMath.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "EchoesNamespace.h"
 #endif
 

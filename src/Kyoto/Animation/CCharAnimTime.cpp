@@ -5,11 +5,11 @@
 
 #include <rstl/math.hpp>
 
-#if RSTL_PRIME1
 CCharAnimTime::CCharAnimTime(CInputStream& in)
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 : mTime(in.Get< float >()), mType(EType(in.Get< int >())) {}
 #else
-CCharAnimTime::CCharAnimTime(CInputStream& in)
 : mTime(in.Get< float >()), mType(EType(in.ReadInt32())) {}
 #endif
 
@@ -60,6 +60,7 @@ bool CCharAnimTime::operator==(const CCharAnimTime& other) const {
     if (other.mType == kT_NonZero) {
       return mTime == other.mTime;
     }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return other.EqualsZero() ? false : false;
 #else

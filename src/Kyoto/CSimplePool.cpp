@@ -3,9 +3,9 @@
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Kyoto/IFactory.hpp"
-#else
 #endif
 
 CSimplePool::CSimplePool(IFactory& factory)
@@ -52,11 +52,7 @@ CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
   CObjectReference* ref =
       rs_new CObjectReference(*this, rstl::auto_ptr< IObj >(nullptr), tag, xfer);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const ResourceMap::value_type item(tag, ref);
-#else
-  ResourceMap::value_type item(tag, ref);
-#endif
+  RSTL_PRIME1_CONST ResourceMap::value_type item(tag, ref);
 
   mResources.insert(item);
   return CToken(ref);

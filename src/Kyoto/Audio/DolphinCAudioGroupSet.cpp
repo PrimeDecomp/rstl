@@ -12,8 +12,8 @@
 #include "rstl/auto_ptr.hpp"
 #include "rstl/StringExtras.hpp"
 #include "rstl/string.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "dolphin/os.h"
 #include "musyx/musyx.h"
 #endif
@@ -114,11 +114,7 @@ static void* UploadCallback(u32 offset, u32 bytes) {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-#else
-CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
 
                                                     const rstl::auto_ptr< uchar >& data, int length,
                                                     const CVParamTransfer& xfer) {

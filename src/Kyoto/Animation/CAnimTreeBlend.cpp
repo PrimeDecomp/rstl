@@ -67,23 +67,18 @@ rstl::string CAnimTreeBlend::CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTree
 
 void CAnimTreeBlend::SetBlendingWeight(float weight) { mBlendWeight = weight; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
-#else
 SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
-#endif
 
   IncAdvancementDepth();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8E_02
-  CAdvancementResults resA = mA->AdvanceView(time);
-  CAdvancementResults resB = mB->AdvanceView(time);
+  SAdvancementResults resA = mA->AdvanceView(time);
+  SAdvancementResults resB = mB->AdvanceView(time);
 #else
-  CAdvancementResults resA = mA->AdvanceView(time);
+  SAdvancementResults resA = mA->AdvanceView(time);
   const CAdvancementDeltas& deltasA = resA.GetAdvancementDeltas();
-  CAdvancementResults resB = mB->AdvanceView(time);
+  SAdvancementResults resB = mB->AdvanceView(time);
   const CAdvancementDeltas& deltasB = resB.GetAdvancementDeltas();
 #endif
 #else
@@ -108,19 +103,13 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 #else
   const CCharAnimTime remainder =
       rstl::max_val< const CCharAnimTime& >(resA.GetRemainder(), resB.GetRemainder());
-  const SAdvancementDeltas& deltasA = resA.mDeltas;
-  const SAdvancementDeltas& deltasB = resB.mDeltas;
+  const CAdvancementDeltas& deltasA = resA.mDeltas;
+  const CAdvancementDeltas& deltasB = resB.mDeltas;
 #endif
 
   if (GetBlendRoot() & kBlendRoot_Offset)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return CAdvancementResults(remainder,
-                               CAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
-#else
     return SAdvancementResults(remainder,
-                               SAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
-#endif
+                               CAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
 
   return resB;
 }

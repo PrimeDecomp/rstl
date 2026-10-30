@@ -4,8 +4,8 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #include "rstl/optional_object.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Audio/CAuxEffectManager.hpp"
 #include "Kyoto/Audio/CSfxPitchBend.hpp"
 #endif

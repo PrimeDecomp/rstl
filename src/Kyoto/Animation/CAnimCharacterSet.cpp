@@ -14,11 +14,7 @@ CAnimCharacterSet::CAnimCharacterSet(CInputStream& in)
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
 
                                    const CVParamTransfer& xfer) {
   return rs_new CAnimCharacterSet(in);

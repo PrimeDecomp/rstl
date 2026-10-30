@@ -27,6 +27,7 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #include "rstl/math.hpp"
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetaRender/CCubeRenderer.hpp"
 #include "Prime/MetroidPrime/CGameDebug.hpp"

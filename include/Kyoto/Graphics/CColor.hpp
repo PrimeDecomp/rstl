@@ -33,11 +33,7 @@ class CColor {
 public:
   CColor() { Set(255, 0, 255); }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CColor(const uint col) { Set(col); }
-#else
-  CColor(uint col) { Set(col); }
-#endif
+  CColor(RSTL_PRIME1_CONST uint col) { Set(col); }
 
   CColor(CInputStream& in);
   CColor(const float r, const float g, const float b, const float a = 1.f);
@@ -63,11 +59,7 @@ public:
   }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void Set(const float r, const float g, const float b, const float a);
-#else
-  void Set(float r, float g, float b, float a);
-#endif
+  void Set(RSTL_PRIME1_CONST float r, RSTL_PRIME1_CONST float g, RSTL_PRIME1_CONST float b, RSTL_PRIME1_CONST float a);
 
   void Set(uchar r, uchar g, uchar b, uchar a = 255) {
     mR = r;
@@ -111,11 +103,7 @@ public:
   void SetBlue(uchar b) { mB = b; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CColor Lerp(const CColor& a, const CColor& b, const float t);
-#else
-  static CColor Lerp(const CColor& a, const CColor& b, float t);
-#endif
+  static CColor Lerp(const CColor& a, const CColor& b, RSTL_PRIME1_CONST float t);
 
   static uint Lerp(uint a, uint b, float t);
   static CColor Modulate(const CColor& a, const CColor& b);

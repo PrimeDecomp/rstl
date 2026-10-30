@@ -9,9 +9,7 @@
 class CAnimTreeTimeScale : public CAnimTreeSingleChild {
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#else
+#if !RSTL_PRIME1
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node, float scale,
                      const rstl::string& name)
   : CAnimTreeSingleChild(node, name)
@@ -31,8 +29,8 @@ public:
 
   // IAnimReader
   // VAdvanceView is declared first so it, not the destructor, is the key function.
-  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 #endif
+  SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   ~CAnimTreeTimeScale() override;
   CCharAnimTime VGetTimeRemaining() const override;

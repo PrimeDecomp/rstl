@@ -1,12 +1,11 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimTreeAnimReaderContainer.hpp"
 
+SAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTime& time) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTime& time) {
   return mReader->AdvanceView(time);
 #else
-SAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTime& time) {
   return mReader->VAdvanceView(time);
 #endif
 
@@ -204,14 +203,13 @@ void CAnimTreeAnimReaderContainer::VSetPhase(float phase) { mReader->SetPhase(ph
 void CAnimTreeAnimReaderContainer::VSetPhase(float phase) { mReader->VSetPhase(phase); }
 #endif
 
+SAdvancementResults
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults
 CAnimTreeAnimReaderContainer::VGetAdvancementResults(const CCharAnimTime& a,
                                                      const CCharAnimTime& b) const {
   return mReader->GetAdvancementResults(a, b);
 #else
-SAdvancementResults
 CAnimTreeAnimReaderContainer::VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const {
   return mReader->VGetAdvancementResults(time, startOffset);

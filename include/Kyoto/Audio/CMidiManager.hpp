@@ -14,6 +14,7 @@ class CMidiManager {
 public:
   class CMidiWrapper {
   public:
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     typedef u32 TSysHandle;
 #else

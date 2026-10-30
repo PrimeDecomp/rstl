@@ -23,12 +23,7 @@ public:
                    const CSequenceFundamentals& fundamentals, const CCharAnimTime& time);
 
   // IAnimReader
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& dt) override;
-#else
   SAdvancementResults VAdvanceView(const CCharAnimTime& dt) override;
-#endif
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;

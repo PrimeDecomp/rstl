@@ -9,6 +9,7 @@
 class CVector2i {
 public:
   CVector2i() : mX(0), mY(0) {}
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector2i(int x, int y = 0);
   CVector2i(CInputStream& in) {
@@ -24,6 +25,7 @@ public:
   void SetX(const int x) { mX = x; }
 #endif
   int GetY() const { return mY; }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void SetY(const int y) { mY = y; }
 #else
@@ -32,26 +34,27 @@ public:
 #endif
 
   int& operator[](int idx) { return *(&mX + idx); }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const int& operator[](int idx) const { return reinterpret_cast< const int* >(this)[idx]; }
 #else
   const int& operator[](int idx) const { return *(&mX + idx); }
 #endif
 
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float v) {
     float inv = 1.f - v;
     int x = static_cast< int >(a.GetX() * inv + b.GetX() * v);
     int y = static_cast< int >(a.GetY() * inv + b.GetY() * v);
     return CVector2i(x, y);
-  }
 #else
   static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float t) {
     const float inv = 1.f - t;
     return CVector2i(static_cast< int >(a.GetX() * inv + b.GetX() * t),
                      static_cast< int >(a.GetY() * inv + b.GetY() * t));
-  }
 #endif
+  }
 
 private:
   int mX;

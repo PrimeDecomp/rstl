@@ -1418,11 +1418,7 @@ CLight CParticleElectric::GetLight() const {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CParticleElectric::SetParticleEmission(const bool emission) { mEmitting = emission; }
-#else
-void CParticleElectric::SetParticleEmission(bool emission) { mEmitting = emission; }
-#endif
+void CParticleElectric::SetParticleEmission(RSTL_PRIME1_CONST bool emission) { mEmitting = emission; }
 
 uint CParticleElectric::Get4CharId() const { return 'ELSC'; }
 #if !RSTL_PRIME1

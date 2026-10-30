@@ -103,20 +103,12 @@ public:
   ~CResLoader();
   void MoveToCorrectLoadedList(const rstl::auto_ptr< CPakFile >& pak);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool CacheFromPak(const CPakFile& pak, CAssetId asset) const;
-#else
-  bool CacheFromPak(CPakFile& pak, CAssetId asset) const;
-#endif
+  bool CacheFromPak(RSTL_PRIME1_CONST CPakFile& pak, CAssetId asset) const;
 
   bool CacheFromPakForLoad(CPakFile& pak, CAssetId asset);
   CPakFile* FindResourceForLoad(const SObjectTag& tag);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPakFile* FindResourceForLoad(const CAssetId asset);
-#else
-  CPakFile* FindResourceForLoad(CAssetId asset);
-#endif
+  CPakFile* FindResourceForLoad(RSTL_PRIME1_CONST CAssetId asset);
 
   CPakFile* FindResource(const SObjectTag& tag);
 #if RSTL_PRIME1

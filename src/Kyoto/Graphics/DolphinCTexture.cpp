@@ -7,7 +7,6 @@
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
-#else
 #endif
 
 #include "Kyoto/SObjectTag.hpp"
@@ -698,11 +697,7 @@ void CTexture::UnLock() {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FTextureFactory(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn FTextureFactory(const SObjectTag& tag, CInputStream& in,
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FTextureFactory(const SObjectTag& tag, CInputStream& in,
 
                                  const CVParamTransfer& xfer) {
   return rs_new CTexture(in, CTexture::kAM_Zero, CTexture::kBK_Zero);

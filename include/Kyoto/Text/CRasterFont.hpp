@@ -19,11 +19,7 @@ class IObjectStore;
 class CFontInfo {
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFontInfo(bool a, bool b, int c, int fontSize, const char* const name)
-#else
-  CFontInfo(bool a, bool b, int c, int fontSize, const char* name)
-#endif
+  CFontInfo(bool a, bool b, int c, int fontSize, const char* RSTL_PRIME1_CONST name)
 
   : x0_(a), x1_(b), x4_(c), mFontSize(fontSize) {
     strcpy(mName, name);

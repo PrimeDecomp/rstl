@@ -11,8 +11,8 @@
 #include "Kyoto/Animation/CTimeRemainderAndFraction.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Basics/CCast.hpp"
-#if RSTL_PRIME1
-#else
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 #include "Kyoto/Animation/TSubAnimTypeToken.hpp"
 #endif
 
@@ -398,12 +398,7 @@ public:
 #endif
 
   ~CFBStreamedAnimReader() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#else
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#endif
 
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
@@ -431,7 +426,7 @@ public:
   void VSetPhase(float phase) override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
+  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
                                              const CCharAnimTime& b) const override;
 #else
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
@@ -439,14 +434,12 @@ public:
 #endif
 
   virtual bool VSupportsReverseView() const;
+  virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  virtual CAdvancementResults VReverseView(const CCharAnimTime& time);
 
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time);
-#else
-  virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 #endif
 
 private:

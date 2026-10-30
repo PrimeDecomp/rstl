@@ -35,9 +35,9 @@ SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& dt) {
-  CAdvancementResults resA = mA->AdvanceView(dt);
-  CAdvancementResults resB = mB->AdvanceView(dt);
+SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& dt) {
+  SAdvancementResults resA = mA->AdvanceView(dt);
+  SAdvancementResults resB = mB->AdvanceView(dt);
   return resA.GetRemainder() > resB.GetRemainder() ? resA : resB;
 }
 
@@ -214,7 +214,7 @@ CAnimTreeDoubleChild::CDoubleChildAdvancementResult::CDoubleChildAdvancementResu
     const CAdvancementDeltas& rightDeltas)
 : mTrueAdvancement(trueAdvancement), mLeftDeltas(leftDeltas), mRightDeltas(rightDeltas) {}
 #else
-    const CCharAnimTime& time, const SAdvancementDeltas& left, const SAdvancementDeltas& right)
+    const CCharAnimTime& time, const CAdvancementDeltas& left, const CAdvancementDeltas& right)
 : mTrueAdvancement(time), mLeftDeltas(left), mRightDeltas(right) {}
 #endif
 
@@ -234,12 +234,7 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
     while (leftRemaining.GreaterThanZero() && !close_enough(leftRemaining.GetSeconds(), 0.f) &&
            totalTime.GreaterThanZero() &&
            (loopLeft || !close_enough(totalTime.GetSeconds(), 0.f))) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      CAdvancementResults result = mA->AdvanceView(leftRemaining);
-#else
       SAdvancementResults result = mA->AdvanceView(leftRemaining);
-#endif
 
       rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simplified =
           mA->Simplified();
@@ -249,7 +244,7 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
-      SAdvancementDeltas deltas = result.mDeltas;
+      CAdvancementDeltas deltas = result.mDeltas;
 #endif
 
       leftOffset += deltas.GetOffsetDelta();
@@ -266,12 +261,7 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 
     }
     while (rightRemaining.GreaterThanZero() && !close_enough(rightRemaining.GetSeconds(), 0.f)) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      CAdvancementResults result = mB->AdvanceView(rightRemaining);
-#else
       SAdvancementResults result = mB->AdvanceView(rightRemaining);
-#endif
 
       rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simplified =
           mB->Simplified();
@@ -281,7 +271,7 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
-      SAdvancementDeltas deltas = result.mDeltas;
+      CAdvancementDeltas deltas = result.mDeltas;
 #endif
 
       rightOffset += deltas.GetOffsetDelta();
@@ -296,14 +286,8 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 
     }
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   return CDoubleChildAdvancementResult(time, CAdvancementDeltas(leftOffset, leftRotation),
                                        CAdvancementDeltas(rightOffset, rightRotation));
-#else
-  return CDoubleChildAdvancementResult(time, SAdvancementDeltas(leftOffset, leftRotation),
-                                       SAdvancementDeltas(rightOffset, rightRotation));
-#endif
 
 }
 
@@ -314,10 +298,10 @@ void CAnimTreeDoubleChild::VSetPhase(float phase) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAdvancementResults CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& a,
+SAdvancementResults CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& a,
                                                                  const CCharAnimTime& b) const {
-  CAdvancementResults resA = mA->GetAdvancementResults(a, b);
-  CAdvancementResults resB = mB->GetAdvancementResults(a, b);
+  SAdvancementResults resA = mA->GetAdvancementResults(a, b);
+  SAdvancementResults resB = mB->GetAdvancementResults(a, b);
   return resA.GetRemainder() > resB.GetRemainder() ? resA : resB;
 #else
 SAdvancementResults
