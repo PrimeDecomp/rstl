@@ -532,8 +532,14 @@
 // calls NANDInit and CStopwatch::Wait uses fabsf. Echoes' Wii builds come from Echoes' copy,
 // which has neither (those builds do not compile these units yet).
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
-// The Wii COsContext is 0xA8 bytes; only its size is reconstructed (Prime Wii).
-#define RSTL_KYOTO_WII_OS_CONTEXT RSTL_KYOTO_REVOLUTION_SDK
+// COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
+#define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_R3IJ)
+// The prototype and later contexts have a virtual destructor.
+#define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
+// Wii Echoes retains the system aspect ratio as a separate word after its language.
+#define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
+// Prime Trilogy reserves a larger auxiliary GPU buffer than Japanese Wii and Echoes.
+#define RSTL_KYOTO_OS_CONTEXT_LARGE_GPU_BUFFER (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00)
 // By-value scalar returns are declared const: the CBasics::SwapBytes overloads (which also take
 // const uint/short/ushort, and whose float overload returns its operand instead of going through
 // a union) and SObjectTag::GetType. MWCC allocates registers differently around the non-const
@@ -560,7 +566,8 @@
 #define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)
 // PAL Prime and Echoes store OSGetLanguage() and reserve a graphics arena block in the
 // constructor (field layout changes from 0x10 on). PAL Prime reserves 0x23e000 bytes.
-#define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
+#define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK                                                          \
+  (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00 || RSTL_KYOTO_WII_OS_CONTEXT)
 // The fatal error handler pivots to a clean OSContext and waits for a controller on port 1.
 // Absent in the Prime demo and Prime USA 0-00.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
@@ -665,9 +672,8 @@
 // line ("File.cpp(22) : "); the allocator fills freed blocks with 0xDE and reports damaged guard
 // words. Prime and Echoes compile the checks out and allocate at "??(??)".
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
-// Out-of-line stream helpers only the prototype's units contain (64-bit bit stream reads and
-// writes, low word first, and `CStreamPreloadedToken::GetReferenceCount`). Echoes' matching units
-// end without them.
+// Out-of-line 64-bit bit stream reads and writes, low word first, that only the prototype's
+// units contain. Echoes' matching units end without them.
 #define RSTL_KYOTO_PROTO_STREAM_HELPERS (RSTL_VERSION == RSTL_G2MEAB)
 // The prototype declares its own zlib interface (Kyoto/Streams/ZipTypes.hpp, `struct z_stream`)
 // instead of including zlib's header (`typedef z_stream_s z_stream`). The type name is part of

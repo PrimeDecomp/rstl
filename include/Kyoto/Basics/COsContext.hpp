@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "rstl/RstlVersions.h"
+
 #include "types.h"
 
 #include <dolphin/gx/GXStruct.h>
@@ -45,18 +46,28 @@ public:
     kLang_Count,
   };
 
+  // Guessed names, from the Wii system configuration and render consumers.
+  enum EAspectRatio { kAR_4x3, kAR_16x9 };
+  EAspectRatio GetAspectRatio() const;
+
   // TODO: Once main.cpp is matched make this private
   static bool mProgressiveMode;
 
   COsContext(bool, bool);
+#if RSTL_KYOTO_OS_CONTEXT_VIRTUAL
+  virtual ~COsContext();
+#else
   ~COsContext();
+#endif
 
   int OpenWindow(const char* title, int x, int y, int w, int h, bool fullscreen);
   bool Update();
   int GetLanguage() const;
+  bool GetEuRgb60Mode() const; // Guessed name.
   COsKeyState GetOsKeyState(int key) const;
 
   void* AllocFromArena(size_t sz);
+  void SetArenaBlockSize(int size); // Guessed name.
 
   uint GetBaseFreeRam() const {
     size_t hiAddr = reinterpret_cast< size_t >(mArenaHi);
@@ -64,53 +75,86 @@ public:
     return ((hiAddr & ~31) - ((loAddr + 31) & ~31));
   }
 
-#if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
   const GXRenderModeObj& GetRenderModeObj() const { return mRenderMode; }
-  void* GetArenaBlock() const { return mArenaBlock; }
-  int GetArenaBlockSize() const { return mArenaBlockSize; }
-#else
-  void* GetFramebuf1() const { return mFrameBuffer1; }
-  void* GetFramebuf2() const { return mFrameBuffer2; }
-  const GXRenderModeObj& GetRenderModeObj() const { return mRenderMode; }
-#endif
+  void* GetArenaBlock() const;
+  int GetArenaBlockSize() const;
+  void* GetFramebuf1() const;
+  void* GetFramebuf2() const;
 
   static void SetProgressiveMode(bool progressive) { mProgressiveMode = progressive; }
   static bool GetProgressiveMode() { return mProgressiveMode; }
 
 private:
+  void* AllocFromMem1Arena(size_t sz); // Guessed name.
+
   int mRight;
   int mBottom;
   int mLeft;
   int mTop;
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
-  // PAL Prime and Echoes put the console type at 0x10 and OSGetLanguage() at 0x14; the
-  // constructor reserves a fixed arena block (0x24/0x2c). Other fields follow Prime.
+  // PAL Prime and Echoes retain the language and arena-reservation members.
+  // Later contexts add virtual destruction, MEM1 storage and video allocations.
   int mConsoleType;
   int mLanguage;
 #else
   int mFormat;
   int mConsoleType;
 #endif
+#if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
+  EAspectRatio mAspectRatio;
+#endif
+#if RSTL_KYOTO_WII_OS_CONTEXT
+  void* mMem1ArenaLo;
+  void* mMem1ArenaHi;
+  void* mMem1ArenaCurrent;
+#endif
   void* mArenaLo1;
   void* mArenaHi;
   void* mArenaLo2;
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
   void* mArenaBlock;
+#if !RSTL_KYOTO_WII_OS_CONTEXT
   void* x28_;
+#endif
   int mArenaBlockSize;
 #else
   void* mFrameBuffer1;
   void* mFrameBuffer2;
   int mFrameBufferSize;
 #endif
-  GXRenderModeObj mRenderMode;
 #if RSTL_KYOTO_WII_OS_CONTEXT
-  // The Wii context is 0xa8 bytes. Its field order also differs: the Wii constructor writes
-  // the MEM2 arena at 0x28-0x30, so the offsets above only hold for GC. Not yet reconstructed;
-  // this pad only gives the right size.
-  char mWiiUnknown[0x3c];
+  void* mFifo;
+  int mFifoSize;
+  void* mGpuBuffer;
+  int mGpuBufferSize;
+  void* mSpareFrameBuffer;
+  int mSpareFrameBufferSize;
+  void* mSpareTexture;
+  GXTexFmt mSpareTextureFormat;
+  int mSpareTextureSize;
+  void* mFrameBuffer1;
+  void* mFrameBuffer2;
+  int mFrameBufferSize;
 #endif
+  // Retained shared storage; the Wii constructor does not initialize this member.
+  GXRenderModeObj mRenderMode;
 };
+#if !RSTL_KYOTO_OS_CONTEXT_VIRTUAL
 CHECK_SIZEOF(COsContext, 0x6c)
+#endif
+#if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
+inline void* COsContext::GetArenaBlock() const { return mArenaBlock; }
+inline int COsContext::GetArenaBlockSize() const { return mArenaBlockSize; }
+#endif
+#if !RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK || RSTL_KYOTO_WII_OS_CONTEXT
+inline void* COsContext::GetFramebuf1() const { return mFrameBuffer1; }
+inline void* COsContext::GetFramebuf2() const { return mFrameBuffer2; }
+#endif
+#if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
+inline void COsContext::SetArenaBlockSize(int size) { mArenaBlockSize = size; }
+#endif
+#if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
+inline COsContext::EAspectRatio COsContext::GetAspectRatio() const { return mAspectRatio; }
+#endif
 
 #endif // _COSCONTEXT

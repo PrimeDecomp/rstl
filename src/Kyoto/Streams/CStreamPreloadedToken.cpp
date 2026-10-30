@@ -192,6 +192,4 @@ void CStreamPreloadedToken::Read(void* dest, int offset, int length) const {
   mData->Read(dest, offset, length);
 }
 
-#if RSTL_KYOTO_PROTO_STREAM_HELPERS
 int CStreamPreloadedToken::GetReferenceCount() const { return mData->mRefCount; }
-#endif
