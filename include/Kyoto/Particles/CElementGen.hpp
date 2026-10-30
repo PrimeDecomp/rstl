@@ -455,23 +455,15 @@ public:
   float mLSLA;
   CColor mModuColor;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static double kTickTime;
-#else
-  static bool sSubtractBlend;
-  // Guessed names, correlated with Prime's seed and live-system accounting.
 #endif
+  static bool sSubtractBlend;
 
   static ushort sSeed;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static int mParticleAliveCount;
   static int mParticleSystemAliveCount;
-  static bool sSubtractBlend;
-#else
-  static int sParticleAliveCount;
-  static int sParticleSystemAliveCount;
+#if !RSTL_PRIME1
 
 public:
   static void SetGlobalSeed(const ushort seed) { sSeed = seed; }

@@ -71,7 +71,7 @@ bool CSfxManager::mDoUpdate = false;
 int CSfxManager::mNextAreaFilterId = 0;
 int CSfxManager::mNextFilterId = 0;
 int CSfxManager::mNextAuxEffectId = 0;
-rstl::vector< short >* CSfxManager::mpTranslationTable = nullptr;
+rstl::vector< short >* CSfxManager::mTranslationTable = nullptr;
 bool CSfxManager::mMuted = false;
 int CSfxManager::mAreaLowPassFrequency = 16000;
 int CSfxManager::mLowPassFrequency = 16000;
@@ -80,7 +80,7 @@ int CSfxManager::mCurrentArea = -1;
 CSfxManager::CSfxChannel CSfxManager::mChannels[4];
 rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mAreaLowPassFilters;
 rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mLowPassFilters;
-rstl::auto_ptr< CToken > CSfxManager::mpTranslationTableToken;
+rstl::auto_ptr< CToken > CSfxManager::mTranslationTableTok;
 
 rstl::reserved_vector< CSfxManager::CSfxEmitterWrapper, 64 > CSfxManager::mEmitterWrapperPool;
 rstl::reserved_vector< CSfxManager::CSfxWrapper, 64 > CSfxManager::mWrapperPool;
@@ -466,14 +466,8 @@ void CSfxManager::Initialize() {
 
 #endif
 void CSfxManager::Shutdown() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   delete mTranslationTable;
   mTranslationTable = nullptr;
-#else
-  delete mpTranslationTable;
-  mpTranslationTable = nullptr;
-#endif
 
   StopAndRemoveAllEmitters();
 // TODO: verify that this Prime/Echoes difference is real
@@ -1578,13 +1572,13 @@ void CSfxManager::Update(float dt) {
       mDoUpdate = true;
     }
   }
-  if (mpTranslationTableToken.get() && mpTranslationTableToken->IsLocked() &&
-      mpTranslationTableToken->IsLoaded()) {
-    if (mpTranslationTable == nullptr) {
-      TToken< rstl::vector< short > > token(*mpTranslationTableToken);
-      mpTranslationTable = rs_new rstl::vector< short >(*token.GetT());
+  if (mTranslationTableTok.get() && mTranslationTableTok->IsLocked() &&
+      mTranslationTableTok->IsLoaded()) {
+    if (mTranslationTable == nullptr) {
+      TToken< rstl::vector< short > > token(*mTranslationTableTok);
+      mTranslationTable = rs_new rstl::vector< short >(*token.GetT());
     }
-    mpTranslationTableToken = nullptr;
+    mTranslationTableTok = nullptr;
   }
   if (!close_enough(dt, 0.f)) {
     UpdatePitchBends(dt);
@@ -1766,21 +1760,21 @@ bool CSfxManager::LoadTranslationTable(CSimplePool* pool, const SObjectTag* tag)
   if (tag == nullptr) {
     return false;
   }
-  if (mpTranslationTable != nullptr) {
-    delete mpTranslationTable;
+  if (mTranslationTable != nullptr) {
+    delete mTranslationTable;
   }
-  mpTranslationTable = nullptr;
-  mpTranslationTableToken = rs_new CToken(pool->GetObj(*tag));
-  mpTranslationTableToken->Lock();
+  mTranslationTable = nullptr;
+  mTranslationTableTok = rs_new CToken(pool->GetObj(*tag));
+  mTranslationTableTok->Lock();
 
   return true;
 }
 
 ushort CSfxManager::TranslateSFXID(ushort id) {
-  if (mpTranslationTable == nullptr || id >= mpTranslationTable->size()) {
+  if (mTranslationTable == nullptr || id >= mTranslationTable->size()) {
     return kInternalInvalidSfxId;
   }
-  short translated = (*mpTranslationTable)[id];
+  short translated = (*mTranslationTable)[id];
   if (translated < 0) {
     return kInternalInvalidSfxId;
   }

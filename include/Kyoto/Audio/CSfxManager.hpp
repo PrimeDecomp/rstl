@@ -537,17 +537,13 @@ private:
   static EAuxEffect mRequestedAuxEffect;
   static float mReverbAmount;
   static float mReverbScale;
-  static rstl::vector< short >* mTranslationTable;
 #endif
+  static rstl::vector< short >* mTranslationTable;
 
   static bool mMuted;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static rstl::auto_ptr< CToken > mTranslationTableTok;
+#if RSTL_PRIME1
   static bool mAuxProcessingEnabled;
-#else
-  static rstl::vector< short >* mpTranslationTable;
-  static rstl::auto_ptr< CToken > mpTranslationTableToken;
 #endif
 
   static rstl::reserved_vector< CSfxEmitterWrapper, 64 > mEmitterWrapperPool;

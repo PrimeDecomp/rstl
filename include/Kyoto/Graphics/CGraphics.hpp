@@ -602,9 +602,7 @@ public:
   static CTevCombiners::CTevPass kEnvModulateAlpha;
   static CTevCombiners::CTevPass kEnvModulateColor;
   static CTevCombiners::CTevPass kEnvModulateColorByAlpha;
-#if RSTL_PRIME1
   static CRenderState sRenderState;
-#endif
 
   static const GXTexMapID kSpareBufferTexMapID;
 
@@ -621,21 +619,11 @@ private:
   static void FullRenderWithVertexDelay(); // Guessed name
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static VecPtr vtxBuffer;
   static VecPtr nrmBuffer;
   static Vec2Ptr txtBuffer0;
   static Vec2Ptr txtBuffer1;
   static uint* clrBuffer;
-#else
-  static CRenderState mRenderState;
-  static VecPtr mVertexBuffer;
-  static VecPtr mNormalBuffer;
-  static Vec2Ptr mTexCoordBuffer0;
-  static Vec2Ptr mTexCoordBuffer1;
-  static uint* mColorBuffer;
-#endif
 
   static bool mJustReset;
   static ERglCullMode mCullMode;

@@ -77,16 +77,15 @@ static const CVector3f skOneVector(1.f, 1.f, 1.f);
 static const double skTickTime = 1.0 / 60.0;
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PRIME1
+ushort CElementGen::sSeed = 99;
+#endif
 int CElementGen::mParticleAliveCount;
 int CElementGen::mParticleSystemAliveCount;
+#if RSTL_PRIME1
 
 bool CElementGen::sMoveRedToAlphaBuffer;
 #else
-ushort CElementGen::sSeed = 99;
-int CElementGen::sParticleAliveCount;
-int CElementGen::sParticleSystemAliveCount;
 bool CElementGen::sEnableAlphaModulation;
 #endif
 
@@ -234,12 +233,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mRandomSeed = seedVal;
   }
   mRandState.SetSeed(mRandomSeed);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   ++mParticleSystemAliveCount;
-#else
-  ++sParticleSystemAliveCount;
-#endif
   mLIT_ = mLoadedGenDesc->mLIT_;
   mAAPH = mLoadedGenDesc->mAAPH;
   mZBUF = mLoadedGenDesc->mZBUF;
@@ -504,14 +498,8 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 }
 
 CElementGen::~CElementGen() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   --mParticleSystemAliveCount;
   mParticleAliveCount -= mParticles.size();
-#else
-  --sParticleSystemAliveCount;
-  sParticleAliveCount -= mParticles.size();
-#endif
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     delete *it;
   }
@@ -521,14 +509,8 @@ void CElementGen::Initialize() {
   if (sStaticListInitialized) {
     return;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   mParticleAliveCount = 0;
   mParticleSystemAliveCount = 0;
-#else
-  sParticleAliveCount = 0;
-  sParticleSystemAliveCount = 0;
-#endif
   sStaticListInitialized = true;
 }
 
@@ -928,12 +910,7 @@ void CElementGen::UpdateExistingParticles() {
 #endif
   while (it != mParticles.end()) {
     if (it->mEndFrame < mCurFrame) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       --mParticleAliveCount;
-#else
-      --sParticleAliveCount;
-#endif
       if (it + 1 == mParticles.end()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1121,16 +1098,11 @@ void CElementGen::CreateNewParticles(int count) {
 #if RSTL_PRIME1
   if (genCount + mParticles.size() > mMAXP) {
     genCount = mMAXP - mParticles.size();
-#else
-    if (genCount + sParticleAliveCount > 0xa00) {
-      genCount = 0xa00 - sParticleAliveCount;
-#endif
   }
-#if RSTL_PRIME1
+#endif
   if (genCount + mParticleAliveCount > 0xa00) {
     genCount = 0xa00 - mParticleAliveCount;
   }
-#endif
 
   CGlobalRandom gr(mRandState);
   mParticles.reserve(genCount + mParticles.size());
@@ -1326,7 +1298,7 @@ void CElementGen::CreateNewParticles(int count) {
     AccumulateBounds(particle.mPos, particle.mLineLengthOrSize);
 #if !RSTL_PRIME1
         }
-        ++sParticleAliveCount;
+        ++mParticleAliveCount;
         ++mActiveParticleCount;
       }
     }
@@ -1727,12 +1699,7 @@ void CElementGen::EndLifetime() {
 }
 
 void CElementGen::DestroyParticles() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   mParticleAliveCount -= mParticles.size();
-#else
-  sParticleAliveCount -= mParticles.size();
-#endif
 
   mParticles.clear();
 #if RSTL_PRIME1

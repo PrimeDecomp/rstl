@@ -205,22 +205,12 @@ CTevCombiners::CTevPass CGraphics::kEnvModulateColorByAlpha(
 );
 // clang-format on
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 CGraphics::CRenderState CGraphics::sRenderState;
 VecPtr CGraphics::vtxBuffer;
 VecPtr CGraphics::nrmBuffer;
 Vec2Ptr CGraphics::txtBuffer0;
 Vec2Ptr CGraphics::txtBuffer1;
 uint* CGraphics::clrBuffer;
-#else
-CGraphics::CRenderState CGraphics::mRenderState;
-VecPtr CGraphics::mVertexBuffer;
-VecPtr CGraphics::mNormalBuffer;
-Vec2Ptr CGraphics::mTexCoordBuffer0;
-Vec2Ptr CGraphics::mTexCoordBuffer1;
-uint* CGraphics::mColorBuffer;
-#endif
 
 bool CGraphics::mJustReset;
 ERglCullMode CGraphics::mCullMode;
@@ -744,12 +734,7 @@ void CGraphics::InitGraphicsVariables() {
   SetCopyClear(mClearColor, 1.f);
   const GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
   CGX::SetChanMatColor(CGX::Channel0, white);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   sRenderState.ResetFlushAll();
-#else
-  mRenderState.ResetFlushAll();
-#endif
 
 }
 
@@ -1778,11 +1763,11 @@ void CGraphics::StreamBegin(ERglPrimitive primitive) {
   clrBuffer = reinterpret_cast< uint* >(CLR_BUFFER_ADDR);
 #else
   uchar* base = static_cast< uchar* >(GetLockedCacheAllocationBase());
-  mVertexBuffer = reinterpret_cast< VecPtr >(base);
-  mNormalBuffer = reinterpret_cast< VecPtr >(NRM_BUFFER_ADDR(base));
-  mTexCoordBuffer0 = reinterpret_cast< Vec2Ptr >(TXT0_BUFFER_ADDR(base));
-  mTexCoordBuffer1 = reinterpret_cast< Vec2Ptr >(TXT1_BUFFER_ADDR(base));
-  mColorBuffer = reinterpret_cast< uint* >(CLR_BUFFER_ADDR(base));
+  vtxBuffer = reinterpret_cast< VecPtr >(base);
+  nrmBuffer = reinterpret_cast< VecPtr >(NRM_BUFFER_ADDR(base));
+  txtBuffer0 = reinterpret_cast< Vec2Ptr >(TXT0_BUFFER_ADDR(base));
+  txtBuffer1 = reinterpret_cast< Vec2Ptr >(TXT1_BUFFER_ADDR(base));
+  clrBuffer = reinterpret_cast< uint* >(CLR_BUFFER_ADDR(base));
 #endif
 
   ResetVertexDataStream(true);
@@ -1867,8 +1852,6 @@ void CGraphics::StreamEnd() {
   if (mNumPrimitives != 0) {
     FlushStream();
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   vtxBuffer = nullptr;
   vtxDescr.mStreamFlags = 0;
   vtxDescr.mTextureUsed = 0;
@@ -1876,15 +1859,6 @@ void CGraphics::StreamEnd() {
   txtBuffer0 = nullptr;
   txtBuffer1 = nullptr;
   clrBuffer = nullptr;
-#else
-  mVertexBuffer = nullptr;
-  vtxDescr.mStreamFlags = 0;
-  vtxDescr.mTextureUsed = 0;
-  mNormalBuffer = nullptr;
-  mTexCoordBuffer0 = nullptr;
-  mTexCoordBuffer1 = nullptr;
-  mColorBuffer = nullptr;
-#endif
 
 }
 
@@ -1930,20 +1904,11 @@ void CGraphics::UpdateVertexDataStream() {
 }
 
 void CGraphics::ResetVertexDataStream(bool initial) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   mpVtxBuffer = vtxBuffer;
   mpNrmBuffer = nrmBuffer;
   mpTxtBuffer0 = txtBuffer0;
   mpTxtBuffer1 = txtBuffer1;
   mpClrBuffer = clrBuffer;
-#else
-  mpVtxBuffer = mVertexBuffer;
-  mpNrmBuffer = mNormalBuffer;
-  mpTxtBuffer0 = mTexCoordBuffer0;
-  mpTxtBuffer1 = mTexCoordBuffer1;
-  mpClrBuffer = mColorBuffer;
-#endif
 
   mNumPrimitives = 0;
 
@@ -1953,12 +1918,7 @@ void CGraphics::ResetVertexDataStream(bool initial) {
 
   switch (mCurrentPrimitive) {
   case kP_TriangleFan:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     mpVtxBuffer = vtxBuffer + 1;
-#else
-    mpVtxBuffer = mVertexBuffer + 1;
-#endif
     memcpy(mpVtxBuffer, &vtxDescr.mPosition, sizeof(Vec));
 
     ++mpVtxBuffer;
@@ -2091,61 +2051,61 @@ void CGraphics::FullRenderWithVertexDelay() {
   switch (vtxDescr.mStreamFlags) {
   case 0:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
       DelayStreamVertex();
     }
     break;
   case kHasNormals:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXNormal3f32(mNormalBuffer[i].x, mNormalBuffer[i].y, mNormalBuffer[i].z);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXNormal3f32(nrmBuffer[i].x, nrmBuffer[i].y, nrmBuffer[i].z);
       DelayStreamVertex();
     }
     break;
   case kHasColor:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXColor1u32(mColorBuffer[i]);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXColor1u32(clrBuffer[i]);
       DelayStreamVertex();
     }
     break;
   case kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXTexCoord2f32(mTexCoordBuffer0[i].x, mTexCoordBuffer0[i].y);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXTexCoord2f32(txtBuffer0[i].x, txtBuffer0[i].y);
       DelayStreamVertex();
     }
     break;
   case kHasNormals | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXNormal3f32(mNormalBuffer[i].x, mNormalBuffer[i].y, mNormalBuffer[i].z);
-      GXTexCoord2f32(mTexCoordBuffer0[i].x, mTexCoordBuffer0[i].y);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXNormal3f32(nrmBuffer[i].x, nrmBuffer[i].y, nrmBuffer[i].z);
+      GXTexCoord2f32(txtBuffer0[i].x, txtBuffer0[i].y);
       DelayStreamVertex();
     }
     break;
   case kHasNormals | kHasColor:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXNormal3f32(mNormalBuffer[i].x, mNormalBuffer[i].y, mNormalBuffer[i].z);
-      GXColor1u32(mColorBuffer[i]);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXNormal3f32(nrmBuffer[i].x, nrmBuffer[i].y, nrmBuffer[i].z);
+      GXColor1u32(clrBuffer[i]);
       DelayStreamVertex();
     }
     break;
   case kHasColor | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXColor1u32(mColorBuffer[i]);
-      GXTexCoord2f32(mTexCoordBuffer0[i].x, mTexCoordBuffer0[i].y);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXColor1u32(clrBuffer[i]);
+      GXTexCoord2f32(txtBuffer0[i].x, txtBuffer0[i].y);
       DelayStreamVertex();
     }
     break;
   case kHasNormals | kHasColor | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-      GXPosition3f32(mVertexBuffer[i].x, mVertexBuffer[i].y, mVertexBuffer[i].z);
-      GXNormal3f32(mNormalBuffer[i].x, mNormalBuffer[i].y, mNormalBuffer[i].z);
-      GXColor1u32(mColorBuffer[i]);
-      GXTexCoord2f32(mTexCoordBuffer0[i].x, mTexCoordBuffer0[i].y);
+      GXPosition3f32(vtxBuffer[i].x, vtxBuffer[i].y, vtxBuffer[i].z);
+      GXNormal3f32(nrmBuffer[i].x, nrmBuffer[i].y, nrmBuffer[i].z);
+      GXColor1u32(clrBuffer[i]);
+      GXTexCoord2f32(txtBuffer0[i].x, txtBuffer0[i].y);
       DelayStreamVertex();
     }
     break;
@@ -2160,178 +2120,86 @@ void CGraphics::FullRender() {
 
   case 0:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
     }
     break;
   case kHasNormals:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& nrm = nrmBuffer[i];
-#else
-      const Vec& nrm = mNormalBuffer[i];
-#endif
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
     }
     break;
   case kHasColor:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       GXColor1u32(clrBuffer[i]);
-#else
-      GXColor1u32(mColorBuffer[i]);
-#endif
 
     }
     break;
   case kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec2& uv = txtBuffer0[i];
-#else
-      const Vec2& uv = mTexCoordBuffer0[i];
-#endif
 
       GXTexCoord2f32(uv.x, uv.y);
     }
     break;
   case kHasNormals | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& nrm = nrmBuffer[i];
-#else
-      const Vec& nrm = mNormalBuffer[i];
-#endif
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec2& uv = txtBuffer0[i];
-#else
-      const Vec2& uv = mTexCoordBuffer0[i];
-#endif
 
       GXTexCoord2f32(uv.x, uv.y);
     }
     break;
   case kHasNormals | kHasColor:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& nrm = nrmBuffer[i];
-#else
-      const Vec& nrm = mNormalBuffer[i];
-#endif
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       GXColor1u32(clrBuffer[i]);
-#else
-      GXColor1u32(mColorBuffer[i]);
-#endif
 
     }
     break;
   case kHasColor | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       GXColor1u32(clrBuffer[i]);
       const Vec2& uv = txtBuffer0[i];
-#else
-      GXColor1u32(mColorBuffer[i]);
-      const Vec2& uv = mTexCoordBuffer0[i];
-#endif
 
       GXTexCoord2f32(uv.x, uv.y);
     }
     break;
   case kHasNormals | kHasColor | kHasTexture:
     for (int i = 0; i < mNumPrimitives; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& vtx = vtxBuffer[i];
-#else
-      const Vec& vtx = mVertexBuffer[i];
-#endif
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       const Vec& nrm = nrmBuffer[i];
-#else
-      const Vec& nrm = mNormalBuffer[i];
-#endif
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       GXColor1u32(clrBuffer[i]);
       const Vec2& uv = txtBuffer0[i];
-#else
-      GXColor1u32(mColorBuffer[i]);
-      const Vec2& uv = mTexCoordBuffer0[i];
-#endif
 
       GXTexCoord2f32(uv.x, uv.y);
     }
@@ -2410,12 +2278,7 @@ void CGraphics::SetFog(ERglFogMode mode, float startz, float endz, const CColor&
               color.GetGXColor());
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 void CGraphics::ResetGfxStates() { sRenderState.Set(0); }
-#else
-void CGraphics::ResetGfxStates() { mRenderState.Set(0); }
-#endif
 
 void CGraphics::SetDefaultVtxAttrFmt() {
   GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
