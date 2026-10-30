@@ -14,12 +14,10 @@ class CPrimitive {
 public:
   CPrimitive(CInputStream& in);
   void PutTo(COutputStream& out) const;
-#if RSTL_PRIME1
-  const CAssetId GetAnimResId() const { return mAnimId; }
   CAssetId GetResourceId() const { return mAnimId; }
+#if RSTL_PRIME1
   uint GetAnimDatabaseIndex() const { return mAnimIdx; }
 #else
-  CAssetId GetAnimResId() const { return mAnimId; }
   int GetAnimDatabaseIndex() const { return mAnimIdx; }
 #endif
   const rstl::string& GetName() const { return mAnimName; }

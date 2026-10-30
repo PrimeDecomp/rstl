@@ -72,7 +72,7 @@ CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
     rstl::auto_ptr< uchar > buffer(
         static_cast< uchar* >(rs_aligned_new_line(alignedLength, 78)));
     rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > request(
-        file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Set, offset));
+        file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Begin, offset));
     mBuffers.push_back_unsafe(buffer);
     mRequests.push_back_unsafe(request);
   }
