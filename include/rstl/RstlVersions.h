@@ -538,6 +538,8 @@
 #define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
 // Wii Echoes retains the system aspect ratio as a separate word after its language.
 #define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
+// Prime Trilogy reserves a larger auxiliary GPU buffer than Japanese Wii and Echoes.
+#define RSTL_KYOTO_OS_CONTEXT_LARGE_GPU_BUFFER (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00)
 // By-value scalar returns are declared const: the CBasics::SwapBytes overloads (which also take
 // const uint/short/ushort, and whose float overload returns its operand instead of going through
 // a union) and SObjectTag::GetType. MWCC allocates registers differently around the non-const

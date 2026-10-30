@@ -12,7 +12,19 @@
 #endif
 
 #if RSTL_KYOTO_WII_OS_CONTEXT
-#include "revolution/sc.h"
+// Shared Wii entry points; the games' SDK header sets expose different subsets.
+extern "C" {
+void SCInit(void);
+u32 SCCheckStatus(void);
+u8 SCGetLanguage(void);
+u8 SCGetAspectRatio(void);
+u8 SCGetEuRgb60Mode(void);
+void* OSGetMEM1ArenaLo(void);
+void* OSGetMEM1ArenaHi(void);
+void* OSGetMEM2ArenaLo(void);
+void* OSGetMEM2ArenaHi(void);
+void* OSAllocFromMEM2ArenaLo(u32 size, u32 align);
+}
 
 // Guessed names for the private system-configuration helpers.
 static void EnsureSystemConfigReady() {
@@ -21,23 +33,23 @@ static void EnsureSystemConfigReady() {
     SCInit();
     initialized = true;
   }
-  while (SCCheckStatus() == SC_STATUS_BUSY) {
+  while (SCCheckStatus() == 1) {
   }
 }
 
 static int GetSystemLanguage() {
   EnsureSystemConfigReady();
   const uint language = SCGetLanguage();
-  if (language < SC_LANG_ENGLISH || language > SC_LANG_DUTCH) {
+  if (language < 1 || language > 6) {
     return 0;
   }
-  return language - SC_LANG_ENGLISH;
+  return language - 1;
 }
 
 #if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
 static COsContext::EAspectRatio GetSystemAspectRatio() {
   EnsureSystemConfigReady();
-  return static_cast< COsContext::EAspectRatio >(SCGetAspectRatio() == SC_ASPECT_RATIO_16x9);
+  return static_cast< COsContext::EAspectRatio >(SCGetAspectRatio() == 1);
 }
 #endif
 
@@ -50,7 +62,7 @@ bool COsContext::GetEuRgb60Mode() const {
 COsContext::COsContext(bool, bool)
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 #if RSTL_KYOTO_WII_OS_CONTEXT
-: mLanguage(RSTL_VERSION == RSTL_R32J ? kLang_Japanese : GetSystemLanguage())
+: mLanguage(RSTL_VERSION < RSTL_R3ME_00 ? kLang_Japanese : GetSystemLanguage())
 #if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
 , mAspectRatio(GetSystemAspectRatio())
 #endif
@@ -125,11 +137,11 @@ COsContext::COsContext(bool, bool)
   if (VIGetTvFormat() == VI_PAL && !GetEuRgb60Mode()) {
     height = 528;
     fifoSize = 0x3d800;
-    gpuBufferSize = RSTL_PRIME1 ? 0x64000 : 0x24000;
+    gpuBufferSize = RSTL_KYOTO_OS_CONTEXT_LARGE_GPU_BUFFER ? 0x64000 : 0x24000;
   } else {
     height = 448;
     fifoSize = 0x60000;
-    gpuBufferSize = RSTL_PRIME1 ? 0x80000 : 0x40000;
+    gpuBufferSize = RSTL_KYOTO_OS_CONTEXT_LARGE_GPU_BUFFER ? 0x80000 : 0x40000;
   }
   mFifo = AllocFromMem1Arena(fifoSize);
   mFifoSize = fifoSize;
