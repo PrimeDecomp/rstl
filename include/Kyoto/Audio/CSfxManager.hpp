@@ -43,6 +43,10 @@ struct SPhaserAuxParameters;
 
 class CSfxManager {
 public:
+  // Guessed names for the balanced Wii audio-suppression API.
+  static void PushMute();
+  static void PopMute();
+
   enum ESfxChannels {
     kSC_Invalid = -1,
     kSC_Default = 0,

@@ -28,6 +28,10 @@ struct SDSPStreamCacheEntry {
 
 class CStreamAudioManager {
 public:
+  // Guessed names for the balanced Wii audio-suppression API.
+  static void PushMute();
+  static void PopMute();
+
   enum ESoftwareChannel {
     kSC_Default = 0,
     kSC_OneShot = 1,
