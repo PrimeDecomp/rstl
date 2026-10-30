@@ -1,0 +1,133 @@
+#ifndef _CLIGHT
+#define _CLIGHT
+#include "rstl/RstlVersions.h"
+
+#include "Kyoto/Graphics/CColor.hpp"
+#include "Kyoto/Math/CVector3f.hpp"
+#if !RSTL_PRIME1
+#include "rstl/construct.hpp"
+#endif
+
+enum ELightType {
+  kLT_Spot = 0,
+  kLT_Point = 1,
+  kLT_Directional = 2,
+  kLT_LocalAmbient = 3,
+  kLT_Custom = 4,
+#if !RSTL_PRIME1
+  kLT_Hard = 5, // Name inferred from the Wii BuildHard export and G2ME01 factory.
+#endif
+
+};
+
+enum EFalloffType { kFT_Constant, kFT_Linear, kFT_Quadratic };
+
+class CLight {
+  static const CVector3f kDefaultPosition;
+  static const CVector3f kDefaultDirection;
+
+  float CalculateLightRadius() const;
+
+public:
+  CLight(ELightType type, const CVector3f& position, const CVector3f& direction,
+         const CColor& color, float cutoff);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  CLight(const CVector3f& pos, const CVector3f& direction, const CColor& color, float distC,
+         float distL, float distQ, float angleC, float angleL, float angleQ);
+#else
+  CLight(ELightType type, const CVector3f& pos, const CVector3f& direction, const CColor& color,
+         float distC, float distL, float distQ, float angleC, float angleL, float angleQ);
+#endif
+
+  void SetPosition(const CVector3f& pos);
+  const CVector3f& GetPosition() const { return mPos; }
+  void SetDirection(const CVector3f& dir);
+  const CVector3f& GetDirection() const { return mDir; }
+  void SetColor(const CColor& col);
+  void SetAttenuation(float constant, float linear, float quadratic);
+#if !RSTL_PRIME1
+  void SetSpotCutoff(float cutoff); // Guessed name.
+#endif
+
+  float GetSpotCutoff() const { return mSpotCutoff; }
+  float GetAttenuationConstant() const { return mDistC; }
+  float GetAttenuationLinear() const { return mDistL; }
+  float GetAttenuationQuadratic() const { return mDistQ; }
+
+  void SetAngleAttenuation(float constant, float linear, float quadratic);
+  float GetAngleAttenuationConstant() const { return mAngleC; }
+  float GetAngleAttenuationLinear() const { return mAngleL; }
+  float GetAngleAttenuationQuadratic() const { return mAngleQ; }
+
+  ELightType GetType() const { return mType; }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int GetId() const { return mLightId; }
+#else
+  uint GetId() const { return mLightId; }
+#endif
+
+  float GetIntensity() const;
+  float GetRadius() const;
+  const CColor& GetColor() const { return mColor; }
+
+  int GetPriority() const { return mPriority; }
+  void SetPriority(uint priority) { mPriority = priority; }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  void SetId(int lightId) { mLightId = lightId; }
+#else
+  void SetLightId(uint lightId) { mLightId = lightId; }
+#endif
+
+  CVector3f GetNormalIndependentLightingAtPoint(const CVector3f& point) const;
+
+  static CLight BuildDirectional(const CVector3f& dir, const CColor& color);
+  static CLight BuildSpot(const CVector3f& pos, const CVector3f& dir, const CColor& color,
+                          float cutoff);
+  static CLight BuildPoint(const CVector3f& pos, const CColor& color);
+  static CLight BuildCustom(const CVector3f& pos, const CVector3f& dir, const CColor& color,
+                            float distC, float distL, float distQ, float angleC, float angleL,
+                            float angleQ);
+#if !RSTL_PRIME1
+  static CLight BuildHard(const CVector3f& pos, const CColor& color, float radius);
+#endif
+
+  static CLight BuildLocalAmbient(const CVector3f& pos, const CColor& color);
+
+private:
+  CVector3f mPos;
+  CVector3f mDir;
+  CColor mColor;
+  ELightType mType;
+  float mSpotCutoff;
+  float mDistC;
+  float mDistL;
+  float mDistQ;
+  float mAngleC;
+  float mAngleL;
+  float mAngleQ;
+  int mPriority;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int mLightId;
+#else
+  uint mLightId;
+#endif
+
+  mutable float mCachedRadius;
+  mutable float mCachedIntensity;
+  mutable bool mIntensityDirty : 1;
+  mutable bool mRadiusDirty : 1;
+};
+CHECK_SIZEOF(CLight, 0x50)
+
+#if !RSTL_PRIME1
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CLight)
+RSTL_DECLARE_BITWISE_CONSTRUCTION(CLight)
+} // namespace rstl
+#endif
+
+#endif // _CLIGHT

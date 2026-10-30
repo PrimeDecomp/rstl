@@ -1,0 +1,151 @@
+#include "rstl/RstlVersions.h"
+#include "Kyoto/PVS/CPVSVisSet.hpp"
+#if !RSTL_PRIME1
+#include "Kyoto/PVS/CPVSVisOctree.hpp"
+#endif
+
+#include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/Basics/CCast.hpp"
+#if RSTL_PRIME1
+#include "Kyoto/PVS/CPVSVisOctree.hpp"
+#endif
+
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#include "string.h"
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+CPVSVisSet::CPVSVisSet(int numBits, int numLights, const rstl::auto_ptr< const char >& leafPtr)
+#else
+CPVSVisSet::CPVSVisSet(int numBits, int numLights, rstl::auto_ptr< const char > leafPtr)
+#endif
+
+: mState(kVSS_NodeFound), mNumBits(numBits), mNumLights(numLights), mPtr(leafPtr) {}
+
+CPVSVisSet::CPVSVisSet(EPVSVisSetState state) : mState(state), mNumBits(0), mNumLights(0) {}
+
+EPVSVisSetState CPVSVisSet::GetVisible(int idx) const {
+  if (mState != kVSS_NodeFound)
+    return mState;
+
+  int numFeatures = mNumBits - mNumLights;
+  if (idx < numFeatures) {
+    /* This is a feature lookup */
+    u8 flag = mPtr.get()[idx / 8];
+    return flag & (1 << (idx & 7)) ? kVSS_OutOfBounds : kVSS_EndOfTree;
+  }
+
+  /* This is a light lookup */
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int lightTest = idx - numFeatures + idx;
+#else
+  const int lightTest = idx - numFeatures + idx;
+#endif
+
+  const char* ptr = &mPtr.get()[lightTest / 8];
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  lightTest &= 0x7;
+  if (lightTest < 0x7) {
+    return static_cast< EPVSVisSetState >(((uchar)ptr[0] & (0x3 << lightTest)) >> lightTest);
+#else
+  const int bit = lightTest & 0x7;
+  if (bit < 0x7) {
+    return static_cast< EPVSVisSetState >(((uchar)ptr[0] & (0x3 << bit)) >> bit);
+#endif
+
+  }
+  return static_cast< EPVSVisSetState >((((uchar)ptr[0] >> 7) & 1) | ((ptr[1] & 0x1) << 1));
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+CPVSVisOctree::CPVSVisOctree(const CAABox& bounds, const int numObjects, const int numLights,
+                             const char* octreeData)
+: mBounds(bounds)
+, mNumObjects(numObjects)
+, mNumLights(numLights)
+, mOctreeData(const_cast< char* >(octreeData))
+, mMin(mBounds.GetMinPoint())
+, mMax(mBounds.GetMaxPoint()) {
+  mOctreeData.release();
+#else
+EPVSVisSetState CPVSVisSet::CombineStates(EPVSVisSetState a, EPVSVisSetState b) {
+  return a == b ? a : kVSS_NodeFound;
+#endif
+
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+CPVSVisOctree CPVSVisOctree::MakePVSVisOctree(const char* data, int len) {
+  CMemoryInStream in(data, len);
+  CAABox bounds(in);
+  int numObjects = in.Get< int >();
+  int numLights = in.Get< int >();
+  in.Get< int >();
+
+  return CPVSVisOctree(bounds, numObjects, numLights, data + in.GetReadPosition());
+}
+
+CPVSVisSet CPVSVisOctree::GetVisSet(const CVector3f& point) const {
+  if (!GetBounds().PointInside(point)) {
+    return CPVSVisSet(kVSS_OutOfBounds);
+  }
+
+  uchar nodeData;
+  const char* data = mOctreeData.get();
+  mMin = mBounds.GetMinPoint();
+  mMax = mBounds.GetMaxPoint();
+
+  int child;
+  while ((child = IterateSearch((nodeData = CCast::ToUint8(*data++)), point)) != -1) {
+    if (child != 0) {
+      if ((nodeData & 0x60) == 0) {
+        const int index = child - 1;
+#ifdef __MWERKS__
+        data += CBasics::SwapBytes(reinterpret_cast< const ushort* >(data)[index]);
+#else
+        ushort offset;
+        memcpy(&offset, data + index * sizeof(offset), sizeof(offset));
+        data += CBasics::SwapBytes(offset);
+#endif
+      } else if (nodeData & 0x20) {
+        --child;
+        data += CCast::ToUint8(data[child]);
+      } else {
+        const uchar* offset = reinterpret_cast< const uchar* >(data) + (child - 1) * 3;
+        data += (offset[0] << 16) + (offset[1] << 8) + offset[2];
+      }
+    }
+
+    if ((nodeData & 0x60) == 0) {
+      data += (GetNumChildren(nodeData) - 1) * 2;
+    } else if (nodeData & 0x20) {
+      data += GetNumChildren(nodeData) - 1;
+    } else {
+      data += (GetNumChildren(nodeData) - 1) * 3;
+    }
+  }
+
+  switch (nodeData & 0x18) {
+  case 24: {
+    rstl::auto_ptr< const char > leaf(data);
+    leaf.release();
+    return CPVSVisSet(GetNumObjects(), GetNumLights(), rstl::auto_ptr< const char >(leaf));
+  }
+  case 8:
+    return CPVSVisSet(kVSS_OutOfBounds);
+  case 16:
+    return CPVSVisSet(kVSS_EndOfTree);
+  default:
+    return CPVSVisSet(kVSS_OutOfBounds);
+  }
+}
+#else
+#if RSTL_VERSION < RSTL_R32J
+#include "CPVSVisOctree.inc"
+#endif
+#endif
+

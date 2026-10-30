@@ -5,8 +5,8 @@
 #include "Corruption/Kyoto/CDvdFile.hpp"
 #include "Corruption/Kyoto/CDvdRequest.hpp"
 #else
-#include "Echoes/Kyoto/CDvdFile.hpp"
-#include "Echoes/Kyoto/CDvdRequest.hpp"
+#include "Kyoto/CDvdFile.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #include "EchoesNamespace.h"
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
