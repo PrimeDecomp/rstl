@@ -20,6 +20,9 @@ public:
   void StopMixOut();
 
   static void MixCallback();
+  // Guessed names for the balanced Wii audio-suppression API.
+  static void PushMute();
+  static void PopMute();
   void DoMix();
 
   void Decode(ushort* out, const ushort* in, int numSamples);

@@ -13,6 +13,7 @@ public:
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint, void*);
 #endif
 
+  CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys);
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive);
   ~CGraphicsSys();
 

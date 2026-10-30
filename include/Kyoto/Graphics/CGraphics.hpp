@@ -510,6 +510,8 @@ public:
   static CVector3f GetViewPoint() { return mViewMatrix.GetTranslation(); }
 #endif
 
+  static bool IsPAL() { return sIsPAL; } // Guessed name; PAL TV format.
+
   static const CTransform4f& GetViewMatrix() { return mViewMatrix; }
 #if !RSTL_PRIME1
   static const Mtx& GetCameraMtx() { return mCameraMtx; }
@@ -685,6 +687,7 @@ private:
   static GXTexRegion mTexRegions[GX_MAX_TEXMAP];
   static GXTexRegion mTexRegionsCI[GX_MAX_TEXMAP / 2];
   static GXRenderModeObj mRenderModeObj;
+  static bool sIsPAL; // Guessed name.
 #if !RSTL_PRIME1
   static bool sIs50Hz; // Guessed name; shared video timing and splash-coordinate flag.
 #endif

@@ -350,6 +350,7 @@ bool CGraphics::mIsGXModelMatrixIdentity = true;
 bool CGraphics::mFirstFrame = true;
 bool CGraphics::mUseVideoFilter = true;
 float CGraphics::mBrightness = 1.f;
+bool CGraphics::sIsPAL; // Guessed name; PAL TV format.
 
 const GXTexMapID CGraphics::kSpareBufferTexMapID = GX_TEXMAP7;
 #if RSTL_PRIME1
