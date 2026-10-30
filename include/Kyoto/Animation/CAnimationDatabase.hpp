@@ -44,6 +44,7 @@ public:
 private:
   rstl::optional_object< TToken< CAnimationDatabase > > x4_;
 };
-CHECK_SIZEOF(CAnimationDatabase, 0x10)
+DECLARE_FULL_SIZE_FOR(CAnimationDatabase, 0x10)
+CHECK_SIZEOF(CAnimationDatabase, CAnimationDatabase_FULL_SIZE)
 
 #endif // _CANIMATIONDATABASE

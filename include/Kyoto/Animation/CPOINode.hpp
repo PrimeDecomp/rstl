@@ -91,6 +91,7 @@ protected:
   int mCharIdx;
   int mFlags;
 };
-CHECK_SIZEOF(CPOINode, RSTL_PRIME1 ? 0x38 : 0x2c)
+DECLARE_FULL_SIZE_FOR(CPOINode, RSTL_PRIME1 ? 0x38 : 0x2c)
+CHECK_SIZEOF(CPOINode, CPOINode_FULL_SIZE)
 
 #endif // _CPOINODE

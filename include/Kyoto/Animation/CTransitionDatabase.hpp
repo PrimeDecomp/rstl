@@ -26,6 +26,7 @@ public:
 private:
   rstl::optional_object< TToken< CTransitionDatabase > > mToken;
 };
-CHECK_SIZEOF(CTransitionDatabase, 0x10)
+DECLARE_FULL_SIZE_FOR(CTransitionDatabase, 0x10)
+CHECK_SIZEOF(CTransitionDatabase, CTransitionDatabase_FULL_SIZE)
 
 #endif // _CTRANSITIONDATABASE
