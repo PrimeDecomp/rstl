@@ -6,12 +6,14 @@
 #include <rstl/math.hpp>
 
 CCharAnimTime::CCharAnimTime(CInputStream& in)
+: mTime(in.Get< float >())
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-: mTime(in.Get< float >()), mType(EType(in.Get< int >())) {}
+, mType(EType(in.Get< int >()))
 #else
-: mTime(in.Get< float >()), mType(EType(in.ReadInt32())) {}
+, mType(EType(in.ReadInt32()))
 #endif
+{}
 
 CCharAnimTime::CCharAnimTime(float time) : mTime(time) {
   if (time == 0.f) {

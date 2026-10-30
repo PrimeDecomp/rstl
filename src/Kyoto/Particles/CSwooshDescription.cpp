@@ -39,13 +39,11 @@ CSwooshDescription::CSwooshDescription()
 , mAALP(false)
 , mZBUF(false)
 , mORNT(false)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mCRND(false) {}
-#else
 , mCRND(false)
-, mDFLG(0) {}
+#if !RSTL_PRIME1
+, mDFLG(0)
 #endif
+{}
 
 CSwooshDescription::~CSwooshDescription() {
   delete mPSLT;

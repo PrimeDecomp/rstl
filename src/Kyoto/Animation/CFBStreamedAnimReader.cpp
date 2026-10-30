@@ -2,7 +2,6 @@
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 // TODO: verify that this Prime/Echoes difference is real
@@ -16,6 +15,7 @@
 
 #include "Kyoto/Basics/CCast.hpp"
 
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 const uchar CFBStreamedAnimReaderTotals::kRotationValueCount = 4;
 const uchar CFBStreamedAnimReaderTotals::kOffsetValueCount = 4;
@@ -59,37 +59,47 @@ CFBStreamedAnimReaderTotals::CFBStreamedAnimReaderTotals(const CFBStreamedCompre
 , mHasOffset(nullptr)
 , mHasScale(nullptr)
 #endif
-
 , mSegIds(nullptr)
 , mComputedFloats(nullptr)
 , mRotDiv(source.MainHeader().GetRotationValueForOne())
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mTransMult(source.MainHeader().GetOffsetResolution())
-#else
-, mOffsetMult(source.MainHeader().GetOffsetResolution())
-, mScaleMult(source.MainHeader().GetScaleResolution())
-#endif
 
 , mCurKey(0)
 , mCalculated(false)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 , mBoneChanCount(source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader())).size()) {
+
+  Allocate(mBoneChanCount);
+  SetToReadStart(source);
+}
+
+
+void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
+  const uint shortsSize = channelCount * 16 + (4 - (channelCount * 16) % 4);
+  const uint flagsSize = channelCount + (4 - channelCount % 4);
+
+  const uint idsSize = channelCount * 2 + (4 - (channelCount * 2) % 4);
+  const uint floatsSize = channelCount * 32 + (4 - (channelCount * 32) % 4);
+  const uint size = shortsSize + flagsSize + idsSize + floatsSize;
+  mBuffer = rs_new uchar[size + (4 - size % 4)];
 #else
+, mOffsetMult(source.MainHeader().GetOffsetResolution())
+, mScaleMult(source.MainHeader().GetScaleResolution())
+
+, mCurKey(0)
+, mCalculated(false)
 , mBoneChanCount(source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader())).size())
 , mHasOffsetData(
       source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader())).HasOffsetData())
 , mHasScaleData(
       source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader())).HasScaleData())
 , mValuesPerChannel(GetValuesPerChannel()) {
-#endif
 
   Allocate(mBoneChanCount);
   SetToReadStart(source);
 }
 
-#if !RSTL_PRIME1
 uchar CFBStreamedAnimReaderTotals::GetValuesPerChannel() const {
   uchar values = 4;
   if (mHasOffsetData) {
@@ -100,28 +110,15 @@ uchar CFBStreamedAnimReaderTotals::GetValuesPerChannel() const {
   }
   return static_cast< uchar >(values);
 }
-#endif
 
 void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint shortsSize = channelCount * 16 + (4 - (channelCount * 16) % 4);
-  const uint flagsSize = channelCount + (4 - channelCount % 4);
-#else
   const uint shortsSize =
       channelCount * 2 * mValuesPerChannel + (4 - (channelCount * 2 * mValuesPerChannel) % 4);
   const uint rotationFlagsSize = channelCount + (4 - channelCount % 4);
   const uint offsetFlagsSize = channelCount + (4 - channelCount % 4);
   const uint scaleFlagsSize = channelCount + (4 - channelCount % 4);
-#endif
 
   const uint idsSize = channelCount * 2 + (4 - (channelCount * 2) % 4);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint floatsSize = channelCount * 32 + (4 - (channelCount * 32) % 4);
-  const uint size = shortsSize + flagsSize + idsSize + floatsSize;
-  mBuffer = rs_new uchar[size + (4 - size % 4)];
-#else
   const uint floatsSize =
       channelCount * 4 * mValuesPerChannel + (4 - (channelCount * 4 * mValuesPerChannel) % 4);
   const uint size =
@@ -131,7 +128,6 @@ void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
   mBufferSize = bufferSize;
   CCharAnimMemoryMetrics::AddToTotalSize(mBufferSize, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
   uint offset = 0;
   mCumulativeInts = reinterpret_cast< short* >(mBuffer + offset);
   offset += shortsSize;
@@ -147,7 +143,6 @@ void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
   mHasScale = reinterpret_cast< bool* >(mBuffer + offset);
   offset += scaleFlagsSize;
 #endif
-
   mSegIds = reinterpret_cast< short* >(mBuffer + offset);
   offset += idsSize;
   mComputedFloats = reinterpret_cast< float* >(mBuffer + offset);
@@ -157,10 +152,10 @@ CFBStreamedAnimReaderTotals::~CFBStreamedAnimReaderTotals() {
   if (mBuffer != nullptr) {
     delete[] mBuffer;
   }
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mBufferSize, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
 }
 
 void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& source) {
@@ -178,29 +173,24 @@ void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& s
     mSegIds[channel] = it->GetSegId().val();
     const CFBStreamedPerChannelHeader::RotationHeader* const rotation =
         &it->GetRotationBitStorage();
+
+    for (uint i = 0; i < 4; ++i) {
+      *values++ = rotation->GetInitialValue(i);
+
+    }
+    const CFBStreamedPerChannelHeader::OffsetHeader& offset = (*it).GetOffsetBitStorage();
 #else
     const CFBStreamedPerChannelHeader& header = *it;
     mSegIds[channel] = header.GetSegId().val();
     const CFBStreamedPerChannelHeader::RotationHeader& rotation = header.GetRotationBitStorage();
-#endif
 
     for (uint i = 0; i < 4; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      *values++ = rotation->GetInitialValue(i);
-#else
       *values++ = rotation.GetInitialValue(i);
-#endif
 
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const CFBStreamedPerChannelHeader::OffsetHeader& offset = (*it).GetOffsetBitStorage();
-#else
     mHasRotation[channel] = rotation.GetWidth() != 0;
     const CFBStreamedPerChannelHeader::OffsetHeader& offset = header.GetOffsetBitStorage();
 #endif
-
     for (uint i = 0; i < 3; ++i) {
       *values++ = offset.GetInitialValue(i);
     }
@@ -208,6 +198,12 @@ void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& s
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mHasTrans[channel] = offset.GetWidth() != 0;
+
+  }
+}
+
+void CFBStreamedAnimReaderTotals::CalculateDown() {
+  float scale = (M_PIF / 2.f) / static_cast< float >(mRotDiv);
 #else
     mHasOffset[channel] = offset.GetWidth() != 0;
     if (mHasScaleData) {
@@ -220,19 +216,13 @@ void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& s
     } else {
       mHasScale[channel] = false;
     }
-#endif
 
   }
 }
 
 void CFBStreamedAnimReaderTotals::CalculateDown() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float scale = (M_PIF / 2.f) / static_cast< float >(mRotDiv);
-#else
   const float rotationScale = (M_PIF / 2.f) / mRotDiv;
 #endif
-
   const short* values = mCumulativeInts;
   float* computed = mComputedFloats;
   for (uint i = 0; i < mBoneChanCount; ++i) {
@@ -253,7 +243,6 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
           computed[1] * computed[1] + computed[2] * computed[2] + computed[3] * computed[3];
       float w = CMath::SqrtF(CMath::Max(0.f, 1.f - sum));
 #endif
-
     if (values[0] != 0) {
       computed[0] = -w;
     } else {
@@ -265,18 +254,20 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
       computed[4] = values[4] * mTransMult;
       computed[5] = values[5] * mTransMult;
       computed[6] = values[6] * mTransMult;
+
+    }
+    values += 8;
+    computed += 8;
 #else
     }
     if (mHasOffset[i]) {
       computed[4] = values[4] * mOffsetMult;
       computed[5] = values[5] * mOffsetMult;
       computed[6] = values[6] * mOffsetMult;
-#endif
 
     }
     values += 8;
     computed += 8;
-#if !RSTL_PRIME1
     if (mHasScaleData) {
       if (mHasScale[i]) {
         computed[0] = values[0] * mScaleMult;
@@ -287,7 +278,6 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
       computed += 4;
     }
 #endif
-
   }
   mCalculated = true;
 }
@@ -311,51 +301,42 @@ void CFBStreamedPairOfTotals::SetTime(CMemoryInputToBitLevelLoader& input,
 #if RSTL_PRIME1
   unsigned long prevIndex = mAspects.GetPrevIndex();
   const CFBStreamedCompression* const source = mSource.GetSource();
+
+  const CFBStreamedPerChannelHeaderList& channels =
+      source->GetPerChannelHeaderList(source->TimeHeader(source->MainHeader()));
+
+  if (Prior().GetFrameNumber() > prevIndex) {
+    input = CMemoryInputToBitLevelLoader(source->GetBytes(channels));
+
+    loader = CBitLevelLoader< CMemoryInputToBitLevelLoader >(input);
+    Prior().SetToReadStart(*source);
+
+    mCurKey = 0;
+    Prior().IncrementInto(loader, *source, Next());
+
+    ++mCurKey;
 #else
   const uint prevIndex = mAspects.GetPrevIndex();
   const CFBStreamedCompression& source = *mSource;
-#endif
 
   const CFBStreamedPerChannelHeaderList& channels =
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      source->GetPerChannelHeaderList(source->TimeHeader(source->MainHeader()));
-#else
       source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader()));
-#endif
 
   if (Prior().GetFrameNumber() > prevIndex) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    input = CMemoryInputToBitLevelLoader(source->GetBytes(channels));
-#else
     input = CMemoryInputToBitLevelLoader(source.GetBytes(channels));
-#endif
 
     loader = CBitLevelLoader< CMemoryInputToBitLevelLoader >(input);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    Prior().SetToReadStart(*source);
-#else
     Prior().SetToReadStart(source);
-#endif
 
     mCurKey = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    Prior().IncrementInto(loader, *source, Next());
-#else
     Prior().IncrementInto(loader, source, Next());
-#endif
 
     ++mCurKey;
-#if !RSTL_PRIME1
     while (Prior().GetFrameNumber() < prevIndex) {
       mNextSel = !mNextSel;
       DoIncrement(loader);
     }
 #endif
-
   } else {
     if (Next().GetFrameNumber() != Prior().GetFrameNumber() + 1) {
       DoIncrement(loader);
@@ -386,10 +367,10 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
   uint channel = 0;
   for (CFBStreamedPerChannelHeaderList::const_iterator it = channels.begin(); it != channels.end();
        ++it, ++channel) {
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
     if (mHasRotation[channel]) {
 #endif
-
     const CFBStreamedPerChannelHeader::RotationHeader& rotation = it->GetRotationBitStorage();
     output[0] = loader.LoadUnsigned(1);
     output[1] = input[1] + loader.LoadSigned(rotation.GetBitCount(1));
@@ -402,7 +383,6 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
     }
     if (mHasOffset[channel]) {
 #endif
-
       const CFBStreamedPerChannelHeader::OffsetHeader& offset = it->GetOffsetBitStorage();
       output[4] = input[4] + loader.LoadSigned(offset.GetBitCount(0));
       output[5] = input[5] + loader.LoadSigned(offset.GetBitCount(1));
@@ -410,7 +390,17 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
     }
     output += 8;
     input += 8;
-#if !RSTL_PRIME1
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  }
+  out.mCurKey = mCurKey + 1;
+}
+
+
+CFBStreamedAnimReader::CFBStreamedAnimReader(
+    const TSubAnimTypeToken< CFBStreamedCompression >& source, CCharAnimTime time)
+: CAnimSourceReaderBase(rs_new TAnimSourceInfo< CFBStreamedCompression >(source))
+#else
     if (mHasScaleData) {
       if (mHasScale[channel]) {
         const CFBStreamedPerChannelHeader::ScaleHeader& scale = it->GetScaleBitStorage();
@@ -421,13 +411,11 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
       output += 4;
       input += 4;
     }
-#endif
 
   }
   out.mCurKey = mCurKey + 1;
 }
 
-#if !RSTL_PRIME1
 CSegIdToIndexConverter::~CSegIdToIndexConverter() {
   CCharAnimMemoryMetrics::SubtractFromTotalSize(sizeof(mIndices), CCharAnimMemoryMetrics::kASS_Two);
 }
@@ -443,19 +431,12 @@ CSegIdToIndexConverter::CSegIdToIndexConverter(const CFBStreamedAnimReaderTotals
   }
   CCharAnimMemoryMetrics::AddToTotalSize(sizeof(mIndices), CCharAnimMemoryMetrics::kASS_Two);
 }
-#endif
 
 CFBStreamedAnimReader::CFBStreamedAnimReader(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const TSubAnimTypeToken< CFBStreamedCompression >& source, CCharAnimTime time)
-: CAnimSourceReaderBase(rs_new TAnimSourceInfo< CFBStreamedCompression >(source))
-#else
     const TSubAnimTypeToken< CFBStreamedCompression >& source, CCharAnimTime time,
     const CAnimPOIData* poiData)
 : CAnimSourceReaderBase(rs_new TAnimSourceInfo< CFBStreamedCompression >(source), poiData)
 #endif
-
 , mSource(source)
 , mSteadyStateInfo(mSource->GetSteadyStateAnimInfo())
 , mTotals(source)
@@ -464,32 +445,30 @@ CFBStreamedAnimReader::CFBStreamedAnimReader(
 , mBitLoader(mInput)
 , mSegIdToIndex(mTotals.Prior()) {
   PostConstruct(time);
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(sizeof(CFBStreamedAnimReader),
                                          CCharAnimMemoryMetrics::kASS_Two);
-#endif
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 CFBStreamedAnimReader::~CFBStreamedAnimReader() {
   CCharAnimMemoryMetrics::SubtractFromTotalSize(sizeof(CFBStreamedAnimReader),
                                                 CCharAnimMemoryMetrics::kASS_Two);
 }
-#else
-CFBStreamedAnimReader::~CFBStreamedAnimReader() {}
-#endif
 
 rstl::ownership_transfer< IAnimReader > CFBStreamedAnimReader::VClone() const {
   return rstl::ownership_transfer< IAnimReader >(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       rs_new CFBStreamedAnimReader(mSource, mCurTime));
 #else
+}
+
+CFBStreamedAnimReader::~CFBStreamedAnimReader() {}
+
+rstl::ownership_transfer< IAnimReader > CFBStreamedAnimReader::VClone() const {
+  return rstl::ownership_transfer< IAnimReader >(
       rs_new CFBStreamedAnimReader(mSource, mCurTime, mPOIData));
 #endif
-
 }
 
 CCharAnimTime CFBStreamedAnimReader::VGetTimeRemaining() const {
@@ -538,7 +517,6 @@ SAdvancementResults CFBStreamedAnimReader::VReverseView(const CCharAnimTime&) {
   return SAdvancementResults(CCharAnimTime::ZeroFlat(),
                              CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
-
 }
 
 SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& time) {
@@ -555,21 +533,19 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return SAdvancementResults(time, CAdvancementDeltas());
-#else
-    return SAdvancementResults(time,
-                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
   }
   if (time.EqualsZero()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
 #else
+    return SAdvancementResults(time,
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+
+  }
+  if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
                                CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
-
   }
 
   CSegStatement prior;
@@ -585,7 +561,6 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
 #else
   GetSegStatement(prior, CSegId(0));
 #endif
-
   mCurTime += time;
   CCharAnimTime remainder = CCharAnimTime::ZeroFlat();
   if (mCurTime > duration) {
@@ -593,15 +568,15 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
     mCurTime = duration;
   }
   SetReadTime(mCurTime);
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mSource->HasPOIData()) {
-#endif
 
     UpdatePOIStates();
-#if RSTL_PRIME1
   }
+#else
+    UpdatePOIStates();
 #endif
-
   const CCharAnimTime interval = mSource->FinestSample();
   if (!mTotals.Prior().AmCalculatedDown()) {
     mTotals.Prior().CalculateDown();
@@ -615,21 +590,19 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
   GetSegStatement(next, CSegId(3));
   const CQuaternion priorRotation = prior.GetOrientation();
   const CQuaternion nextRotation = next.GetOrientation();
+
+  const CQuaternion priorInverse = priorRotation.BuildInverted();
+  CVector3f offset(0.f, 0.f, 0.f);
+  if (HasOffset(CSegId(3))) {
 #else
   GetSegStatement(next, CSegId(0));
   const CQuaternion priorRotation = prior.Orientation();
   const CQuaternion nextRotation = next.Orientation();
-#endif
 
   const CQuaternion priorInverse = priorRotation.BuildInverted();
   CVector3f offset(0.f, 0.f, 0.f);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (HasOffset(CSegId(3))) {
-#else
   if (VHasOffset(CSegId(0))) {
 #endif
-
     offset = next.Offset() - prior.Offset();
     const CQuaternion nextInverse = nextRotation.BuildInverted();
     offset = nextInverse.Transform(offset);
@@ -641,10 +614,10 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
 void CFBStreamedAnimReader::VSetPhase(float phase) {
   mCurTime = CCharAnimTime(phase * mSteadyStateInfo.GetDuration().GetSeconds());
   SetReadTime(mCurTime);
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mSource->HasPOIData()) {
 #endif
-
     UpdatePOIStates();
     if (!mCurTime.GreaterThanZero()) {
       mPassedBoolCount = 0;
@@ -653,16 +626,10 @@ void CFBStreamedAnimReader::VSetPhase(float phase) {
       mPassedSoundCount = 0;
     }
   }
-#if !RSTL_PRIME1
-void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
-                                                CSegStatementSet& set) const {
-  VGetSegStatementSet(list, set, mCurTime);
-#endif
-
-}
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+}
+
 void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
                                                 CSegStatementSet& setOut) const {
   SetReadTime(mCurTime);
@@ -680,9 +647,14 @@ void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
 
 void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
 #else
+void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
+                                                CSegStatementSet& set) const {
+  VGetSegStatementSet(list, set, mCurTime);
+
+}
+
 void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
 #endif
-
                                                 const CCharAnimTime& time) const {
   SetReadTime(time);
   if (!mTotals.Prior().AmCalculatedDown()) {
@@ -696,23 +668,23 @@ void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStat
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     GetSegStatement(setOut[*it], *it);
-#else
-    GetSegStatement(set[*it], *it);
-#endif
 
   }
 }
 
 void CFBStreamedAnimReader::SetReadTime(const CCharAnimTime& time) const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   mTotals.SetTime(mInput, mBitLoader, time);
 #else
+    GetSegStatement(set[*it], *it);
+
+  }
+}
+
+void CFBStreamedAnimReader::SetReadTime(const CCharAnimTime& time) const {
   mTotals.SetTime(
       mInput, mBitLoader,
       CCharAnimTime(rstl::min_val(time.GetSeconds(), mSteadyStateInfo.GetDuration().GetSeconds())));
 #endif
-
 }
 
 CFBFullBodyAspectsForStream::CFBFullBodyAspectsForStream(
@@ -725,7 +697,6 @@ CFBFullBodyAspectsForStream::CFBFullBodyAspectsForStream(
 #else
   mLastFrame = static_cast< uint >(0.5f + duration.GetSeconds() / time.FinestSample());
 #endif
-
   mPriorFrame = 0;
   mNextFrame = mHeader->FrameAfter(0);
   mPriorKey = 0;
@@ -741,7 +712,6 @@ void CFBFullBodyAspectsForStream::SetTime(const CTimeRemainderAndFraction& time)
 #else
   const uint frame = rstl::min_val(time.IntegerTime(), mLastFrame);
 #endif
-
   if (frame < mPriorFrame) {
     mPriorFrame = 0;
     mNextFrame = mHeader->FrameAfter(0);
@@ -795,21 +765,19 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return SAdvancementResults(time, CAdvancementDeltas());
-#else
-    return SAdvancementResults(time,
-                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
   }
   if (time.EqualsZero()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas());
 #else
+    return SAdvancementResults(time,
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+
+  }
+  if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
                                CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
-
   }
   SetReadTime(startTime);
   CSegStatement prior;
@@ -825,7 +793,6 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
 #else
   GetSegStatement(prior, CSegId(0));
 #endif
-
   curTime += time;
   CCharAnimTime remainder = CCharAnimTime::ZeroFlat();
   if (curTime > duration) {
@@ -846,21 +813,19 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
   GetSegStatement(next, CSegId(3));
   const CQuaternion priorRotation = prior.GetOrientation();
   const CQuaternion nextRotation = next.GetOrientation();
+
+  const CQuaternion priorInverse = priorRotation.BuildInverted();
+  CVector3f offset(0.f, 0.f, 0.f);
+  if (HasOffset(CSegId(3))) {
 #else
   GetSegStatement(next, CSegId(0));
   const CQuaternion priorRotation = prior.Orientation();
   const CQuaternion nextRotation = next.Orientation();
-#endif
 
   const CQuaternion priorInverse = priorRotation.BuildInverted();
   CVector3f offset(0.f, 0.f, 0.f);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (HasOffset(CSegId(3))) {
-#else
   if (VHasOffset(CSegId(0))) {
 #endif
-
     offset = next.Offset() - prior.Offset();
     const CQuaternion nextInverse = nextRotation.BuildInverted();
     offset = nextInverse.Transform(offset);
@@ -1036,6 +1001,5 @@ void CFBStreamedAnimReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                  CJointData_LinearStorage& data) const {
   VGetJointData_Linear(layout, data, mCurTime);
 #endif
-
 }
 

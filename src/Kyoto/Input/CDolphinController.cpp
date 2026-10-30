@@ -52,35 +52,32 @@ void CDolphinController::Poll() {
 void CDolphinController::ReadDevices() {
   PADStatus status[4];
   PADRead(status);
-#if RSTL_PRIME1
-  if (status[0].err == PAD_ERR_NONE) {
-#endif
-
-    PADClamp(status);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+  if (status[0].err == PAD_ERR_NONE) {
+    PADClamp(status);
     memcpy(mStatus, status, sizeof(PADStatus) * 4);
-#else
-  for (int i = 0; i < 4; ++i) {
-    if (status[i].err == 0) {
-      memcpy(&mStatus[i], &status[i], sizeof(PADStatus));
-#endif
-
   } else {
-#if RSTL_PRIME1
     for (int i = 0; i < 4; ++i) {
-#endif
-
       mStatus[i].err = status[i].err;
     }
   }
+#else
+  PADClamp(status);
+  for (int i = 0; i < 4; ++i) {
+    if (status[i].err == 0) {
+      memcpy(&mStatus[i], &status[i], sizeof(PADStatus));
+    } else {
+      mStatus[i].err = status[i].err;
+    }
+  }
+#endif
 
   for (int i = 0; i < 4; ++i) {
     uint controller = (PAD_CHAN0_BIT >> i);
 #if !RSTL_PRIME1
     mGamepadStates[i].SetDeviceJustDisconnected(false);
 #endif
-
     if (mStatus[i].err != PAD_ERR_NOT_READY) {
       if (mStatus[i].err == PAD_ERR_NONE) {
         mGamepadStates[i].SetDeviceIsPresent(true);
@@ -91,7 +88,6 @@ void CDolphinController::ReadDevices() {
           mGamepadStates[i].SetDeviceJustDisconnected(true);
         }
 #endif
-
         mGamepadStates[i].SetDeviceIsPresent(false);
       }
     }
@@ -130,16 +126,16 @@ void CDolphinController::ProcessInputData() {
       ProcessAxis(i, kJA_RightX);
       ProcessAxis(i, kJA_RightY);
       ProcessButtons(i);
+    }
 #if !RSTL_PRIME1
-    } else if (mGamepadStates[i].DeviceJustDisconnected()) {
+    else if (mGamepadStates[i].DeviceJustDisconnected()) {
       ClearAxis(i, kJA_LeftX);
       ClearAxis(i, kJA_LeftY);
       ClearAxis(i, kJA_RightX);
       ClearAxis(i, kJA_RightY);
       ClearButtons(i);
-#endif
-
     }
+#endif
   }
 }
 
@@ -179,12 +175,11 @@ void CDolphinController::ProcessAxis(int controller, EJoyAxis axis) {
     break;
   case kJA_RightY:
     axisValue = mStatus[controller].substickY;
+    break;
 #if RSTL_PRIME1
-    break;
   default:
-#endif
-
     break;
+#endif
   }
 
   float absolute = axisValue * maxAxisValue;
@@ -247,29 +242,12 @@ void CDolphinController::ProcessAnalogButton(float value, CControllerAxis& axis)
 
 uint CDolphinController::GetDeviceCount() const { return 4; }
 
-#if !RSTL_PRIME1
-CControllerGamepadData& CDolphinController::GetGamepadData(int controller) {
-  return mGamepadStates[controller];
-}
-#endif
-
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CControllerGamepadData& CDolphinController::GetGamepadData(int controller) {
   return mGamepadStates[controller];
 }
 
-uint CDolphinController::GetControllerType(int controller) const {
-  return mControllerTypes[controller];
-}
-
-void CDolphinController::SetMotorState(EIOPort port, EMotorState state) {
-  mMotorStates[port] = state;
-  PADControlAllMotors((const u32*)mMotorStates);
-}
-#endif
-#else
 uint CDolphinController::GetControllerType(int controller) const {
   return mControllerTypes[controller];
 }

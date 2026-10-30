@@ -62,7 +62,6 @@ CMetaAnimRandom::RandomData CMetaAnimRandom::CreateRandomData(CInputStream& in) 
 #else
     ret.push_back_unsafe(rstl::pair< rstl::rc_ptr< IMetaAnim >, int >(metaAnim, in.ReadInt32()));
 #endif
-
   }
 
   return ret;

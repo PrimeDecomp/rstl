@@ -6,11 +6,7 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
-#include "Kyoto/Graphics/CColor.hpp"
-
 class CTexture;
-#endif
 
 class CFont {
 public:
@@ -47,11 +43,6 @@ private:
   int mFontSize;
   float mScale;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFont, 0x8);
-#else
 CHECK_SIZEOF(CFont, 0x8)
-#endif
 
 #endif // _CFONT

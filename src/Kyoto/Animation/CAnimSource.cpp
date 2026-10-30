@@ -17,9 +17,10 @@
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
+// Guessed name, corroborated by Prime and the native frame-sampling consumers.
+#ifdef __MWERKS__
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#ifdef __MWERKS__
 static float clamp_zero_to_one(register const float v) {
   register float zero = 0.f;
   register float one = 1.f;
@@ -35,13 +36,6 @@ static float clamp_zero_to_one(register const float v) {
   return res;
 }
 #else
-static float clamp_zero_to_one(const float v) {
-  return v >= 1.f ? 1.f : v >= 0.f ? v : 0.f;
-}
-#endif
-#else
-// Guessed name, corroborated by Prime and the native frame-sampling consumers.
-#ifdef __MWERKS__
 static float clamp_zero_to_one(register float value) {
   register float out;
   register float zero = 0.f;
@@ -53,48 +47,25 @@ static float clamp_zero_to_one(register float value) {
   }
   return out;
 }
+#endif
 #else
-static float clamp_zero_to_one(float value) {
+static float clamp_zero_to_one(RSTL_PRIME1_CONST float value) {
   return value >= 1.f ? 1.f : value >= 0.f ? value : 0.f;
 }
 #endif
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-uint RotationAndOffsetStorage::DataSizeInBytes(uint rotationsCountPerFrame, uint offsetsPerFrame,
-                                               uint frameCount) {
-  return (rotationsCountPerFrame * sizeof(CQuaternion) + offsetsPerFrame * sizeof(CVector3f)) *
-         frameCount;
-#else
 uint RotationAndOffsetStorage::DataSizeInBytes(uint rotationsPerFrame, uint offsetsPerFrame,
                                                uint numFrames) {
   return (rotationsPerFrame * sizeof(CQuaternion) + offsetsPerFrame * sizeof(CVector3f)) *
          numFrames;
-#endif
-
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-RotationAndOffsetStorage::RotationAndOffsetStorage(const CRotationAndOffsetVectors& storage,
-                                                   const uint numFrames)
-: mStorage(GetRotationsAndOffsets(storage.mRotations, storage.mOffsets, numFrames))
-#else
 RotationAndOffsetStorage::RotationAndOffsetStorage(const CRotationAndOffsetVectors& vectors,
-                                                   uint numFrames)
+                                                   RSTL_PRIME1_CONST uint numFrames)
 : mStorage(GetRotationsAndOffsets(vectors.mRotations, vectors.mOffsets, numFrames))
-#endif
-
 , mNumFrames(numFrames)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mRotationsPerFrame(storage.mRotations.size() / numFrames)
-, mOffsetsPerFrame(storage.mOffsets.size() / numFrames) {}
-#else
 , mRotationsPerFrame(vectors.mRotations.size() / numFrames)
 , mOffsetsPerFrame(vectors.mOffsets.size() / numFrames) {}
-#endif
 
 rstl::auto_ptr< uint >
 RotationAndOffsetStorage::GetRotationsAndOffsets(const rstl::vector< CQuaternion >& rotations,
@@ -144,21 +115,17 @@ uint RotationAndOffsetStorage::GetFrameSizeInBytes() const {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-inline RotationAndOffsetStorage::CRotationAndOffsetVectors::CRotationAndOffsetVectors(
-    CInputStream& in)
-#else
-RotationAndOffsetStorage::CRotationAndOffsetVectors::CRotationAndOffsetVectors(CInputStream& in)
+inline
 #endif
-
+RotationAndOffsetStorage::CRotationAndOffsetVectors::CRotationAndOffsetVectors(CInputStream& in)
 : mRotations(in), mOffsets(in) {}
 
+CAnimSource::CAnimSource(CInputStream& in
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAnimSource::CAnimSource(CInputStream& in, IObjectStore& store)
-#else
-CAnimSource::CAnimSource(CInputStream& in)
+                         , IObjectStore& store
 #endif
-
+                         )
 : mDuration(in)
 , mInterval(in)
 , mFrameCount(in.Get< uint >())
@@ -166,7 +133,6 @@ CAnimSource::CAnimSource(CInputStream& in)
 #if !RSTL_PRIME1
 , mSegmentChannels(in)
 #endif
-
 , mRotationChannels(in)
 , mOffsetChannels(in)
 #if !RSTL_PRIME1
@@ -174,12 +140,10 @@ CAnimSource::CAnimSource(CInputStream& in)
 , mScales(in)
 , mScalesPerFrame(mScales.size() / mFrameCount)
 #endif
-
 , mStorage(RotationAndOffsetStorage::CRotationAndOffsetVectors(in), mFrameCount)
 #if RSTL_PRIME1
 , mEventId(in.Get< CAssetId >())
 #endif
-
 , mAverageVelocity(0.f) {
 #if RSTL_PRIME1
   if (mEventId != 0) {
@@ -187,7 +151,6 @@ CAnimSource::CAnimSource(CInputStream& in)
         rs_new TLockedToken< CAnimPOIData >(store.GetObj(SObjectTag('EVNT', mEventId)));
   }
 #endif
-
   CalcAverageVelocity();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -199,7 +162,6 @@ CAnimSource::CAnimSource(CInputStream& in)
 #else
   CCharAnimMemoryMetrics::AddToTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
 }
 
 CAnimSource::~CAnimSource() {
@@ -212,13 +174,14 @@ CAnimSource::~CAnimSource() {
                                                 CCharAnimMemoryMetrics::kASS_Two);
 #else
   CCharAnimMemoryMetrics::SubtractFromTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
+#endif
 }
 
+#if !RSTL_PRIME1
 bool CAnimSource::HasRotation(const CSegId& seg) const {
   return mRotationChannels[mSegmentChannels[seg.val()]] >= 0;
-#endif
-
 }
+#endif
 
 bool CAnimSource::HasOffset(const CSegId& seg) const {
 // TODO: verify that this Prime/Echoes difference is real
@@ -226,13 +189,14 @@ bool CAnimSource::HasOffset(const CSegId& seg) const {
   return mOffsetChannels[mRotationChannels[seg.val()]] >= 0;
 #else
   return mOffsetChannels[mSegmentChannels[seg.val()]] >= 0;
+#endif
 }
 
+#if !RSTL_PRIME1
 bool CAnimSource::HasScale(const CSegId& seg) const {
   return mScaleChannels[mSegmentChannels[seg.val()]] >= 0;
-#endif
-
 }
+#endif
 
 CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTime) const {
   const float frameTime = animTime.GetSeconds();
@@ -248,7 +212,6 @@ CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTim
 #else
   const uint frame = CCast::ToUint32(frameTime * invTime);
 #endif
-
   float time = interval * frame;
   time = frameTime - time;
 
@@ -258,7 +221,6 @@ CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTim
 #else
   if (CMath::AbsF(time) < Real32::Epsilon()) {
 #endif
-
     time = 0.f;
   }
 
@@ -273,12 +235,10 @@ CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTim
   if (channel >= 0 && HasOffset(seg)) {
     const u32 nextFrame = frame == mFrameCount - 1 ? 0 : frame + 1;
 #endif
-
     channel = mOffsetChannels[channel];
 #if RSTL_PRIME1
     const uint nextFrame = frame == mFrameCount - 1 ? 0 : frame + 1;
 #endif
-
     const CVector3f& a = mStorage.GetOffset(channel, frame);
     const CVector3f& b = mStorage.GetOffset(channel, nextFrame);
     return CVector3f::Lerp(a, b, time);
@@ -302,7 +262,6 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
   const int channel = mSegmentChannels[seg.val()];
   if (channel >= 0 && HasRotation(seg)) {
 #endif
-
     const float frameTime = animTime.GetSeconds();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -310,7 +269,6 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
 #else
     const uint frame = CCast::ToUint32(frameTime * invTime);
 #endif
-
     float time = interval * frame;
     time = frameTime - time;
 
@@ -320,7 +278,6 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
 #else
     if (CMath::AbsF(time) < Real32::Epsilon()) {
 #endif
-
       time = 0.f;
     }
 
@@ -331,7 +288,6 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
 #else
     const u32 nextFrame = frame == mFrameCount - 1 ? 0 : frame + 1;
 #endif
-
     const CQuaternion& a = mStorage.GetRotation(channel, frame);
     const CQuaternion& b = mStorage.GetRotation(channel, nextFrame);
     return CAnimMathUtils::Slerp(a, b, time);
@@ -349,7 +305,6 @@ void CAnimSource::CalcAverageVelocity() {
 #else
   const uint channel = mOffsetChannels[mSegmentChannels[0]];
 #endif
-
   for (uint frame = 1; frame < mFrameCount; ++frame) {
     const CVector3f delta =
         mStorage.GetOffset(channel, frame) - mStorage.GetOffset(channel, frame - 1);
@@ -367,40 +322,16 @@ void CAnimSource::CalcAverageVelocity() {
 #if RSTL_PRIME1
 const rstl::vector< CBoolPOINode >& CAnimSource::GetBoolPOIStream() const {
   return (*mEventData)->GetBoolPOIStream();
-#else
-void CAnimSource::GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
-                                  CSegStatement& statement) const {
-  const int channel = mSegmentChannels[seg.val()];
-  const float inverseWeight = 1.f - weight;
-  if (inverseWeight < CAnimMathUtils::kInterpolationThreshold) {
-    if (HasRotation(seg)) {
-      statement.Set(mStorage.GetRotation(channel, nextFrame));
-#endif
-
 }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+
 const rstl::vector< CInt32POINode >& CAnimSource::GetInt32POIStream() const {
   return (*mEventData)->GetInt32POIStream();
-#else
-    if (HasOffset(seg)) {
-      const uint offsetChannel = mOffsetChannels[channel];
-      statement.Set(mStorage.GetOffset(offsetChannel, nextFrame));
-#endif
-
 }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+
 const rstl::vector< CParticlePOINode >& CAnimSource::GetParticlePOIStream() const {
   return (*mEventData)->GetParticlePOIStream();
-#else
-  } else if (weight < CAnimMathUtils::kInterpolationThreshold) {
-    if (HasRotation(seg)) {
-      statement.Set(mStorage.GetRotation(channel, frame));
-#endif
-
 }
-#if RSTL_PRIME1
+
 const rstl::vector< CSoundPOINode >& CAnimSource::GetSoundPOIStream() const {
   return (*mEventData)->GetSoundPOIStream();
 }
@@ -441,66 +372,67 @@ void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& s
     if (channel >= 0) {
       if (1.f - time < CAnimMathUtils::kInterpolationThreshold) {
         set.Set(seg, mStorage.GetRotation(channel, nextFrame));
-#endif
-
         if (HasOffset(seg)) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           set.Set(seg, mStorage.GetOffset(mOffsetChannels[mRotationChannels[seg.val()]],
-                                             nextFrame));
+                                          nextFrame));
         }
       } else if (time < CAnimMathUtils::kInterpolationThreshold) {
         set.Set(seg, mStorage.GetRotation(channel, frame));
         if (HasOffset(seg)) {
-          set.Set(seg, mStorage.GetOffset(mOffsetChannels[mRotationChannels[seg.val()]],
-                                             frame));
-#else
-      const uint offsetChannel = mOffsetChannels[channel];
-      statement.Set(mStorage.GetOffset(offsetChannel, frame));
-#endif
-
+          set.Set(seg, mStorage.GetOffset(mOffsetChannels[mRotationChannels[seg.val()]], frame));
         }
       } else {
-#if !RSTL_PRIME1
-    if (HasRotation(seg)) {
-#endif
-
         const CQuaternion& a = mStorage.GetRotation(channel, frame);
         const CQuaternion& b = mStorage.GetRotation(channel, nextFrame);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         set.Set(seg, CAnimMathUtils::Slerp(a, b, time));
-#else
-      statement.Set(CAnimMathUtils::Slerp(a, b, weight));
-    }
-#endif
-
         if (HasOffset(seg)) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           const uint offsetChannel = mOffsetChannels[mRotationChannels[seg.val()]];
-#else
-      const uint offsetChannel = mOffsetChannels[channel];
-#endif
-
           const CVector3f& a = mStorage.GetOffset(offsetChannel, frame);
           const CVector3f& b = mStorage.GetOffset(offsetChannel, nextFrame);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           set.Set(seg, CVector3f::Lerp(a, b, time));
         }
       }
     } else {
       set.Set(seg, CQuaternion::NoRotation());
+    }
+  }
+}
 #else
+void CAnimSource::GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
+                                  CSegStatement& statement) const {
+  const int channel = mSegmentChannels[seg.val()];
+  const float inverseWeight = 1.f - weight;
+  if (inverseWeight < CAnimMathUtils::kInterpolationThreshold) {
+    if (HasRotation(seg)) {
+      statement.Set(mStorage.GetRotation(channel, nextFrame));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      statement.Set(mStorage.GetOffset(offsetChannel, nextFrame));
+    }
+  } else if (weight < CAnimMathUtils::kInterpolationThreshold) {
+    if (HasRotation(seg)) {
+      statement.Set(mStorage.GetRotation(channel, frame));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      statement.Set(mStorage.GetOffset(offsetChannel, frame));
+    }
+  } else {
+    if (HasRotation(seg)) {
+      const CQuaternion& a = mStorage.GetRotation(channel, frame);
+      const CQuaternion& b = mStorage.GetRotation(channel, nextFrame);
+      statement.Set(CAnimMathUtils::Slerp(a, b, weight));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      const CVector3f& a = mStorage.GetOffset(offsetChannel, frame);
+      const CVector3f& b = mStorage.GetOffset(offsetChannel, nextFrame);
       statement.Set(CVector3f::Lerp(a, b, weight));
-#endif
-
     }
   }
 }
 
-#if !RSTL_PRIME1
 void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                                      const CCharAnimTime& time) const {
   const float frameTime = time.GetSeconds();
@@ -543,9 +475,7 @@ void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& s
     }
   }
 }
-#endif
 
-#if !RSTL_PRIME1
 void CAnimSource::GetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
                                       const CCharAnimTime& time) const {
   const float frameTime = time.GetSeconds();

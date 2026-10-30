@@ -31,16 +31,9 @@ public:
 
   private:
     uint mId;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    uint x4;
-    uint x8;
-    uint xc;
-#else
     uint mType;
     uint x8_;
     uint xc_;
-#endif
 
     rstl::optional_object< CToken > mToken;
   };
@@ -55,23 +48,10 @@ public:
 #endif
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int mUnknown1;
-  int mUnknown2;
-#else
   int x0_;
   int x4_;
-#endif
-
   int mEndFrame;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int mUnknown3;
-#else
   int xc_;
-#endif
-
   rstl::vector< rstl::pair< uint, rstl::vector< CSpawnSystemKeyframeInfo > > > mFrames;
 };
 #if !RSTL_PRIME1

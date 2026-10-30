@@ -7,16 +7,12 @@
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CFontImageDef::CalculateHeight() const {
-#else
+#if !RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R32J
-inline int CFontImageDef::CalculateHeight() const {
-#else
+inline
+#endif
+#endif
 int CFontImageDef::CalculateHeight() const {
-#endif
-#endif
-
   return GetHeight() - (GetHeight() - CalculateBaseline());
 }
 
@@ -47,7 +43,6 @@ void CImageInstruction::GetAssets(rstl::vector< CToken >& assetsOut) const {
 #else
     assetsOut.push_back_unsafe(mImage.GetImages()[i]);
 #endif
-
   }
 }
 

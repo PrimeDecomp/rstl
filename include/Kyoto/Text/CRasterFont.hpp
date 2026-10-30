@@ -20,7 +20,6 @@ class CFontInfo {
 public:
 // TODO: verify that this Prime/Echoes difference is real
   CFontInfo(bool a, bool b, int c, int fontSize, const char* RSTL_PRIME1_CONST name)
-
   : x0_(a), x1_(b), x4_(c), mFontSize(fontSize) {
     strcpy(mName, name);
   }
@@ -64,15 +63,17 @@ private:
 class CGlyph {
 public:
   CGlyph(const int a, const int b, const int c, const float startU, const float startV,
+         const float endU, const float endV,
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+         const int layer,
+#endif
+         const int cellWidth, const int cellHeight, const int baseline, const int kernStart
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-         const float endU, const float endV, const int cellWidth, const int cellHeight,
-         const int baseline, const int kernStart, const uchar layer = 0)
-#else
-         const float endU, const float endV, const int layer, const int cellWidth,
-         const int cellHeight, const int baseline, const int kernStart)
+         , const uchar layer = 0
 #endif
-
+         )
   : mA(a)
   , mB(b)
   , mC(c)
@@ -80,15 +81,9 @@ public:
   , mStartV(startV)
   , mEndU(endU)
   , mEndV(endV)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   , mLayer(layer)
 #endif
-#else
-  , mLayer(layer)
-#endif
-
   , mCellWidth(cellWidth)
   , mCellHeight(cellHeight)
   , mBaseline(baseline)
@@ -134,8 +129,6 @@ private:
   float mStartV;
   float mEndU;
   float mEndV;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   uchar mLayer;
   uchar mCellWidth;
@@ -146,13 +139,6 @@ private:
   short mCellHeight;
   short mBaseline;
 #endif
-#else
-  uchar mLayer;
-  uchar mCellWidth;
-  uchar mCellHeight;
-  uchar mBaseline;
-#endif
-
   short mKernStart;
 };
 
@@ -200,12 +186,11 @@ public:
 #endif
 
   void GetSize(const CDrawStringOptions&, int&, int&, const wchar_t*, int) const;
+  void SetTexture(const TToken< CTexture >& texture);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  void SetTexture(const TToken< CTexture >& texture);
   inline TToken< CTexture > GetTexture() { return *mTexture; }
 #else
-  void SetTexture(const TToken< CTexture >& token);
   const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
   bool IsFinishedLoading();
   const CGlyph* GetGlyph(wchar_t chr) const { return InternalGetGlyph(chr); }
@@ -245,14 +230,9 @@ private:
   int mLineMargin;
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static int KernLookup(const rstl::vector< CKernPair >& kerning, int a, const int b);
-  const CGlyph* InternalGetGlyph(wchar_t c) const;
-#else
-  static int KernLookup(const rstl::vector< CKernPair >& kerning, int start, int chr);
+  static int KernLookup(const rstl::vector< CKernPair >& kerning, int start,
+                        RSTL_PRIME1_CONST int chr);
   const CGlyph* InternalGetGlyph(wchar_t chr) const;
-#endif
-
 };
 CHECK_SIZEOF(CRasterFont, 0x94)
 

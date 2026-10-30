@@ -15,13 +15,11 @@
 
 class CInputStream;
 
-#if !RSTL_PRIME1
 class CElectricDescription;
 class CGenDescription;
 class CModel;
 class CSimplePool;
 class CSwooshDescription;
-#endif
 
 class CParticleDataFactory {
 public:

@@ -26,7 +26,6 @@ CPASAnimState::CPASAnimState(CInputStream& in) : mId(pas::kAS_Invalid) {
 #else
     mParms.push_back_unsafe(CPASParmInfo(in));
 #endif
-
   }
 
   rstl::reserved_vector< CPASAnimParm::UParmValue, 8 > parms;
@@ -78,7 +77,6 @@ CPASAnimParm CPASAnimState::GetAnimParmData(int animId, uint parmIdx) const {
   rstl::vector< CPASAnimInfo >::const_iterator it =
       rstl::binary_find(mAnims.begin(), mAnims.end(), CPASAnimInfo(animId));
 #endif
-
   if (it != mAnims.end()) {
     return it->GetAnimParmData(parmIdx, mParms[parmIdx].GetParameterType());
   }
@@ -86,15 +84,8 @@ CPASAnimParm CPASAnimState::GetAnimParmData(int animId, uint parmIdx) const {
 }
 
 // The linker strips this entry point and retains its vector insertion helpers.
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CPASAnimState::AddAnimParmData(
-    int animId, const rstl::reserved_vector< CPASAnimParm, 8 >& parms) {
-#else
 void CPASAnimState::AddAnimParmData(int animId,
                                     const rstl::reserved_vector< CPASAnimParm, 8 >& parms) {
-#endif
-
   rstl::reserved_vector< CPASAnimParm::UParmValue, 8 > values;
   for (int i = 0; i < parms.size(); ++i) {
     values.push_back(parms[i].GetParameterValue());
@@ -108,7 +99,6 @@ void CPASAnimState::AddAnimParmData(int animId,
   const rstl::vector< CPASAnimInfo >::iterator it =
       rstl::lower_bound(mAnims.begin(), mAnims.end(), animInfo);
 #endif
-
   mAnims.insert(it, animInfo);
 }
 
@@ -125,7 +115,6 @@ CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >&
     for (rstl::vector< CPASAnimInfo >::const_iterator it = mAnims.begin(); it != mAnims.end();
          ++it) {
 #endif
-
       if (it->GetAnimId() == ignoreAnim) {
         continue;
       }
@@ -165,7 +154,6 @@ CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >&
 #else
         mSelectionCache.push_back_unsafe(it->GetAnimId());
 #endif
-
         weight = animWeight;
       } else if (animWeight == weight) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -174,7 +162,6 @@ CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >&
 #else
         mSelectionCache.push_back_unsafe(it->GetAnimId());
 #endif
-
         weight = animWeight;
       }
     }
@@ -215,13 +202,7 @@ float CPASAnimState::ComputePercentErrorWeight(uint idx, const CPASAnimParm& par
     error = CMath::AbsF(parm.GetInt32Value() - value.m_int);
     break;
   case CPASAnimParm::kPT_UInt32:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    range =
-        mParms[idx].GetParameterMaxValue().m_uint - mParms[idx].GetParameterMinValue().m_uint;
-#else
     range = mParms[idx].GetParameterMaxValue().m_uint - mParms[idx].GetParameterMinValue().m_uint;
-#endif
 
     if (parm.GetUint32Value() > value.m_uint) {
       error = parm.GetUint32Value() - value.m_uint;
@@ -230,13 +211,7 @@ float CPASAnimState::ComputePercentErrorWeight(uint idx, const CPASAnimParm& par
     }
     break;
   case CPASAnimParm::kPT_Float:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    range =
-        mParms[idx].GetParameterMaxValue().m_float - mParms[idx].GetParameterMinValue().m_float;
-#else
     range = mParms[idx].GetParameterMaxValue().m_float - mParms[idx].GetParameterMinValue().m_float;
-#endif
 
     error = CMath::AbsF(parm.GetReal32Value() - value.m_float);
     break;
@@ -264,26 +239,14 @@ float CPASAnimState::ComputeAngularPercentErrorWeight(uint idx, const CPASAnimPa
     error = CMath::AbsF(parm.GetInt32Value() - value.m_int);
     break;
   case CPASAnimParm::kPT_UInt32: {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    range =
-        mParms[idx].GetParameterMaxValue().m_uint - mParms[idx].GetParameterMinValue().m_uint;
-#else
     range = mParms[idx].GetParameterMaxValue().m_uint - mParms[idx].GetParameterMinValue().m_uint;
-#endif
 
     const uint parmValue = parm.GetUint32Value();
     error = parmValue > value.m_uint ? parmValue - value.m_uint : value.m_uint - parmValue;
     break;
   }
   case CPASAnimParm::kPT_Float:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    range =
-        mParms[idx].GetParameterMaxValue().m_float - mParms[idx].GetParameterMinValue().m_float;
-#else
     range = mParms[idx].GetParameterMaxValue().m_float - mParms[idx].GetParameterMinValue().m_float;
-#endif
 
     error = CMath::AbsF(parm.GetReal32Value() - value.m_float);
     break;
@@ -291,42 +254,29 @@ float CPASAnimState::ComputeAngularPercentErrorWeight(uint idx, const CPASAnimPa
     error = value.m_bool == parm.GetBoolValue() ? 0.f : 1.f;
     break;
   case CPASAnimParm::kPT_Enum:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    range =
-        mParms[idx].GetParameterMaxValue().m_int - mParms[idx].GetParameterMinValue().m_int + 1;
-#else
     range = mParms[idx].GetParameterMaxValue().m_int - mParms[idx].GetParameterMinValue().m_int + 1;
-#endif
 
     error = CMath::AbsF(parm.GetEnumValue() - value.m_int);
     break;
   }
-#if !RSTL_PRIME1
-  float ret;
-#endif
-
-  if (range > FLT_EPSILON) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+  if (range > FLT_EPSILON) {
     return rstl::min_val(
         rstl::max_val(1.f - (error > 0.5f * range ? range - error : error) / (0.5f * range), 0.f),
         1.f);
+  }
+  return error < FLT_EPSILON ? 1.f : 0.f;
 #else
+  float ret;
+  if (range > FLT_EPSILON) {
     const float weight = 1.f - (error > 0.5f * range ? range - error : error) / (0.5f * range);
     ret = rstl::min_val(rstl::max_val(weight, 0.f), 1.f);
   } else {
     ret = error < FLT_EPSILON ? 1.f : 0.f;
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return error < FLT_EPSILON ? 1.f : 0.f;
-#else
   return ret;
 #endif
-
 }
 
 int CPASAnimState::PickRandomAnimation(CRandom16& random) const {

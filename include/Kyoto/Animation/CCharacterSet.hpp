@@ -14,37 +14,44 @@
 #include "rstl/map.hpp"
 
 #include "types.h"
-
-class CInputStream;
 #else
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 #endif
+
+class CInputStream;
 
 class CCharacterSet {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharacterSet(CInputStream& in);
-  const rstl::vector< rstl::pair< int, CCharacterInfo > >& GetCharacterList() const {
 #else
   explicit CCharacterSet(CInputStream& in);
-
-  const rstl::vector< rstl::pair< int, CCECharacterInfo > >& GetCharacterList() const {
 #endif
 
+  const rstl::vector< rstl::pair< int,
+#if RSTL_PRIME1
+                                  CCharacterInfo
+#else
+                                  CCECharacterInfo
+#endif
+                                  > >&
+  GetCharacterList() const {
     return mCharacters;
   }
 
 private:
   ushort mTableCount;
+  rstl::vector< rstl::pair< int,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  rstl::vector< rstl::pair< int, CCharacterInfo > > mCharacters;
+                            CCharacterInfo
 #else
-  rstl::vector< rstl::pair< int, CCECharacterInfo > > mCharacters;
+                            CCECharacterInfo
 #endif
-
+                            > >
+      mCharacters;
 };
 CHECK_SIZEOF(CCharacterSet, 0x14)
 

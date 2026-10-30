@@ -24,14 +24,12 @@ public:
     SParticleSystem* mPrev;
 
     SParticleSystem(FourCC type, CElementGen* system)
+#else
+    SParticleSystem(FourCC type, CParticleGen* system)
+#endif
     : mType(type)
     , mSystem(system)
     , mPrev(mCurrentParticleSystem) {
-#else
-    SParticleSystem(FourCC type, CParticleGen* system)
-    : mType(type), mSystem(system), mPrev(mCurrentParticleSystem) {
-#endif
-
       mCurrentParticleSystem = this;
     }
 // TODO: verify that this Prime/Echoes difference is real
@@ -70,7 +68,9 @@ public:
   static void SetCurrentParticleSystem(SParticleSystem* system) { mCurrentParticleSystem = system; }
 #else
   static void SetCurrentParticle(CElementGen::CParticle* particle) { mCurrentParticle = particle; }
-  static void SetParticleAccessParameters(float* parameters) { mParticleAccessParameters = parameters; }
+  static void SetParticleAccessParameters(float* parameters) {
+    mParticleAccessParameters = parameters;
+  }
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real

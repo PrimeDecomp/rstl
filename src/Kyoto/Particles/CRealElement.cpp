@@ -310,19 +310,16 @@ bool CREKeyframeEmitter::GetValue(int frame, float& valOut) const {
         emitterTime %= mLoopEnd - mLoopStart;
         emitterTime += mLoopStart;
       }
-#else
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-#endif
-
       valOut = mKeys[emitterTime];
-#if RSTL_PRIME1
     } else {
       emitterTime = rstl::min_val(emitterTime, mLoopEnd - 1);
       valOut = mKeys[emitterTime];
     }
+#else
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
 #endif
-
     return false;
   }
 
@@ -333,11 +330,11 @@ bool CREKeyframeEmitter::GetValue(int frame, float& valOut) const {
                  mKeys[CParticleGlobals::GetParticleLifetimePercentage()] +
              CParticleGlobals::GetParticleLifetimePercentageRemainder() *
                  mKeys[CParticleGlobals::GetParticleLifetimePercentage() + 1];
-#if !RSTL_PRIME1
   }
   return false;
 }
 
+#if !RSTL_PRIME1
 CREKeyframeInput::CREKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
 , mUnk1(in.ReadInt32())
@@ -364,11 +361,10 @@ bool CREKeyframeInput::GetValue(int frame, float& valOut) const {
     } else {
       valOut = mKeys[idx];
     }
-#endif
-
   }
   return false;
 }
+#endif
 
 bool CREParticleAccessParameter1::GetValue(int, float& valOut) const {
   valOut = CParticleGlobals::GetParticleAccessParameters()[0];
@@ -407,16 +403,15 @@ bool CREParticleAccessParameter7::GetValue(int, float& valOut) const {
 
 bool CREParticleAccessParameter8::GetValue(int, float& valOut) const {
   valOut = CParticleGlobals::GetParticleAccessParameters()[7];
-#if !RSTL_PRIME1
   return false;
 }
 
+#if !RSTL_PRIME1
 bool CREParticleAccessParameter9::GetValue(int, float& valOut) const {
   valOut = CParticleGlobals::GetParticleAccessParameters()[8];
-#endif
-
   return false;
 }
+#endif
 
 bool CREParticleSizeOrLineLength::GetValue(int, float& valOut) const {
   valOut = CParticleGlobals::GetCurrentParticle()->mLineLengthOrSize;

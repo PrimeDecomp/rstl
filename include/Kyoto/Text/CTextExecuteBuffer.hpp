@@ -50,8 +50,8 @@ public:
   void AddRemoveColorOverride(int idx);
   void AddColorOverride(int idx, const CTextColor& color);
 #else
-  void AddColorOverride(int index, const CTextColor& color);
-  void AddRemoveColorOverride(int index);
+  void AddColorOverride(int idx, const CTextColor& color);
+  void AddRemoveColorOverride(int idx);
   void AddLineSpacing(float spacing);
   void AddLineExtraSpace(int spacing);
   void AddCharacterExtraSpace(int spacing); // Guessed name
@@ -68,15 +68,8 @@ public:
   void AddString(const wchar_t* str, const int len);
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void BeginBlock(int x, int y, int width, int height, const bool imageBaseline, ETextDirection dir,
                   EJustification just, EVerticalJustification vjust);
-#else
-  void BeginBlock(int x, int y, int width, int height, const bool imageBaseline,
-                  ETextDirection direction, EJustification justification,
-                  EVerticalJustification verticalJustification);
-#endif
 
   void EndBlock();
 
@@ -112,8 +105,6 @@ private:
 
   InstList mInstructions;
   CSaveableState mState;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CBlockInstruction* mCurBlock;
   CLineInstruction* mCurLine;
   InstList::iterator mCurWordIt;
@@ -121,27 +112,12 @@ private:
   int mCurX;
   int mCurWordX;
   int mCurWordY;
-#else
-  CBlockInstruction* mCurrentBlock;
-  CLineInstruction* mCurrentLine;
-  InstList::iterator mCurrentWord;
-  int mCurrentY;
-  int mCurrentX;
-  int mCurrentWordX;
-  int mCurrentWordY;
-#endif
 
   int mSpaceDistance;
   bool mImageBaseline;
   rstl::list< CSaveableState > mStateStack;
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTextExecuteBuffer,
-             (RSTL_VERSION >= RSTL_GM8P_00 ? 0xe0 : 0xdc))
-#else
-CHECK_SIZEOF(CTextExecuteBuffer, 0xe0)
-#endif
+CHECK_SIZEOF(CTextExecuteBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xe0 : 0xdc))
 
 #endif // _CTEXTEXECUTEBUFFER

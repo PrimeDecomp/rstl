@@ -47,7 +47,6 @@ CTransform4f CTransform4f::LookAt(const CVector3f& pos, const CVector3f& lookPos
   return CTransform4f(vRight[kDX], vLook.GetX(), vUp.GetX(), pos.GetX(), vRight[kDY], vLook.GetY(),
                       vUp.GetY(), pos.GetY(), vRight[kDZ], vLook.GetZ(), vUp.GetZ(), pos.GetZ());
 #endif
-
 }
 
 CTransform4f CTransform4f::MakeRotationsBasedOnY(const CUnitVector3f& yRot) {
@@ -69,17 +68,16 @@ CTransform4f CTransform4f::MakeRotationsBasedOnY(const CUnitVector3f& yRot) {
 
   CUnitVector3f xRot(CVector3f::Cross(yRot, v));
   return CTransform4f::FromColumns(xRot, yRot, CVector3f::Cross(xRot, yRot), CVector3f::Zero());
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 CTransform4f CTransform4f::Shear(float xy, float xz, float yx, float yz, float zx, float zy) {
   return CTransform4f(1.f, xy, xz, 0.f, //
                       yx, 1.f, yz, 0.f, //
                       zx, zy, 1.f, 0.f  //
   );
-#endif
-
 }
+#endif
 
 CTransform4f CTransform4f::RotateX(const CRelAngle& x) {
   const float sinAngle = sin(x.AsRadians());
@@ -258,7 +256,6 @@ CTransform4f CTransform4f::Translate(float x, float y, float z) {
 #else
 CTransform4f CTransform4f::Translate(const float x, const float y, const float z) {
 #endif
-
   return CTransform4f(1.f, 0.f, 0.f, x, //
                       0.f, 1.f, 0.f, y, //
                       0.f, 0.f, 1.f, z  //
@@ -344,9 +341,9 @@ CTransform4f CTransform4f::GetRotation() const{
   return CTransform4f(m00, m01, m02, 0.f, //
     m10, m11, m12, 0.f,//
     m20, m21, m22, 0.f);
-#if RSTL_PRIME1
 }
 
+#if RSTL_PRIME1
 void CTransform4f::SetRotation(const CMatrix3f& rotation) {
   m00 = rotation.Get00();
   m01 = rotation.Get01();
@@ -357,9 +354,8 @@ void CTransform4f::SetRotation(const CMatrix3f& rotation) {
   m20 = rotation.Get20();
   m21 = rotation.Get21();
   m22 = rotation.Get22();
-#endif
-
 }
+#endif
 
 void CTransform4f::SetRotation(const CTransform4f& rotation){
   m00 = rotation.Get00();
@@ -409,50 +405,15 @@ CTransform4f::CTransform4f(const CTransform4f& other) {
 }
 #endif
 
+#ifdef __MWERKS__
+CTransform4f& CTransform4f::operator=(register const CTransform4f& other) {
+  register CTransform4f& thiz = *this;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#ifdef __MWERKS__
-CTransform4f& CTransform4f::operator=(register const CTransform4f& other) {
-  register CTransform4f& thiz = *this;
   __asm__ volatile {
-    lfd f0, CTransform4f.m00(other);
-    lfd f1, CTransform4f.m02(other);
-    lfd f2, CTransform4f.m10(other);
-    stfd f0, CTransform4f.m00(thiz);
-    stfd f1, CTransform4f.m02(thiz);
-    stfd f2, CTransform4f.m10(thiz);
-    lfd f0, CTransform4f.m12(other);
-    lfd f1, CTransform4f.m20(other);
-    lfd f2, CTransform4f.m22(other);
-    stfd f0, CTransform4f.m12(thiz);
-    stfd f1, CTransform4f.m20(thiz);
-    stfd f2, CTransform4f.m22(thiz);
-  }
-
-  return *this;
-}
 #else
-CTransform4f& CTransform4f::operator=(const CTransform4f& other) {
-  m00 = other.m00;
-  m01 = other.m01;
-  m02 = other.m02;
-  m03 = other.m03;
-  m10 = other.m10;
-  m11 = other.m11;
-  m12 = other.m12;
-  m13 = other.m13;
-  m20 = other.m20;
-  m21 = other.m21;
-  m22 = other.m22;
-  m23 = other.m23;
-  return *this;
-}
-#endif
-#else
-#ifdef __MWERKS__
-CTransform4f& CTransform4f::operator=(register const CTransform4f& other) {
-  register CTransform4f& thiz = *this;
   __asm__ {
+#endif
     lfd f0, CTransform4f.m00(other);
     lfd f1, CTransform4f.m02(other);
     lfd f2, CTransform4f.m10(other);
@@ -485,7 +446,6 @@ CTransform4f& CTransform4f::operator=(const CTransform4f& other) {
   m23 = other.m23;
   return *this;
 }
-#endif
 #endif
 
 #ifdef __MWERKS__
@@ -657,14 +617,14 @@ CVector3f CTransform4f::TransposeRotate(const CVector3f& in) const {
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #ifdef __MWERKS__
 CTransform4f CTransform4f::operator*(register const CTransform4f& xf) const {
   register CTransform4f* ret;
   // Assume RVO for return value
-    // Hack to get around compiler error.
+  // Hack to get around compiler error.
   register const CTransform4f* thiz = this;
   __asm__ volatile {
+#if RSTL_PRIME1
     psq_l f0, CTransform4f.m00(thiz), 0, 0;
     psq_l f7, CTransform4f.m02(xf), 0, 0;
 
@@ -737,33 +697,7 @@ CTransform4f CTransform4f::operator*(register const CTransform4f& xf) const {
 
     psq_st f0, CTransform4f.m20(ret), 0, 0;
     psq_st f10, CTransform4f.m22(ret), 0, 0;
-    // implicit return via RVO
-  }
-}
 #else
-CTransform4f CTransform4f::operator*(const CTransform4f& xf) const {
-  return CTransform4f(m00 * xf.m00 + m01 * xf.m10 + m02 * xf.m20,
-                      m00 * xf.m01 + m01 * xf.m11 + m02 * xf.m21,
-                      m00 * xf.m02 + m01 * xf.m12 + m02 * xf.m22,
-                      m00 * xf.m03 + m01 * xf.m13 + m02 * xf.m23 + m03,
-                      m10 * xf.m00 + m11 * xf.m10 + m12 * xf.m20,
-                      m10 * xf.m01 + m11 * xf.m11 + m12 * xf.m21,
-                      m10 * xf.m02 + m11 * xf.m12 + m12 * xf.m22,
-                      m10 * xf.m03 + m11 * xf.m13 + m12 * xf.m23 + m13,
-                      m20 * xf.m00 + m21 * xf.m10 + m22 * xf.m20,
-                      m20 * xf.m01 + m21 * xf.m11 + m22 * xf.m21,
-                      m20 * xf.m02 + m21 * xf.m12 + m22 * xf.m22,
-                      m20 * xf.m03 + m21 * xf.m13 + m22 * xf.m23 + m23);
-}
-#endif
-#else
-#ifdef __MWERKS__
-CTransform4f CTransform4f::operator*(register const CTransform4f& xf) const {
-  register CTransform4f* ret;
-  // Assume RVO for return value
-  // Hack to get around compiler error.
-  register const CTransform4f* thiz = this;
-  __asm__ volatile {
     psq_l f0, CTransform4f.m00(thiz), 0, 0;
     psq_l f7, CTransform4f.m02(xf), 0, 0;
     ps_merge11 f1, f0, f0;
@@ -816,6 +750,7 @@ CTransform4f CTransform4f::operator*(register const CTransform4f& xf) const {
     psq_st f10, CTransform4f.m20(ret), 0, 0;
     ps_add f11, f3, f11;
     psq_st f11, CTransform4f.m22(ret), 0, 0;
+#endif
     // implicit return via RVO
   }
 }
@@ -834,7 +769,6 @@ CTransform4f CTransform4f::operator*(const CTransform4f& xf) const {
                       m20 * xf.m02 + m21 * xf.m12 + m22 * xf.m22,
                       m20 * xf.m03 + m21 * xf.m13 + m22 * xf.m23 + m23);
 }
-#endif
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real

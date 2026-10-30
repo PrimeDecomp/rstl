@@ -6,14 +6,7 @@ CToken::CToken(CObjectReference* ref) : mObjRef(ref), mLockHeld(false) {
   mObjRef->AddReference();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CToken::CToken(IObj* obj)
-: mObjRef(rs_new CObjectReference(obj)), mLockHeld(false) {
-#else
 CToken::CToken(IObj* obj) : mObjRef(rs_new CObjectReference(obj)), mLockHeld(false) {
-#endif
-
   mObjRef->AddReference();
   Lock();
 }
@@ -52,13 +45,14 @@ void CToken::Lock() {
 }
 
 void CToken::Unlock() {
+  if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  if (mLockHeld == 0) {
+      mLockHeld == 0
 #else
-  if (!mLockHeld) {
+      !mLockHeld
 #endif
-
+  ) {
     return;
   }
 

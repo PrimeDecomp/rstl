@@ -55,7 +55,7 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void SetCurrent(const CModelFlags& flags, const CCubeSurface& surface,
-                  const CCubeModel& mode) const;
+                  const CCubeModel& model) const;
   void SetCurrentBlack() const;
   uint GetTextureCount() const {
     const uchar* data = GetData();

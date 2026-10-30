@@ -19,10 +19,10 @@ public:
   explicit CSegStatementSet(void* storage);
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CSegStatement& operator[](const CSegId& id) { return mSegData[id.val()]; }
   const CSegStatement& operator[](const CSegId& id) const { return mSegData[id.val()]; }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 
   CSegStatement& Statement(const CSegId& id) { return mSegData[id.val()]; }
   const CSegStatement& GetData(const CSegId& id) const { return mSegData[id.val()]; }
@@ -33,9 +33,6 @@ public:
 
   void Add(const CSegIdList& list, const CCharLayoutInfo& info, const CSegStatementSet& set,
            float weight);
-#else
-  CSegStatement& operator[](const CSegId& seg) { return mSegData[seg.val()]; }
-  const CSegStatement& operator[](const CSegId& seg) const { return mSegData[seg.val()]; }
 #endif
 
 protected:
@@ -63,7 +60,6 @@ public:
 #if RSTL_PRIME1
   CStackSegStatementSet();
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

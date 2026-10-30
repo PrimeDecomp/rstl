@@ -57,17 +57,9 @@ void IMetaAnim::PutTo(COutputStream& out) const {
 }
 
 CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimReader& anim) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (ind.IsTime())
-#else
   if (ind.IsTime()) {
-#endif
-
     return ind.GetTime();
-#if !RSTL_PRIME1
   }
-#endif
 
   CBoolPOINode nodes[64];
 // TODO: verify that this Prime/Echoes difference is real
@@ -78,20 +70,18 @@ CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimRea
   const uint nameHash = ind.GetNameHash();
   const uint count = anim.GetBoolPOIList(anim.VGetTimeRemaining(), nodes, 64, 0, 0);
 #endif
-
   for (uint i = 0; i < count; ++i) {
     const CBoolPOINode& node = nodes[i];
+    if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (strcmp(node.GetString().data(), name) == 0 && node.GetValue())
+        strcmp(node.GetString().data(), name) == 0
 #else
-    if (node.GetNameHash() == nameHash && node.GetValue()) {
+        node.GetNameHash() == nameHash
 #endif
-
+        && node.GetValue()) {
       return node.GetTime();
-#if !RSTL_PRIME1
     }
-#endif
 
   }
   return CCharAnimTime::ZeroFlat();
@@ -108,7 +98,6 @@ void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
     SAdvancementResults result = anim.VAdvanceView(remaining);
     remaining = result.mRemTime;
 #endif
-
   }
 }
 

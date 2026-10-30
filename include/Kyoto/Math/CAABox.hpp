@@ -7,14 +7,9 @@
 
 class CInputStream;
 
-#if RSTL_PRIME1
 class CLineSeg;
-#endif
-
 class CPlane;
-#if !RSTL_PRIME1
 class CQuad;
-#endif
 
 class CTransform4f;
 class CTri;
@@ -49,14 +44,8 @@ public:
 #endif
 
   CAABox(const CVector3f& min, const CVector3f& max);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAABox(const float minX, const float minY, const float minZ, const float maxX, const float maxY,
-         const float maxZ)
-#else
-  CAABox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
-#endif
-
+  CAABox(RSTL_PRIME1_CONST float minX, RSTL_PRIME1_CONST float minY, RSTL_PRIME1_CONST float minZ,
+         RSTL_PRIME1_CONST float maxX, RSTL_PRIME1_CONST float maxY, RSTL_PRIME1_CONST float maxZ)
   : min(minX, minY, minZ), max(maxX, maxY, maxZ) {}
   CAABox(CInputStream& in);
   // CAABox(const CAABox& other)
@@ -106,7 +95,6 @@ public:
     AccumulateBounds(box.min);
     AccumulateBounds(box.max);
 #endif
-
   }
 #if RSTL_PRIME1
   void Include(const CVector3f& vec) { AccumulateBounds(vec); }
@@ -177,8 +165,6 @@ CHECK_SIZEOF(CAABox, 0x18)
 #if !RSTL_PRIME1
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CAABox)
-} // namespace rstl
-namespace rstl {
 RSTL_DECLARE_DIRECT_CONSTRUCTION(CAABox)
 } // namespace rstl
 #endif

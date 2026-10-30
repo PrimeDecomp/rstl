@@ -41,8 +41,7 @@ public:
 
   CVector3f GetTranslation() const {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3ME_00
+#if (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00) || (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
     float x, y, z;
     z = m23;
     y = m13;
@@ -51,23 +50,10 @@ public:
 #else
     return CVector3f(m03, m13, m23);
 #endif
-#else
-#if RSTL_VERSION >= RSTL_R32J
-    float x, y, z;
-    z = m23;
-    y = m13;
-    x = m03;
-    return CVector3f(x, y, z);
-#else
-    return CVector3f(m03, m13, m23);
-#endif
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CVector3f GetRight() const {
-#if RSTL_VERSION >= RSTL_R3IJ
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     float x, y, z;
     z = m20;
     y = m10;
@@ -76,23 +62,7 @@ public:
 #else
     return CVector3f(m00, m10, m20);
 #endif
-#else
-  CVector3f GetRight() const { return CVector3f(m00, m10, m20); }
-  const CVector3f GetForward() const {
-#if RSTL_VERSION >= RSTL_R32J
-    float x, y, z;
-    z = m21;
-    y = m11;
-    x = m01;
-    return CVector3f(x, y, z);
-#else
-    return CVector3f(m01, m11, m21);
-#endif
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   const CVector3f GetForward() const {
 #if RSTL_VERSION >= RSTL_R3IJ
     float x, y, z;
@@ -105,7 +75,8 @@ public:
 #endif
   }
   CVector3f GetUp() const {
-#if RSTL_VERSION >= RSTL_R3IJ
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     float x, y, z;
     z = m22;
     y = m12;
@@ -115,9 +86,6 @@ public:
     return CVector3f(m02, m12, m22);
 #endif
   }
-#else
-  CVector3f GetUp() const { return CVector3f(m02, m12, m22); }
-#endif
 
   ConstMtxPtr GetCStyleMatrix() const { return reinterpret_cast< ConstMtxPtr >(this); }
 
@@ -153,12 +121,9 @@ public:
     m22 = col.GetZ();
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CVector3f GetColumn(EDimY dim) const { return CVector3f(m01, m11, m21); }
-#else
   const CVector3f GetColumn(EDimY dim) const {
-#if RSTL_VERSION >= RSTL_R32J
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
     float x, y, z;
     z = m21;
     y = m11;
@@ -168,7 +133,6 @@ public:
     return CVector3f(m01, m11, m21);
 #endif
   }
-#endif
 
   const CVector3f GetColumn(EDimZ dim) const { return CVector3f(m02, m12, m22); }
   CVector3f GetColumn(int column) const {
@@ -235,7 +199,6 @@ public:
 #else
     return TransposeRotate(CVector3f(in.GetX() - m03, in.GetY() - m13, in.GetZ() - m23));
 #endif
-
   }
   CVector3f TransposeRotate(const CVector3f& in) const;
 
@@ -255,7 +218,6 @@ public:
     m13 += vec.GetY();
     m23 += vec.GetZ();
 #endif
-
   }
 #if !RSTL_PRIME1
   void AddTranslationX(float x) { m03 += x; }
@@ -302,16 +264,11 @@ private:
 
   static const CTransform4f sIdentity;
 };
-#if !RSTL_PRIME1
 CHECK_SIZEOF(CTransform4f, 0x30)
-#endif
 
 bool operator==(const CTransform4f& lhs, const CTransform4f& rhs);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTransform4f, 0x30)
-#else
+#if !RSTL_PRIME1
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CTransform4f)
 RSTL_DECLARE_BITWISE_CONSTRUCTION(CTransform4f)

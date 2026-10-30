@@ -242,19 +242,16 @@ bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
         emitterTime = emitterTime % (mLoopEnd - mLoopStart);
         emitterTime += mLoopStart;
       }
-#else
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-#endif
-
       valOut = mKeys[emitterTime];
-#if RSTL_PRIME1
     } else {
       emitterTime = rstl::min_val(emitterTime, mLoopEnd - 1);
       valOut = mKeys[emitterTime];
     }
+#else
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
 #endif
-
     return false;
   }
 
@@ -311,9 +308,7 @@ bool CCEParticleColor::GetValue(int frame, CColor& colorOut) const {
 
 #if !RSTL_PRIME1
 CCEMultiply::CCEMultiply(CColorElement* a, CColorElement* b) : x4_(a), x8_(b) {}
-#endif
 
-#if !RSTL_PRIME1
 CCEMultiply::~CCEMultiply() {
   delete x4_;
   delete x8_;

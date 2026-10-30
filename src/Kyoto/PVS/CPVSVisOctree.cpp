@@ -7,9 +7,7 @@
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #if RSTL_VERSION >= RSTL_R32J
 #include "string.h"
-#endif
 
-#if RSTL_VERSION >= RSTL_R32J
 #include "CPVSVisOctree.inc"
 #endif
 #endif

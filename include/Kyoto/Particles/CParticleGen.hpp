@@ -14,13 +14,11 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
 
-#if RSTL_PRIME1
 class CAABox;
 class CColor;
 class CLight;
 class CTransform4f;
 class CVector3f;
-#endif
 
 class CWarp;
 

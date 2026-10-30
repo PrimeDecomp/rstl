@@ -13,8 +13,6 @@ void CLineInstruction::Invoke(CFontRenderState& state, CTextRenderBuffer* buf) c
   state.SetLine(this);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 void CLineInstruction::PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const {
 #if RSTL_VERSION < RSTL_GM8P_00
   if (state.GetLine() != nullptr) {
@@ -23,9 +21,6 @@ void CLineInstruction::PageInvoke(CFontRenderState& state, CTextRenderBuffer* bu
   Invoke(state, buf);
 #endif
 }
-#else
-void CLineInstruction::PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const {}
-#endif
 
 void CLineInstruction::InvokeTTB(CFontRenderState& state) const {
   switch (mJustification) {
@@ -37,25 +32,12 @@ void CLineInstruction::InvokeTTB(CFontRenderState& state) const {
     break;
   case kJustification_Center:
   case kJustification_CenterMono:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() / 2 - mCurX / 2);
-#else
-    state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() / 2 -
-               mCurrentX / 2);
-#endif
-
     break;
   case kJustification_NCenter:
     if (mWordCount == 1) {
       state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() / 2 -
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
                  mCurX / 2);
-#else
-                 mCurrentX / 2);
-#endif
-
     } else {
       state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() / 2 -
                  state.GetBlock()->GetLineX() / 2);
@@ -63,13 +45,7 @@ void CLineInstruction::InvokeTTB(CFontRenderState& state) const {
     break;
   case kJustification_Right:
   case kJustification_RightMono:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() - mCurX);
-#else
-    state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() - mCurrentX);
-#endif
-
     break;
   case kJustification_NRight:
     state.SetX(state.GetBlock()->GetOutputX() + state.GetBlock()->GetOutputWidth() -

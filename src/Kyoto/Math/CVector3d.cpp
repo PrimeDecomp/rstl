@@ -39,22 +39,14 @@ CVector3d CVector3d::AsNormalized() const {
 
 CVector3f CVector3d::AsCVector3f() const {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if RSTL_PRIME1 || RSTL_VERSION < RSTL_R32J
   float z = mZ;
   float y = mY;
   float x = mX;
   return CVector3f(x, y, z);
 #else
-#if RSTL_VERSION >= RSTL_R32J
   return CVector3f(mX, mY, mZ);
-#else
-  float z = mZ;
-  float y = mY;
-  float x = mX;
-  return CVector3f(x, y, z);
 #endif
-#endif
-
 }
 
 double CVector3d::Dot(const CVector3d& a, const CVector3d& b) {
@@ -84,7 +76,6 @@ CVector3d operator+(const CVector3d& lhs, const CVector3d& rhs) {
   const double z = lhs.GetZ() + rhs.GetZ();
   return CVector3d(x, y, z);
 #endif
-
 }
 
 CVector3d operator-(const CVector3d& lhs, const CVector3d& rhs) {
@@ -97,7 +88,6 @@ CVector3d operator-(const CVector3d& lhs, const CVector3d& rhs) {
   const double z = lhs.GetZ() - rhs.GetZ();
   return CVector3d(x, y, z);
 #endif
-
 }
 
 #if !RSTL_PRIME1
@@ -114,6 +104,5 @@ CVector3d operator*(double lhs, const CVector3d& rhs) {
   const double z = lhs * rhs.GetZ();
   return CVector3d(x, y, z);
 #endif
-
 }
 

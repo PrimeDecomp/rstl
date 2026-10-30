@@ -48,16 +48,15 @@ public:
 
 private:
   CObjectReference* mObjRef;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   union {
-#endif
-
     bool mLockHeld;
-#if RSTL_PRIME1
     int mLockHeld_init;
   };
+#else
+  bool mLockHeld;
 #endif
-
 };
 
 #endif // _CTOKEN

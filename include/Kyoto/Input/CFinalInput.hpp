@@ -26,15 +26,17 @@ class CControllerData;
 #ifdef __MWERKS__
 #pragma cpp_extensions on
 #endif
+#endif
+
 class CFinalInput {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
   static const float kInput_AnalogOnThreshhold;
   static const float kInput_AnalogTriggerOnThreshhold;
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class CFinalInput {
-#else
+#if !RSTL_PRIME1
   // Guessed names for Wii device queries, corroborated by GUI direction/button consumers.
   enum EWiiInput {
     kWI_A = 3,
@@ -50,10 +52,9 @@ class CFinalInput {
   };
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
 public:
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   static const float kAnalogAxisDigitalThreshold;
   static const float kRollDigitalThreshold;
   static const float kPitchDigitalThreshold;
@@ -131,15 +132,10 @@ public:
     kSC_NunchukZMaxBeforeMin = 10,
     kSC_NunchukZMinBeforeMax = 11,
   };
-  #else
+#endif
 
-  static const float kInput_AnalogOnThreshhold;
-  static const float kInput_AnalogTriggerOnThreshhold;
-
-public:
-  #endif
-#else
-public:
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   CFinalInput();
   // Guessed Wii snapshot type name and input-type meaning.
   CFinalInput(int channel, float dt, const CControllerData& data, uint inputType);

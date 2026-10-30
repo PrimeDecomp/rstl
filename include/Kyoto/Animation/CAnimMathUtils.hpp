@@ -2,7 +2,6 @@
 #define _CANIMMATHUTILS
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Math/CMath.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1

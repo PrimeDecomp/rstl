@@ -89,14 +89,14 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , mHaveEPSM(false)
 , mHaveSSWH(false)
 , mHaveLWD(false)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mTransformDirty(true) {
-#else
 , mTransformDirty(true)
+#if !RSTL_PRIME1
 , mTranslationDirty(false)
 , mOrientationDirty(false)
-, mGlobalScaleDirty(false) {
+, mGlobalScaleDirty(false)
+#endif
+{
+#if !RSTL_PRIME1
   SetDrawFlags(mElecDesc->mDFLG);
 #endif
 
@@ -117,14 +117,7 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   if (mElecDesc->mSSWH) {
     mHaveSSWH = true;
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mSwooshGenerators.push_back(
-          rs_new CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
-#else
       mSwooshGenerators.push_back(rs_new CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
-#endif
-
       CParticleSwoosh& swoosh = *mSwooshGenerators.back();
       const int count = swoosh.GetSwooshCount();
       for (int j = 0; j < count; ++j) {
@@ -134,64 +127,34 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
     }
   }
   ++mSSEG;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mCalculatedVerts =
-      rstl::vector< CVector3f, rstl::aligned_allocator >(mSSEG, CVector3f::Zero(),
-#else
-  mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(mSSEG, CVector3f::Zero(),
-#endif
-
-                                                        rstl::aligned_allocator());
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mFractalOffsets =
-      rstl::vector< CVector3f >(mSSEG, CVector3f::Zero(), rstl::rmemory_allocator());
-#else
+  mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(
+      mSSEG, CVector3f::Zero(), rstl::aligned_allocator());
   mFractalOffsets = rstl::vector< CVector3f >(mSSEG, CVector3f::Zero(), rstl::rmemory_allocator());
-#endif
-
   mFractalMags = rstl::vector< float >(mSSEG, 0.f, rstl::rmemory_allocator());
   if (mElecDesc->mGPSM) {
     mHaveGPSM = true;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mGpsmGenerators.reserve(mSCNT);
-#else
     mGPSMGenerators.reserve(mSCNT);
-#endif
-
     for (int i = 0; i < mSCNT; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      mGpsmGenerators.push_back(rs_new CElementGen(mElecDesc->mGPSM->GetToken()));
-      mGpsmGenerators.back()->SetParticleEmission(false);
+      mGPSMGenerators.push_back(rs_new CElementGen(mElecDesc->mGPSM->GetToken()));
 #else
       mGPSMGenerators.push_back_unsafe(rs_new CElementGen(mElecDesc->mGPSM->GetToken()));
-      mGPSMGenerators.back()->SetParticleEmission(false);
 #endif
-
+      mGPSMGenerators.back()->SetParticleEmission(false);
     }
   }
   if (mElecDesc->mEPSM) {
     mHaveEPSM = true;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mEpsmGenerators.reserve(mSCNT);
-#else
     mEPSMGenerators.reserve(mSCNT);
-#endif
-
     for (int i = 0; i < mSCNT; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      mEpsmGenerators.push_back(rs_new CElementGen(mElecDesc->mEPSM->GetToken()));
-      mEpsmGenerators.back()->SetParticleEmission(false);
+      mEPSMGenerators.push_back(rs_new CElementGen(mElecDesc->mEPSM->GetToken()));
 #else
       mEPSMGenerators.push_back_unsafe(rs_new CElementGen(mElecDesc->mEPSM->GetToken()));
-      mEPSMGenerators.back()->SetParticleEmission(false);
 #endif
-
+      mEPSMGenerators.back()->SetParticleEmission(false);
     }
   }
   if (mElecDesc->mLWD1 || mElecDesc->mLWD2 || mElecDesc->mLWD3) {
@@ -348,14 +311,7 @@ void CParticleElectric::CalculatePoints() {
 
 void CParticleElectric::CalculateFractal(int start, int end, float ampl, float ampd) {
   float mag;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const float ratio =
-      static_cast< float >(end - start) / static_cast< float >(mFractalMags.size());
-#else
   const float ratio = static_cast< float >(end - start) / static_cast< float >(mFractalMags.size());
-#endif
-
   const float startMag = mFractalMags[start];
   const int mid = (start + end) / 2;
   mag = ratio * ampl;
@@ -378,26 +334,14 @@ const bool CParticleElectric::Update(double dt) {
   bool updated = false;
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (!mGpsmGenerators[i]->IsSystemDeletable()) {
-#else
       if (!mGPSMGenerators[i]->IsSystemDeletable()) {
-#endif
-
         break;
       }
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (!mEpsmGenerators[i]->IsSystemDeletable()) {
-#else
       if (!mEPSMGenerators[i]->IsSystemDeletable()) {
-#endif
-
         break;
       }
     }
@@ -418,45 +362,37 @@ const bool CParticleElectric::Update(double dt) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
+        mSwooshGenerators[it->mIdx]->SetGlobalTranslation(translation);
+        mSwooshGenerators[it->mIdx]->SetGlobalOrientation(orientation);
+        mSwooshGenerators[it->mIdx]->SetGlobalScale(mGlobalScale);
+        mSwooshGenerators[it->mIdx]->SetLocalScale(mLocalScale);
+      }
 #else
       for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
            it != mElectricManagers.end(); ++it) {
         if (mTranslationDirty) {
-#endif
-
-        mSwooshGenerators[it->mIdx]->SetGlobalTranslation(translation);
-#if !RSTL_PRIME1
+          mSwooshGenerators[it->mIdx]->SetGlobalTranslation(translation);
         }
         if (mOrientationDirty) {
-#endif
-
-        mSwooshGenerators[it->mIdx]->SetGlobalOrientation(orientation);
-#if !RSTL_PRIME1
+          mSwooshGenerators[it->mIdx]->SetGlobalOrientation(orientation);
         }
         if (mGlobalScaleDirty) {
-#endif
-
-        mSwooshGenerators[it->mIdx]->SetGlobalScale(mGlobalScale);
-#if !RSTL_PRIME1
+          mSwooshGenerators[it->mIdx]->SetGlobalScale(mGlobalScale);
         }
         if (mLocalScaleDirty) {
-#endif
-
-        mSwooshGenerators[it->mIdx]->SetLocalScale(mLocalScale);
-#if !RSTL_PRIME1
+          mSwooshGenerators[it->mIdx]->SetLocalScale(mLocalScale);
         }
-#endif
-
       }
+#endif
     }
     if (mHaveGPSM) {
       for (int i = 0; i < mSCNT; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-        mGpsmGenerators[i]->SetGlobalTranslation(translation);
-        mGpsmGenerators[i]->SetGlobalOrientation(orientation);
-        mGpsmGenerators[i]->SetGlobalScale(mGlobalScale);
-        mGpsmGenerators[i]->SetLocalScale(mLocalScale);
+        mGPSMGenerators[i]->SetGlobalTranslation(translation);
+        mGPSMGenerators[i]->SetGlobalOrientation(orientation);
+        mGPSMGenerators[i]->SetGlobalScale(mGlobalScale);
+        mGPSMGenerators[i]->SetLocalScale(mLocalScale);
 #else
         if (mTranslationDirty) {
           mGPSMGenerators[i]->SetGlobalTranslation(translation);
@@ -478,10 +414,10 @@ const bool CParticleElectric::Update(double dt) {
       for (int i = 0; i < mSCNT; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-        mEpsmGenerators[i]->SetGlobalTranslation(translation);
-        mEpsmGenerators[i]->SetGlobalOrientation(orientation);
-        mEpsmGenerators[i]->SetGlobalScale(mGlobalScale);
-        mEpsmGenerators[i]->SetLocalScale(mLocalScale);
+        mEPSMGenerators[i]->SetGlobalTranslation(translation);
+        mEPSMGenerators[i]->SetGlobalOrientation(orientation);
+        mEPSMGenerators[i]->SetGlobalScale(mGlobalScale);
+        mEPSMGenerators[i]->SetLocalScale(mLocalScale);
 #else
         if (mTranslationDirty) {
           mEPSMGenerators[i]->SetGlobalTranslation(translation);
@@ -517,45 +453,21 @@ const bool CParticleElectric::Update(double dt) {
     if (mHaveGPSM) {
       if (mCurrentFrame >= mLIFE) {
         for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          mGpsmGenerators[i]->EndLifetime();
-#else
           mGPSMGenerators[i]->EndLifetime();
-#endif
-
         }
       }
       for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        mGpsmGenerators[i]->Update(1.0 / 60.0);
-#else
         mGPSMGenerators[i]->Update(1.0 / 60.0);
-#endif
-
       }
     }
     if (mHaveEPSM) {
       if (mCurrentFrame >= mLIFE) {
         for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          mEpsmGenerators[i]->EndLifetime();
-#else
           mEPSMGenerators[i]->EndLifetime();
-#endif
-
         }
       }
       for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        mEpsmGenerators[i]->Update(1.0 / 60.0);
-#else
         mEPSMGenerators[i]->Update(1.0 / 60.0);
-#endif
-
       }
     }
     updated = true;
@@ -573,7 +485,6 @@ void CParticleElectric::Render() {
 #if !RSTL_PRIME1
   if (ShouldDraw()) {
 #endif
-
   if (!mElectricManagers.empty()) {
     if (mTransformDirty) {
       UpdateCachedTransform();
@@ -587,27 +498,17 @@ void CParticleElectric::Render() {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mGpsmGenerators[i]->Render();
-#else
-        mGPSMGenerators[i]->Render();
-#endif
-
+      mGPSMGenerators[i]->Render();
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mEpsmGenerators[i]->Render();
-#else
-        mEPSMGenerators[i]->Render();
-      }
-#endif
-
+      mEPSMGenerators[i]->Render();
     }
   }
+#if !RSTL_PRIME1
+  }
+#endif
   mRenderTime = CStopwatch::GetGlobalTime() - startTime;
 }
 
@@ -636,24 +537,14 @@ void CParticleElectric::RenderLines() {
   CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
   CGraphics::SetModelMatrix(CTransform4f::Translate(mGlobalTranslation) * mGlobalOrientation *
                             CTransform4f::Translate(mTranslation) * mOrientation *
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                            CTransform4f::Scale(mGlobalScale) *
-                            CTransform4f::Scale(mLocalScale));
-#else
                             CTransform4f::Scale(mGlobalScale) * CTransform4f::Scale(mLocalScale));
-#endif
-
   CGraphics::SetCullMode(kCM_None);
 #if !RSTL_PRIME1
   const bool textured = mElecDesc->mTEXR != nullptr;
 #endif
 
   SetupLineGXMaterial();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
-#else
+#if !RSTL_PRIME1
   if (textured) {
     mElecDesc->mTEXR->GetValueTexture(0)->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
     for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
@@ -675,10 +566,14 @@ void CParticleElectric::RenderLines() {
       }
     }
   } else {
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
+#else
     for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
          it != mElectricManagers.end(); ++it) {
 #endif
-
     CLineManager& line = *mLineManagers[it->mIdx];
     if (mElecDesc->mLWD1) {
       DrawLineStrip(line.mVerts, line.mWidth1, line.mColor1);
@@ -727,7 +622,6 @@ void CParticleElectric::SetupLineGXMaterial() {
                         GX_PTIDENTITY);
   } else {
 #endif
-
   static const GXVtxDescList vtxDesc[] = {{GX_VA_POS, GX_DIRECT}, {GX_VA_NULL, GX_NONE}};
   CGX::SetVtxDescv(vtxDesc);
   CGX::SetNumChans(1);
@@ -740,10 +634,10 @@ void CParticleElectric::SetupLineGXMaterial() {
   CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
   CGX::SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
   CGX::SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
-}
 #if !RSTL_PRIME1
-}
+  }
 #endif
+}
 
 void CParticleElectric::DrawLineStrip(
     const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
@@ -757,10 +651,12 @@ void CParticleElectric::DrawLineStrip(
     GXPosition3f32(vert[kDX], vert[kDY], vert[kDZ]);
 #if !RSTL_PRIME1
     CGraphics::DelayStreamVertex();
+#endif
   }
   CGX::End();
 }
 
+#if !RSTL_PRIME1
 void CParticleElectric::DrawTexturedLineStrip(
     const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
     const CColor& color, const SUVElementSet& uvs) {
@@ -779,11 +675,10 @@ void CParticleElectric::DrawTexturedLineStrip(
     u += du;
     v += dv;
     CGraphics::DelayStreamVertex();
-#endif
-
   }
   CGX::End();
 }
+#endif
 
 void CParticleElectric::AddElectricalEffects() {
   float rate = 0.f;
@@ -847,14 +742,7 @@ void CParticleElectric::CreateNewParticles(int count) {
       if (mElecDesc->mSLIF) {
         mElecDesc->mSLIF->GetValue(mCurrentFrame, lifetime);
       }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mElectricManagers.push_back(
-          CParticleElectricManager(allocIdx, lifetime, mCurrentFrame));
-#else
       mElectricManagers.push_back(CParticleElectricManager(allocIdx, lifetime, mCurrentFrame));
-#endif
-
       CParticleElectricManager& manager = mElectricManagers.back();
       int frame = mCurrentFrame - manager.mStartFrame;
       CParticleGlobals::SetParticleLifetime(manager.mEndFrame - manager.mStartFrame);
@@ -905,52 +793,24 @@ void CParticleElectric::CreateNewParticles(int count) {
       }
       if (mHaveGPSM) {
         for (int j = 0; j < mSCNT; ++j) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          if (!mGpsmGenerators[j]->GetParticleEmission()) {
-#else
           if (!mGPSMGenerators[j]->GetParticleEmission()) {
-#endif
-
             const CTransform4f scale =
                 CTransform4f::Scale(mGlobalScale) * CTransform4f::Scale(mLocalScale);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            mGpsmGenerators[j]->SetTranslation(scale * mCalculatedVerts.front());
-            mGpsmGenerators[j]->SetParticleEmission(true);
-            manager.mGpsmIdx = j;
-#else
             mGPSMGenerators[j]->SetTranslation(scale * mCalculatedVerts.front());
             mGPSMGenerators[j]->SetParticleEmission(true);
             manager.mGPSMIdx = j;
-#endif
-
             break;
           }
         }
       }
       if (mHaveEPSM) {
         for (int j = 0; j < mSCNT; ++j) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          if (!mEpsmGenerators[j]->GetParticleEmission()) {
-#else
           if (!mEPSMGenerators[j]->GetParticleEmission()) {
-#endif
-
             const CTransform4f scale =
                 CTransform4f::Scale(mGlobalScale) * CTransform4f::Scale(mLocalScale);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            mEpsmGenerators[j]->SetTranslation(scale * mCalculatedVerts.back());
-            mEpsmGenerators[j]->SetParticleEmission(true);
-            manager.mEpsmIdx = j;
-#else
             mEPSMGenerators[j]->SetTranslation(scale * mCalculatedVerts.back());
             mEPSMGenerators[j]->SetParticleEmission(true);
             manager.mEPSMIdx = j;
-#endif
-
             break;
           }
         }
@@ -965,43 +825,25 @@ void CParticleElectric::CreateNewParticles(int count) {
 }
 
 void CParticleElectric::UpdateElectricalEffects() {
+#if !RSTL_PRIME1
+  CParticleGlobals::SParticleSystem system('ELSC', this);
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end();) {
 #else
-  CParticleGlobals::SParticleSystem system('ELSC', this);
   for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
        it != mElectricManagers.end();) {
 #endif
 
     CParticleElectricManager& manager = *it;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if (manager.mSlif <= 1) {
-#else
     if (manager.mSLIF <= 1) {
-#endif
-
       mAllocated[manager.mIdx] = false;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (manager.mGpsmIdx != -1) {
-        mGpsmGenerators[manager.mGpsmIdx]->SetParticleEmission(false);
-#else
       if (manager.mGPSMIdx != -1) {
         mGPSMGenerators[manager.mGPSMIdx]->SetParticleEmission(false);
-#endif
-
       }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (manager.mEpsmIdx != -1) {
-        mEpsmGenerators[manager.mEpsmIdx]->SetParticleEmission(false);
-#else
       if (manager.mEPSMIdx != -1) {
         mEPSMGenerators[manager.mEPSMIdx]->SetParticleEmission(false);
-#endif
-
       }
       it = mElectricManagers.erase(it);
       continue;
@@ -1024,13 +866,7 @@ void CParticleElectric::UpdateElectricalEffects() {
     if (mHaveLWD) {
       UpdateLine(manager.mIdx, frame);
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    --manager.mSlif;
-#else
     --manager.mSLIF;
-#endif
-
     ++it;
   }
 }
@@ -1103,30 +939,15 @@ void CParticleElectric::BuildBounds() {
       bounds.Include(mLineManagers[it->mIdx]->mBounds);
     }
     if (!bounds.Invalid()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mSystemBounds.Include(bounds.GetTransformedAABox(
-          CTransform4f::Translate(mGlobalTranslation) * mGlobalOrientation *
-          CTransform4f::Translate(mTranslation) * mOrientation *
-          CTransform4f::Scale(mGlobalScale)));
-#else
       mSystemBounds.Include(
           bounds.GetTransformedAABox(CTransform4f::Translate(mGlobalTranslation) *
                                      mGlobalOrientation * CTransform4f::Translate(mTranslation) *
                                      mOrientation * CTransform4f::Scale(mGlobalScale)));
-#endif
-
     }
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      rstl::optional_object< CAABox > bounds = mGpsmGenerators[i]->GetBounds();
-#else
       rstl::optional_object< CAABox > bounds = mGPSMGenerators[i]->GetBounds();
-#endif
-
       if (bounds) {
         mSystemBounds.Include(*bounds);
       }
@@ -1134,13 +955,7 @@ void CParticleElectric::BuildBounds() {
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      rstl::optional_object< CAABox > bounds = mEpsmGenerators[i]->GetBounds();
-#else
       rstl::optional_object< CAABox > bounds = mEPSMGenerators[i]->GetBounds();
-#endif
-
       if (bounds) {
         mSystemBounds.Include(*bounds);
       }
@@ -1170,26 +985,14 @@ bool CParticleElectric::IsSystemDeletable() const {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (!mGpsmGenerators[i]->IsSystemDeletable()) {
-#else
       if (!mGPSMGenerators[i]->IsSystemDeletable()) {
-#endif
-
         return false;
       }
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (!mEpsmGenerators[i]->IsSystemDeletable()) {
-#else
       if (!mEPSMGenerators[i]->IsSystemDeletable()) {
-#endif
-
         return false;
       }
     }
@@ -1218,27 +1021,18 @@ int CParticleElectric::GetParticleCount() const {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      count += mGpsmGenerators[i]->GetParticleCount();
-#else
       count += mGPSMGenerators[i]->GetParticleCount();
-#endif
-
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      count += mEpsmGenerators[i]->GetParticleCount();
-#else
       count += mEPSMGenerators[i]->GetParticleCount();
     }
   }
   return count;
 }
 
+#if !RSTL_PRIME1
 int CParticleElectric::GetSystemCount() const {
   int count = mElectricManagers.size();
   if (mHaveGPSM) {
@@ -1249,12 +1043,11 @@ int CParticleElectric::GetSystemCount() const {
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
       count += mEPSMGenerators[i]->GetSystemCount();
-#endif
-
     }
   }
   return count;
 }
+#endif
 
 void CParticleElectric::ForceParticleCreation(int count) {
   CGlobalRandom random(mRandState);
@@ -1292,12 +1085,12 @@ void CParticleElectric::SetGlobalTranslation(const CVector3f& translation) {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mGpsmGenerators[i]->SetGlobalTranslation(mGlobalTranslation);
+      mGPSMGenerators[i]->SetGlobalTranslation(mGlobalTranslation);
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mEpsmGenerators[i]->SetGlobalTranslation(mGlobalTranslation);
+      mEPSMGenerators[i]->SetGlobalTranslation(mGlobalTranslation);
     }
   }
 #else
@@ -1318,12 +1111,12 @@ void CParticleElectric::SetGlobalOrientation(const CTransform4f& orientation) {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mGpsmGenerators[i]->SetGlobalOrientation(mGlobalOrientation);
+      mGPSMGenerators[i]->SetGlobalOrientation(mGlobalOrientation);
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mEpsmGenerators[i]->SetGlobalOrientation(mGlobalOrientation);
+      mEPSMGenerators[i]->SetGlobalOrientation(mGlobalOrientation);
     }
   }
 #else
@@ -1353,12 +1146,12 @@ void CParticleElectric::SetLocalScale(const CVector3f& scale) {
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mGpsmGenerators[i]->SetLocalScale(mLocalScale);
+      mGPSMGenerators[i]->SetLocalScale(mLocalScale);
     }
   }
   if (mHaveEPSM) {
     for (int i = 0; i < mSCNT; ++i) {
-      mEpsmGenerators[i]->SetLocalScale(mLocalScale);
+      mEPSMGenerators[i]->SetLocalScale(mLocalScale);
     }
   }
 #else
@@ -1375,50 +1168,28 @@ void CParticleElectric::UpdateCachedTransform() {
 
 bool CParticleElectric::SystemHasLight() const {
   if (mHaveGPSM) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return mGpsmGenerators.front()->SystemHasLight();
-#else
     return mGPSMGenerators.front()->SystemHasLight();
-#endif
-
   }
   if (mHaveEPSM) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return mEpsmGenerators.front()->SystemHasLight();
-#else
     return mEPSMGenerators.front()->SystemHasLight();
-#endif
-
   }
   return false;
 }
 
 CLight CParticleElectric::GetLight() const {
   if (mHaveGPSM) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return mGpsmGenerators.front()->GetLight();
-#else
     return mGPSMGenerators.front()->GetLight();
-#endif
-
   }
   if (mHaveEPSM) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return mEpsmGenerators.front()->GetLight();
-#else
     return mEPSMGenerators.front()->GetLight();
-#endif
-
   }
   return CLight::BuildLocalAmbient(GetGlobalTranslation(), CColor::Orange());
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-void CParticleElectric::SetParticleEmission(RSTL_PRIME1_CONST bool emission) { mEmitting = emission; }
+void CParticleElectric::SetParticleEmission(RSTL_PRIME1_CONST bool emission) {
+  mEmitting = emission;
+}
 
 uint CParticleElectric::Get4CharId() const { return 'ELSC'; }
 #if !RSTL_PRIME1
@@ -1429,18 +1200,13 @@ float CParticleElectric::GetGeneratorRate() const { return mGeneratorRate; }
 
 void CParticleElectric::DestroyParticles() {}
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CTransform4f& CParticleElectric::GetGlobalOrientation() const {
-  return mGlobalOrientation;
-}
-#else
+#if !RSTL_PRIME1
 const CColor& CParticleElectric::GetModulationColor() const { return mModuColor; }
 
 const CVector3f& CParticleElectric::GetGlobalScale() const { return mGlobalScale; }
 
-const CTransform4f& CParticleElectric::GetGlobalOrientation() const { return mGlobalOrientation; }
 #endif
+const CTransform4f& CParticleElectric::GetGlobalOrientation() const { return mGlobalOrientation; }
 
 const CVector3f& CParticleElectric::GetGlobalTranslation() const { return mGlobalTranslation; }
 const CTransform4f& CParticleElectric::GetOrientation() const { return mOrientation; }

@@ -8,7 +8,6 @@ SAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTi
 #else
   return mReader->VAdvanceView(time);
 #endif
-
 }
 
 CCharAnimTime CAnimTreeAnimReaderContainer::VGetTimeRemaining() const {
@@ -22,7 +21,6 @@ CSteadyStateAnimInfo CAnimTreeAnimReaderContainer::VGetSteadyStateAnimInfo() con
 #else
   return mReader->VGetSteadyStateAnimInfo();
 #endif
-
 }
 
 bool CAnimTreeAnimReaderContainer::VHasOffset(const CSegId& seg) const {
@@ -32,7 +30,6 @@ bool CAnimTreeAnimReaderContainer::VHasOffset(const CSegId& seg) const {
 #else
   return mReader->VHasOffset(seg);
 #endif
-
 }
 
 CVector3f CAnimTreeAnimReaderContainer::VGetOffset(const CSegId& seg) const {
@@ -42,7 +39,6 @@ CVector3f CAnimTreeAnimReaderContainer::VGetOffset(const CSegId& seg) const {
 #else
   return mReader->VGetOffset(seg);
 #endif
-
 }
 
 CQuaternion CAnimTreeAnimReaderContainer::VGetRotation(const CSegId& seg) const {
@@ -52,93 +48,78 @@ CQuaternion CAnimTreeAnimReaderContainer::VGetRotation(const CSegId& seg) const 
 #else
   return mReader->VGetRotation(seg);
 #endif
-
 }
 
 uint CAnimTreeAnimReaderContainer::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                                   uint capacity, uint iterator, int unk) const {
-  return mReader->GetBoolPOIList(time, listOut, capacity, iterator, unk);
-#else
                                                    uint capacity, uint iterator,
                                                    int additive) const {
   return mReader->GetBoolPOIList(time, listOut, capacity, iterator, additive);
-#endif
-
 }
 
 uint CAnimTreeAnimReaderContainer::VGetInt32POIList(const CCharAnimTime& time,
                                                     CInt32POINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                                    uint iterator, int unk) const {
-  return mReader->GetInt32POIList(time, listOut, capacity, iterator, unk);
-#else
                                                     uint iterator, int additive) const {
   return mReader->GetInt32POIList(time, listOut, capacity, iterator, additive);
-#endif
-
 }
 
 uint CAnimTreeAnimReaderContainer::VGetParticlePOIList(const CCharAnimTime& time,
                                                        CParticlePOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                                       uint iterator, int unk) const {
-  return mReader->GetParticlePOIList(time, listOut, capacity, iterator, unk);
-#else
                                                        uint iterator, int additive) const {
   return mReader->GetParticlePOIList(time, listOut, capacity, iterator, additive);
-#endif
-
 }
 
 uint CAnimTreeAnimReaderContainer::VGetSoundPOIList(const CCharAnimTime& time,
                                                     CSoundPOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                                    uint iterator, int unk) const {
-  return mReader->GetSoundPOIList(time, listOut, capacity, iterator, unk);
-#else
                                                     uint iterator, int additive) const {
   return mReader->GetSoundPOIList(time, listOut, capacity, iterator, additive);
-#endif
-
 }
 
+bool CAnimTreeAnimReaderContainer::VGetBoolPOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-bool CAnimTreeAnimReaderContainer::VGetBoolPOIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mReader->GetBoolPOIState(name);
 #else
-bool CAnimTreeAnimReaderContainer::VGetBoolPOIState(uint nameHash) const {
-  return mReader->VGetBoolPOIState(nameHash);
+  return mReader->VGetBoolPOIState(name);
 #endif
-
 }
 
+s32 CAnimTreeAnimReaderContainer::VGetInt32POIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-s32 CAnimTreeAnimReaderContainer::VGetInt32POIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mReader->GetInt32POIState(name);
 #else
-s32 CAnimTreeAnimReaderContainer::VGetInt32POIState(uint nameHash) const {
-  return mReader->VGetInt32POIState(nameHash);
+  return mReader->VGetInt32POIState(name);
 #endif
-
 }
 
-CParticleData::EParentedMode
+CParticleData::EParentedMode CAnimTreeAnimReaderContainer::VGetParticlePOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAnimTreeAnimReaderContainer::VGetParticlePOIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mReader->GetParticlePOIState(name);
 #else
-CAnimTreeAnimReaderContainer::VGetParticlePOIState(uint nameHash) const {
-  return mReader->VGetParticlePOIState(nameHash);
+  return mReader->VGetParticlePOIState(name);
 #endif
-
 }
 
 void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
@@ -149,7 +130,6 @@ void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
 #else
   mReader->VGetSegStatementSet(list, setOut);
 #endif
-
 }
 
 void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
@@ -160,8 +140,10 @@ void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
   mReader->GetSegStatementSet(list, setOut, time);
 #else
   mReader->VGetSegStatementSet(list, setOut, time);
+#endif
 }
 
+#if !RSTL_PRIME1
 void CAnimTreeAnimReaderContainer::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                         CJointData_LinearStorage& data,
                                                         const CCharAnimTime& time) const {
@@ -171,9 +153,8 @@ void CAnimTreeAnimReaderContainer::VGetJointData_Linear(const CCharLayoutInfo& l
 void CAnimTreeAnimReaderContainer::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                         CJointData_LinearStorage& data) const {
   mReader->VGetJointData_Linear(layout, data);
-#endif
-
 }
+#endif
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeAnimReaderContainer::VClone() const {
   return rs_new CAnimTreeAnimReaderContainer(mReader->Clone(), mName, mAnimDbIdx);
@@ -181,14 +162,14 @@ rstl::ownership_transfer< IAnimReader > CAnimTreeAnimReaderContainer::VClone() c
 
 CAnimTreeEffectiveContribution
 CAnimTreeAnimReaderContainer::VGetContributionOfHighestInfluence() const {
+  return CAnimTreeEffectiveContribution(1.f, mName
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  return CAnimTreeEffectiveContribution(1.f, mName, mReader->GetSteadyStateAnimInfo(),
+                                        , mReader->GetSteadyStateAnimInfo()
 #else
-  return CAnimTreeEffectiveContribution(1.f, mName, mReader->VGetSteadyStateAnimInfo(),
+                                        , mReader->VGetSteadyStateAnimInfo()
 #endif
-
-                                        mReader->GetTimeRemaining(), mAnimDbIdx);
+                                        , mReader->GetTimeRemaining(), mAnimDbIdx);
 }
 
 rstl::optional_object< rstl::ownership_transfer< IAnimReader > >
@@ -196,25 +177,24 @@ CAnimTreeAnimReaderContainer::VSimplified() {
   return rstl::optional_object_null();
 }
 
+void CAnimTreeAnimReaderContainer::VSetPhase(float phase) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CAnimTreeAnimReaderContainer::VSetPhase(float phase) { mReader->SetPhase(phase); }
+  mReader->SetPhase(phase);
 #else
-void CAnimTreeAnimReaderContainer::VSetPhase(float phase) { mReader->VSetPhase(phase); }
+  mReader->VSetPhase(phase);
 #endif
+}
 
 SAdvancementResults
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAnimTreeAnimReaderContainer::VGetAdvancementResults(const CCharAnimTime& a,
-                                                     const CCharAnimTime& b) const {
-  return mReader->GetAdvancementResults(a, b);
-#else
 CAnimTreeAnimReaderContainer::VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  return mReader->GetAdvancementResults(time, startOffset);
+#else
   return mReader->VGetAdvancementResults(time, startOffset);
 #endif
-
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeAnimReaderContainer::VGetBestUnblendedChild() const {
@@ -222,14 +202,6 @@ rstl::rc_ptr< CAnimTreeNode > CAnimTreeAnimReaderContainer::VGetBestUnblendedChi
 }
 
 void CAnimTreeAnimReaderContainer::VGetWeightedReaders(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    float w, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
-  out.push_back(rstl::pair< float, IAnimReader* >(w, const_cast< IAnimReader* >(&*mReader)));
-#else
     float weight, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
   out.push_back(rstl::pair< float, IAnimReader* >(weight, const_cast< IAnimReader* >(&*mReader)));
-#endif
-
 }
-

@@ -73,18 +73,9 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mCurParticle(0)
 , mParticleCount(0)
 , mSPLN(0)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mRand(mDesc->mCRND ? CCast::ToInt16(CStopwatch::GetGlobalMicros())
-                                  : CCast::ToInt16(99))
-, x1c4_(0.f)
-, x1c8_(0.f)
-#else
 , mRand(mDesc->mCRND ? CCast::ToInt16(CStopwatch::GetGlobalMicros()) : CCast::ToInt16(99))
 , mUpdateTime(0.f)
 , mRenderTime(0.f)
-#endif
-
 , mEmitting(true)
 , mForceOneUpdate(false)
 , mRenderGaps(false)
@@ -253,14 +244,7 @@ const bool CParticleSwoosh::Update(double dt) {
       mSwooshes[mCurParticle].mOrientation = mOrientation;
       if (mDesc->mIVEL) {
         mDesc->mIVEL->GetValue(mCurFrame, mSwooshes[mCurParticle].mVelocity);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        mSwooshes[mCurParticle].mVelocity =
-            mOrientation * mSwooshes[mCurParticle].mVelocity;
-#else
         mSwooshes[mCurParticle].mVelocity = mOrientation * mSwooshes[mCurParticle].mVelocity;
-#endif
-
       }
       if (mDesc->mPOFS) {
         mDesc->mPOFS->GetValue(mCurFrame, mSwooshes[mCurParticle].mOffset);
@@ -290,13 +274,7 @@ const bool CParticleSwoosh::Update(double dt) {
     evalTime += kFrameTime;
     ++mCurFrame;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  x1c4_ = timer.GetElapsedTime();
-#else
   mUpdateTime = timer.GetElapsedTime();
-#endif
-
   return false;
 }
 
@@ -424,11 +402,12 @@ bool CParticleSwoosh::IsSystemDeletable() const {
 }
 
 void CParticleSwoosh::Render() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (mLENG >= 2 && mParticleCount > 1) {
-#else
-  if (mLENG >= 2 && mParticleCount > 1 && ShouldDraw()) {
+  if (mLENG >= 2 && mParticleCount > 1
+#if !RSTL_PRIME1
+      && ShouldDraw()
+#endif
+  ) {
+#if !RSTL_PRIME1
     if (CElementGen::sMoveRedToAlphaBuffer) {
       GXSetAlphaUpdate(GX_FALSE);
     }
@@ -444,16 +423,8 @@ void CParticleSwoosh::Render() {
     } else {
       CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CGraphics::SetModelMatrix(CTransform4f::Translate(mGlobalTranslation) *
-                              mGlobalOrientation * mScaleXf *
-                              CTransform4f::Scale(mLocalScale));
-#else
     CGraphics::SetModelMatrix(CTransform4f::Translate(mGlobalTranslation) * mGlobalOrientation *
                               mScaleXf * CTransform4f::Scale(mLocalScale));
-#endif
-
     CGraphics::SetCullMode(kCM_None);
     if (mDesc->mTEXR) {
       {
@@ -513,13 +484,7 @@ void CParticleSwoosh::Render() {
         RenderNSidedNoSpline();
       }
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    x1c8_ = timer.GetElapsedTime();
-#else
     mRenderTime = timer.GetElapsedTime();
-#endif
-
     CGraphics::SetCullMode(kCM_Front);
 #if !RSTL_PRIME1
     if (CElementGen::sMoveRedToAlphaBuffer) {
@@ -683,14 +648,7 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           const SSwooshData& otherSwoosh = mSwooshes[otherIdx];
           CVector3f delta = otherSwoosh.mTranslation - swoosh.mTranslation;
           if (otherIdx == mCurParticle) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            delta = swoosh.mTranslation -
-                    mSwooshes[(curIdx + 1) % mSwooshes.size()].mTranslation;
-#else
             delta = swoosh.mTranslation - mSwooshes[(curIdx + 1) % mSwooshes.size()].mTranslation;
-#endif
-
           }
           if (delta.CanBeNormalized()) {
 // TODO: verify that this Prime/Echoes difference is real

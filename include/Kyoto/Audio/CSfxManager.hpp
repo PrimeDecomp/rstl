@@ -2,7 +2,6 @@
 #define _CSFXMANAGER
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/optional_object.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -52,7 +51,6 @@ public:
 #if !RSTL_PRIME1
     kSC_SoftPaused // Guessed name: selected by CStateManager while gameplay is soft-paused.
 #endif
-
   };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -77,86 +75,50 @@ public:
 
   class CBaseSfxWrapper {
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CBaseSfxWrapper(const bool looped, const short prio, const CSfxHandle handle,
-                    const bool useAcoustics, const int area);
-#else
-    CBaseSfxWrapper(bool looped, short priority, CSfxHandle handle, bool useAcoustics, int area);
-#endif
+    CBaseSfxWrapper(RSTL_PRIME1_CONST bool looped, RSTL_PRIME1_CONST short priority,
+                    RSTL_PRIME1_CONST CSfxHandle handle, RSTL_PRIME1_CONST bool useAcoustics,
+                    RSTL_PRIME1_CONST int area);
 
     virtual ~CBaseSfxWrapper() = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    virtual void SetActive(bool v);
-    virtual void SetPlaying(bool v);
-    virtual void SetRank(const short v);
-    virtual void SetInArea(bool v);
-    virtual const bool IsLooped() const;
-#else
     virtual void SetActive(bool active);
     virtual void SetPlaying(bool playing);
-    virtual void SetRank(short rank);
+    virtual void SetRank(RSTL_PRIME1_CONST short rank);
     virtual void SetInArea(bool inArea);
-    virtual bool IsLooped() const;
-#endif
+    virtual RSTL_PRIME1_CONST bool IsLooped() const;
 
     virtual bool IsPlaying() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    virtual const bool IsActive() const;
-    virtual const bool IsInArea() const;
-    virtual const bool UseAcoustics() const;
-    virtual const int GetRank() const;
-    virtual const int GetPriority() const;
-    virtual const int GetArea() const;
-    virtual const CSfxHandle GetSfxHandle() const;
-#else
-    virtual bool IsActive() const;
-    virtual bool IsInArea() const;
-    virtual bool UseAcoustics() const;
-    virtual int GetRank() const;
-    virtual int GetPriority() const;
-    virtual int GetArea() const;
-    virtual CSfxHandle GetSfxHandle() const;
+    virtual RSTL_PRIME1_CONST bool IsActive() const;
+    virtual RSTL_PRIME1_CONST bool IsInArea() const;
+    virtual RSTL_PRIME1_CONST bool UseAcoustics() const;
+    virtual RSTL_PRIME1_CONST int GetRank() const;
+    virtual RSTL_PRIME1_CONST int GetPriority() const;
+    virtual RSTL_PRIME1_CONST int GetArea() const;
+    virtual RSTL_PRIME1_CONST CSfxHandle GetSfxHandle() const;
+#if !RSTL_PRIME1
     virtual ESfxWrapperType GetType() const = 0; // Guessed name
 #endif
 
     virtual void Play() = 0;
     virtual void Stop() = 0;
+    virtual RSTL_PRIME1_CONST bool Ready() = 0;
+    virtual short GetAudible(const CVector3f& position) = 0;
+    virtual RSTL_PRIME1_CONST SND_VOICEID GetVoice() const = 0;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    virtual const bool Ready() = 0;
-    virtual short GetAudible(const CVector3f&) = 0;
-    virtual const SND_VOICEID GetVoice() const = 0;
     virtual const SND_FXID GetSfxId() = 0;
 #else
-    virtual bool Ready() = 0;
-    virtual short GetAudible(const CVector3f& position) = 0;
-    virtual SND_VOICEID GetVoice() const = 0;
     virtual ushort GetSfxId() = 0;
 #endif
 
     virtual void UpdateEmitterSilent() = 0;
     virtual void UpdateEmitter() = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    virtual void SetReverb(const char rev) = 0;
-    const bool Available() const;
-#else
-    virtual void SetReverb(char reverb) = 0;
-
-    bool Available() const;
-#endif
+    virtual void SetReverb(RSTL_PRIME1_CONST char reverb) = 0;
+    RSTL_PRIME1_CONST bool Available() const;
 
     void Release();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const float GetTimeRemaining();
-    void SetTimeRemaining(float t);
-#else
-    float GetTimeRemaining();
+    RSTL_PRIME1_CONST float GetTimeRemaining();
     void SetTimeRemaining(float time);
+#if !RSTL_PRIME1
     ushort GetPitchBend() const;
     void SetPitchBend(ushort pitch);
     bool GetIgnoreAreaLowPass() const;
@@ -166,54 +128,32 @@ public:
   private:
     float mTimeRemaining;
     short mRank;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    short mPrio;
-#else
     short mPriority;
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
     ushort mPitchBend;
 #endif
 
     CSfxHandle mHandle;
     int mArea;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    bool mIsActive : 1;
-    bool mIsPlaying : 1;
-#else
     bool mActive : 1;
     bool mPlaying : 1;
-#endif
-
     bool mLooped : 1;
     bool mInArea : 1;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    bool mIsReleased : 1;
-#else
     bool mReleased : 1;
-#endif
-
     bool mUseAcoustics : 1;
 #if !RSTL_PRIME1
     bool mIgnoreAreaLowPass : 1; // Guessed name
 #endif
-
   };
 
   class CSfxEmitterWrapper : public CBaseSfxWrapper {
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CSfxEmitterWrapper(const bool looped, short prio, CAudioSys::C3DEmitterParmData& emitterData,
-                       const CSfxHandle handle, const bool useAcoustics, const int area);
-#else
-    CSfxEmitterWrapper(bool looped, short priority, CAudioSys::C3DEmitterParmData& emitter,
-                       CSfxHandle handle, bool useAcoustics, int area);
+    CSfxEmitterWrapper(RSTL_PRIME1_CONST bool looped, short priority,
+                       CAudioSys::C3DEmitterParmData& emitter, RSTL_PRIME1_CONST CSfxHandle handle,
+                       RSTL_PRIME1_CONST bool useAcoustics, RSTL_PRIME1_CONST int area);
 
     // CBaseSfxWrapper
-#endif
-
     ~CSfxEmitterWrapper() {}
     bool IsPlaying() const override;
 #if !RSTL_PRIME1
@@ -222,27 +162,19 @@ public:
 
     void Play() override;
     void Stop() override;
+    RSTL_PRIME1_CONST bool Ready() override;
+    short GetAudible(const CVector3f& position) override;
+    RSTL_PRIME1_CONST SND_VOICEID GetVoice() const override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    const bool Ready() override;
-    short GetAudible(const CVector3f&) override;
-    const SND_VOICEID GetVoice() const override;
     const SND_FXID GetSfxId() override;
 #else
-    bool Ready() override;
-    short GetAudible(const CVector3f& position) override;
-    SND_VOICEID GetVoice() const override;
     ushort GetSfxId() override;
 #endif
 
     void UpdateEmitterSilent() override;
     void UpdateEmitter() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    void SetReverb(const char rev) override;
-#else
-    void SetReverb(char reverb) override;
-#endif
+    void SetReverb(RSTL_PRIME1_CONST char reverb) override;
 
     CAudioSys::C3DEmitterParmData& GetEmitter();
 // TODO: verify that this Prime/Echoes difference is real
@@ -278,22 +210,16 @@ public:
     bool mReady : 1;
     bool mUpdatePending : 1; // Restores the cached volume in Update.
 #endif
-
   };
 
   class CSfxWrapper : public CBaseSfxWrapper {
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CSfxWrapper(const bool looped, const short prio, const ushort sfxId, const short vol,
-                const short pan, const CSfxHandle handle, const bool useAcoustics, const int area);
-#else
-    CSfxWrapper(bool looped, short priority, ushort sfxId, short volume, short pan,
-                CSfxHandle handle, bool useAcoustics, int area);
+    CSfxWrapper(RSTL_PRIME1_CONST bool looped, RSTL_PRIME1_CONST short priority,
+                RSTL_PRIME1_CONST ushort sfxId, RSTL_PRIME1_CONST short volume,
+                RSTL_PRIME1_CONST short pan, RSTL_PRIME1_CONST CSfxHandle handle,
+                RSTL_PRIME1_CONST bool useAcoustics, RSTL_PRIME1_CONST int area);
 
     // CBaseSfxWrapper
-#endif
-
     ~CSfxWrapper() {}
 
     bool IsPlaying() const override;
@@ -303,30 +229,20 @@ public:
 
     void Play() override;
     void Stop() override;
+    RSTL_PRIME1_CONST bool Ready() override;
+    short GetAudible(const CVector3f& position) override;
+    RSTL_PRIME1_CONST SND_VOICEID GetVoice() const override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    const bool Ready() override;
-    short GetAudible(const CVector3f&) override;
-    const SND_VOICEID GetVoice() const override;
     const SND_FXID GetSfxId() override;
 #else
-    bool Ready() override;
-    short GetAudible(const CVector3f& position) override;
-    SND_VOICEID GetVoice() const override;
     ushort GetSfxId() override;
 #endif
 
     void UpdateEmitterSilent() override;
     void UpdateEmitter() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    void SetReverb(const char rev) override;
-    void SetVolume(short vol);
-#else
-    void SetReverb(char reverb) override;
-
+    void SetReverb(RSTL_PRIME1_CONST char reverb) override;
     void SetVolume(short volume);
-#endif
 
   private:
 // TODO: verify that this Prime/Echoes difference is real
@@ -337,13 +253,7 @@ public:
 #endif
 
     SND_VOICEID mVoiceHandle;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    short mVol;
-#else
     short mVolume;
-#endif
-
     short mPan;
     bool mReady;
   };
@@ -398,15 +308,17 @@ public:
     float mSoundSpeed;
     uint mFlags;
     uchar mMaxVolume;
+#endif
   };
 
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   struct SListener { // Guessed name
     SListener();
     CSfxListener mListener;
     bool mActive;
-#endif
-
   };
+#endif
 
   class CSfxChannel {
   public:
@@ -415,13 +327,11 @@ public:
     CSfxChannel() : x44_(false) {}
     CSfxListener mListener;
     bool x44_;
-    rstl::reserved_vector< CBaseSfxWrapper*, 72 > x48_;
 #else
     CSfxChannel();
     rstl::reserved_vector< SListener, 4 > mListeners;
-    rstl::reserved_vector< CBaseSfxWrapper*, 72 > mSounds;
 #endif
-
+    rstl::reserved_vector< CBaseSfxWrapper*, 72 > mSounds;
   };
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -656,7 +566,6 @@ private:
   static rstl::reserved_vector< SAreaVolume, 10 > mAreaVolumes;
   static int mCurrentArea;
 #endif
-
 };
 
 inline CSfxManager::CBaseSfxWrapper::~CBaseSfxWrapper() {}
@@ -664,7 +573,7 @@ inline CSfxManager::CBaseSfxWrapper::~CBaseSfxWrapper() {}
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 const CFactoryFnReturn FAudioTranslationTableFactory(const SObjectTag& obj, CInputStream& in,
-                                               const CVParamTransfer& xfer);
+                                                     const CVParamTransfer& xfer);
 #else
 NESTED_CHECK_SIZEOF(CSfxManager, CBaseSfxWrapper, 0x1c)
 NESTED_CHECK_SIZEOF(CSfxManager, CSfxWrapper, 0x2c)

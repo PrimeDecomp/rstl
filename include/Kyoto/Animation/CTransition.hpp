@@ -9,10 +9,6 @@
 
 class CInputStream;
 
-#if !RSTL_PRIME1
-class IMetaTrans;
-#endif
-
 class CTransition {
   uint mId;
 // TODO: verify that this Prime/Echoes difference is real

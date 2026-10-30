@@ -71,7 +71,7 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
-  void DrawFrame(int left, int right, int top, int bottom);
+  void DrawFrame(int left, int right, int bottom, int top);
 #endif
 #else
   void DrawFrame(int left, int right, int bottom, int top);

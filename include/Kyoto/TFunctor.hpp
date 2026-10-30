@@ -12,13 +12,7 @@ public:
   CMethodPtrStore() { memset(mFuncStorage, 0, sizeof(mFuncStorage)); }
   CMethodPtrStore(const void* method, int size) { memcpy(mFuncStorage, method, size); }
   bool IsNull() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    for (int i = 0; i < ARRAY_SIZE(mFuncStorage); i++) {
-#else
     for (int i = 0; i < ARRAY_SIZE(mFuncStorage); ++i) {
-#endif
-
       if (mFuncStorage[i] != 0) {
         return false;
       }
@@ -39,22 +33,11 @@ private:
 template < class Arg1 >
 class TFunctor1 {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  typedef void (*Functor)(const void* object, const void* func, Arg1 arg1);
-#else
   typedef void (*Functor)(const void* object, const void* method, Arg1 arg1);
-#endif
 
   TFunctor1() : mFunctor(nullptr), mObject(nullptr) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  TFunctor1(Functor functor, const void* object, const void* func, int v)
-  : mFunctor(functor), mObject(object), mMethod(func, v) {}
-#else
   TFunctor1(Functor functor, const void* object, const void* method, int size)
   : mFunctor(functor), mObject(object), mMethod(method, size) {}
-#endif
 
   void operator()(Arg1 arg1) const { mFunctor(mObject, mMethod.GetMethodPointer(), arg1); }
   operator bool() const { return !mMethod.IsNull(); }
@@ -92,6 +75,7 @@ class TFunctor1FromMethod {
 public:
   typedef void (T::*MethodPtr)(P1);
   static TFunctor1< P1 > Make(T& object, MethodPtr method) {
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     typedef TNonStaticCallback1< T, P1 > CallbackBridge;
     typedef typename TFunctor1< P1 >::Functor InternalFunctorPtr;
@@ -101,42 +85,25 @@ public:
 
     char methodData[sizeof(method)];
     memcpy(methodData, &method, sizeof(method));
+    return TFunctor1< P1 >(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return TFunctor1< P1 >(bridgeFunc, &object, methodData, sizeof(method));
+        bridgeFunc,
 #else
-    return TFunctor1< P1 >(TNonStaticCallback1< T, P1 >::Function, &object, methodData,
-                           sizeof(method));
+        TNonStaticCallback1< T, P1 >::Function,
 #endif
-
+        &object, methodData, sizeof(method));
   }
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 template < typename Arg1, typename Arg2 >
-#else
-template < class Arg1, class Arg2 >
-#endif
-
 class TFunctor2 {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  typedef void (*Functor)(const void* object, const void* func, Arg1 arg, Arg2);
-#else
   typedef void (*Functor)(const void* object, const void* method, Arg1 arg1, Arg2 arg2);
-#endif
 
   TFunctor2() : mFunctor(nullptr), mObject(nullptr) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  TFunctor2(Functor functor, const void* object, const void* func, int v)
-  : mFunctor(functor), mObject(object), mMethod(func, v) {}
-#else
   TFunctor2(Functor functor, const void* object, const void* method, int size)
   : mFunctor(functor), mObject(object), mMethod(method, size) {}
-#endif
 
   void operator()(Arg1 arg1, Arg2 arg2) const {
     mFunctor(mObject, mMethod.GetMethodPointer(), arg1, arg2);
@@ -176,6 +143,7 @@ class TFunctor2FromMethod {
 public:
   typedef void (T::*MethodPtr)(P1, P2);
   static TFunctor2< P1, P2 > Make(T& object, MethodPtr method) {
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     typedef TNonStaticCallback2< T, P1, P2 > CallbackBridge;
     typedef typename TFunctor2< P1, P2 >::Functor InternalFunctorPtr;
@@ -185,42 +153,25 @@ public:
 
     char methodData[sizeof(method)];
     memcpy(methodData, &method, sizeof(method));
+    return TFunctor2< P1, P2 >(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return TFunctor2< P1, P2 >(bridgeFunc, &object, methodData, sizeof(method));
+        bridgeFunc,
 #else
-    return TFunctor2< P1, P2 >(TNonStaticCallback2< T, P1, P2 >::Function, &object, methodData,
-                               sizeof(method));
+        TNonStaticCallback2< T, P1, P2 >::Function,
 #endif
-
+        &object, methodData, sizeof(method));
   }
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 template < typename Arg1, typename Arg2, typename Arg3 >
-#else
-template < class Arg1, class Arg2, class Arg3 >
-#endif
-
 class TFunctor3 {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  typedef void (*Functor)(const void* object, const void* func, Arg1 arg, Arg2, Arg3);
-#else
   typedef void (*Functor)(const void* object, const void* method, Arg1 arg1, Arg2 arg2, Arg3 arg3);
-#endif
 
   TFunctor3() : mFunctor(nullptr), mObject(nullptr) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  TFunctor3(Functor functor, const void* object, const void* func, int v)
-  : mFunctor(functor), mObject(object), mMethod(func, v) {}
-#else
   TFunctor3(Functor functor, const void* object, const void* method, int size)
   : mFunctor(functor), mObject(object), mMethod(method, size) {}
-#endif
 
   void operator()(Arg1 arg1, Arg2 arg2, Arg3 arg3) const {
     mFunctor(mObject, mMethod.GetMethodPointer(), arg1, arg2, arg3);

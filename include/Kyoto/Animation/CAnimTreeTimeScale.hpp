@@ -36,38 +36,22 @@ public:
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
   uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                       uint iterator, int unk) const override;
-#else
                        uint iterator, int additive) const override;
-#endif
 
   uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                        uint iterator, int unk) const override;
-#else
                         uint iterator, int additive) const override;
-#endif
 
   uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                           uint iterator, int unk) const override;
-#else
                            uint iterator, int additive) const override;
-#endif
 
   uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+                        uint iterator, int additive) const override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                        uint iterator, int unk) const override;
   bool VGetBoolPOIState(const char* name) const override;
   s32 VGetInt32POIState(const char* name) const override;
   CParticleData::EParentedMode VGetParticlePOIState(const char* name) const override;
 #else
-                        uint iterator, int additive) const override;
   bool VGetBoolPOIState(uint nameHash) const override;
   s32 VGetInt32POIState(uint nameHash) const override;
   CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;

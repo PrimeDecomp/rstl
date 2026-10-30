@@ -24,7 +24,6 @@
 #include "dolphin/types.h"
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/TToken.hpp"
@@ -676,16 +675,13 @@ void CModel::RemapData(uchar* data) {
 
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mModelInstance = rs_new CCubeModel(&mSurfaces, &mMatSets.front().mTextures,
-                                        mMatSets.front().mData, positions, normals, colors,
-                                        uvs, packedUvs, bounds, flags, texturesLoaded, index);
-  MoveToThisFrameList();
-#else
   mModelInstance =
       rs_new CCubeModel(&mSurfaces, &mMatSets.front().mTextures, mMatSets.front().mData, positions,
                         normals, colors, uvs, packedUvs, bounds, flags, texturesLoaded, index);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  MoveToThisFrameList();
+#else
   UpdateLastFrame();
 #endif
 

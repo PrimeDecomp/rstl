@@ -17,7 +17,7 @@ static inline T& GetOutputNode(T* list, uint idx) { return list[idx]; }
 
 template < class T >
 uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iterator, int additive,
-                rstl::vector< T > stream, const CCharAnimTime& curTime) {
+                 rstl::vector< T > stream, const CCharAnimTime& curTime) {
   CCharAnimTime curTimeCopy(curTime);
   uint count = stream.size();
   CCharAnimTime tmpTime = curTime + time;
@@ -35,12 +35,12 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
       if (idx < capacity) {
         ++ret;
         GetOutputNode(listOut, idx) = adjustedNode;
+      }
 #else
       if (iterator + ret < capacity) {
         listOut[iterator + ret++] = adjustedNode;
-#endif
-
       }
+#endif
     }
     ++it;
   }
@@ -85,19 +85,10 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
     mFundamentals = CSequenceHelper(mSequence, mAnimCtx).ComputeSequenceFundamentals();
     mCurIdx = 0;
     mCurTime = CCharAnimTime::ZeroFlat();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::ncrc_ptr< CAnimTreeNode > newChild =
-        CTreeUtils::GetTransitionTree(curChild,
-                                      mSequence[mCurIdx]->GetAnimationTree(
-                                          mAnimCtx, CMetaAnimTreeBuildOrders::NoSpecialOrders()),
-#else
     rstl::ncrc_ptr< CAnimTreeNode > newChild = CTreeUtils::GetTransitionTree(
         curChild,
         mSequence[mCurIdx]->GetAnimationTree(mAnimCtx, CMetaAnimTreeBuildOrders::NoSpecialOrders()),
-#endif
-
-                                      mAnimCtx);
+        mAnimCtx);
     mChild = newChild;
     curChild = mChild;
   }
@@ -143,14 +134,14 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
 }
 
 CCharAnimTime CAnimTreeSequence::VGetTimeRemaining() const {
-  if (mCurIdx == mSequence.size() - 1)
+  if (mCurIdx == mSequence.size() - 1) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return mChild->VGetTimeRemaining();
 #else
     return mChild->GetTimeRemaining();
 #endif
-
+  }
   CCharAnimTime dur = mFundamentals.GetSteadyStateAnimInfo().GetDuration();
   return dur - mCurTime;
 }
@@ -184,29 +175,15 @@ uint CAnimTreeSequence::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINod
 }
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeSequence::VClone() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return rs_new CAnimTreeSequence(Cast(mChild->Clone()), mSequence, mAnimCtx, mCurIdx,
-                                  mName, mFundamentals, mCurTime);
-#else
   return rs_new CAnimTreeSequence(Cast(mChild->Clone()), mSequence, mAnimCtx, mCurIdx, mName,
                                   mFundamentals, mCurTime);
-#endif
-
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeSequence::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > ch = mChild->GetBestUnblendedChild();
   if (ch)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return rs_new CAnimTreeSequence(Cast(ch->Clone()), mSequence, mAnimCtx, mCurIdx,
-                                    mName, mFundamentals, mCurTime);
-#else
     return rs_new CAnimTreeSequence(Cast(ch->Clone()), mSequence, mAnimCtx, mCurIdx, mName,
                                     mFundamentals, mCurTime);
-#endif
-
   return ch;
 }
 

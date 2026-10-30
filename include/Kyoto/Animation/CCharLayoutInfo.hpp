@@ -88,6 +88,7 @@ public:
   const rstl::map< rstl::string, CSegId >& GetNameMap() const { return mNameMap; }
   const CVector3f& GetReferenceStanceOffset(const CSegId& id) const {
     return id != CSegId::Root() ? GetSegmentData(id).GetReferenceStanceOffset() : CVector3f::Zero();
+  }
 #else
   CSegId GetOriginalParent(const CSegId& seg) const { return GetSegmentData(seg).GetParent(); }
 
@@ -95,9 +96,8 @@ public:
 
   const rstl::vector< CVector3f >& GetLinearReferenceStanceOffsets() const {
     return mLinearReferenceStanceOffsets;
-#endif
-
   }
+#endif
 #if !RSTL_PRIME1
   const rstl::vector< CVector3f >& GetLinearParentOffsets() const { return mLinearParentOffsets; }
 
@@ -108,13 +108,16 @@ public:
   CVector3f GetFromParentUnrotated(const CSegId& id) const {
     const CCharLayoutNode& node = GetSegmentData(id);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return !mNodes->ContainsDataFor(node.GetParent())
-#else
+#if !RSTL_PRIME1
     const CSegId parent = node.GetParent();
-    return !mNodes->ContainsDataFor(parent)
 #endif
-
+    return !mNodes->ContainsDataFor(
+#if RSTL_PRIME1
+               node.GetParent()
+#else
+               parent
+#endif
+               )
                ? node.GetReferenceStanceOffset()
                : node.GetReferenceStanceOffset() -
                      GetSegmentData(node.GetParent()).GetReferenceStanceOffset();
@@ -139,7 +142,6 @@ private:
   rstl::vector< CQuaternion > mLinearRotations;
   rstl::vector< CQuaternion > mLinearLocalRotations;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

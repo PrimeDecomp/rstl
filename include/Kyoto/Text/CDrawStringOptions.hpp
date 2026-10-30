@@ -29,27 +29,24 @@ public:
   }
 #else
   // Guessed names
-  void SetCharacterExtraSpace(int spacing) { mCharacterExtraSpace = spacing; }
-  int GetCharacterExtraSpace() const { return mCharacterExtraSpace; }
+  void SetCharacterExtraSpace(int spacing) { mExtraCharacterSpacing = spacing; }
+  int GetCharacterExtraSpace() const { return mExtraCharacterSpacing; }
 #endif
 
 private:
   ETextDirection mDirection;
+  rstl::reserved_vector<
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3ME_00
-  rstl::reserved_vector< uint, 16 > mColors;
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00
+      uint,
 #else
-  rstl::reserved_vector< u32, 16 > mColors;
+      u32,
 #endif
+      16 >
+      mColors;
 #if RSTL_VERSION >= RSTL_GM8P_00
   int mExtraCharacterSpacing;
 #endif
-#else
-  rstl::reserved_vector< u32, 16 > mColors;
-  int mCharacterExtraSpace; // Guessed name
-#endif
-
 };
 
 #if !RSTL_PRIME1

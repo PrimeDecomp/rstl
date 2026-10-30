@@ -27,7 +27,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
   if (t >= 0.99999f)
     return end;
 #endif
-
   const float dot = CQuaternion::Dot(start, end);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -42,7 +41,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
   if (sUseFastSlerp) {
     if (dot >= 0.866f) {
 #endif
-
     const float scalar = start.GetScalar() + t * (end.GetScalar() - start.GetScalar());
     const CVector3f vector = start.GetVector() + t * (end.GetVector() - start.GetVector());
     const float invMag = CMath::InvSqrtF(scalar * scalar + vector.MagSquared());
@@ -60,7 +58,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
 #else
       return CQuaternion(scalar * invMag, invMag * vector);
 #endif
-
   }
 #if !RSTL_PRIME1
     const double angle = acosf(dot);
@@ -100,7 +97,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
   z = z * aScale + endZ * bScale;
   return CQuaternion(w, x, y, z);
 #endif
-
 }
 
 CQuaternion CAnimMathUtils::SlerpLocal(const CQuaternion& start, const CQuaternion& end, float t) {

@@ -36,7 +36,6 @@ CNUQuaternion CNUQuaternion::BuildFromAxisAngle(const CVector3f& axis, float ang
   const float sineAngle = sin(angle);
   return CNUQuaternion(cos(angle), sineAngle * axis.AsNormalized());
 #endif
-
 }
 
 CNUQuaternion CNUQuaternion::BuildFromQuaternion(const CQuaternion& quat) {

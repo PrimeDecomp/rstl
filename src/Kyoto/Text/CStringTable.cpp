@@ -26,20 +26,18 @@
 #endif
 
 static const wchar_t skInvalidString[] = L"Invalid";
+#if RSTL_VERSION >= RSTL_GM8P_00
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-static const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
+static
+#endif
+const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
 static FourCC mCurrentLanguage = skLanguages[0];
-
-void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
 #else
 static FourCC mCurrentLanguage = 'ENGL';
 #endif
-#else
-const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
-static FourCC mCurrentLanguage = skLanguages[0];
 
+#if !RSTL_PRIME1
 struct SLanguageInfo {
   FourCC mLanguage;
   uint mOffset;
@@ -52,7 +50,9 @@ struct SStringNameLess {
     return strcmp(a.mName, b.mName) < 0;
   }
 };
+#endif
 
+#if RSTL_VERSION >= RSTL_GM8P_00
 void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
 #endif
 
@@ -61,9 +61,14 @@ CStringTable::CStringTable(CInputStream& in)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mData(NULL)
+#else
+, mNameCount(0)
+, mData(nullptr)
+, mNames(nullptr)
+, mStrings(nullptr)
+#endif
 #if RSTL_VERSION >= RSTL_GM8P_00
-, mReloadData(nullptr)
-{
+, mReloadData(nullptr) {
   Load(in);
 }
 
@@ -72,6 +77,8 @@ CStringTable::~CStringTable() {}
 void CStringTable::Load(CInputStream& in)
 #endif
 {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   in.ReadLong();
   in.ReadLong();
   int langCount = in.Get(TType< int >());
@@ -79,74 +86,19 @@ void CStringTable::Load(CInputStream& in)
   rstl::vector< rstl::pair< FourCC, uint > > langOffsets(langCount);
   for (int i = 0; i < langCount; ++i) {
     langOffsets.push_back(in.Get(TType< rstl::pair< FourCC, uint > >()));
-#else
-, mNameCount(0)
-, mData(nullptr)
-, mNames(nullptr)
-, mStrings(nullptr)
-, mReloadData(nullptr) {
-  Load(in);
-#endif
-
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   int offset = langOffsets.front().second;
-#else
-CStringTable::~CStringTable() {}
-
-void CStringTable::Load(CInputStream& in) {
-  in.ReadInt32();
-  uint version = in.ReadInt32();
-  int langCount = in.Get(TType< int >());
-  mStringCount = in.Get(TType< int >());
-
-  rstl::reserved_vector< SLanguageInfo, 7 > languages;
-#endif
-
   for (int i = 0; i < langCount; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     if (langOffsets[i].first == mCurrentLanguage) {
       offset = langOffsets[i].second;
-#else
-    FourCC language = in.Get(TType< FourCC >());
-    uint offset = in.ReadUint32();
-    uint size = version != 0 ? in.Get(TType< uint >()) : 0;
-    SLanguageInfo info = {language, offset, size};
-    languages.push_back(info);
-  }
-
-  uint offset = languages[0].mOffset;
-  uint size = languages[0].mSize;
-  for (int i = 0; i < langCount; ++i) {
-    if (languages[i].mLanguage == mCurrentLanguage) {
-      offset = languages[i].mOffset;
-      size = languages[i].mSize;
-#endif
-
       break;
     }
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   for (uint i = 0; i < offset; ++i) {
     in.ReadChar();
-#else
-  if (version != 0) {
-    mNameCount = in.Get(TType< int >());
-    uint namesSize = in.Get(TType< uint >());
-    mData = rs_new uchar[namesSize + size];
-    mNames = reinterpret_cast< SStringName* >(mData.get());
-    mStrings = reinterpret_cast< const wchar_t** >(mData.get() + namesSize);
-    in.ReadBytes(mNames, namesSize);
-#endif
-
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   uint dataLen = in.Get(TType< uint >());
 #if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
   mNativeStrings.clear();
@@ -200,6 +152,38 @@ void CStringTable::Load(CInputStream& in) {
   in.ReadBytes(mData.get(), dataLen);
 #endif
 #else
+  in.ReadInt32();
+  uint version = in.ReadInt32();
+  int langCount = in.Get(TType< int >());
+  mStringCount = in.Get(TType< int >());
+
+  rstl::reserved_vector< SLanguageInfo, 7 > languages;
+  for (int i = 0; i < langCount; ++i) {
+    FourCC language = in.Get(TType< FourCC >());
+    uint offset = in.ReadUint32();
+    uint size = version != 0 ? in.Get(TType< uint >()) : 0;
+    SLanguageInfo info = {language, offset, size};
+    languages.push_back(info);
+  }
+
+  uint offset = languages[0].mOffset;
+  uint size = languages[0].mSize;
+  for (int i = 0; i < langCount; ++i) {
+    if (languages[i].mLanguage == mCurrentLanguage) {
+      offset = languages[i].mOffset;
+      size = languages[i].mSize;
+      break;
+    }
+  }
+  if (version != 0) {
+    mNameCount = in.Get(TType< int >());
+    uint namesSize = in.Get(TType< uint >());
+    mData = rs_new uchar[namesSize + size];
+    mNames = reinterpret_cast< SStringName* >(mData.get());
+    mStrings = reinterpret_cast< const wchar_t** >(mData.get() + namesSize);
+    in.ReadBytes(mNames, namesSize);
+  }
+
   for (uint i = 0; i < offset; ++i) {
     in.ReadInt8();
   }
@@ -223,7 +207,6 @@ void CStringTable::Load(CInputStream& in) {
     *entry += reinterpret_cast< uint >(mStrings);
   }
 #endif
-
 }
 
 const wchar_t* CStringTable::GetString(int idx) const {
@@ -241,7 +224,6 @@ const wchar_t* CStringTable::GetString(int idx) const {
 #else
   return mStrings[idx];
 #endif
-
 }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -270,8 +252,6 @@ CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory)
   mBuffer = static_cast< uchar* >(CMemory::Alloc(mSize, IAllocator::kHI_RoundUpLen));
   mRequest = factory.LoadResourceAsync(tag, mBuffer.get());
 }
-
-CStringTable::SReloadData::~SReloadData() {}
 #endif
 #else
 int CStringTable::GetStringIndexByName(const char* name) const {
@@ -287,22 +267,21 @@ int CStringTable::GetStringIndexByName(const char* name) const {
   }
   return -1;
 }
+
+const wchar_t* CStringTable::GetStringByName(const char* name) const {
+  return GetString(GetStringIndexByName(name));
+}
+#endif
+
+#if RSTL_VERSION >= RSTL_GM8P_00
+CStringTable::SReloadData::~SReloadData() {}
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-const CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-#else
-const wchar_t* CStringTable::GetStringByName(const char* name) const {
-  return GetString(GetStringIndexByName(name));
-}
-
-CStringTable::SReloadData::~SReloadData() {}
-
-CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
+const
 #endif
-
+CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
                                      const CVParamTransfer& xfer) {
   return rs_new CStringTable(in);
 }
-

@@ -130,17 +130,12 @@ public:
 
   CVector2f ToVec2f() const { return CVector2f(mX, mY); }
 
+  static RSTL_PRIME1_CONST float Dot(const CVector3f& a, const CVector3f& b) {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static const float Dot(const CVector3f& a, const CVector3f& b) {
-#if RSTL_VERSION >= RSTL_R3IJ
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ
     return a.mX * b.mX + a.mY * b.mY + a.mZ * b.mZ;
 #else
     return (a.GetX() * b.GetX()) + (a.GetY() * b.GetY()) + (a.GetZ() * b.GetZ());
-#endif
-#else
-  static float Dot(const CVector3f& a, const CVector3f& b) {
-    return (a.mX * b.mX) + (a.mY * b.mY) + (a.mZ * b.mZ);
 #endif
   }
 

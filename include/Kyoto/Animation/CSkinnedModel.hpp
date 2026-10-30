@@ -21,25 +21,16 @@
 #endif
 
 class CModel;
-#if !RSTL_PRIME1
 class CSkinRules;
 class CCharLayoutInfo;
-#endif
 
 class CModelFlags;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class CCharLayoutInfo;
 class CPoseAsTransforms;
-#else
 class CTransform4f;
-#endif
 
 class CVector3f;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class CVertexMorphEffect;  // This must be a forward declaration for GC matching
-#else
+class CVertexMorphEffect; // This must be a forward declaration for GC matching
+#if !RSTL_PRIME1
 class CPoseAsTransforms_Linear;
 struct SSkinningMatrices;
 #endif
@@ -213,7 +204,6 @@ private:
   bool mOwned;
   bool mDisableWorkspaces;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

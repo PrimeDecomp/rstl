@@ -27,11 +27,14 @@ public:
 
   CControllerData();
   void SetSwingMask(int device, uint mask);
+#endif
 
   bool DeviceIsPresent() const { return mConnected; }
 
   bool GetForceInputEvent() const { return mForceInputEvent; }
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   EPointerState GetPointerState() const { return static_cast< EPointerState >(mPointerState); }
 
   uint GetPointerValidFrameCount() const { return mPointerValidFrameCount; }
@@ -68,9 +71,6 @@ public:
     CControllerButton* buttons = mSwingButtons.data();
     return buttons[button];
   }
-#else
-  bool DeviceIsPresent() const { return mPresent; }
-  bool GetForceInputEvent() const { return mForceInputEvent; } // Guessed name and meaning
 #endif
 
 private:
@@ -78,6 +78,7 @@ private:
 #if RSTL_PRIME1
   friend class CRevolutionController;
   friend class CFinalInput;
+#endif
 
   bool mConnected;
   bool mForceInputEvent;
@@ -97,27 +98,6 @@ private:
   rstl::reserved_vector< CControllerButton, 12 > mSwingButtons;
   uint mWiimoteSwingMask;
   uint mNunchukSwingMask;
-#else
-  bool mPresent;
-  bool mForceInputEvent; // Guessed name and meaning
-  EMotorState mMotorState; // Guessed name
-  short mPointerState; // Guessed name
-  uint mPointerValidFrameCount; // Guessed name
-  uint mPointerInvalidFrameCount; // Guessed name
-  CVector2f mPointerPosition; // Guessed name
-  float mPointerDistance; // Guessed name
-  uint mMotionMask; // Guessed name
-  uint mSwingMask; // Guessed name
-  rstl::reserved_vector< CControllerAxis, 16 > mAxes; // Guessed name
-  rstl::reserved_vector< CControllerAxis, 4 > mContinuousAngleAxes; // Guessed name
-  rstl::reserved_vector< CControllerAxis, 2 > mReservedAxes; // Guessed name
-  rstl::reserved_vector< CControllerButton, 64 > mButtons; // Guessed name
-  rstl::reserved_vector< CControllerButton, 16 > mMotionButtons; // Guessed name
-  rstl::reserved_vector< CControllerButton, 12 > mSwingButtons; // Guessed name
-  uint mWiimoteSwingMask; // Guessed name
-  uint mNunchukSwingMask; // Guessed name
-#endif
-
 };
 CHECK_SIZEOF(CControllerData, 0x20c)
 

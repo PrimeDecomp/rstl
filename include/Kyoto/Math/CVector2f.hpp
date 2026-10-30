@@ -48,9 +48,9 @@ public:
 
   static const CVector2f& Zero() { return skZeroVector; }
 
-// TODO: verify that this Prime/Echoes difference is real
   static CVector2f Lerp(const CVector2f& a, const CVector2f& b, RSTL_PRIME1_CONST float t) {
     const float negT = 1.f - t;
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     // Wii rounds each product before adding the two contributions.
     return CVector2f(static_cast< float >(a.mX * negT) + static_cast< float >(b.mX * t),

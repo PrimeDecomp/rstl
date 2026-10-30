@@ -16,15 +16,8 @@ rstl::ncrc_ptr< CAnimTreeNode >
 CMetaAnimPhaseBlend::VGetAnimationTree(const CAnimSysContext& animSys,
                                        const CMetaAnimTreeBuildOrders& orders) const {
   if (orders.mRecursiveAdvance) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return GetAnimationTree(
-        animSys, CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
-#else
     return GetAnimationTree(animSys,
                             CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
-#endif
-
   }
 
   rstl::ncrc_ptr< CAnimTreeNode > a =
@@ -69,6 +62,5 @@ void CMetaAnimPhaseBlend::WriteAnimData(COutputStream& out) const {
   out.WriteChar(bool(mCharacterSpaceBlend));
 #endif
 #endif
-
 }
 

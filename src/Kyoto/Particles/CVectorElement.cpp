@@ -213,10 +213,10 @@ bool CVECircle::GetValue(int frame, CVector3f& valOut) const {
   mCircleOffset->GetValue(frame, offset);
 
   valOut = offset + (mXVec * radius * cosf(curAngle)) + (mYVec * radius * sinf(curAngle));
-#if !RSTL_PRIME1
   return false;
 }
 
+#if !RSTL_PRIME1
 CVERandomVector::CVERandomVector(CRealElement* a) : x4_(a) {}
 
 CVERandomVector::~CVERandomVector() { delete x4_; }
@@ -229,10 +229,9 @@ bool CVERandomVector::GetValue(int frame, CVector3f& valOut) const {
   float z = 2.f * CRandom16::GetRandomNumber()->Float() - 1.f;
   float scale = mag * CMath::FastInvSqrtF(x * x + y * y + z * z);
   valOut = CVector3f(x * scale, y * scale, z * scale);
-#endif
-
   return false;
 }
+#endif
 
 CVETimeChain::CVETimeChain(CVectorElement* a, CVectorElement* b, CIntElement* switchFrame)
 : mA(a), mB(b), mSwitchFrame(switchFrame) {}
@@ -442,6 +441,11 @@ bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (!mPercent) {
+#else
+  if (mPercent == 0) {
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
     int emitterTime = CParticleGlobals::GetEmitterTime();
     if (mLoop) {
       if (emitterTime >= mLoopEnd) {
@@ -449,20 +453,16 @@ bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
         emitterTime %= mLoopEnd - mLoopStart;
         emitterTime += mLoopStart;
       }
-#else
-  if (mPercent == 0) {
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-#endif
-
       valOut = mKeys[emitterTime];
-#if RSTL_PRIME1
     } else {
       emitterTime = rstl::min_val(emitterTime, mLoopEnd - 1);
       valOut = mKeys[emitterTime];
     }
+#else
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
 #endif
-
     return false;
   }
 
@@ -474,10 +474,10 @@ bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
              remainder * mKeys[CParticleGlobals::GetParticleLifetimePercentage() + 1];
   }
 
-#if !RSTL_PRIME1
   return false;
 }
 
+#if !RSTL_PRIME1
 CVEKeyframeInput::CVEKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
 , mUnk1(in.ReadInt32())
@@ -505,10 +505,9 @@ bool CVEKeyframeInput::GetValue(int frame, CVector3f& valOut) const {
       valOut = mKeys[idx];
     }
   }
-#endif
-
   return false;
 }
+#endif
 
 CVERealToVector::CVERealToVector(CRealElement* value) : mValue(value) {}
 CVERealToVector::~CVERealToVector() { delete mValue; }
@@ -592,9 +591,7 @@ bool CVEParticleAccessParameter1::GetValue(int frame, CVector3f& valOut) const {
   valOut = *reinterpret_cast< const CVector3f* >(&params[0]);
   return false;
 }
-#endif
 
-#if !RSTL_PRIME1
 bool CVEParticleAccessParameter2::GetValue(int frame, CVector3f& valOut) const {
   const float* params = CParticleGlobals::GetParticleAccessParameters();
   valOut = *reinterpret_cast< const CVector3f* >(&params[3]);

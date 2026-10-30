@@ -34,12 +34,11 @@ public:
   typedef rstl::auto_ptr< TObjOwnerDerivedFromIObj< T > > TOwnerPtr;
 #endif
 
-  static TOwnerPtr GetIObjObjectFor(const rstl::auto_ptr< T >& obj) {
+  static TOwnerPtr
 #else
   static typename TObjOwnerDerivedFromIObj< T >::TOwnerPtr
-  GetIObjObjectFor(const rstl::auto_ptr< T >& obj) {
 #endif
-
+  GetIObjObjectFor(const rstl::auto_ptr< T >& obj) {
     return TObjOwnerDerivedFromIObj< T >::GetNewDerivedObject(obj);
   }
 
@@ -81,22 +80,20 @@ public:
     if (CToken::IsLocked() && CToken::IsLoaded()) {
       mItem = TToken< T >::GetT();
       return true;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     }
-#else
-    } else {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+    else
 #endif
-
-    return false;
+    {
+      return false;
+    }
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void Lock() { TToken< T >::Lock(); }
 
   const CToken& GetToken() const { return *this; }
-#else
-  }
 #endif
 
   void Unlock() {
@@ -118,13 +115,12 @@ private:
 };
 
 template < typename T >
+class TLockedToken
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-class TLockedToken : public TToken< T > {
-#else
-class TLockedToken {
+: public TToken< T >
 #endif
-
+{
 public:
   TLockedToken() {}
 // TODO: verify that this Prime/Echoes difference is real
@@ -133,6 +129,7 @@ public:
   TLockedToken(const CToken& token) : TToken< T >(token), mItem(TToken< T >::GetT()) {}
   TLockedToken(const TLockedToken< T >& token) : TToken< T >(token), mItem(*token) {
     CToken::Lock();
+  }
 #else
   TLockedToken(T* item) : mToken(item), mItem(item) { mToken.Lock(); }
   TLockedToken(const CToken& token) : mToken(token), mItem(*mToken) {}
@@ -142,9 +139,8 @@ public:
     mToken = token.mToken;
     mItem = token.mItem;
     return *this;
-#endif
-
   }
+#endif
 
 #if !RSTL_PRIME1
   operator const TToken< T >&() const { return mToken; }

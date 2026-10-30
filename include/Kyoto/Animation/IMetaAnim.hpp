@@ -11,26 +11,11 @@
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "rstl/string.hpp"
-#else
+#endif
+
 class COutputStream;
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-enum EMetaAnimType {
-  kMAT_Play,
-  kMAT_Blend,
-  kMAT_PhaseBlend,
-  kMAT_Random,
-  kMAT_Sequence,
-};
-#else
 enum EMetaAnimType { kMAT_Play, kMAT_Blend, kMAT_PhaseBlend, kMAT_Random, kMAT_Sequence };
-#endif
-
-#if !RSTL_PRIME1
-class CAnimTreeNode;
-#endif
 
 class CPrimitive;
 class CCharAnimTime;
@@ -54,27 +39,24 @@ private:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   char mString[50];
-#else
-  uint mNameHash;
-};
-CHECK_SIZEOF(CPreAdvanceIndicator, 0x10)
-#endif
 
-#if RSTL_PRIME1
 public:
   explicit CPreAdvanceIndicator(const CCharAnimTime& time) : mIsTime(true), mTime(time) {}
   explicit CPreAdvanceIndicator(const char* string);
   bool IsTime() const;
   const CCharAnimTime& GetTime() const;
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   bool IsString() const;
   const char* GetString() const;
+#else
+  uint mNameHash;
+#endif
 };
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 CHECK_SIZEOF(CPreAdvanceIndicator, 0x40)
 #else
+CHECK_SIZEOF(CPreAdvanceIndicator, 0x10)
+
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPreAdvanceIndicator)
 } // namespace rstl
@@ -105,12 +87,7 @@ public:
   VGetAnimationTree(const CAnimSysContext& animSys,
                     const CMetaAnimTreeBuildOrders& orders) const = 0;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void PutTo(COutputStream&) const;
-#else
   void PutTo(COutputStream& out) const;
-#endif
 
   static void AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt);
   static CCharAnimTime GetTime(const CPreAdvanceIndicator& ind, const IAnimReader& anim);

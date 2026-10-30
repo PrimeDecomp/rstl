@@ -24,26 +24,12 @@ public:
 
   const CSteadyStateAnimInfo& GetSteadyStateAnimInfo() const { return mSteadyStateAnimInfo; }
   const rstl::vector< CBoolPOINode >& GetBoolPointsOfInterest() const { return mBoolPOINodes; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const rstl::vector< CInt32POINode >& GetInt32PointsOfInterest() const {
-    return mInt32POINodes;
-  }
-#else
   const rstl::vector< CInt32POINode >& GetInt32PointsOfInterest() const { return mInt32POINodes; }
-#endif
 
   const rstl::vector< CParticlePOINode >& GetParticlePointsOfInterest() const {
     return mParticlePOINodes;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const rstl::vector< CSoundPOINode >& GetSoundPointsOfInterest() const {
-    return mSoundPOINodes;
-  }
-#else
   const rstl::vector< CSoundPOINode >& GetSoundPointsOfInterest() const { return mSoundPOINodes; }
-#endif
 
 private:
   CSteadyStateAnimInfo mSteadyStateAnimInfo;

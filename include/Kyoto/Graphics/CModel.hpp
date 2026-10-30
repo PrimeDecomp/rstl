@@ -190,9 +190,8 @@ private:
 CHECK_SIZEOF(CModel, 0x34)
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& ptr,
-
-                                     int len, const CVParamTransfer& xfer);
+RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
+                                                 const rstl::auto_ptr< uchar >& ptr, int len,
+                                                 const CVParamTransfer& xfer);
 
 #endif // _CMODEL

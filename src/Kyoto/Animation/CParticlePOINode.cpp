@@ -8,15 +8,15 @@ CParticlePOINode::CParticlePOINode(CInputStream& in) : CPOINode(in), mData(in) {
 
 CParticlePOINode CParticlePOINode::CopyNodeMinusStartTime(const CParticlePOINode& node,
                                                           const CCharAnimTime& startTime) {
+  return CParticlePOINode(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  return CParticlePOINode(node.GetString(), node.GetPoiType(), node.GetTime() - startTime,
+      node.GetString(),
 #else
-  return CParticlePOINode(node.GetNameHash(), node.GetPoiType(), node.GetTime() - startTime,
+      node.GetNameHash(),
 #endif
-
-                          node.GetIndex(), node.GetSaveState(), node.GetWeight(),
-                          node.GetCharacterIndex(), node.GetFlags(), node.GetParticleData());
+      node.GetPoiType(), node.GetTime() - startTime, node.GetIndex(), node.GetSaveState(),
+      node.GetWeight(), node.GetCharacterIndex(), node.GetFlags(), node.GetParticleData());
 }
 
 #if !RSTL_PRIME1

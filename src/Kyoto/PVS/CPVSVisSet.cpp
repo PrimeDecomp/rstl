@@ -14,7 +14,6 @@ CPVSVisSet::CPVSVisSet(int numBits, int numLights, const rstl::auto_ptr< const c
 #else
 CPVSVisSet::CPVSVisSet(int numBits, int numLights, rstl::auto_ptr< const char > leafPtr)
 #endif
-
 : mState(kVSS_NodeFound), mNumBits(numBits), mNumLights(numLights), mPtr(leafPtr) {}
 
 CPVSVisSet::CPVSVisSet(EPVSVisSetState state) : mState(state), mNumBits(0), mNumLights(0) {}
@@ -49,7 +48,6 @@ EPVSVisSetState CPVSVisSet::GetVisible(int idx) const {
   if (bit < 0x7) {
     return static_cast< EPVSVisSetState >(((uchar)ptr[0] & (0x3 << bit)) >> bit);
 #endif
-
   }
   return static_cast< EPVSVisSetState >((((uchar)ptr[0] >> 7) & 1) | ((ptr[1] & 0x1) << 1));
 }
@@ -65,15 +63,8 @@ CPVSVisOctree::CPVSVisOctree(const CAABox& bounds, const int numObjects, const i
 , mMin(mBounds.GetMinPoint())
 , mMax(mBounds.GetMaxPoint()) {
   mOctreeData.release();
-#else
-EPVSVisSetState CPVSVisSet::CombineStates(EPVSVisSetState a, EPVSVisSetState b) {
-  return a == b ? a : kVSS_NodeFound;
-#endif
-
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 CPVSVisOctree CPVSVisOctree::MakePVSVisOctree(const char* data, int len) {
   CMemoryInStream in(data, len);
   CAABox bounds(in);
@@ -139,6 +130,10 @@ CPVSVisSet CPVSVisOctree::GetVisSet(const CVector3f& point) const {
   }
 }
 #else
+EPVSVisSetState CPVSVisSet::CombineStates(EPVSVisSetState a, EPVSVisSetState b) {
+  return a == b ? a : kVSS_NodeFound;
+}
+
 #if RSTL_VERSION < RSTL_R32J
 #include "CPVSVisOctree.inc"
 #endif

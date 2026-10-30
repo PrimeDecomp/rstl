@@ -25,13 +25,9 @@ public:
   // The type name is exported in the MP2 Wii SEL; the value names are guesses.
   enum EEaseTypes { kET_Sinusoidal, kET_Quadratic };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static float EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart,
-                        float start, float end, float slope);
-#else
-  static float EaseInOut(float t, EEaseTypes ease, float easeIn, float easeOut, float low,
-                         float high, float scale);
+  static float EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart, float start,
+                         float end, float slope);
+#if !RSTL_PRIME1
   static float PhongBlob(float t, float exponent);
   static bool SolveQuadratic(float a, float b, float c, float& plus, float& minus);
   // Reconstructed solver names; coefficients are ordered from constant to leading term.
@@ -44,16 +40,11 @@ public:
   static float FastFmod(float x, float y) {
     int v = static_cast< int >(x * (1.f / y));
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     return x - static_cast< float >(v * y);
 #else
     return x - v * y;
 #endif
-#else
-    return x - v * y;
-#endif
-
   }
   template < typename T >
 // TODO: verify that this Prime/Echoes difference is real
@@ -231,21 +222,10 @@ public:
   static CVector3f BaryToWorld(const CVector3f& p0, const CVector3f& p1, const CVector3f& p2,
                                const CVector3f& bary);
   // GetCatmullRomSplinePoint__5CMathFRC9CVector3fRC9CVector3fRC9CVector3fRC9CVector3ff global
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #ifdef __MWERKS__
-  static inline float FastSqrtF(register float x) {
-    if (x == 0.f) {
-      return 0.f;
-    }
-    return x * __frsqrte(x);
-  }
-#else
-  static inline float FastSqrtF(float x) { return sqrtf(x); }
-#endif
-#else
-#ifdef __MWERKS__
+#if !RSTL_PRIME1
   static inline float FastInvSqrtF(float x) { return __frsqrte(x); } // Guessed name
+#endif
   static inline float FastSqrtF(register float x) {
     if (x == 0.f) {
       return 0.f;
@@ -253,9 +233,12 @@ public:
     return x * __frsqrte(x);
   }
 #else
+#if !RSTL_PRIME1
   static inline float FastInvSqrtF(float x) { return 1.f / sqrtf(x); } // Guessed name
+#endif
   static inline float FastSqrtF(float x) { return sqrtf(x); }
 #endif
+#if !RSTL_PRIME1
   // Noise3d is a Wii SEL export; the other arities are guessed from its call pattern.
   static float Noise1d(float x);
   static float Noise2d(float x, float y);
@@ -264,14 +247,7 @@ public:
 #endif
 
   static double SqrtD(double x);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static bool IsEpsilon(float x, float y, float epsilon) {
-    return AbsF(x - y) < epsilon;
-  }
-#else
   static bool IsEpsilon(float x, float y, float epsilon) { return AbsF(x - y) < epsilon; }
-#endif
 
   static float FastMin(float a, float b) { return FastFSel(a - b, b, a); }
 // TODO: verify that this Prime/Echoes difference is real
@@ -341,14 +317,11 @@ template < typename T >
 const T& CMath::Max(const T& a, const T& b) {
   return a > b ? a : b;
 }
-#else
-#if RSTL_VERSION >= RSTL_R32J
+#elif RSTL_VERSION >= RSTL_R32J
 template <>
 inline float CMath::Min< float >(const float a, const float b) {
   return FastMin(a, b);
 }
-
-#endif
 #endif
 
 #endif // _CMATH

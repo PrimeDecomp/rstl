@@ -8,10 +8,8 @@
 #include "dolphin/gx/GXManage.h"
 #include "rstl/list.hpp"
 
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
 #include "stdint.h"
-#endif
 #endif
 
 static uint sCurList = 0;
@@ -28,24 +26,23 @@ static rstl::list< void* > sFrameDelayedList[2];
 CFrameDelayedKiller::Stats CFrameDelayedKiller::mUnusedStats = {0, 0, 0, 0, 0, 0};
 #pragma force_active reset
 #endif
-#else
-void CFrameDelayedKiller::Initialize() {
-  sInitialized = true;
-  StallAndFlushAllAllocations();
-}
 #endif
 
+void CFrameDelayedKiller::Initialize() {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CFrameDelayedKiller::Initialize() { StallAndFlushAllAllocations(); }
+#if !RSTL_PRIME1
+  sInitialized = true;
+#endif
+  StallAndFlushAllAllocations();
+}
 
-void CFrameDelayedKiller::ShutDown() { StallAndFlushAllAllocations(); }
-#else
 void CFrameDelayedKiller::ShutDown() {
   StallAndFlushAllAllocations();
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   sInitialized = false;
-}
 #endif
+}
 
 void CFrameDelayedKiller::FlushAllAllocations() {
   for (int i = 0; i < 2; ++i) {
@@ -58,12 +55,9 @@ void CFrameDelayedKiller::StallAndFlushAllAllocations() {
   FlushAllAllocations();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame thisFrame, void* victim) {
-  uint index = thisFrame == true ? sCurList : sCurList ^ 1;
-#else
 void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame whichFrame, void* victim) {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   if (victim == nullptr) {
     return;
   }
@@ -73,9 +67,13 @@ void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame whichFrame, void* v
     return;
   }
 
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  uint index = whichFrame == true ? sCurList : sCurList ^ 1;
+#else
   uint index = whichFrame == kWhichFrame_NextFrame ? sCurList : sCurList ^ 1;
 #endif
-
   sFrameDelayedList[index].push_back(victim);
 }
 
@@ -90,23 +88,16 @@ void CFrameDelayedKiller::FlushAllocationsForFrame() {
 }
 
 CElementAllocationChunk::CElementAllocationChunk()
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 : mCapacity(256)
 , mAllocatedWords(0)
 , mAllocationCount(0) {}
-#else
-: mCapacity(256), mAllocatedWords(0), mAllocationCount(0) {}
-#endif
 
 bool CElementAllocationChunk::CanAllocate(uint size) const {
   return mCapacity > mAllocatedWords + (size + 3) / 4;
 }
 
 bool CElementAllocationChunk::Contains(const void* ptr) const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
   return reinterpret_cast< uintptr_t >(ptr) - reinterpret_cast< uintptr_t >(mData) <
          sizeof(mData);
 #else
@@ -114,12 +105,6 @@ bool CElementAllocationChunk::Contains(const void* ptr) const {
   int index = offset / 4;
   return mCapacity > index;
 #endif
-#else
-  int offset = static_cast< const char* >(ptr) - reinterpret_cast< const char* >(mData);
-  int index = offset / 4;
-  return mCapacity > index;
-#endif
-
 }
 
 void* CElementAllocationChunk::Allocate(uint size) {

@@ -69,7 +69,6 @@ private:
   ushort mPitchEnd;
   float mPitchDuration;
 #endif
-
 };
 #if !RSTL_PRIME1
 CHECK_CHILD_SIZEOF(CSoundPOINode, CPOINode, 0x18)

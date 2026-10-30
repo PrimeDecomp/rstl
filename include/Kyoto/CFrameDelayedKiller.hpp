@@ -27,12 +27,7 @@ public:
   static void ShutDown();
 
   static void FlushAllocationsForFrame();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void ScheduleDeletion(const EWhichFrame thisFrame, void* victim);
-#else
-  static void ScheduleDeletion(EWhichFrame whichFrame, void* victim);
-#endif
+  static void ScheduleDeletion(RSTL_PRIME1_CONST EWhichFrame whichFrame, void* victim);
 
   static void FlushAllAllocations();
   static void StallAndFlushAllAllocations();

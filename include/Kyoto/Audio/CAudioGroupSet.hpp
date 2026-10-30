@@ -19,9 +19,7 @@
 class CInputStream;
 #else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
-#if !RSTL_PRIME1
 class CVParamTransfer;
 
 // Echoes AGSC: the group is pushed straight into ARAM through a MusyX sound stack.
@@ -106,8 +104,8 @@ CHECK_SIZEOF(CAudioGrpSetLoc, 0x44)
 CHECK_SIZEOF(CAudioGroupSet, 0x30)
 #else
 CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-                                                    const rstl::auto_ptr< uchar >& data, int length,
-                                                    const CVParamTransfer& xfer);
+                                              const rstl::auto_ptr< uchar >& data, int length,
+                                              const CVParamTransfer& xfer);
 #endif
 
 #endif // _CAUDIOGROUPSET

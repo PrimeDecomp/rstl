@@ -11,17 +11,10 @@
 rstl::ncrc_ptr< CAnimTreeNode >
 CMetaAnimPlay::VGetAnimationTree(const CAnimSysContext& animSys,
                                  const CMetaAnimTreeBuildOrders& orders) const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (orders.mRecursiveAdvance)
-    return GetAnimationTree(
-        animSys, CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
-#else
   if (orders.mRecursiveAdvance) {
     return GetAnimationTree(animSys,
                             CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
   }
-#endif
 
   IObjectStore& pool = animSys.GetSimplePool();
   const SObjectTag tag('ANIM', mPrimitive.GetResourceId());
@@ -29,18 +22,21 @@ CMetaAnimPlay::VGetAnimationTree(const CAnimSysContext& animSys,
 #if !RSTL_PRIME1
   const int animIdx = mPrimitive.GetAnimDatabaseIndex();
 #endif
-
   rstl::ownership_transfer< IAnimReader > reader =
+      CAllFormatsAnimSource::GetNewReader(anim, mStartTime
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+                                          , animSys.GetEventData(animIdx)
+#endif
+                                          );
+  return rs_new CAnimTreeAnimReaderContainer(reader, mPrimitive.GetName()
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      CAllFormatsAnimSource::GetNewReader(anim, mStartTime);
-  return rs_new CAnimTreeAnimReaderContainer(reader, mPrimitive.GetName(),
-                                             mPrimitive.GetAnimDatabaseIndex());
+                                             , mPrimitive.GetAnimDatabaseIndex()
 #else
-      CAllFormatsAnimSource::GetNewReader(anim, mStartTime, animSys.GetEventData(animIdx));
-  return rs_new CAnimTreeAnimReaderContainer(reader, mPrimitive.GetName(), animIdx);
+                                             , animIdx
 #endif
-
+                                             );
 }
 
 void CMetaAnimPlay::GetUniquePrimitives(rstl::set< CPrimitive >& primsOut) const {

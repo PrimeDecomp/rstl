@@ -26,10 +26,9 @@ public:
   float VGetBlendingWeight() const override;
 #if RSTL_PRIME1
   CAnimTreeBlend(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-                 const rstl::ncrc_ptr< CAnimTreeNode >& b, float blendWeight,
-                 const rstl::string& name)
+                 const rstl::ncrc_ptr< CAnimTreeNode >& b, float weight, const rstl::string& name)
   : CAnimTreeTweenBase(characterSpaceBlend, a, b, kBlendRoot_Offset | kBlendRoot_Rotation, name)
-  , mBlendWeight(blendWeight) {}
+  , mBlendWeight(weight) {}
 #endif
 
   static rstl::string CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& a,

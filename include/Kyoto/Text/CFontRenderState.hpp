@@ -17,12 +17,7 @@ class CLineInstruction;
 class CFontRenderState {
 public:
   CFontRenderState();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void RefreshColor(EColorType col);
-#else
   void RefreshColor(EColorType type);
-#endif
 
   uint ConvertToTextureSpace(const CTextColor& color) const;
   void PushState();
@@ -76,30 +71,15 @@ public:
 
   void SubY(const int y) { mCurY -= y; }
   void AddY(const int y) { mCurY += y; }
+#endif
 
-  int GetSpacing(const int v) const {
-#else
   int GetSpacing(const int value) const {
-#endif
-
     if (GetBlock()->GetVerticalJustification() == kVerticalJustification_Full) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      return v;
-#else
       return value;
-#endif
-
     }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return (static_cast< int >(static_cast< float >(v) * GetLineSpacing()) + GetLineExtraSpacing());
-#else
     return static_cast< int >(static_cast< float >(value) * GetLineSpacing()) +
            GetLineExtraSpacing();
-#endif
-
   }
 
 private:
@@ -126,12 +106,6 @@ private:
   rstl::list< CSaveableState > mPushedStates;
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFontRenderState,
-             (RSTL_VERSION >= RSTL_GM8P_00 ? 0x12c : 0x124))
-#else
-CHECK_SIZEOF(CFontRenderState, 0x12c)
-#endif
+CHECK_SIZEOF(CFontRenderState, (RSTL_VERSION >= RSTL_GM8P_00 ? 0x12c : 0x124))
 
 #endif // _CFONTRENDERSTATE

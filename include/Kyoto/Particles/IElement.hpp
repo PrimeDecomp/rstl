@@ -14,14 +14,8 @@ class CVector3f;
 class IElement {
 public:
   struct CElementAllocator {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    static void* Alloc(size_t sz, const char*, const char*);
-    static void Free(void* ptr, size_t sz);
-#else
     static void* Alloc(size_t size, const char* fileAndLine, const char* type);
     static void Free(void* ptr, size_t size);
-#endif
 
     static CElementAllocationChunk* GetCurrentChunk() { return sCurrentChunk; }
     static uint GetCurrentAllocatedSize() {
@@ -39,12 +33,7 @@ public:
 
   // -> CFrameDelayedKiller
   void* operator new(size_t sz, const char*, const char*);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void* operator new(size_t sz) { return operator new(sz, "\?\?(\?\?)", nullptr); }
-#else
-  void* operator new(size_t sz) { return operator new(sz, "??(??)", nullptr); }
-#endif
 
   void operator delete(void* ptr, size_t sz);
 };
@@ -85,15 +74,10 @@ public:
 };
 
 struct SUVElementSet {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   float xMin;
   float yMin;
   float xMax;
   float yMax;
-#else
-  float xMin, yMin, xMax, yMax;
-#endif
 
   //  SUVElementSet() {}
   // SUVElementSet() : xMin(0.f), yMin(1.f), xMax(0.f), yMax(1.f) {}

@@ -16,13 +16,7 @@ public:
   void Poll() override;
   uint GetDeviceCount() const override;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-  CControllerGamepadData& GetGamepadData(int controller) override;
-  uint GetControllerType(int) const override;
-  void SetMotorState(EIOPort port, EMotorState state) override;
-#else
-
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   void Update(float dt) override;
   CControllerData& GetInput(uint channel) override;
   void SetInput(const CControllerData& input, int channel) override;
@@ -36,8 +30,6 @@ public:
   CVector2f GetPointerPosition(int channel) const override;
   void SetPointerRecenterMode(uint channel, EPointerRecenterMode mode) override;
   bool HasMotionActivity(uint channel) const override;
-
-#endif
 #else
   CControllerGamepadData& GetGamepadData(int controller) override;
   uint GetControllerType(int) const override;

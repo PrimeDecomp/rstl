@@ -24,7 +24,6 @@ public:
     CAdvancementDeltas mRightDeltas;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-
   public:
     CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
                                   const CAdvancementDeltas& leftDeltas,
@@ -33,7 +32,6 @@ public:
     const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
 #endif
-
   };
 
 #if RSTL_PRIME1
@@ -48,71 +46,41 @@ public:
                        const rstl::ncrc_ptr< CAnimTreeNode >& b, const rstl::string& name);
   // IAnimReader
   ~CAnimTreeDoubleChild() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SAdvancementResults VAdvanceView(const CCharAnimTime& a) override;
-#else
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
-#endif
 
   uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                       uint iterator, int unk) const override;
-#else
                        uint iterator, int additive) const override;
-#endif
 
   uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                        uint iterator, int unk) const override;
-#else
                         uint iterator, int additive) const override;
-#endif
 
   uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                           uint iterator, int unk) const override;
-#else
                            uint iterator, int additive) const override;
-#endif
 
   uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+                        uint iterator, int additive) const override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                        uint iterator, int unk) const override;
   bool VGetBoolPOIState(const char* name) const override;
   s32 VGetInt32POIState(const char* name) const override;
   CParticleData::EParentedMode VGetParticlePOIState(const char* name) const override;
-  void VSetPhase(float) override;
-  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
-                                             const CCharAnimTime& b) const override;
 #else
-                        uint iterator, int additive) const override;
   bool VGetBoolPOIState(uint nameHash) const override;
   s32 VGetInt32POIState(uint nameHash) const override;
   CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;
+#endif
   void VSetPhase(float phase) override;
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const override;
 
   // CAnimTreeNode
-#endif
-
   uint Depth() const override { return rstl::max_val(mA->Depth(), mB->Depth()) + 1; }
   CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const override;
   uint VGetNumChildren() const override;
   rstl::rc_ptr< CAnimTreeNode > VGetBestUnblendedChild() const override;
   void VGetWeightedReaders(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      float w, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const override;
-#else
       float weight,
       rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const override;
-#endif
 
   virtual float VGetRightChildWeight() const = 0;
   void ReplaceLeftChild(const rstl::ncrc_ptr< CAnimTreeNode >& child) { mA = child; }

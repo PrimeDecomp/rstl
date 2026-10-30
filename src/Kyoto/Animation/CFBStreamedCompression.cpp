@@ -23,7 +23,6 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
 #if RSTL_PRIME1
   in.Get< uint >();
 #endif
-
   CFBStreamedPerChannelHeaderList* channels =
       static_cast< CFBStreamedPerChannelHeaderList* >(cursor);
   new (channels) CFBStreamedPerChannelHeaderList(in);
@@ -35,7 +34,6 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
   uchar* next = const_cast< uchar* >(channels->AfterEnd());
   cursor = next;
 #endif
-
   uint wordCount = static_cast< uint >(
       static_cast< float >(
           channels->GetSumOfBitCounts() * first.GetRotationBitStorage().GetWidth() + 31) /
@@ -47,13 +45,7 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
   return data;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& store)
-#else
-CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
-#endif
-
 : mScratchSize(in.Get< uint >())
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -62,7 +54,6 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
 #else
 , mVersionNumber(in.ReadInt8())
 #endif
-
 , mRotsAndOffs(GetRotationsAndOffsets(mScratchSize / 4 + 1, in).release())
 , mRootOffset(0.f, 0.f, 0.f) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -73,7 +64,6 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
 #else
   {
 #endif
-
   const CStandardMultiFormatHeader& mainHeader = MainHeader();
   const CFBStreamedCompressionTimeHeader& timeHeader = TimeHeader(mainHeader);
   const CFBStreamedPerChannelHeaderList& channels = GetPerChannelHeaderList(timeHeader);
@@ -87,12 +77,13 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
   for (CFBStreamedPerChannelHeaderList::const_iterator channel(firstChannel, channels.size());
        channel != channels.end(); ++channel) {
 // TODO: verify that this Prime/Echoes difference is real
+    if (channel->GetSegId() ==
 #if RSTL_PRIME1
-    if (channel->GetSegId() == CSegId::Root()) {
+        CSegId::Root()
 #else
-      if (channel->GetSegId() == CSegId(0)) {
+        CSegId(0)
 #endif
-
+    ) {
       break;
     }
     ++rootIndex;
@@ -120,16 +111,15 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
 }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CFBStreamedCompression::~CFBStreamedCompression() {}
-
-CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
-  return MainHeader().GetMaxTime();
-#else
 CFBStreamedCompression::~CFBStreamedCompression() {
+#if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mScratchSize, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
 }
+
+#if RSTL_PRIME1
+CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
+  return MainHeader().GetMaxTime();
+}
+#endif
 

@@ -9,20 +9,15 @@ class CParticlePOINode : public CPOINode {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CParticlePOINode(const rstl::string name = rstl::string_l(""), const EPOIType type = kPT_Particle,
+  CParticlePOINode(const rstl::string name = rstl::string_l("")
 #else
-  CParticlePOINode(const uint nameHash = -1, const EPOIType type = kPT_Particle,
+  CParticlePOINode(const uint name = -1
 #endif
-
+                   , const EPOIType type = kPT_Particle,
                    const CCharAnimTime& time = CCharAnimTime(), const int index = -1,
                    const bool unique = false, const float weight = 1.f, const int charIdx = -1,
                    const int flags = 0, const CParticleData& data = CParticleData())
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   : CPOINode(name, type, time, index, unique, weight, charIdx, flags), mData(data) {}
-#else
-  : CPOINode(nameHash, type, time, index, unique, weight, charIdx, flags), mData(data) {}
-#endif
 
   explicit CParticlePOINode(CInputStream& in);
 

@@ -59,10 +59,10 @@ bool CVESphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f direction = offset.CanBeNormalized() ? offset.AsNormalized() : offset;
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * direction;
-#if !RSTL_PRIME1
   return false;
 }
 
+#if !RSTL_PRIME1
 CVEEllipsoid::CVEEllipsoid(CVectorElement* origin, CVectorElement* radii, CVectorElement* rotation,
                            CRealElement* velocityMag, bool onSurface)
 : mOrigin(origin)
@@ -112,10 +112,9 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   pPos = origin + dir;
   pVel = dir.CanBeNormalized() ? dir.AsNormalized() : dir;
   pVel *= mag;
-#endif
-
   return false;
 }
+#endif
 
 CVEAngleSphere::CVEAngleSphere(CVectorElement* origin, CRealElement* radius,
                                CRealElement* velocityMag, CRealElement* angleXBias,
@@ -167,13 +166,7 @@ bool CVEAngleSphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const
   CVector3f vec(-CMath::FastSinR(yBias) * CMath::FastCosR(xBias), CMath::FastSinR(xBias),
                 CMath::FastCosR(xBias) * CMath::FastCosR(yBias));
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  pPos = origin + (radius * vec);
-  CVector3f dir = (pPos - origin).AsNormalized();
-  mVelocityMag->GetValue(frame, mag);
-  pVel = mag * dir;
-#else
-#if RSTL_VERSION == RSTL_G2MP
+#if !RSTL_PRIME1 && RSTL_VERSION == RSTL_G2MP
   vec.Normalize();
   pPos = origin + (radius * vec);
   mVelocityMag->GetValue(frame, mag);
@@ -183,7 +176,6 @@ bool CVEAngleSphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const
   CVector3f dir = (pPos - origin).AsNormalized();
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * dir;
-#endif
 #endif
 
   return false;
@@ -218,9 +210,7 @@ CEEPlaneEmitter::CEEPlaneEmitter(CVectorElement* translation, CVectorElement* ro
     mTransform.RotateLocalX(CRelAngle::FromDegrees(rot.GetX()));
     mTransform.AddTranslation(trans);
   }
-#endif
 
-#if !RSTL_PRIME1
   if (coneAngle != nullptr && coneAngle->IsConstant()) {
     mConstantCone = true;
     mConeAngleElement->GetValue(0, mConeAngleRadians);

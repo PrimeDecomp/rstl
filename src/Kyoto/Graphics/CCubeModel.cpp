@@ -31,16 +31,19 @@ inline uint GetMaterialOffset(const uchar* materialData, const int idx) {
   materialData += (idx * 4);
   return CBasics::SwapBytes(*reinterpret_cast< const uint* >(materialData - 4));
 }
-
-CCubeModel::CCubeModel(rstl::vector< void* >* surfaces,
-#else
-CCubeModel::CCubeModel(rstl::vector< CCubeSurface >* surfaces,
 #endif
 
-                       rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
-                       const void* positions, const void* normals, const void* colors,
-                       const void* uvs, const void* compressedUvs, const CAABox& bounds,
-                       const uchar visorFlags, const bool texturesLoaded, const uint idx)
+CCubeModel::CCubeModel(
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    rstl::vector< void* >* surfaces,
+#else
+    rstl::vector< CCubeSurface >* surfaces,
+#endif
+    rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
+    const void* positions, const void* normals, const void* colors, const void* uvs,
+    const void* compressedUvs, const CAABox& bounds, const uchar visorFlags,
+    const bool texturesLoaded, const uint idx)
 : mInstance(*surfaces, materialData, positions, normals, colors, uvs, compressedUvs)
 , mTextures(textures)
 , mBounds(bounds)
@@ -53,17 +56,22 @@ CCubeModel::CCubeModel(rstl::vector< CCubeSurface >* surfaces,
 #endif
 
 , mVisorFlags(visorFlags)
+, mIdx(idx)
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+, mMaterialOffsets(nullptr)
+, mMaterialData(nullptr)
+#endif
+{
+#if !RSTL_PRIME1
+  CacheMaterialData();
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mIdx(idx) {
   rstl::vector< void* >& surf = mInstance.Surfaces();
   for (AUTO(it, surf.begin()); it != surf.end(); ++it) {
     CCubeSurface::SSurfaceData* data = static_cast< CCubeSurface::SSurfaceData* >(*it);
 #else
-, mIdx(idx)
-, mMaterialOffsets(nullptr)
-, mMaterialData(nullptr) {
-  CacheMaterialData();
   rstl::vector< CCubeSurface >& surf = mInstance.Surfaces();
   for (rstl::vector< CCubeSurface >::iterator it = surf.begin(); it != surf.end(); ++it) {
     const CCubeSurface::SSurfaceData* data = it->mData;

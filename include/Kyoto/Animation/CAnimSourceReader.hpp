@@ -54,7 +54,6 @@ private:
 #else
   TSubAnimTypeToken< CAnimSource > mSource;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -82,15 +81,8 @@ public:
   bool VHasOffset(const CSegId& seg) const override;
   CVector3f VGetOffset(const CSegId& seg) const override;
   CQuaternion VGetRotation(const CSegId& seg) const override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut) const override;
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-#else
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set) const override;
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-#endif
-
                            const CCharAnimTime& time) const override;
 #if !RSTL_PRIME1
   void VGetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
@@ -101,54 +93,43 @@ public:
 
   rstl::ownership_transfer< IAnimReader > VClone() const override;
   void VSetPhase(float phase) override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
-                                             const CCharAnimTime& b) const override;
-#else
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const override;
-#endif
 
   virtual CVector3f VGetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   virtual bool VSupportsReverseView() const;
   virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time);
 #endif
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time,
-                    const CSteadyStateAnimInfo& steadyStateInfo, int passedBoolCount,
-#else
-  CAnimSourceReader(
-      const TSubAnimTypeToken< CAnimSource >& source, const CAnimPOIData* poiData,
-      const CCharAnimTime& time, const CSteadyStateAnimInfo& steadyStateInfo, int passedBoolCount,
+  CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source
+#if !RSTL_PRIME1
+                    , const CAnimPOIData* poiData
 #endif
-
-                    int passedIntCount, int passedParticleCount, int passedSoundCount,
+                    , const CCharAnimTime& time, const CSteadyStateAnimInfo& steadyStateInfo,
+                    int passedBoolCount, int passedIntCount, int passedParticleCount,
+                    int passedSoundCount,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                     const rstl::vector< rstl::pair< rstl::string, bool > >& boolStates,
                     const rstl::vector< rstl::pair< rstl::string, int > >& intStates,
                     const rstl::vector< rstl::pair< rstl::string, CParticleData::EParentedMode > >&
                         particleStates)
-  : CAnimSourceReaderBase(rs_new CAnimSourceInfo(source), time, passedBoolCount, passedIntCount,
-                          passedParticleCount, passedSoundCount, boolStates, intStates,
-                          particleStates)
 #else
-      const rstl::vector< rstl::pair< uint, bool > >& boolStates,
-      const rstl::vector< rstl::pair< uint, int > >& intStates,
-      const rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > >& particleStates)
-  : CAnimSourceReaderBase(rs_new CAnimSourceInfo(source), poiData, time, passedBoolCount,
-                          passedIntCount, passedParticleCount, passedSoundCount, boolStates,
-                          intStates, particleStates)
+                    const rstl::vector< rstl::pair< uint, bool > >& boolStates,
+                    const rstl::vector< rstl::pair< uint, int > >& intStates,
+                    const rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > >&
+                        particleStates)
 #endif
-
+  : CAnimSourceReaderBase(rs_new CAnimSourceInfo(source)
+#if !RSTL_PRIME1
+                          , poiData
+#endif
+                          , time, passedBoolCount, passedIntCount, passedParticleCount,
+                          passedSoundCount, boolStates, intStates, particleStates)
   , mSource(source)
   , mSteadyStateInfo(steadyStateInfo) {}
 

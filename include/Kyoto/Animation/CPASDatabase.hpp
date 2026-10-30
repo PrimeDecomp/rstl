@@ -36,11 +36,7 @@ private:
   int mDefaultState;
 };
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CPASDatabase, 0x14)
-#endif
-#else
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CPASDatabase, 0x14)
 #endif
 

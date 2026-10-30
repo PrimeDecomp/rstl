@@ -43,6 +43,9 @@ inline void* AllocateSegment() {
         base = static_cast< char* >(LCGetBase());
 #endif
         return base + offset;
+      }
+    }
+  }
 #else
   if (sFreeSegments) {
     for (uint i = 0; i < kCacheSlotCount; ++i) {
@@ -51,12 +54,10 @@ inline void* AllocateSegment() {
         char* base = static_cast< char* >(LCGetBase());
         base += i * kSegmentSetSize;
         return base;
-#endif
-
       }
     }
   }
-
+#endif
   return CMemory::Alloc(kSegmentSetSize);
 }
 
@@ -72,7 +73,6 @@ inline void FreeSegment(CSegStatement* seg) {
 #else
   char* base = static_cast< char* >(LCGetBase());
 #endif
-
   char* ptr = reinterpret_cast< char* >(seg);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -80,7 +80,6 @@ inline void FreeSegment(CSegStatement* seg) {
 #else
   if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
 #endif
-
     int index = (ptr - base) / kSegmentSetSize;
     sFreeSegments |= 1 << index;
   } else {
@@ -89,20 +88,14 @@ inline void FreeSegment(CSegStatement* seg) {
 }
 } // namespace
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CSegStatementSet::CSegStatementSet(void* ptr) : mSegData(static_cast< CSegStatement* >(ptr)) {
-#else
 CSegStatementSet::CSegStatementSet(void* storage)
 : mSegData(static_cast< CSegStatement* >(storage)) {
-#endif
-
   for (int i = 0; i < kSegmentCount; ++i) {
     new (&mSegData[i]) CSegStatement;
-#if RSTL_PRIME1
   }
 }
 
+#if RSTL_PRIME1
 void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
                            const CSegStatementSet& set, float weight) {
   const int count = list.size();
@@ -117,10 +110,9 @@ void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
       result.Set(prior.Offset() + (other.Offset() - info.GetFromParentUnrotated(id)) * weight);
     }
     Set(id, result);
-#endif
-
   }
 }
+#endif
 
 CStackSegStatementSet::CStackSegStatementSet() : CSegStatementSet(AllocateSegment()) {}
 

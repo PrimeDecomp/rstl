@@ -39,8 +39,9 @@ public:
   bool operator<(const CRelAngle& rhs) const { return mAngle < rhs.mAngle; }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-  static CRelAngle FromDegrees(RSTL_PRIME1_CONST float deg) { return CRelAngle(deg * (M_PIF / 180.f)); }
+  static CRelAngle FromDegrees(RSTL_PRIME1_CONST float deg) {
+    return CRelAngle(deg * (M_PIF / 180.f));
+  }
   static CRelAngle FromRadians(RSTL_PRIME1_CONST float rad) { return CRelAngle(rad); }
 
 private:

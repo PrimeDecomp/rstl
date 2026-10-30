@@ -72,7 +72,6 @@ public:
 #if RSTL_PRIME1
   void SetDisabled(const bool disabled);
 #endif
-
 };
 
 #if !RSTL_PRIME1

@@ -5,10 +5,7 @@
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 
-#if !RSTL_PRIME1
-class CAnimTreeNode;
 class IMetaTrans;
-#endif
 
 class CTransitionManager {
 public:

@@ -9,7 +9,6 @@
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
 
 #include "Kyoto/Animation/CTimeRemainderAndFraction.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Basics/CCast.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -20,6 +19,7 @@
 
 class CMemoryInputToBitLevelLoader;
 class CSegStatement;
+class CFBKeyFrameReductionPerChannel_HeaderForAll;
 template < typename T >
 class CBitLevelLoader;
 
@@ -99,7 +99,6 @@ public:
 #else
     return *reinterpret_cast< const CQuaternion* >(mComputedFloats + index * mValuesPerChannel);
 #endif
-
   }
   const CVector3f& GetVector(uint index) const {
 // TODO: verify that this Prime/Echoes difference is real
@@ -109,14 +108,15 @@ public:
 #else
     return *reinterpret_cast< const CVector3f* >(mComputedFloats +
                                                  (index * mValuesPerChannel + kRotationValueCount));
+#endif
   }
+#if !RSTL_PRIME1
   const CVector3f& GetScale(uint index) const {
     uint offset = mHasOffsetData ? kRotationValueCount + kOffsetValueCount : kRotationValueCount;
     return *reinterpret_cast< const CVector3f* >(mComputedFloats +
                                                  (offset + index * mValuesPerChannel));
-#endif
-
   }
+#endif
 
 private:
 #if !RSTL_PRIME1
@@ -163,13 +163,10 @@ private:
   bool mHasScaleData;
   uchar mValuesPerChannel;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CFBStreamedAnimReaderTotals, 0x28)
-
-class CFBKeyFrameReductionPerChannel_HeaderForAll;
 #else
 CHECK_SIZEOF(CFBStreamedAnimReaderTotals, 0x3c)
 #endif
@@ -230,16 +227,14 @@ class CMemoryInputToBitLevelLoader {
   friend class CBitLevelLoader< CMemoryInputToBitLevelLoader >;
 
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
   CMemoryInputToBitLevelLoader(const uint* data) : mData(reinterpret_cast< const uchar* >(data)) {}
 #else
-  CMemoryInputToBitLevelLoader(const uint* data)
-  : mData(reinterpret_cast< const uchar* >(data) - sizeof(uint)) {}
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  explicit
 #endif
-#else
-  explicit CMemoryInputToBitLevelLoader(const uint* data)
+  CMemoryInputToBitLevelLoader(const uint* data)
   : mData(reinterpret_cast< const uchar* >(data) - sizeof(uint)) {}
 #endif
 
@@ -272,45 +267,31 @@ private:
 template < typename T >
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-NTSC_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
-#else
-uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
+NTSC_INLINE
 #endif
-
+uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
   uint remaining = bits;
   uint result = 0;
   uint shift = 0;
   while (remaining != 0) {
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
     }
 #endif
-#endif
-
     uint count = rstl::min_val(32 - mBit, remaining);
     uint highShift = 32 - count;
     result |= ((mWord >> mBit) << highShift) >> (highShift - shift);
     mBit += count;
     shift += count;
     remaining -= count;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if !NONMATCHING
+#if !(RSTL_PRIME1 && NONMATCHING)
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
     }
 #endif
-#else
-    if (mBit == 32) {
-      mBit = 0;
-      mWord = Input(*mInput);
-    }
-#endif
-
   }
   return result;
 }
@@ -318,26 +299,18 @@ uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
 template < typename T >
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-NTSC_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
-#else
-int CBitLevelLoader< T >::LoadSigned(uint bits) {
+NTSC_INLINE
 #endif
-
+int CBitLevelLoader< T >::LoadSigned(uint bits) {
   if (bits == 0) {
     return 0;
   }
   uint value = LoadUnsigned(bits);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
   if (bits < 32 && (value & (1u << (bits - 1)))) {
 #else
   if (value & (1 << (bits - 1))) {
 #endif
-#else
-  if (value & (1 << (bits - 1))) {
-#endif
-
     value |= ~0u << bits;
   }
   return value;
@@ -346,9 +319,7 @@ int CBitLevelLoader< T >::LoadSigned(uint bits) {
 template <>
 inline uint
 CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoader& input) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
   uint value = TLoadedVal< uint >::Read(input.mData);
   input.mData += sizeof(uint);
   return value;
@@ -356,11 +327,6 @@ CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoa
   input.mData += sizeof(uint);
   return TLoadedVal< uint >::Read(input.mData);
 #endif
-#else
-  input.mData += sizeof(uint);
-  return TLoadedVal< uint >::Read(input.mData);
-#endif
-
 }
 
 class CSegIdToIndexConverter {
@@ -405,15 +371,8 @@ public:
   bool VHasOffset(const CSegId& seg) const override;
   CVector3f VGetOffset(const CSegId& seg) const override;
   CQuaternion VGetRotation(const CSegId& seg) const override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut) const override;
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-#else
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set) const override;
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-#endif
-
                            const CCharAnimTime& time) const override;
 #if !RSTL_PRIME1
   void VGetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
@@ -424,20 +383,13 @@ public:
 
   rstl::ownership_transfer< IAnimReader > VClone() const override;
   void VSetPhase(float phase) override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SAdvancementResults VGetAdvancementResults(const CCharAnimTime& a,
-                                             const CCharAnimTime& b) const override;
-#else
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const override;
-#endif
 
   virtual bool VSupportsReverseView() const;
   virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time);
 #endif

@@ -15,9 +15,6 @@
 #include "Kyoto/CVParamTransfer.hpp"
 #if RSTL_PRIME1
 #include "Kyoto/IFactory.hpp"
-#include "rstl/auto_ptr.hpp"
-#include "rstl/list.hpp"
-#include "rstl/map.hpp"
 
 struct z_stream_s;
 #endif
@@ -86,12 +83,7 @@ public:
     int mSize;
     CResLoader::ECompressionType mCompression;
     CVParamTransfer mParams;
-#else
-  uint ResourceSize(const SObjectTag& tag) const { return mResLoader.ResourceSize(tag); }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     SLoadingData(const SObjectTag& tag, CDvdRequest* request, IObj** target, void* buffer, int size,
                  CResLoader::ECompressionType compression, const CVParamTransfer& params);
     ~SLoadingData();
@@ -105,7 +97,12 @@ public:
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
 
   uint ResourceSize(const SObjectTag& tag) { return mResLoader.ResourceSize(tag); }
+#else
+  uint ResourceSize(const SObjectTag& tag) const { return mResLoader.ResourceSize(tag); }
+#endif
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   CDvdRequest* LoadResourceAsync(const SObjectTag& tag, void* buffer) {
     return mResLoader.LoadResourceAsync(tag, static_cast< char* >(buffer));
   }

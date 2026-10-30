@@ -31,12 +31,7 @@ public:
   };
 
   CStringTable(CInputStream& in);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
-  ~CStringTable();
-#endif
-#else
   ~CStringTable();
 #endif
 
@@ -59,22 +54,34 @@ public:
 
 private:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int mStringCount;
-  rstl::single_ptr< uchar > mData;
-#if RSTL_VERSION >= RSTL_GM8P_00
-  rstl::single_ptr< SReloadData > mReloadData;
-#endif
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
-  rstl::vector< rstl::vector< wchar_t > > mNativeStrings;
-#endif
-#else
+#if !RSTL_PRIME1
   // Echoes STRG files can name strings; names are sorted for binary search.
   struct SStringName {
     const char* mName;
     int mIndex;
-#endif
+  };
 
+#endif
+  int mStringCount;
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  int mNameCount;
+#endif
+  rstl::single_ptr< uchar > mData;
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  SStringName* mNames;
+  const wchar_t** mStrings;
+#endif
+#if RSTL_VERSION >= RSTL_GM8P_00
+  rstl::single_ptr< SReloadData > mReloadData;
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
+  rstl::vector< rstl::vector< wchar_t > > mNativeStrings;
+#endif
+#endif
 };
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -85,13 +92,6 @@ CHECK_SIZEOF(CStringTable, 0xc)
 CHECK_SIZEOF(CStringTable, 0x8)
 #endif
 #else
-  int mStringCount;
-  int mNameCount;
-  rstl::single_ptr< uchar > mData;
-  SStringName* mNames;
-  const wchar_t** mStrings;
-  rstl::single_ptr< SReloadData > mReloadData;
-};
 CHECK_SIZEOF(CStringTable, 0x18)
 #endif
 
@@ -101,7 +101,7 @@ extern CStringTable* gpStringTable;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 const CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-                                     const CVParamTransfer& xfer);
+                                           const CVParamTransfer& xfer);
 #else
 extern const FourCC skLanguages[7]; // Shared resource language codes.
 #endif

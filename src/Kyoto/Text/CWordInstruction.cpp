@@ -30,15 +30,15 @@ void CWordInstruction::InvokeLTR(CFontRenderState& state) const {
   const CBlockInstruction* block = state.GetBlock();
   switch (block->GetJustification()) {
   case kJustification_Full:
+    width += (block->GetOutputWidth() -
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    width +=
-        (block->GetOutputWidth() - state.GetLine()->GetX()) / (state.GetLine()->GetWordCount() - 1);
+              state.GetLine()->GetX()
 #else
-    width += (block->GetOutputWidth() - state.GetLine()->GetWidth()) /
-             (state.GetLine()->GetWordCount() - 1);
+              state.GetLine()->GetWidth()
 #endif
-
+                  ) /
+             (state.GetLine()->GetWordCount() - 1);
     break;
   case kJustification_Left:
   case kJustification_Center:
@@ -51,14 +51,15 @@ void CWordInstruction::InvokeLTR(CFontRenderState& state) const {
   case kJustification_NLeft:
   case kJustification_NCenter:
   case kJustification_NRight:
+    width += (block->GetLineX() -
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    width += (block->GetLineX() - state.GetLine()->GetX()) / (state.GetLine()->GetWordCount() - 1);
+              state.GetLine()->GetX()
 #else
-    width +=
-        (block->GetLineX() - state.GetLine()->GetWidth()) / (state.GetLine()->GetWordCount() - 1);
+              state.GetLine()->GetWidth()
 #endif
-
+                  ) /
+             (state.GetLine()->GetWordCount() - 1);
     break;
   default:
     break;

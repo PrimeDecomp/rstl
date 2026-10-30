@@ -7,9 +7,42 @@
 
 #include "Kyoto/Math/CVector3f.hpp"
 
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if !RSTL_PRIME1
+static const double skSqrtThree = CMath::SqrtD(3.0);
 
+// Guessed names for the Perlin-noise helpers and their permutation table.
+// Ken Perlin's reference permutation, stored twice so lookups never need to wrap.
+static uchar skNoisePermutation[512] = {
+    151, 160, 137, 91,  90,  15,  131, 13,  201, 95,  96,  53,  194, 233, 7,   225, 140, 36,  103,
+    30,  69,  142, 8,   99,  37,  240, 21,  10,  23,  190, 6,   148, 247, 120, 234, 75,  0,   26,
+    197, 62,  94,  252, 219, 203, 117, 35,  11,  32,  57,  177, 33,  88,  237, 149, 56,  87,  174,
+    20,  125, 136, 171, 168, 68,  175, 74,  165, 71,  134, 139, 48,  27,  166, 77,  146, 158, 231,
+    83,  111, 229, 122, 60,  211, 133, 230, 220, 105, 92,  41,  55,  46,  245, 40,  244, 102, 143,
+    54,  65,  25,  63,  161, 1,   216, 80,  73,  209, 76,  132, 187, 208, 89,  18,  169, 200, 196,
+    135, 130, 116, 188, 159, 86,  164, 100, 109, 198, 173, 186, 3,   64,  52,  217, 226, 250, 124,
+    123, 5,   202, 38,  147, 118, 126, 255, 82,  85,  212, 207, 206, 59,  227, 47,  16,  58,  17,
+    182, 189, 28,  42,  223, 183, 170, 213, 119, 248, 152, 2,   44,  154, 163, 70,  221, 153, 101,
+    155, 167, 43,  172, 9,   129, 22,  39,  253, 19,  98,  108, 110, 79,  113, 224, 232, 178, 185,
+    112, 104, 218, 246, 97,  228, 251, 34,  242, 193, 238, 210, 144, 12,  191, 179, 162, 241, 81,
+    51,  145, 235, 249, 14,  239, 107, 49,  192, 214, 31,  181, 199, 106, 157, 184, 84,  204, 176,
+    115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114, 67,  29,  24,  72,  243,
+    141, 128, 195, 78,  66,  215, 61,  156, 180, 151, 160, 137, 91,  90,  15,  131, 13,  201, 95,
+    96,  53,  194, 233, 7,   225, 140, 36,  103, 30,  69,  142, 8,   99,  37,  240, 21,  10,  23,
+    190, 6,   148, 247, 120, 234, 75,  0,   26,  197, 62,  94,  252, 219, 203, 117, 35,  11,  32,
+    57,  177, 33,  88,  237, 149, 56,  87,  174, 20,  125, 136, 171, 168, 68,  175, 74,  165, 71,
+    134, 139, 48,  27,  166, 77,  146, 158, 231, 83,  111, 229, 122, 60,  211, 133, 230, 220, 105,
+    92,  41,  55,  46,  245, 40,  244, 102, 143, 54,  65,  25,  63,  161, 1,   216, 80,  73,  209,
+    76,  132, 187, 208, 89,  18,  169, 200, 196, 135, 130, 116, 188, 159, 86,  164, 100, 109, 198,
+    173, 186, 3,   64,  52,  217, 226, 250, 124, 123, 5,   202, 38,  147, 118, 126, 255, 82,  85,
+    212, 207, 206, 59,  227, 47,  16,  58,  17,  182, 189, 28,  42,  223, 183, 170, 213, 119, 248,
+    152, 2,   44,  154, 163, 70,  221, 153, 101, 155, 167, 43,  172, 9,   129, 22,  39,  253, 19,
+    98,  108, 110, 79,  113, 224, 232, 178, 185, 112, 104, 218, 246, 97,  228, 251, 34,  242, 193,
+    238, 210, 144, 12,  191, 179, 162, 241, 81,  51,  145, 235, 249, 14,  239, 107, 49,  192, 214,
+    31,  181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236,
+    205, 93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
+#endif
+
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
 static inline double InvSqrtEstimate(double x) {
   double estimate = __frsqrte(x);
   const double halfX = 0.5 * x;
@@ -44,74 +77,22 @@ float CMath::InvSqrtF(float x) {
   return 0.f;
 }
 #else
-
 float CMath::SqrtF(const float x) { return sqrt(x); }
 
 double CMath::SqrtD(const double x) { return sqrt(x); }
 
 float CMath::InvSqrtF(float x) { return 1.f / sqrt(x); }
 #endif
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 float CMath::ArcSineR(float v) { return asin(v); }
-#else
-static const double skSqrtThree = CMath::SqrtD(3.0);
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 float CMath::ArcCosineR(float v) { return acos(v); }
-#else
-// Guessed names for the Perlin-noise helpers and their permutation table.
-// Ken Perlin's reference permutation, stored twice so lookups never need to wrap.
-static uchar skNoisePermutation[512] = {
-    151, 160, 137, 91,  90,  15,  131, 13,  201, 95,  96,  53,  194, 233, 7,   225, 140, 36,  103,
-    30,  69,  142, 8,   99,  37,  240, 21,  10,  23,  190, 6,   148, 247, 120, 234, 75,  0,   26,
-    197, 62,  94,  252, 219, 203, 117, 35,  11,  32,  57,  177, 33,  88,  237, 149, 56,  87,  174,
-    20,  125, 136, 171, 168, 68,  175, 74,  165, 71,  134, 139, 48,  27,  166, 77,  146, 158, 231,
-    83,  111, 229, 122, 60,  211, 133, 230, 220, 105, 92,  41,  55,  46,  245, 40,  244, 102, 143,
-    54,  65,  25,  63,  161, 1,   216, 80,  73,  209, 76,  132, 187, 208, 89,  18,  169, 200, 196,
-    135, 130, 116, 188, 159, 86,  164, 100, 109, 198, 173, 186, 3,   64,  52,  217, 226, 250, 124,
-    123, 5,   202, 38,  147, 118, 126, 255, 82,  85,  212, 207, 206, 59,  227, 47,  16,  58,  17,
-    182, 189, 28,  42,  223, 183, 170, 213, 119, 248, 152, 2,   44,  154, 163, 70,  221, 153, 101,
-    155, 167, 43,  172, 9,   129, 22,  39,  253, 19,  98,  108, 110, 79,  113, 224, 232, 178, 185,
-    112, 104, 218, 246, 97,  228, 251, 34,  242, 193, 238, 210, 144, 12,  191, 179, 162, 241, 81,
-    51,  145, 235, 249, 14,  239, 107, 49,  192, 214, 31,  181, 199, 106, 157, 184, 84,  204, 176,
-    115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114, 67,  29,  24,  72,  243,
-    141, 128, 195, 78,  66,  215, 61,  156, 180, 151, 160, 137, 91,  90,  15,  131, 13,  201, 95,
-    96,  53,  194, 233, 7,   225, 140, 36,  103, 30,  69,  142, 8,   99,  37,  240, 21,  10,  23,
-    190, 6,   148, 247, 120, 234, 75,  0,   26,  197, 62,  94,  252, 219, 203, 117, 35,  11,  32,
-    57,  177, 33,  88,  237, 149, 56,  87,  174, 20,  125, 136, 171, 168, 68,  175, 74,  165, 71,
-    134, 139, 48,  27,  166, 77,  146, 158, 231, 83,  111, 229, 122, 60,  211, 133, 230, 220, 105,
-    92,  41,  55,  46,  245, 40,  244, 102, 143, 54,  65,  25,  63,  161, 1,   216, 80,  73,  209,
-    76,  132, 187, 208, 89,  18,  169, 200, 196, 135, 130, 116, 188, 159, 86,  164, 100, 109, 198,
-    173, 186, 3,   64,  52,  217, 226, 250, 124, 123, 5,   202, 38,  147, 118, 126, 255, 82,  85,
-    212, 207, 206, 59,  227, 47,  16,  58,  17,  182, 189, 28,  42,  223, 183, 170, 213, 119, 248,
-    152, 2,   44,  154, 163, 70,  221, 153, 101, 155, 167, 43,  172, 9,   129, 22,  39,  253, 19,
-    98,  108, 110, 79,  113, 224, 232, 178, 185, 112, 104, 218, 246, 97,  228, 251, 34,  242, 193,
-    238, 210, 144, 12,  191, 179, 162, 241, 81,  51,  145, 235, 249, 14,  239, 107, 49,  192, 214,
-    31,  181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236,
-    205, 93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 float CMath::ArcTangentR(float v) { return atan(v); }
-#else
-float CMath::SqrtF(const float x) { return sqrt(x); }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 float CMath::PowF(float x, float y) { return exp(log(x) * y); }
-#else
-double CMath::SqrtD(const double x) { return sqrt(x); }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 float CMath::SlowSineR(float x) { return sin(x); }
 
 float CMath::SlowCosineR(float x) { return cos(x); }
@@ -119,8 +100,6 @@ float CMath::SlowCosineR(float x) { return cos(x); }
 float CMath::SlowTangentR(float x) { return tan(x); }
 
 const float CMath::FloorF(float x) { return floor(x); }
-#else
-float CMath::InvSqrtF(float x) { return 1.f / sqrt(x); }
 #endif
 
 float CMath::CeilingF(float x) {
@@ -139,9 +118,9 @@ float CMath::CeilingF(float x) {
     return x;
   }
   return tmp + 1.f;
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 CVector3f CMath::GetHermiteSplinePoint(const CVector3f& a, const CVector3f& b,
                                        const CVector3f& tangentA, const CVector3f& tangentB,
                                        float t) {
@@ -170,9 +149,8 @@ CVector3f CMath::GetHermiteSplineTangent(const CVector3f& a, const CVector3f& b,
   const float h10 = 1.f + (3.f * t2 - 4.f * t);
   const float h11 = 3.f * t2 - 2.f * t;
   return h00 * a + h01 * b + h10 * tangentA + h11 * tangentB;
-#endif
-
 }
+#endif
 
 CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
                                           const CVector3f& c, const CVector3f& d, float t) {
@@ -181,26 +159,19 @@ CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b
   if (t >= 1.0f)
     return c;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return (a * (-0.5f * t * t * t + t * t - 0.5f * t) +
-          b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
-          c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) +
-          d * (0.5f * t * t * t - 0.5f * t * t));
-#else
   return (
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
 }
 
+#if !RSTL_PRIME1
 CVector3f CMath::GetCatmullRomSplineTangent(const CVector3f& a, const CVector3f& b,
                                             const CVector3f& c, const CVector3f& d, float t) {
   const float t2 = t * t;
   return 0.5f * ((-3.f * t2 + 4.f * t - 1.f) * a + (9.f * t2 - 10.f * t) * b +
                  (1.f + (-9.f * t2 + 8.f * t)) * c + (3.f * t2 - 2.f * t) * d);
-#endif
-
 }
+#endif
 
 float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float t) {
   if (t <= 0.0f)
@@ -208,18 +179,12 @@ float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float 
   if (t >= 1.0f)
     return c;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return (a * (-0.5f * t * t * t + t * t - 0.5f * t) +
-          b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
-          c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) +
-          d * (0.5f * t * t * t - 0.5f * t * t));
-#else
   return (
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
 }
 
+#if !RSTL_PRIME1
 CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
                                                  const CVector3f& c, const CVector3f& d, float t) {
   if (t <= 0.f) {
@@ -294,9 +259,8 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
 
   const float length = span.Magnitude();
   return GetHermiteSplineTangent(b, c, length * tangentA, length * tangentB, t);
-#endif
-
 }
+#endif
 
 CVector3f CMath::GetBezierPoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,
                                 const CVector3f& d, float t) {
@@ -490,18 +454,10 @@ CVector3f CMath::BaryToWorld(const CVector3f& p0, const CVector3f& p1, const CVe
   return bary.GetX() * p0 + bary.GetY() * p1 + bary.GetZ() * p2;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 static const uint skSinX1 = 0x3f7ff347; // 0.99980587f
 static const uint skSinX2 = 0xbe2a34ae; // -0.16621658f
 static const uint skSinX3 = 0x3c047fca; // 0.008087108f
 static const uint skSinX4 = 0xb9206873; // -0.000152977f
-#else
-static const uint skSinX1 = 0x3f7ff347;
-static const uint skSinX2 = 0xbe2a34ae;
-static const uint skSinX3 = 0x3c047fca;
-static const uint skSinX4 = 0xb9206873;
-#endif
 
 float CMath::FastSinR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -510,7 +466,6 @@ float CMath::FastSinR(float x) {
 #else
   if (fabsf(x) > M_PIF) {
 #endif
-
     x = WrapPi(x);
   }
 
@@ -526,20 +481,11 @@ float CMath::FastSinR(float x) {
   return acc;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 static const uint skCosX1 = 0x3f800000; // 1.0f
 static const uint skCosX2 = 0xbefffd62; // -0.49998003f
 static const uint skCosX3 = 0x3d2a7a18; // 0.041620344f
 static const uint skCosX4 = 0xbab2bb2b; // -0.0013636103f
 static const uint skCosX5 = 0x37a93188; // 0.000020169435f
-#else
-static const uint skCosX1 = 0x3f800000;
-static const uint skCosX2 = 0xbefffd62;
-static const uint skCosX3 = 0x3d2a7a18;
-static const uint skCosX4 = 0xbab2bb2b;
-static const uint skCosX5 = 0x37a93188;
-#endif
 
 float CMath::FastCosR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -548,7 +494,6 @@ float CMath::FastCosR(float x) {
 #else
   if (fabsf(x) > M_PIF) {
 #endif
-
     x = WrapPi(x);
   }
 
@@ -564,20 +509,11 @@ float CMath::FastCosR(float x) {
   return acc;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 static const uint skArcCosX1 = 0x3fc90fdb; // 1.5707964f (pi/2)
 static const uint skArcCosX2 = 0xbf7f8bd1; // -0.9982272f
 static const uint skArcCosX3 = 0xbe52ce8c; // -0.20586604f
 static const uint skArcCosX4 = 0x3de9fe20; // 0.114254236f
 static const uint skArcCosX5 = 0xbe980d88; // -0.29697824f
-#else
-static const uint skArcCosX1 = 0x3fc90fdb;
-static const uint skArcCosX2 = 0xbf7f8bd1;
-static const uint skArcCosX3 = 0xbe52ce8c;
-static const uint skArcCosX4 = 0x3de9fe20;
-static const uint skArcCosX5 = 0xbe980d88;
-#endif
 
 float CMath::FastArcCosR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -586,7 +522,6 @@ float CMath::FastArcCosR(float x) {
 #else
   if (fabsf(x) > 0.925f) {
 #endif
-
     return acosf(x);
   }
 
@@ -620,10 +555,9 @@ int CMath::FloorPowerOfTwo(int v) {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-float CMath::EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart,
-                      float start, float end, float slope) {
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
+float CMath::EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart, float start,
+                       float end, float slope) {
   const float min = FastMin(start, end);
   const float max = FastMax(start, end);
   const float range = max - min;
@@ -669,7 +603,8 @@ float CMath::EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutS
   return min + scaled;
 }
 #endif
-#else
+
+#if !RSTL_PRIME1
 int CMath::FloorLog2(uint v) {
   if (static_cast< int >(v) == 0) {
     return 0;

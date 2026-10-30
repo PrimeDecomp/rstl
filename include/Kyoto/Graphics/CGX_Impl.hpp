@@ -2,12 +2,7 @@
 #define _CGX_IMPL
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Graphics/CGX.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "CGX.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 
@@ -16,20 +11,20 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 
 #include "dolphin/gx.h"
+#endif
 
 #ifndef CGX_INLINE
 #define CGX_INLINE inline
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 #define CGX_INLINE_HEADER
 #endif
+#endif
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 // Setters wrapped in "!defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00" are only
 // defined in CGX.cpp from PAL on, so callers no longer inline them.
-#endif
-
-#if !RSTL_PRIME1
-#ifndef CGX_INLINE
-#define CGX_INLINE inline
-#endif
 #endif
 
 CGX_INLINE void CGX::SetNumChans(uchar num) {

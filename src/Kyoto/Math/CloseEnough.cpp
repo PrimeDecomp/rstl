@@ -4,15 +4,11 @@
 #include "Kyoto/Math/CQuaternion.hpp"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3ME_00
-static CVector2f svector2_Identity(0.f, 0.f);
-#endif
-#else
-#if RSTL_VERSION < RSTL_R32J
+#if (RSTL_PRIME1 && RSTL_VERSION < RSTL_R3ME_00) || (!RSTL_PRIME1 && RSTL_VERSION < RSTL_R32J)
 static CVector2f svector2_Identity(0.f, 0.f);
 #endif
 
+#if !RSTL_PRIME1
 bool close_enough(const CQuaternion& a, const CQuaternion& b, float epsilon) {
   return close_enough(a.AxisX(), b.AxisX(), epsilon) &&
          close_enough(a.AxisY(), b.AxisY(), epsilon) &&

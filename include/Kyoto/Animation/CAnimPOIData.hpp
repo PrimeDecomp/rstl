@@ -11,16 +11,12 @@
 
 #include "rstl/vector.hpp"
 
-#if RSTL_PRIME1
 class CInputStream;
-#endif
 
-#if RSTL_PRIME1
 class CInt32POINode;
 class CBoolPOINode;
 class CSoundPOINode;
 class CParticlePOINode;
-#endif
 
 class CAnimPOIData {
 public:
@@ -46,7 +42,7 @@ private:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 const CFactoryFnReturn AnimPOIDataFactory(const SObjectTag& tag, CInputStream& in,
-                                    const CVParamTransfer& xfer);
+                                          const CVParamTransfer& xfer);
 #else
 CHECK_SIZEOF(CAnimPOIData, RSTL_VERSION >= RSTL_R32J ? 0x34 : 0x44)
 #endif

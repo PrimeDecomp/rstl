@@ -16,8 +16,9 @@ CParticleData::CParticleData(CInputStream& in)
 , mScale(in.Get(TGetType(mScale)))
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mParentMode(in.Get(TGetType(mParentMode))) {}
+, mParentMode(in.Get(TGetType(mParentMode)))
 #else
-, mParentMode(EParentedMode(in.Get< uint >())) {}
+, mParentMode(EParentedMode(in.Get< uint >()))
 #endif
+{}
 

@@ -32,7 +32,6 @@ class CInputStream;
 class CColor {
 public:
   CColor() { Set(255, 0, 255); }
-// TODO: verify that this Prime/Echoes difference is real
   CColor(RSTL_PRIME1_CONST uint col) { Set(col); }
 
   CColor(CInputStream& in);
@@ -58,8 +57,8 @@ public:
     return *this;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-  void Set(RSTL_PRIME1_CONST float r, RSTL_PRIME1_CONST float g, RSTL_PRIME1_CONST float b, RSTL_PRIME1_CONST float a);
+  void Set(RSTL_PRIME1_CONST float r, RSTL_PRIME1_CONST float g, RSTL_PRIME1_CONST float b,
+           RSTL_PRIME1_CONST float a);
 
   void Set(uchar r, uchar g, uchar b, uchar a = 255) {
     mR = r;
@@ -102,7 +101,6 @@ public:
   void SetGreen(uchar g) { mG = g; }
   void SetBlue(uchar b) { mB = b; }
 
-// TODO: verify that this Prime/Echoes difference is real
   static CColor Lerp(const CColor& a, const CColor& b, RSTL_PRIME1_CONST float t);
 
   static uint Lerp(uint a, uint b, float t);
@@ -142,23 +140,19 @@ public:
   }
 #endif
 
+#ifdef __MWERKS__
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#ifdef __MWERKS__
   CColor WithAlphaOf(float a) const { return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f)); }
 #else
-  CColor WithAlphaOf(float a) const { return CColor(mR, mG, mB, CCast::ToUint8(a * 255.f)); }
-#endif
-#else
-#ifdef __MWERKS__
   CColor WithAlphaOf(float a) const {
     const float value = a;
     const float byteScale = 255.f;
     return CColor((mRgba & ~0xff) | CCast::ToUint8(byteScale * value));
   }
+#endif
 #else
   CColor WithAlphaOf(float a) const { return CColor(mR, mG, mB, CCast::ToUint8(a * 255.f)); }
-#endif
 #endif
 
   CColor WithAlphaModulatedBy(float a) const {
@@ -191,6 +185,9 @@ public:
   // Fake?
   CVector3f ToVector3f() const { return CVector3f(GetRed(), GetGreen(), GetBlue()); }
 
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
   static const CColor& Black() { return sBlackColor; }
   static const CColor& White() { return sWhiteColor; }

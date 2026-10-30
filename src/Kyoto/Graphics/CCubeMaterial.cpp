@@ -25,7 +25,6 @@
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/math.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -671,26 +670,16 @@ static void HandleTransparency(uint& finalTevCount, uint& finalKColorCount,
 #if RSTL_PRIME1
     CGX::SetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_KONST);
     CGX::SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-    CGX::SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
 #else
     CGX::SetTevColorIn_Compressed(stage, 0x73def);
     CGX::SetTevAlphaIn_Compressed(stage, 0x1ce7);
-    CGX::SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1,
-                       GX_TRUE, GX_TEVREG0);
 #endif
+    CGX::SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVREG0);
 
     CGX::SetTevKColorSel(stage,
                         static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0_A));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     CGX::SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     CGX::SetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
-#else
-    CGX::SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1,
-                       GX_TRUE, GX_TEVPREV);
-    CGX::SetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL,
-                     GX_COLOR_NULL);
-#endif
 
     CGX::SetTevDirect(stage);
 
@@ -698,23 +687,19 @@ static void HandleTransparency(uint& finalTevCount, uint& finalKColorCount,
 #if RSTL_PRIME1
     CGX::SetTevColorIn(stage2, GX_CC_CPREV, GX_CC_C0, GX_CC_KONST, GX_CC_ZERO);
     CGX::SetTevAlphaIn(stage2, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
-    CGX::SetTevKColorSel(stage, static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 #else
     CGX::SetTevColorIn_Compressed(stage2, 0x7b840);
     CGX::SetTevAlphaIn_Compressed(stage2, 0x1ce7);
-    CGX::SetTevKColorSel(stage,
-                         static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 #endif
+    CGX::SetTevKColorSel(stage, static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 
     CGX::SetStandardTevColorAlphaOp(stage2);
     CGX::SetTevDirect(stage2);
+    CGX::SetTevOrder(stage2, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CGX::SetTevOrder(stage2, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
     CGX::SetTevKColor(static_cast< GXTevKColorID >(finalKColorCount), color.GetGXColor());
 #else
-    CGX::SetTevOrder(stage2, GX_TEXCOORD_NULL, GX_TEXMAP_NULL,
-                     GX_COLOR_NULL);
     CGX::SetTevKColor(static_cast< GXTevKColorID >(finalKColorCount), color);
 #endif
 
@@ -741,19 +726,15 @@ static void HandleTransparency(uint& finalTevCount, uint& finalKColorCount,
 #endif
 
     CGX::SetTevDirect(stage);
+    CGX::SetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CGX::SetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
     CGX::SetTevKColor(static_cast< GXTevKColorID >(finalKColorCount), color.GetGXColor());
-    CGX::SetTevKColorSel(stage, static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 #else
-    CGX::SetTevOrder(stage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL,
-                     GX_COLOR_NULL);
     sTransparencyKColor = finalKColorCount;
     CGX::SetTevKColor(static_cast< GXTevKColorID >(finalKColorCount), color);
-    CGX::SetTevKColorSel(stage,
-                         static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 #endif
+    CGX::SetTevKColorSel(stage, static_cast< GXTevKColorSel >(finalKColorCount + GX_TEV_KCSEL_K0));
 
     CGX::SetTevKAlphaSel(stage,
                         static_cast< GXTevKAlphaSel >(finalKColorCount + GX_TEV_KASEL_K0_A));

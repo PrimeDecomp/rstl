@@ -11,11 +11,12 @@ class CLine {
 public:
   CLine(const CVector3f& origin, const CUnitVector3f& dir) : mOrigin(origin), mDir(dir) {}
   CLine(const CVector3f& origin, const CVector3f& dir)
+  : mOrigin(origin)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  : mOrigin(origin), mDir(*reinterpret_cast< const CUnitVector3f* >(&dir)) {}
+  , mDir(*reinterpret_cast< const CUnitVector3f* >(&dir)) {}
 #else
-  : mOrigin(origin), mDir(dir, CUnitVector3f::kN_No) {}
+  , mDir(dir, CUnitVector3f::kN_No) {}
 #endif
 
 #if !RSTL_PRIME1

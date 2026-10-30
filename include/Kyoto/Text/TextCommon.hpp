@@ -2,7 +2,6 @@
 #define _TEXTCOMMON
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "types.h"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -10,13 +9,7 @@
 #endif
 
 enum EColorType {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  kCT_Main,
-#else
   kCT_Main = 0,
-#endif
-
   kCT_Outline,
   kCT_Geometry,
   kCT_Foreground,

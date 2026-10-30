@@ -24,7 +24,6 @@ private:
 #else
   rstl::vector< bool > x28_;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

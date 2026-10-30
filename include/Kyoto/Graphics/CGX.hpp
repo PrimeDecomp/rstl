@@ -177,25 +177,20 @@ public:
 
   static void SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                               uchar ref1);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SetTevIndirect(const GXTevStageID stageId, const GXIndTexStageID indStage,
-                             const GXIndTexFormat fmt, const GXIndTexBiasSel biasSel,
-                             const GXIndTexMtxID mtxSel, const GXIndTexWrap wrapS,
-                             const GXIndTexWrap wrapT, GXBool addPrev, const GXBool indLod,
-                             const GXIndTexAlphaSel alphaSel);
-  static void SetTevIndWarp(const GXTevStageID stageId, const GXIndTexStageID indStage,
-                            const uchar signedOffset, const uchar replaceMode,
-                            const GXIndTexMtxID mtxSel) {
-#else
-  static void SetTevIndirect(GXTevStageID stageId, GXIndTexStageID indStage, GXIndTexFormat fmt,
-                             GXIndTexBiasSel biasSel, GXIndTexMtxID mtxSel, GXIndTexWrap wrapS,
-                             GXIndTexWrap wrapT, GXBool addPrev, GXBool indLod,
-                             GXIndTexAlphaSel alphaSel);
-  static void SetTevIndWarp(GXTevStageID stageId, GXIndTexStageID indStage, uchar signedOffset,
-                            uchar replaceMode, GXIndTexMtxID mtxSel) {
-#endif
-
+  static void SetTevIndirect(RSTL_PRIME1_CONST GXTevStageID stageId,
+                             RSTL_PRIME1_CONST GXIndTexStageID indStage,
+                             RSTL_PRIME1_CONST GXIndTexFormat fmt,
+                             RSTL_PRIME1_CONST GXIndTexBiasSel biasSel,
+                             RSTL_PRIME1_CONST GXIndTexMtxID mtxSel,
+                             RSTL_PRIME1_CONST GXIndTexWrap wrapS,
+                             RSTL_PRIME1_CONST GXIndTexWrap wrapT, GXBool addPrev,
+                             RSTL_PRIME1_CONST GXBool indLod,
+                             RSTL_PRIME1_CONST GXIndTexAlphaSel alphaSel);
+  static void SetTevIndWarp(RSTL_PRIME1_CONST GXTevStageID stageId,
+                            RSTL_PRIME1_CONST GXIndTexStageID indStage,
+                            RSTL_PRIME1_CONST uchar signedOffset,
+                            RSTL_PRIME1_CONST uchar replaceMode,
+                            RSTL_PRIME1_CONST GXIndTexMtxID mtxSel) {
     const GXIndTexWrap wrap = replaceMode != 0 ? GX_ITW_0 : GX_ITW_OFF;
     SetTevIndirect(stageId, indStage, GX_ITF_8, signedOffset != 0 ? GX_ITB_STU : GX_ITB_NONE,
                    mtxSel, wrap, wrap, GX_FALSE, GX_FALSE, GX_ITBA_OFF);

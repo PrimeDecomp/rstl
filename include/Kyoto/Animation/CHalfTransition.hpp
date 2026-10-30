@@ -7,10 +7,6 @@
 
 class CInputStream;
 
-#if !RSTL_PRIME1
-class IMetaTrans;
-#endif
-
 class CHalfTransition {
 public:
   explicit CHalfTransition(CInputStream& in);

@@ -7,15 +7,8 @@
 #include "Kyoto/Text/TextCommon.hpp"
 
 CTextInstruction* CTextInstruction::Create(const wchar_t* str, const int len) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  char* test = rs_new char[len * sizeof(wchar_t) + sizeof(CTextInstruction) + sizeof(wchar_t)];
-  return new (test) CTextInstruction(str, len);
-#else
   char* storage = rs_new char[len * sizeof(wchar_t) + sizeof(CTextInstruction) + sizeof(wchar_t)];
   return new (storage) CTextInstruction(str, len);
-#endif
-
 }
 
 void CTextInstruction::Invoke(CFontRenderState& state, CTextRenderBuffer* buffer) const {
@@ -29,13 +22,15 @@ void CTextInstruction::Invoke(CFontRenderState& state, CTextRenderBuffer* buffer
   } else {
     int xOut;
     int yOut;
+    int scale = (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    int scale = (state.GetLine()->GetX() - state.GetFont()->GetMonoWidth()) / 2;
+                    state.GetLine()->GetX()
 #else
-    int scale = (state.GetLine()->GetWidth() - state.GetFont()->GetMonoWidth()) / 2;
+                    state.GetLine()->GetWidth()
 #endif
-
+                    - state.GetFont()->GetMonoWidth()) /
+                2;
     state.GetFont()->DrawString(state.GetOptions(), scale + state.GetX(), state.GetY(), xOut, yOut,
                                 buffer, mString, mLength);
     state.SetY(yOut);

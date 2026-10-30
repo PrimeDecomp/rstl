@@ -34,13 +34,13 @@ public:
                   const rstl::ncrc_ptr< CAnimTreeNode >& c, const CAnimSysContext& animCtx,
                   const rstl::string& name);
   CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
+                  const rstl::ncrc_ptr< CAnimTreeNode >& b,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                  const rstl::ncrc_ptr< CAnimTreeNode >& b, bool didLoopIn,
+                  bool didLoopIn,
 #else
-                  const rstl::ncrc_ptr< CAnimTreeNode >& b, const bool didLoopIn,
+                  const bool didLoopIn,
 #endif
-
                   const CAnimSysContext& animCtx, const rstl::string& name,
                   const CSequenceFundamentals& fundamentals, const CCharAnimTime& time);
 

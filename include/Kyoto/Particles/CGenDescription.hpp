@@ -14,20 +14,16 @@
 
 class CElectricDescription;
 class CModel;
-#if !RSTL_PRIME1
 class CSpawnSystemKeyframeData;
-#endif
 
 class CSwooshDescription;
 
 class CGenDescription {
 public:
-#if !RSTL_PRIME1
   typedef rstl::optional_object< TCachedToken< CModel > > TParticleModel;
   typedef rstl::optional_object< TCachedToken< CGenDescription > > TChildGeneratorDesc;
   typedef rstl::optional_object< TCachedToken< CSwooshDescription > > TSwooshGeneratorDesc;
   typedef rstl::optional_object< CToken > TElectricGeneratorDesc;
-#endif
 
   CGenDescription();
   ~CGenDescription();
@@ -76,15 +72,12 @@ public:
   CRealElement* mROTA;
   CUVElement* mTEXR;
   CUVElement* mTIND;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::optional_object< TCachedToken< CModel > > mPMDL;
-#else
+#if !RSTL_PRIME1
   CIntElement* mXTAD;
   CRealElement* mFXBR;
   CVectorElement* mFXBO;
-  TParticleModel mPMDL;
 #endif
+  TParticleModel mPMDL;
 
   CVectorElement* mPMOP;
   CVectorElement* mPMRT;
@@ -98,49 +91,28 @@ public:
   CModVectorElement* mVEL2;
   CModVectorElement* mVEL3;
   CModVectorElement* mVEL4;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::optional_object< TCachedToken< CGenDescription > > mICTS;
-#else
   TChildGeneratorDesc mICTS;
-#endif
 
   CIntElement* mNCSY;
   CIntElement* mCSSD;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::optional_object< TCachedToken< CGenDescription > > mIDTS;
-#else
   TChildGeneratorDesc mIDTS;
-#endif
 
   CIntElement* mNDSY;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::optional_object< TCachedToken< CGenDescription > > mIITS;
-#else
   TChildGeneratorDesc mIITS;
-#endif
 
   CIntElement* mPISY;
   CIntElement* mSISY;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::single_ptr< CSpawnSystemKeyframeData > mKSSM;
-  rstl::optional_object< TCachedToken< CSwooshDescription > > mSSWH;
 #else
   CSpawnSystemKeyframeData* mKSSM;
-  TSwooshGeneratorDesc mSSWH;
 #endif
+  TSwooshGeneratorDesc mSSWH;
 
   CIntElement* mSSSD;
   CVectorElement* mSSPO;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::optional_object< CToken > mSELC;
-#else
   TElectricGeneratorDesc mSELC;
-#endif
 
   CIntElement* mSESD;
   CVectorElement* mSEPO;

@@ -10,10 +10,8 @@
 
 #include "rstl/vector.hpp"
 
-#if RSTL_PRIME1
 class CSkinRules;
 class CPoseAsTransforms;
-#endif
 
 class CVertexMorphEffect {
 public:
@@ -52,7 +50,6 @@ private:
   rstl::vector< uint > mIndices;
   rstl::vector< float > mFloats;
 #endif
-
 };
 
 #if RSTL_PRIME1

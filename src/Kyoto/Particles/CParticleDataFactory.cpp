@@ -55,11 +55,11 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
     sFreeChunk = nullptr;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, sElementAllocationChunks.begin()); it != sElementAllocationChunks.end(); ++it) {
+    for (AUTO(it, sElementAllocationChunks.begin());
 #else
-    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin(); it != sElementAllocationChunks.end(); ++it) {
+    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
 #endif
-
+         it != sElementAllocationChunks.end(); ++it) {
       if (it->Contains(ptr)) {
         sFreeChunk = &*it;
         break;
@@ -71,11 +71,11 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
   if (sFreeChunk->GetAllocationCount() == 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, sElementAllocationChunks.begin()); it != sElementAllocationChunks.end(); ++it) {
+    for (AUTO(it, sElementAllocationChunks.begin());
 #else
-    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin(); it != sElementAllocationChunks.end(); ++it) {
+    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
 #endif
-
+         it != sElementAllocationChunks.end(); ++it) {
       if (&*it == sFreeChunk) {
         sElementAllocationChunks.erase(it);
         if (sCurrentChunk == sFreeChunk) {
@@ -90,8 +90,7 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
 
 // TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInputStream& in,
-
-                                  const CVParamTransfer& xfer) {
+                                                    const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::rc_ptr< IVParamObj > obj = xfer.mObj;
@@ -196,13 +195,12 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       break;
     case SBIG('AAPH'):
       desc->mAAPH = GetBool(in);
-#if !RSTL_PRIME1
       break;
+#if !RSTL_PRIME1
     case SBIG('XTAD'):
       desc->mXTAD = GetIntElement(in);
-#endif
-
       break;
+#endif
     case SBIG('ZBUF'):
       desc->mZBUF = GetBool(in);
       break;
@@ -544,19 +542,21 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
   return true;
 }
 
+FourCC CParticleDataFactory::GetClassID(CInputStream& in) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-FourCC CParticleDataFactory::GetClassID(CInputStream& in) { return in.ReadLong(); }
+  return in.ReadLong();
 #else
-FourCC CParticleDataFactory::GetClassID(CInputStream& in) { return in.ReadInt32(); }
+  return in.ReadInt32();
 #endif
+}
 
 bool CParticleDataFactory::GetBool(CInputStream& in) {
   GetClassID(in);
   return in.ReadBool();
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 int CParticleDataFactory::GetBitflag(CInputStream& in) {
   GetClassID(in);
   FourCC type = GetClassID(in);
@@ -570,9 +570,8 @@ int CParticleDataFactory::GetBitflag(CInputStream& in) {
     }
     return 0;
   }
-#endif
-
 }
+#endif
 
 int CParticleDataFactory::GetInt(CInputStream& in) { return in.ReadInt32(); }
 
@@ -587,13 +586,12 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
   case SBIG('KEYE'):
   case SBIG('KEYP'): {
     return rs_new CIEKeyframeEmitter(in);
-#if !RSTL_PRIME1
   }
+#if !RSTL_PRIME1
   case SBIG('KEYF'): {
     return rs_new CIEKeyframeInput(in);
-#endif
-
   }
+#endif
   case SBIG('TSCL'): {
     return rs_new CIETimescale(GetRealElement(in));
   }
@@ -617,15 +615,14 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     return rs_new CIEMultiply(a, b);
-#if !RSTL_PRIME1
   }
+#if !RSTL_PRIME1
   case SBIG('DIVD'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     return rs_new CIEDivide(a, b);
-#endif
-
   }
+#endif
   case SBIG('MODU'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
@@ -722,13 +719,12 @@ CRealElement* CParticleDataFactory::GetRealElement(CInputStream& in) {
   case SBIG('KEYE'):
   case SBIG('KEYP'): {
     return rs_new CREKeyframeEmitter(in);
-#if !RSTL_PRIME1
   }
+#if !RSTL_PRIME1
   case SBIG('KEYF'): {
     return rs_new CREKeyframeInput(in);
-#endif
-
   }
+#endif
   case SBIG('SCAL'): {
     return rs_new CRETimeScale(GetRealElement(in));
   }
@@ -1041,16 +1037,15 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
     CRealElement* angleLinear = GetRealElement(in);
     CRealElement* radius = GetRealElement(in);
     ret = rs_new CVECircle(circleOffset, circleNormal, angleConstant, angleLinear, radius);
-#if !RSTL_PRIME1
     break;
   }
+#if !RSTL_PRIME1
   case SBIG('RNDV'): {
     CRealElement* a = GetRealElement(in);
     ret = rs_new CVERandomVector(a);
-#endif
-
     break;
   }
+#endif
   case SBIG('CCLU'): {
     CVectorElement* circleOffset = GetVectorElement(in);
     CVectorElement* circleNormal = GetVectorElement(in);
@@ -1256,9 +1251,9 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
     CRealElement* velocity = GetRealElement(in);
     ret = rs_new CVEAngleSphere(origin, radius, velocity, angleXBias, angleYBias, angleXRange,
                                 angleYRange);
-#if !RSTL_PRIME1
     break;
   }
+#if !RSTL_PRIME1
   case SBIG('PLNE'): {
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
@@ -1267,10 +1262,9 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
     CRealElement* e = GetRealElement(in);
     CRealElement* f = GetRealElement(in);
     ret = rs_new CEEPlaneEmitter(a, b, c, d, e, f);
-#endif
-
     break;
   }
+#endif
   default:
     ret = nullptr;
     break;

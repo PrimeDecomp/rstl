@@ -16,11 +16,6 @@
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 
-#if RSTL_PRIME1
-class CColor;
-class CRasterFont;
-#endif
-
 class CTextRenderBuffer {
 public:
   enum ECmd {
@@ -30,24 +25,10 @@ public:
     kC_PaletteChange,
     kC_Invalid = -1,
   };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  enum EMode {
-    kM_AllocTally,
-    kM_BufferFill,
-  };
-#else
   enum EMode { kM_AllocTally, kM_BufferFill };
-#endif
 
   struct Primitive {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    Primitive(ECmd cmd, short x, short y, short chr, uint color, schar index)
-#else
     Primitive(ECmd cmd, short x, short y, short chr, uint color, signed char index)
-#endif
-
     : mColor(color), mCmd(cmd), mX(x), mY(y), mChar(chr), mIndex(index) {}
 
     uint mColor;
@@ -55,17 +36,9 @@ public:
     short mX;
     short mY;
     short mChar;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    schar mIndex;
-#else
     signed char mIndex;
-#endif
-
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   struct SFontPalette {
     SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
@@ -79,38 +52,24 @@ public:
     , mPalette3(palette3) {}
 
     EFontMode mMode;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
     uint mColors[2];
+#else
+    ushort mColors[4];
+#endif
     rstl::auto_ptr< CGraphicsPalette > mPalette0;
     rstl::auto_ptr< CGraphicsPalette > mPalette1;
     rstl::auto_ptr< CGraphicsPalette > mPalette2;
     rstl::auto_ptr< CGraphicsPalette > mPalette3;
   };
-#endif
-#else
-  struct SFontPalette {
-    SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette1,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette2,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette3)
-    : mMode(mode)
-    , mPalette0(palette0)
-    , mPalette1(palette1)
-    , mPalette2(palette2)
-    , mPalette3(palette3) {}
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CTextRenderBuffer(EMode mode);
-#else
-    EFontMode mMode;
-    ushort mColors[4];
-    rstl::auto_ptr< CGraphicsPalette > mPalette0;
-    rstl::auto_ptr< CGraphicsPalette > mPalette1;
-    rstl::auto_ptr< CGraphicsPalette > mPalette2;
-    rstl::auto_ptr< CGraphicsPalette > mPalette3;
-  };
+#if !RSTL_PRIME1
+  explicit
 #endif
+  CTextRenderBuffer(EMode mode);
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -122,7 +81,6 @@ public:
   int GetMatchingPaletteIndex(const CGraphicsPalette& palette) const;
 #endif
 #else
-  explicit CTextRenderBuffer(EMode mode);
   void AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode);
   void AddCharacter(const CVector2i& offset, short chr, uint color);
 #endif
@@ -143,12 +101,7 @@ public:
   size_t GetCurLen();
   void SetMode(EMode mode);
   void Render(const CColor& color, float time) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   int GetNumPrimitives() const { return mPrimOffsets.size(); }
-#else
-  int GetNumPrimitives() const { return mPrimitiveOffsets.size(); }
-#endif
 
   Primitive GetPrimitive(int index) const;
   void SetPrimitive(const Primitive& prim, int index);
@@ -184,65 +137,41 @@ private:
   EMode mMode;
   rstl::vector< TToken< CRasterFont > > mFonts;
   rstl::vector< CFontImageDef > mImages;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::vector< int > mPrimOffsets;
-#else
-  rstl::vector< int > mPrimitiveOffsets;
-#endif
 
   rstl::vector< signed char > mBytecode;
   uint mBlobSize;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   uint mCurBytecodeOffset;
-#else
-  uint mCurrentBytecodeOffset;
-#endif
 
   mutable char mActiveFont;
   mutable char mActivePalette;
   mutable char mQueuedFont;
   mutable char mQueuedPalette;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
 #else
   mutable rstl::reserved_vector< rstl::auto_ptr< CGraphicsPalette >, 64 > mPalettes;
 #endif
-#else
-  mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
-#endif
 
   mutable int mNextPalette;
+#if RSTL_VERSION >= RSTL_GM8P_00
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-  mutable rstl::pair< CVector2i, CVector2i > mBounds;
-  mutable bool mBoundsDirty;
+  mutable
 #endif
-#else
-  rstl::pair< CVector2i, CVector2i > mTextBounds;
-  bool mTextBoundsDirty;
+  rstl::pair< CVector2i, CVector2i > mBounds;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  mutable
 #endif
-
+  bool mBoundsDirty;
+#endif
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 CHECK_SIZEOF(CTextRenderBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xb6c : 0x258))
-#else
-CHECK_SIZEOF(CTextRenderBuffer, 0xb6c)
-#endif
 
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, Primitive, 0x10)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
-NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
-#endif
-#else
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
 #endif
 

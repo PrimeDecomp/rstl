@@ -8,18 +8,16 @@
 class CImageInstruction : public CInstruction {
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-  void GetAssets(rstl::vector< CToken >& assetsOut) const override;
-#else
+#if !RSTL_PRIME1
   explicit CImageInstruction(const CFontImageDef& image) : mImage(image) {}
-
-  // CInstruction
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
-  void GetAssets(rstl::vector< CToken >& assets) const override;
 #endif
 
+  // CInstruction
+  void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
+  void GetAssets(rstl::vector< CToken >& assetsOut) const override;
+
   uint GetAssetCount() const override { return mImage.GetImages().size(); }
+// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   explicit CImageInstruction(const CFontImageDef& image) : mImage(image) {}
 #endif

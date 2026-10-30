@@ -15,19 +15,20 @@ static const size_t skGenOffsets[] = {
     offsetof(CGenDescription, mLTME),  offsetof(CGenDescription, mEMTR),
     offsetof(CGenDescription, mMBSP),  offsetof(CGenDescription, mSIZE),
     offsetof(CGenDescription, mROTA),  offsetof(CGenDescription, mTEXR),
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    offsetof(CGenDescription, mTIND),  offsetof(CGenDescription, mPMOP),
-    offsetof(CGenDescription, mPMRT),  offsetof(CGenDescription, mPMSC),
-    offsetof(CGenDescription, mPMCL),  offsetof(CGenDescription, mVEL1),
-#else
-    offsetof(CGenDescription, mTIND),  offsetof(CGenDescription, mXTAD),
-    offsetof(CGenDescription, mFXBR),  offsetof(CGenDescription, mFXBO),
-    offsetof(CGenDescription, mPMOP),  offsetof(CGenDescription, mPMRT),
-    offsetof(CGenDescription, mPMSC),  offsetof(CGenDescription, mPMCL),
-    offsetof(CGenDescription, mPMOV),  offsetof(CGenDescription, mVEL1),
+    offsetof(CGenDescription, mTIND),
+#if !RSTL_PRIME1
+    offsetof(CGenDescription, mXTAD),
+    offsetof(CGenDescription, mFXBR),
+    offsetof(CGenDescription, mFXBO),
 #endif
-
+    offsetof(CGenDescription, mPMOP),
+    offsetof(CGenDescription, mPMRT),
+    offsetof(CGenDescription, mPMSC),
+    offsetof(CGenDescription, mPMCL),
+#if !RSTL_PRIME1
+    offsetof(CGenDescription, mPMOV),
+#endif
+    offsetof(CGenDescription, mVEL1),
     offsetof(CGenDescription, mVEL2),  offsetof(CGenDescription, mVEL3),
     offsetof(CGenDescription, mVEL4),  offsetof(CGenDescription, mNCSY),
     offsetof(CGenDescription, mCSSD),  offsetof(CGenDescription, mNDSY),
@@ -46,7 +47,6 @@ static const size_t skGenOffsets[] = {
     offsetof(CGenDescription, mADV9),  offsetof(CGenDescription, mVAV1),
     offsetof(CGenDescription, mVAV2),  offsetof(CGenDescription, mVAV3),
 #endif
-
 };
 
 CGenDescription::CGenDescription()
@@ -140,17 +140,15 @@ CGenDescription::CGenDescription()
 , mADV5(nullptr)
 , mADV6(nullptr)
 , mADV7(nullptr)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mADV8(nullptr) {}
-#else
 , mADV8(nullptr)
+#if !RSTL_PRIME1
 , mADV9(nullptr)
 , mVAV1(nullptr)
 , mVAV2(nullptr)
 , mVAV3(nullptr)
-, mDFLG(0) {}
+, mDFLG(0)
 #endif
+{}
 
 CGenDescription::~CGenDescription() {
   for (int i = 0; i < ARRAY_SIZE(skGenOffsets); ++i) {

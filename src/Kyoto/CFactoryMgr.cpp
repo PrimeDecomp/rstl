@@ -5,7 +5,6 @@
 #include "Kyoto/Streams/CLZOInputStream.hpp"
 
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Streams/CZipInputStream.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -18,19 +17,30 @@
 #endif
 
 static const uint sTypeTable[] = {
+    'CLSN',
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+    'CSPP',
+#endif
+    'CMDL', 'CSKR', 'ANIM', 'CINF', 'TXTR', 'PLTT', 'FONT', 'ANCS',
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    'CLSN', 'CMDL', 'CSKR', 'ANIM', 'CINF', 'TXTR', 'PLTT', 'FONT', 'ANCS', 'EVNT',
-    'MADF', 'MLVL', 'MREA', 'MAPW', 'MAPA', 'SAVW', 'SAVA', 'PART', 'WPSC', 'SWHC',
-    'DPSC', 'ELSC', 'CRSC', 'AFSM', 'DCLN', 'AGSC', 'ATBL', 'CSNG', 'STRG', 'SCAN',
-    'PATH', 'DGRP', 'HMAP', 'CTWK', 'FRME', 'HINT', 'MAPU', 'DUMB',
+    'EVNT',
 #else
-    'CLSN', 'CSPP', 'CMDL', 'CSKR', 'ANIM', 'CINF', 'TXTR', 'PLTT', 'FONT', 'ANCS', 'ANMS', 'MADF',
-    'MLVL', 'MREA', 'MAPW', 'MAPA', 'SAVW', 'SAVA', 'PART', 'WPSC', 'SWHC', 'DPSC', 'ELSC', 'CRSC',
-    'SPSC', 'SRSC', 'AFSM', 'DCLN', 'AGSC', 'ATBL', 'CSNG', 'STRG', 'SCAN', 'PATH', 'DGRP', 'HMAP',
-    'PTLA', 'STLC', 'EGMC', 'RULE', 'FSM2', 'CTWK', 'FRME', 'HINT', 'MAPU', 'DUMB',
+    'ANMS',
 #endif
-
+    'MADF', 'MLVL', 'MREA', 'MAPW', 'MAPA', 'SAVW', 'SAVA', 'PART', 'WPSC', 'SWHC', 'DPSC', 'ELSC',
+    'CRSC',
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+    'SPSC', 'SRSC',
+#endif
+    'AFSM', 'DCLN', 'AGSC', 'ATBL', 'CSNG', 'STRG', 'SCAN', 'PATH', 'DGRP', 'HMAP',
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+    'PTLA', 'STLC', 'EGMC', 'RULE', 'FSM2',
+#endif
+    'CTWK', 'FRME', 'HINT', 'MAPU', 'DUMB',
 };
 
 CFactoryMgr::CFactoryMgr() {}
@@ -39,13 +49,17 @@ CFactoryMgr::~CFactoryMgr() {}
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CFactoryMgr::AddFactory(uint type, FFactoryFunc factory) {
+void CFactoryMgr::AddFactory(uint type, FFactoryFunc factory)
+#else
+void CFactoryMgr::AddFactory(FourCC type, FFactoryFunc factory)
+#endif
+{
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   AUTO(it, mFactories.find(type));
 #else
-void CFactoryMgr::AddFactory(FourCC type, FFactoryFunc factory) {
   rstl::map< int, FFactoryFunc >::iterator it = mFactories.find(type);
 #endif
-
   if (it != mFactories.end()) {
     return;
   }
@@ -54,13 +68,17 @@ void CFactoryMgr::AddFactory(FourCC type, FFactoryFunc factory) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CFactoryMgr::AddFactory(uint type, FMemFactoryFunc factory) {
+void CFactoryMgr::AddFactory(uint type, FMemFactoryFunc factory)
+#else
+void CFactoryMgr::AddFactory(FourCC type, FMemFactoryFunc factory)
+#endif
+{
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   AUTO(it, mMemFactories.find(type));
 #else
-void CFactoryMgr::AddFactory(FourCC type, FMemFactoryFunc factory) {
   rstl::map< int, FMemFactoryFunc >::iterator it = mMemFactories.find(type);
 #endif
-
   if (it != mMemFactories.end()) {
     return;
   }
@@ -74,7 +92,6 @@ bool CFactoryMgr::CanMakeMemory(const SObjectTag& tag) const {
 #else
   return mMemFactories.find(tag.type) != mMemFactories.end();
 #endif
-
 }
 
 rstl::auto_ptr< IObj > CFactoryMgr::MakeObject(const SObjectTag& tag, CInputStream& in,
@@ -85,18 +102,16 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObject(const SObjectTag& tag, CInputStre
 #else
   rstl::map< int, FFactoryFunc >::iterator it = mFactories.find(tag.type);
 #endif
-
   return it->second(tag, in, params).GetObjForTransfer();
 }
 
+rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag, void* buffer,
+                                                         void* buffer,
 #else
-rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
                                                          const rstl::auto_ptr< uchar >& buffer,
 #endif
-
                                                          int size, bool compressed,
                                                          const CVParamTransfer& params) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -105,7 +120,6 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
 #else
   rstl::map< int, FMemFactoryFunc >::const_iterator memIt = mMemFactories.find(tag.type);
 #endif
-
   if (memIt != mMemFactories.end()) {
     FMemFactoryFunc factory = memIt->second;
     if (compressed) {
@@ -140,7 +154,6 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
       DCStoreRange(data.get(), size);
     }
 #endif
-
     return factory(tag, data, size, params).GetObjForTransfer();
   }
 
@@ -150,7 +163,6 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
 #else
   FFactoryFunc factory = mFactories.find(tag.type)->second;
 #endif
-
   if (compressed) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -165,7 +177,6 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
     CLZOInputStream lzo(in, size - in->GetReadPosition(), length);
     return factory(tag, lzo, params).GetObjForTransfer();
 #endif
-
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -173,7 +184,6 @@ rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
 #else
   CMemoryInStream in(buffer.get(), size, CMemoryInStream::kOS_NotOwned);
 #endif
-
   return factory(tag, in, params).GetObjForTransfer();
 }
 

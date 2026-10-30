@@ -20,7 +20,6 @@ IController* IController::Create(const COsContext& ctx) {
 #else
   CDolphinController* cont = new CDolphinController();
 #endif
-
   cont->Initialize();
   return cont;
 }

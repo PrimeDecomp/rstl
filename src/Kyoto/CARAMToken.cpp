@@ -36,15 +36,11 @@ CARAMToken::CARAMToken(void* ptr, uint len, int unk) {
   if (x1c_24_) {
     mAramPtr = CARAMManager::Alloc(mDataLen);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mDmaHandle = CARAMManager::DMAToARAM(mMramPtr, (void*)mAramPtr, mDataLen,
-                                            CARAMManager::kDMAPrio_One);
-#else
+#if !RSTL_PRIME1
     CARAMManager::IsValidAlloc(mAramPtr);
+#endif
     mDmaHandle =
         CARAMManager::DMAToARAM(mMramPtr, (void*)mAramPtr, mDataLen, CARAMManager::kDMAPrio_One);
-#endif
-
     CARAMManager::WaitForDMACompletion(mDmaHandle);
     mDmaHandle = CARAMManager::GetInvalidDMAHandle();
   }
@@ -64,14 +60,7 @@ CARAMToken::CARAMToken(const CARAMToken& other)
 }
 
 CARAMToken::~CARAMToken() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (mDmaHandle != CARAMManager::GetInvalidDMAHandle() &&
-      !CARAMManager::CancelDMA(mDmaHandle)) {
-#else
   if (mDmaHandle != CARAMManager::GetInvalidDMAHandle() && !CARAMManager::CancelDMA(mDmaHandle)) {
-#endif
-
     CARAMManager::WaitForDMACompletion(mDmaHandle);
   }
 
@@ -120,15 +109,8 @@ bool CARAMToken::LoadToMRAM() {
   case kS_Zero: {
     mMramPtr = CMemory::Alloc(mDataLen, IAllocator::kHI_RoundUpLen);
     DCInvalidateRange(mMramPtr, mDataLen);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mDmaHandle = CARAMManager::DMAToMRAM((void*)mAramPtr, mMramPtr, mDataLen,
-                                            CARAMManager::kDMAPrio_One);
-#else
     mDmaHandle =
         CARAMManager::DMAToMRAM((void*)mAramPtr, mMramPtr, mDataLen, CARAMManager::kDMAPrio_One);
-#endif
-
     MoveToList(kS_Three);
     break;
   }
@@ -158,25 +140,19 @@ bool CARAMToken::LoadToARAM() {
   case kS_One: {
     if (!x1c_24_) {
       mAramPtr = CARAMManager::Alloc(mDataLen);
+      if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      if (CARAMManager::GetInvalidAlloc() == mAramPtr) {
+          CARAMManager::GetInvalidAlloc() == mAramPtr
 #else
-      if (!CARAMManager::IsValidAlloc(mAramPtr)) {
+          !CARAMManager::IsValidAlloc(mAramPtr)
 #endif
-
+      ) {
         return false;
       }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mDmaHandle = CARAMManager::DMAToARAM(mMramPtr, (void*)mAramPtr, mDataLen,
-                                              CARAMManager::kDMAPrio_One);
-#else
       mDmaHandle =
           CARAMManager::DMAToARAM(mMramPtr, (void*)mAramPtr, mDataLen, CARAMManager::kDMAPrio_One);
-#endif
-
     }
     MoveToList(kS_Two);
     break;
@@ -216,7 +192,6 @@ bool CARAMToken::RefreshStatus() {
 #else
     delete[] mMramPtr;
 #endif
-
     mMramPtr = nullptr;
     MoveToList(kS_Zero);
     break;

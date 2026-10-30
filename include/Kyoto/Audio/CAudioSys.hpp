@@ -32,19 +32,18 @@ class CSimplePool;
 enum ETRKSampleRate {
   kTSR_Zero,
   kTSR_One,
-#if RSTL_PRIME1
-  // TODO
 };
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 enum ETRKPlayState {
   kTPS_Stopped,
   kTPS_Playing,
   kTPS_Paused,
   kTPS_Busy,
   kTPS_Preparing,
-#endif
-
 };
+#endif
 
 enum ETRKRepeatMode {
   kTRM_NoRepeat,
@@ -72,30 +71,20 @@ public:
   enum ESurroundModes { kSM_Mono, kSM_Stereo, kSM_Surround };
   class CEmitterData {
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CEmitterData() : mUsed(0), mImportant(0), mPrio(kEmitterMedPriority) {}
-#else
-    CEmitterData() : mUsed(false), mImportant(false), mPriority(kEmitterMedPriority) {}
-#endif
+    CEmitterData() : mUsed(false), mImportant(false), mPrio(kEmitterMedPriority) {}
 
     SND_EMITTER mEmitter;
     bool mUsed;
     bool mImportant;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     uchar mPrio;
-#else
-    uchar mPriority;
-#endif
-
   };
 
   struct C3DEmitterParmData {
     C3DEmitterParmData(const float maxDist = 150.f, const float distComp = 0.1f,
+                       const uint flags = 1, RSTL_PRIME1_CONST uchar maxVol = 127,
+                       RSTL_PRIME1_CONST uchar minVol = 0)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                       const uint flags = 1, const uchar maxVol = 127, const uchar minVol = 0)
     : mPos(0.f, 0.f, 0.f)
     , mDir(0.f, 0.f, 0.f)
     , mMaxDist(maxDist)
@@ -107,7 +96,7 @@ public:
     , mImportant(false)
     , mPrio(CAudioSys::kEmitterMedPriority) {}
 #else
-                       const uint flags = 1, uchar maxVol = 127, uchar minVol = 0);
+    ;
 #endif
 
     CVector3f mPos;
@@ -140,19 +129,22 @@ public:
     rstl::string mName;
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAudioSys(uchar, uchar, uchar, uchar, uint);
-#else
   CAudioSys(uchar numVoices, uchar numMusic, uchar numSfx, uchar maxNumEmitters, uint aramSize);
-#endif
 
   ~CAudioSys();
 
+  static void SysSetVolume(uchar volume,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void SysSetVolume(uchar, ushort, uchar);
-  static void SysSetSfxVolume(uchar, ushort, uchar, uchar);
+                           ushort time,
+#else
+                           uint time,
+#endif
+                           uchar group);
+  static void SysSetSfxVolume(uchar volume, ushort time, uchar music, uchar fx);
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   static bool SysLoadGroupSet(CSimplePool*, uint);
   static bool SysLoadGroupSet(const CToken&, const rstl::string&, uint);
   static const rstl::string& SysGetGroupSetName(uint);
@@ -163,9 +155,6 @@ public:
   static bool SysIsGroupSetLoaded(const rstl::string& name);
   static rstl::ncrc_ptr< CAudioGroupSet > FindGroupSet(const rstl::string& name);
 #else
-  static void SysSetVolume(uchar volume, uint time, uchar group);
-  static void SysSetSfxVolume(uchar volume, ushort time, uchar music, uchar fx);
-
   static SND_VOICEID SfxStart(const ushort sfxId, uchar vol, uchar pan, const uchar prio);
   static void SfxStop(SND_VOICEID handle);
   static SND_VOICEID SfxCheck(SND_VOICEID handle);
@@ -225,7 +214,6 @@ public:
   static void SfxPitchBend(SND_VOICEID handle, const ushort pitch);
   static uint S3dFindLowerPriorityHandle(uint prio);
   static uint S3dFindUnusedHandle();
-  static uint S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort handle,
 #else
   static void S3dAddListener(const CVector3f& pos, const CVector3f& dir, const CVector3f& heading,
                              const CVector3f& up, float frontSur, float backSur,
@@ -233,15 +221,16 @@ public:
   static bool S3dUpdateListener(const CVector3f& pos, const CVector3f& dir,
                                 const CVector3f& heading, const CVector3f& up, uchar volume);
   static bool S3dRemoveListener();
-  static uint S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort groupId,
 #endif
-
+  static uint S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort groupId,
                                   SND_PARAMETER_INFO* paraInfo);
+  static RSTL_PRIME1_CONST bool S3dUpdateEmitter(RSTL_PRIME1_CONST uint handle,
+                                                 const CVector3f& pos, const CVector3f& dir,
+                                                 const uchar maxVol);
+  static RSTL_PRIME1_CONST bool S3dRemoveEmitter(uint handle);
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static const bool S3dUpdateEmitter(const uint a, const CVector3f& b, const CVector3f& c,
-                                     const uchar d);
-  static const bool S3dRemoveEmitter(uint handle);
   static const bool S3dCheckEmitter(uint handle);
   static uint S3dEmitterVoiceID(uint handle);
 
@@ -254,10 +243,6 @@ public:
 
   static void S3dAddEmitter(SND_FXID fxid, const CVector3f& pos, const CVector3f& dir,
                             const bool b1, const bool b2, short, int);
-#else
-  static bool S3dUpdateEmitter(uint handle, const CVector3f& pos, const CVector3f& dir,
-                               const uchar maxVol);
-  static bool S3dRemoveEmitter(uint handle);
 #endif
 
   static void S3dFlushAllEmitters();
@@ -353,10 +338,8 @@ NESTED_CHECK_SIZEOF(CAudioSys, CEmitterData, 0x54)
 #endif
 
 NESTED_CHECK_SIZEOF(CAudioSys, C3DEmitterParmData, 0x2c)
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
 NESTED_CHECK_SIZEOF(CAudioSys, CTrkData, 0x64)
-#endif
 #endif
 
 #endif // _CAUDIOSYS

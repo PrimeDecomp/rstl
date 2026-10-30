@@ -90,11 +90,14 @@ bool CARAMManager::Initialize(uint chunkSize) {
   return true;
 }
 
-void CARAMManager::Shutdown() {
+void CARAMManager::Shutdown()
+#else
+CARAMManager::CAramPool::~CAramPool()
+#endif
+{
+#if RSTL_PRIME1
   WaitForAllDMAsToComplete();
   CMemory::Free(mpBookKeepingMemory);
-#else
-CARAMManager::CAramPool::~CAramPool() {
 #endif
 
   u32 unk = 0;
@@ -106,16 +109,15 @@ CARAMManager::CAramPool::~CAramPool() {
 #else
   CMemory::Free(mpBookKeepingMemory);
 #endif
-
 }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void* CARAMManager::Alloc(const uint len) {
+void* CARAMManager::Alloc(const uint len)
 #else
-void* CARAMManager::CAramPool::Alloc(uint len) {
+void* CARAMManager::CAramPool::Alloc(uint len)
 #endif
-
+{
   uint chunkCount = (mChunkSize - 1 + len) / mChunkSize;
   uint block = FindFreeBlocks(0, mNumChunks, chunkCount);
 
@@ -141,73 +143,34 @@ void* CARAMManager::CAramPool::Alloc(uint len) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-uint CARAMManager::FindFreeBlocks(uint arg0, uint arg1, uint arg2) {
-  while (arg0 < arg1) {
-    if (mpBookKeepingMemory[arg0] == 0) {
-      if (arg2 == 1) {
-        return arg0;
+uint CARAMManager::FindFreeBlocks(uint start, uint end, uint count)
 #else
-uint CARAMManager::CAramPool::FindFreeBlocks(uint start, uint end, uint count) {
+uint CARAMManager::CAramPool::FindFreeBlocks(uint start, uint end, uint count)
+#endif
+{
   while (start < end) {
     if (mpBookKeepingMemory[start] == 0) {
       if (count == 1) {
         return start;
-#endif
-
       }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      ++arg0;
-      int r8 = 1;
-      while (arg0 < arg1) {
-        uint tmp = mpBookKeepingMemory[arg0];
-#else
       ++start;
       int found = 1;
       while (start < end) {
         uint tmp = mpBookKeepingMemory[start];
-#endif
-
         if (tmp != 0) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          arg0 += tmp;
-#else
           start += tmp;
-#endif
-
           break;
         }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        r8++;
-        if (r8 == arg2) {
-          return arg0 - (arg2 - 1);
-#else
         found++;
         if (found == count) {
           return start - (count - 1);
-#endif
-
         }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        ++arg0;
-#else
         ++start;
-#endif
-
       }
     } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      arg0 += mpBookKeepingMemory[arg0];
-#else
       start += mpBookKeepingMemory[start];
-#endif
-
     }
   }
   return -1;
@@ -215,13 +178,19 @@ uint CARAMManager::CAramPool::FindFreeBlocks(uint start, uint end, uint count) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-bool CARAMManager::Free(const void* ptr) {
-  if (GetInvalidAlloc() == ptr) {
+bool CARAMManager::Free(const void* ptr)
 #else
-bool CARAMManager::CAramPool::Free(const void* ptr) {
-  if (!IsValidAlloc(ptr)) {
+bool CARAMManager::CAramPool::Free(const void* ptr)
 #endif
-
+{
+  if (
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+      GetInvalidAlloc() == ptr
+#else
+      !IsValidAlloc(ptr)
+#endif
+  ) {
     return false;
   }
 
@@ -240,11 +209,7 @@ bool CARAMManager::CAramPool::Free(const void* ptr) {
   return true;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-uint CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priority) {
-  DCStoreRange(src, len);
-#else
+#if !RSTL_PRIME1
 bool CARAMManager::Initialize(uint chunkSize, uint size, uint secondChunkSize) {
   uint aramSize = ARGetSize() - mPreInitializeAlloc;
   uint numChunks = size / chunkSize;
@@ -266,8 +231,19 @@ void CARAMManager::Shutdown() {
 void* CARAMManager::Alloc(uint len, int pool) { return mPools[pool]->Alloc(len); }
 
 bool CARAMManager::Free(const void* ptr, int pool) { return mPools[pool]->Free(ptr); }
+#endif
 
-int CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priority) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+uint
+#else
+int
+#endif
+CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priority) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  DCStoreRange(src, len);
+#else
   DCFlushRange(src, len);
 #endif
 
@@ -279,11 +255,13 @@ int CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priori
                  (priority == kDMAPrio_One) ? ARQ_PRIORITY_HIGH : ARQ_PRIORITY_LOW,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                 reinterpret_cast< uintptr_t >(src), reinterpret_cast< uintptr_t >(dest), len,
+                 reinterpret_cast< uintptr_t >(src),
+                 reinterpret_cast< uintptr_t >(dest),
 #else
-                 reinterpret_cast< u32 >(src), reinterpret_cast< u32 >(dest), len,
+                 reinterpret_cast< u32 >(src),
+                 reinterpret_cast< u32 >(dest),
 #endif
-
+                 len,
                  AramManagerDMACallback);
 
   GetAndIncrementUniqueID();
@@ -300,11 +278,13 @@ int CARAMManager::DMAToMRAM(void* src, void* dest, uint len, EDMAPriority priori
                  (priority == kDMAPrio_One) ? ARQ_PRIORITY_HIGH : ARQ_PRIORITY_LOW,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                 reinterpret_cast< uintptr_t >(src), reinterpret_cast< uintptr_t >(dest), len,
+                 reinterpret_cast< uintptr_t >(src),
+                 reinterpret_cast< uintptr_t >(dest),
 #else
-                 reinterpret_cast< u32 >(src), reinterpret_cast< u32 >(dest), len,
+                 reinterpret_cast< u32 >(src),
+                 reinterpret_cast< u32 >(dest),
 #endif
-
+                 len,
                  AramManagerDMACallback);
 
   GetAndIncrementUniqueID();
@@ -362,11 +342,11 @@ bool CARAMManager::CancelDMA(uint handle) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CARAMManager::AramManagerDMACallback(uintptr_t result) {
+void CARAMManager::AramManagerDMACallback(uintptr_t result)
 #else
-void CARAMManager::AramManagerDMACallback(u32 result) {
+void CARAMManager::AramManagerDMACallback(u32 result)
 #endif
-
+{
   SAramDMARequest* req = reinterpret_cast< SAramDMARequest* >(result);
   req->mComplete = true;
   if (req->mRequest.type == ARQ_TYPE_ARAM_TO_MRAM) {
@@ -386,20 +366,13 @@ void CARAMManager::RefreshActiveDMAList() {
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CARAMManager::CollectGarbage() {
-  RefreshActiveDMAList();
-#else
 void CARAMManager::CollectGarbage() { RefreshActiveDMAList(); }
 
+#if !RSTL_PRIME1
 bool CARAMManager::IsValidAlloc(const void* ptr) {
   return reinterpret_cast< const void* >(-1) != ptr;
-#endif
-
 }
 
-#if !RSTL_PRIME1
 const void* CARAMManager::GetInvalidAlloc() { return reinterpret_cast< const void* >(-1); }
 #endif
 

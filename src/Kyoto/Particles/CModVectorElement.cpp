@@ -343,14 +343,9 @@ bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   mTangentialVelocity->GetValue(frame, d);
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-  const CVector3f tangent = CVector3f::Cross(b, posToHelix) * d;
-  pVel = (b * CVector3f::Dot(b, pVel) + tangent) * c + (1.f - c) * pVel;
-#else
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
   pVel = (b * CVector3f::Dot(b, pVel) + d * CVector3f::Cross(b, posToHelix)) * c +
          (1.f - c) * pVel;
-#endif
 #else
   const CVector3f tangent = CVector3f::Cross(b, posToHelix) * d;
   pVel = (b * CVector3f::Dot(b, pVel) + tangent) * c + (1.f - c) * pVel;
@@ -458,9 +453,7 @@ bool CMVESetPosition::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) cons
 CMVESphereVolume::CMVESphereVolume(CVectorElement* center, CRealElement* radius,
                                    CModVectorElement* modifier)
 : mCenter(center), mRadius(radius), mModifier(modifier) {}
-#endif
 
-#if !RSTL_PRIME1
 CMVESphereVolume::~CMVESphereVolume() {
   delete mCenter;
   delete mRadius;

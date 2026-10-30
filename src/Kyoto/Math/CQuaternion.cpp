@@ -91,10 +91,13 @@ CQuaternion CQuaternion::FromMatrixRows(const CVector3f& row0, const CVector3f& 
     const float qw = scale * (row1.GetX() - row0.GetY());
 #else
     const float qz = size / 4.f;
+#endif
+
     return CQuaternion(qw, qx, qy, qz);
   }
 }
 
+#if !RSTL_PRIME1
 CQuaternion CQuaternion::FromMatrixColumns(const CVector3f& col0, const CVector3f& col1,
                                            const CVector3f& col2) {
   const float trace = 1.f + col0.GetX() + col1.GetY() + col2.GetZ();
@@ -137,11 +140,10 @@ CQuaternion CQuaternion::FromMatrixColumns(const CVector3f& col0, const CVector3
     const float qx = scale * (col0.GetZ() + col2.GetX());
     const float qy = scale * (col1.GetZ() + col2.GetY());
     const float qz = size / 4.f;
-#endif
-
     return CQuaternion(qw, qx, qy, qz);
   }
 }
+#endif
 
 CQuaternion CQuaternion::FromMatrix(const CMatrix3f& matrix) {
   const CQuaternion result =
@@ -259,14 +261,10 @@ CQuaternion CQuaternion::Slerp(const CQuaternion& a, const CQuaternion& b, float
   const float product = Dot(a, b);
   const float dot = product > 1.f ? 1.f : product < -1.f ? -1.f : product;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ
   const double angle = acosf(dot);
 #else
   const double angle = acos(dot);
-#endif
-#else
-  const double angle = acosf(dot);
 #endif
 
   const double sineAngle = sin(angle);
@@ -275,8 +273,7 @@ CQuaternion CQuaternion::Slerp(const CQuaternion& a, const CQuaternion& b, float
   }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   const float aScale = CCast::ToReal32(sin(angle * (1.f - t)));
   const float bScale = CCast::ToReal32(sin(angle * t));
   const double scale = 1.0 / sineAngle;
@@ -291,15 +288,6 @@ CQuaternion CQuaternion::Slerp(const CQuaternion& a, const CQuaternion& b, float
   return CQuaternion(scale * (aScale * a.w + bScale * b.w),
                      vectorScale * (aScale * a.imaginary + bScale * b.imaginary));
 #endif
-#else
-  const float aScale = sin(angle * (1.f - t));
-  const float bScale = sin(angle * t);
-  const double scale = 1.0 / sineAngle;
-  const float vectorScale = scale;
-  return CQuaternion(scale * (aScale * a.w + bScale * b.w),
-                     vectorScale * (aScale * a.imaginary + bScale * b.imaginary));
-#endif
-
 }
 
 CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVector3f& to) {
@@ -323,8 +311,7 @@ CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVecto
   }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   const float size =
       CMath::SqrtF((1.f + CMath::FastLimit(CVector3f::Dot(fromUnit, toUnit), 1.f)) * 2.f);
   const CVector3f scaled = (1.f / size) * cross;
@@ -335,12 +322,6 @@ CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVecto
       CMath::SqrtF((1.f + CMath::Clamp(-1.f, CVector3f::Dot(fromUnit, toUnit), 1.f)) * 2.f);
   return CQuaternion(0.5f * size, (1.f / size) * cross);
 #endif
-#else
-  const float size =
-      CMath::SqrtF((1.f + CMath::Clamp(-1.f, CVector3f::Dot(fromUnit, toUnit), 1.f)) * 2.f);
-  return CQuaternion(0.5f * size, (1.f / size) * cross);
-#endif
-
 }
 
 static inline float normalize_angle(float value) {
@@ -413,13 +394,11 @@ CQuaternion CQuaternion::SlerpLocal(const CQuaternion& from, const CQuaternion& 
 #else
   return Dot(from, to) >= 0.f ? Slerp(from, to, t) : Slerp(from, to.BuildEquivalent(), t);
 #endif
-
 }
 
 CRelAngle CQuaternion::AngleFrom(const CQuaternion& other) const {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   const CRelAngle angle =
       CRelAngle::ArcCosine(rstl::min_val(rstl::max_val(Dot(*this, other), -1.f), 1.f));
   return angle;
@@ -429,6 +408,7 @@ CRelAngle CQuaternion::AngleFrom(const CQuaternion& other) const {
 #endif
 }
 
+#if RSTL_PRIME1
 CQuaternion CQuaternion::BuildEquivalent() const {
 #if RSTL_VERSION >= RSTL_R3IJ
   const double angle = 2.f * acosf(rstl::max_val(rstl::min_val(GetScalar(), 1.f), -1.f));
@@ -441,12 +421,8 @@ CQuaternion CQuaternion::BuildEquivalent() const {
   }
   const CUnitVector3f axis(imaginary);
   return AxisAngle(axis, CRelAngle::FromRadians(equivalentAngle));
-#else
-  return CRelAngle::FromRadians(
-      CMath::ArcCosineR(rstl::min_val(rstl::max_val(Dot(*this, other), -1.f), 1.f)));
-#endif
-
 }
+#endif
 
 CQuaternion CQuaternion::BuildNormalized() const {
 // TODO: verify that this Prime/Echoes difference is real
@@ -457,7 +433,6 @@ CQuaternion CQuaternion::BuildNormalized() const {
   const float scale = CMath::InvSqrtF(w * w + imaginary.MagSquared());
   return CQuaternion(scale * w, scale * imaginary);
 #endif
-
 }
 
 CQuaternion CQuaternion::AxisAngle(const CUnitVector3f& axis, const CRelAngle& angle) {
@@ -470,17 +445,18 @@ CQuaternion CQuaternion::AxisAngle(const CUnitVector3f& axis, const CRelAngle& a
 #endif
   CVector3f vec = axis * sine(angle / 2.f);
   return CQuaternion(w, vec);
-}
-
-bool CQuaternion::IsValidQuaternion(float epsilon) const {
-  const float error = GetVector().MagSquared() + GetScalar() * GetScalar() - 1.f;
-  return (error >= 0.f ? error : -error) < epsilon;
 #else
   const float w = cos(angle.AsRadians() / 2.f);
   return CQuaternion(w, sine(angle / 2.f) * axis);
 #endif
-
 }
+
+#if RSTL_PRIME1
+bool CQuaternion::IsValidQuaternion(float epsilon) const {
+  const float error = GetVector().MagSquared() + GetScalar() * GetScalar() - 1.f;
+  return (error >= 0.f ? error : -error) < epsilon;
+}
+#endif
 
 CVector3f CQuaternion::Transform(const CVector3f& vector) const {
   const float scalar = -CVector3f::Dot(imaginary, vector);

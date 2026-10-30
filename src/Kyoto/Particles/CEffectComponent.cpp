@@ -17,21 +17,18 @@ CEffectComponent::CEffectComponent(CInputStream& in)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mBoneName(in)
-, mScale(in.Get<float>())
-, mParentedMode(CParticleData::EParentedMode(in.Get<uint>()))
-, mFlags(in.Get<uint>()) {}
 #else
 , mBone(in)
+#endif
 , mScale(in.Get< float >())
 , mParentedMode(CParticleData::EParentedMode(in.Get< uint >()))
 , mFlags(in.Get< uint >()) {}
-#endif
 
 SObjectTag CEffectComponent::GetSObjectTagFromStream(CInputStream& in) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const FourCC type = in.Get<CAssetId>();
-  const CAssetId id = in.Get<CAssetId>();
+  const FourCC type = in.Get< CAssetId >();
+  const CAssetId id = in.Get< CAssetId >();
 #else
   const FourCC type = in.Get< FourCC >();
   const CAssetId id = in.ReadUint32();

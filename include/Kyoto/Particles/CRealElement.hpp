@@ -127,12 +127,7 @@ class CRELifetimePercent : public CRealElement {
   CRealElement* mPercentVal;
 
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CRELifetimePercent(CRealElement* a); // : x4_percentVal(a) {}
-#else
   CRELifetimePercent(CRealElement* a); // : mPercentVal(a) {}
-#endif
 
   ~CRELifetimePercent() override;
   bool GetValue(int frame, float& valOut) const override;

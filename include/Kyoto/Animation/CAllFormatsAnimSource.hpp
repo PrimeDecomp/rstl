@@ -18,9 +18,7 @@
 class CInputStream;
 
 class IObjectStore;
-#if !RSTL_PRIME1
 class CAnimPOIData;
-#endif
 
 class CAnimFormatUnion {
 public:
@@ -42,13 +40,12 @@ public:
 
   const CAnimSource& AsCAnimSource() const {
     return *reinterpret_cast< const CAnimSource* >(mFormatData);
-#if RSTL_PRIME1
   }
+#if RSTL_PRIME1
   CFBStreamedCompression& AsCFBStreamedCompression() {
     return *reinterpret_cast< CFBStreamedCompression* >(mFormatData);
-#endif
-
   }
+#endif
   const CFBStreamedCompression& AsCFBStreamedCompression() const {
     return *reinterpret_cast< const CFBStreamedCompression* >(mFormatData);
   }
@@ -67,7 +64,6 @@ private:
                                                 ? sizeof(CAnimSource)
                                                 : sizeof(CFBStreamedCompression)]);
 #endif
-
 };
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CAnimFormatUnion, 0x88)
@@ -93,7 +89,6 @@ public:
 #else
     case CAnimFormatUnion::kF_AnimSource:
 #endif
-
       return AsCAnimSource().GetAnimationDuration();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -101,7 +96,6 @@ public:
 #else
     case CAnimFormatUnion::kF_FBStreamedCompression:
 #endif
-
       return AsCFBStreamedCompression().GetAnimationDuration();
     default:
       return AsCAnimSource().GetAnimationDuration();
@@ -115,7 +109,6 @@ public:
 #else
     case CAnimFormatUnion::kF_AnimSource:
 #endif
-
       return AsCAnimSource().GetAverageVelocity();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -123,7 +116,6 @@ public:
 #else
     case CAnimFormatUnion::kF_FBStreamedCompression:
 #endif
-
       return AsCFBStreamedCompression().GetAverageVelocity();
     default:
       return AsCAnimSource().GetAverageVelocity();
@@ -139,13 +131,12 @@ public:
   }
 
   static rstl::ownership_transfer< IAnimReader >
+  GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok, const CCharAnimTime& time
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok, const CCharAnimTime& time);
-#else
-  GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok, const CCharAnimTime& time,
-               const CAnimPOIData* poiData);
+#if !RSTL_PRIME1
+               , const CAnimPOIData* poiData
 #endif
+               );
 
 private:
   CAnimFormatUnion mFormatUnion;
@@ -171,32 +162,25 @@ template < typename T >
 #if RSTL_PRIME1
 class TSubAnimTypeToken {
 public:
-  TSubAnimTypeToken(const TLockedToken< CAllFormatsAnimSource >& tok) : mToken(tok) {
+  TSubAnimTypeToken(const TLockedToken< CAllFormatsAnimSource >& tok)
 #else
-inline TSubAnimTypeToken< T >::TSubAnimTypeToken(const TLockedToken< CAllFormatsAnimSource >& token)
-: mToken(token) {
+inline TSubAnimTypeToken< T >::TSubAnimTypeToken(const TLockedToken< CAllFormatsAnimSource >& tok)
 #endif
-
+  : mToken(tok) {
     mToken->GetFormatPointer(mSource);
   }
 #if RSTL_PRIME1
   const T* const& GetSource() const { return mSource; }
   const T* operator->() const { return mSource; }
   const T& operator*() const { return *mSource; }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 private:
   TLockedToken< CAllFormatsAnimSource > mToken;
   const T* mSource;
 };
-
-const CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
-#else
-CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
 #endif
 
-                                   const CVParamTransfer& param);
+RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
+                                                     const CVParamTransfer& param);
 
 #endif // _CALLFORMATSANIMSOURCE

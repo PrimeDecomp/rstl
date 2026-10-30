@@ -29,7 +29,6 @@ rstl::pair< float, int > CPASDatabase::FindBestAnimation(const CPASAnimParmData&
   rstl::vector< CPASAnimState >::const_iterator it =
       rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
 #endif
-
   if (it != mStates.end()) {
     CRandom16 random(0x1234);
     return it->FindBestAnimation(data.GetAnimParmData(), random, ignoreAnim);
@@ -46,7 +45,6 @@ rstl::pair< float, int > CPASDatabase::FindBestAnimation(const CPASAnimParmData&
   rstl::vector< CPASAnimState >::const_iterator it =
       rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
 #endif
-
   if (it != mStates.end()) {
     return it->FindBestAnimation(data.GetAnimParmData(), random, ignoreAnim);
   }
@@ -65,20 +63,18 @@ bool CPASDatabase::HasState(int id) const {
   rstl::vector< CPASAnimState >::const_iterator it =
       rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(id));
 #endif
-
   return it != mStates.end();
 }
 
 const CPASAnimState* CPASDatabase::GetAnimState(int id) const {
   return rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(id)).get_pointer();
-#if RSTL_PRIME1
 }
 
+#if RSTL_PRIME1
 const CPASAnimState* CPASDatabase::GetAnimStateByIndex(int index) const {
   return &mStates[index];
-#endif
-
 }
+#endif
 
 void CPASDatabase::SetDefaultState(int state) { mDefaultState = state; }
 

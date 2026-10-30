@@ -6,10 +6,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/string.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CPOINode::CPOINode(const rstl::string& name, const EPOIType type, const CCharAnimTime& time,
-#else
+#if !RSTL_PRIME1
 const ushort CPOINode::skExtendedVersion = 1;
 const uint CPOINode::skInvalidNameHash = uint(-1);
 
@@ -24,11 +21,17 @@ static uint ReadNameHash(ushort version, CInputStream& in) {
   return CPOINode::GetHashForString(name.data());
 }
 
-CPOINode::CPOINode(const uint nameHash, const EPOIType type, const CCharAnimTime& time,
 #endif
 
-                   const int index, const bool unique, const float weight, const int charIdx,
-                   const int flags)
+CPOINode::CPOINode(
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    const rstl::string& name,
+#else
+    const uint nameHash,
+#endif
+    const EPOIType type, const CCharAnimTime& time, const int index, const bool unique,
+    const float weight, const int charIdx, const int flags)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : x4_(1)
@@ -37,7 +40,6 @@ CPOINode::CPOINode(const uint nameHash, const EPOIType type, const CCharAnimTime
 : mVersion(2)
 , mNameHash(nameHash)
 #endif
-
 , mType(type)
 , mTime(time)
 , mIndex(index)
@@ -55,7 +57,6 @@ CPOINode::CPOINode(CInputStream& in)
 : mVersion(in.Get< ushort >())
 , mNameHash(ReadNameHash(mVersion, in))
 #endif
-
 , mType(in.Get< ushort >())
 , mTime(in)
 // TODO: verify that this Prime/Echoes difference is real
@@ -64,7 +65,6 @@ CPOINode::CPOINode(CInputStream& in)
 #else
 , mIndex(in.Get< int >())
 #endif
-
 , mUnique(in.Get< bool >())
 , mWeight(in.Get< float >())
 , mCharIdx(in.Get< int >())

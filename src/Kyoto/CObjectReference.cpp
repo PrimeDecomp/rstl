@@ -23,7 +23,6 @@ CObjectReference::CObjectReference(const rstl::auto_ptr< IObj >& obj)
 #if !RSTL_PRIME1
 , mObjTag(kInvalidAssetId, kInvalidAssetId)
 #endif
-
 , mObjectStore(nullptr)
 , mObject(obj.release())
 , mParams(CVParamTransfer::Null()) {}

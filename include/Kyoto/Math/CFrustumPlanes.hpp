@@ -17,14 +17,12 @@ class CTransform4f;
 class CFrustumPlanes {
 public:
   CFrustumPlanes() {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PRIME1
+  explicit CFrustumPlanes(const rstl::reserved_vector< CPlane, 6 >& planes) : mPlanes(planes) {}
+#endif
   CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, float nearZ, bool useFarPlane,
                  float farZ);
-#else
-  explicit CFrustumPlanes(const rstl::reserved_vector< CPlane, 6 >& planes) : mPlanes(planes) {}
-  CFrustumPlanes(const CTransform4f&, float, float, float, bool, float);
-
+#if !RSTL_PRIME1
   const rstl::reserved_vector< CPlane, 6 >& GetPlanes() const { return mPlanes; }
 
   // Guessed name; callers must respect the six-plane capacity.

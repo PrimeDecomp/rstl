@@ -6,12 +6,13 @@
 
 struct CAdvancementDeltas {
 public:
+  CAdvancementDeltas()
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CAdvancementDeltas() : mPosDelta(CVector3f::Zero()), mRotDelta(CQuaternion::NoRotation()) {}
-#else
-  CAdvancementDeltas() {}
+  : mPosDelta(CVector3f::Zero())
+  , mRotDelta(CQuaternion::NoRotation())
 #endif
+  {}
 
   CAdvancementDeltas(const CVector3f& posDelta, const CQuaternion& rotDelta)
   : mPosDelta(posDelta), mRotDelta(rotDelta) {}
@@ -20,12 +21,7 @@ public:
   const CQuaternion& GetOrientationDelta() const { return mRotDelta; }
 
   static CAdvancementDeltas Interpolate(const CAdvancementDeltas& a, const CAdvancementDeltas& b,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                        const float c, const float d);
-#else
                                         const float startWeight, const float endWeight);
-#endif
 
   static CAdvancementDeltas Blend(const CAdvancementDeltas& a, const CAdvancementDeltas& b,
                                   const float t);

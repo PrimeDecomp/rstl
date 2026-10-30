@@ -8,19 +8,13 @@
 #include "rstl/vector.hpp"
 
 class CInputStream;
-#if !RSTL_PRIME1
 struct SObjectTag;
-#endif
 
 class CCharLayoutInfo;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 class CModel;
 class CPoseAsTransforms;
-#else
 class CFactoryFnReturn;
 class CVParamTransfer;
-#endif
 
 class CSkinRules {
 public:
@@ -51,6 +45,13 @@ public:
   int GetNumNormals() const { return mNormalCount; }
   int GetNumVirtualBones() const { return mVirtualBones.size(); }
   const rstl::vector< CVirtualBone >& GetVirtualBones() const { return mVirtualBones; }
+  static int ProcessingPoints(int count, ushort** buf);
+  static int ProcessingNormals(int count, ushort** buf);
+
+private:
+  rstl::vector< CVirtualBone > mVirtualBones;
+  int mVertexCount;
+  int mNormalCount;
 #else
   int GetNumVirtualBones() const { return mBones.size(); }
   const rstl::vector< CVirtualBone >& GetVirtualBones() const { return mBones; }
@@ -61,23 +62,13 @@ private:
   rstl::vector< short > mMatrixIndices;
   int mVertexCount;
   rstl::single_ptr< uchar > mVertexToBone;
+#endif
 };
+#if !RSTL_PRIME1
 CHECK_SIZEOF(CSkinRules, 0x28)
 
-CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
-                                   const CVParamTransfer& params);
 #endif
-
-#if RSTL_PRIME1
-  static int ProcessingPoints(int count, ushort** buf);
-  static int ProcessingNormals(int count, ushort** buf);
-private:
-  rstl::vector< CVirtualBone > mVirtualBones;
-  int mVertexCount;
-  int mNormalCount;
-};
-
-const CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in, const CVParamTransfer&);
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
+                                                     const CVParamTransfer& params);
 
 #endif // _CSKINRULES

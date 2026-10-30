@@ -10,7 +10,6 @@
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CSkinnedModel.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -246,16 +245,6 @@ struct CGXLightParams {
 CGXLightParams mLightParams[8];
 
 struct {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  Vec vtx;
-  Vec nrm;
-  Vec2 uv0;
-  Vec2 uv1;
-  uint color;
-  ushort textureUsed;
-  uchar streamFlags;
-#else
   Vec mPosition;
   Vec mNormal;
   Vec2 mTexCoord0;
@@ -263,7 +252,6 @@ struct {
   uint mColor;
   ushort mTextureUsed;
   uchar mStreamFlags;
-#endif
 
 } vtxDescr;
 
@@ -538,28 +526,16 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
 #else
   ConfigureFrameBuffer(osContext);
 #endif
-  for (int i = 0; i < ARRAY_SIZE(mTexRegions); i++) {
-    GXInitTexCacheRegion(&mTexRegions[i], false, 0x8000 * i, GX_TEXCACHE_32K,
-                         0x80000 + (0x8000 * i), GX_TEXCACHE_32K);
 #else
   ConfigureFrameBuffer();
+#endif
   for (int i = 0; i < ARRAY_SIZE(mTexRegions); ++i) {
     GXInitTexCacheRegion(&mTexRegions[i], false, 0x8000 * i, GX_TEXCACHE_32K, 0x80000 + 0x8000 * i,
                          GX_TEXCACHE_32K);
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  for (int i = 0; i < ARRAY_SIZE(mTexRegionsCI); i++) {
-    GXInitTexCacheRegion(&mTexRegionsCI[i], false, (8 + (2 * i)) << 0xF, GX_TEXCACHE_32K,
-                         (9 + (2 * i)) << 0xF, GX_TEXCACHE_32K);
-#else
   for (int i = 0; i < ARRAY_SIZE(mTexRegionsCI); ++i) {
     GXInitTexCacheRegion(&mTexRegionsCI[i], false, (8 + 2 * i) << 15, GX_TEXCACHE_32K,
                          (9 + 2 * i) << 15, GX_TEXCACHE_32K);
-#endif
-
   }
   mGXDefaultTexRegionCallback = GXSetTexRegionCallback(TexRegionCallback);
 // TODO: verify that this Prime/Echoes difference is real
@@ -951,14 +927,12 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     GXInitLightAttn(&mLightObj[light], 1.f, 0.f, 0.f, 1.f, 0.f, 0.f);
     break;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  case kLT_Custom: {
-#else
   case kLT_Custom:
-  case kLT_Hard: {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  case kLT_Hard:
 #endif
-
+  {
     MTXMultVec(mCameraMtx, reinterpret_cast< VecPtr >(&pos), reinterpret_cast< VecPtr >(&pos));
     GXLightObj* obj = &mLightObj[light];
     GXInitLightPos(obj, pos.GetX(), pos.GetY(), pos.GetZ());
@@ -1007,12 +981,7 @@ void CGraphics::SetLightState(uchar lights) {
     diffFn = GX_DF_CLAMP;
   }
   CGX::SetChanCtrl(CGX::Channel0, lights != 0 ? GX_ENABLE : GX_DISABLE, GX_SRC_REG,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                   (vtxDescr.streamFlags & 2) != 0 ? GX_SRC_VTX : GX_SRC_REG,
-#else
                    (vtxDescr.mStreamFlags & 2) != 0 ? GX_SRC_VTX : GX_SRC_REG,
-#endif
 
                    static_cast< GXLightID >(lights), diffFn, attnFn);
   mLightActive = lights;
@@ -1818,151 +1787,79 @@ void CGraphics::StreamBegin(ERglPrimitive primitive) {
 
   ResetVertexDataStream(true);
   mCurrentPrimitive = primitive;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.streamFlags = kHasColor;
-#else
   vtxDescr.mStreamFlags = kHasColor;
-#endif
 
 }
 
 void CGraphics::StreamVertex(float x, float y, float z) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.vtx.x = x;
-  vtxDescr.vtx.y = y;
-  vtxDescr.vtx.z = z;
-#else
   vtxDescr.mPosition.x = x;
   vtxDescr.mPosition.y = y;
   vtxDescr.mPosition.z = z;
-#endif
 
   UpdateVertexDataStream();
 }
 
 void CGraphics::StreamVertex(const float* vtx) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.vtx.x = vtx[0];
-  vtxDescr.vtx.y = vtx[1];
-  vtxDescr.vtx.z = vtx[2];
-#else
   vtxDescr.mPosition.x = vtx[0];
   vtxDescr.mPosition.y = vtx[1];
   vtxDescr.mPosition.z = vtx[2];
-#endif
 
   UpdateVertexDataStream();
 }
 
 void CGraphics::StreamVertex(const CVector3f& vtx) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.vtx.x = vtx.GetX();
-  vtxDescr.vtx.y = vtx.GetY();
-  vtxDescr.vtx.z = vtx.GetZ();
-#else
   vtxDescr.mPosition.x = vtx.GetX();
   vtxDescr.mPosition.y = vtx.GetY();
   vtxDescr.mPosition.z = vtx.GetZ();
-#endif
 
   UpdateVertexDataStream();
 }
 
 void CGraphics::StreamNormal(const float* nrm) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.nrm.x = nrm[0];
-  vtxDescr.nrm.y = nrm[1];
-  vtxDescr.nrm.z = nrm[2];
-  vtxDescr.streamFlags |= kHasNormals;
-#else
   vtxDescr.mNormal.x = nrm[0];
   vtxDescr.mNormal.y = nrm[1];
   vtxDescr.mNormal.z = nrm[2];
   vtxDescr.mStreamFlags |= kHasNormals;
-#endif
 
 }
 
 void CGraphics::StreamColor(uint color) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.color = color;
-  vtxDescr.streamFlags |= kHasColor;
-#else
   vtxDescr.mColor = color;
   vtxDescr.mStreamFlags |= kHasColor;
-#endif
 
 }
 
 void CGraphics::StreamColor(const CColor& color) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.color = color.GetColor_u32();
-  vtxDescr.streamFlags |= kHasColor;
-#else
   vtxDescr.mColor = color.GetColor_u32();
   vtxDescr.mStreamFlags |= kHasColor;
-#endif
 
 }
 
 void CGraphics::StreamColor(float r, float g, float b, float a) {
   // clang-format off
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.color = (static_cast< uchar >(r * 255.f) << 24) |
-#else
   vtxDescr.mColor = (static_cast< uchar >(r * 255.f) << 24) |
-#endif
 
                    (static_cast< uchar >(g * 255.f) << 16) |
                    (static_cast< uchar >(b * 255.f) << 8) |
                    static_cast< uchar >(a * 255.f);
   // clang-format on
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.streamFlags |= kHasColor;
-#else
   vtxDescr.mStreamFlags |= kHasColor;
-#endif
 
 }
 
 void CGraphics::StreamTexcoord(const CVector2f& uv) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.uv0.x = uv.GetX();
-  vtxDescr.uv0.y = uv.GetY();
-  vtxDescr.streamFlags |= kHasTexture;
-  vtxDescr.textureUsed |= 1;
-#else
   vtxDescr.mTexCoord0.x = uv.GetX();
   vtxDescr.mTexCoord0.y = uv.GetY();
   vtxDescr.mStreamFlags |= kHasTexture;
   vtxDescr.mTextureUsed |= 1;
-#endif
 
 }
 
 void CGraphics::StreamTexcoord(float u, float v) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  vtxDescr.uv0.x = u;
-  vtxDescr.uv0.y = v;
-  vtxDescr.streamFlags |= kHasTexture;
-  vtxDescr.textureUsed |= 1;
-#else
   vtxDescr.mTexCoord0.x = u;
   vtxDescr.mTexCoord0.y = v;
   vtxDescr.mStreamFlags |= kHasTexture;
   vtxDescr.mTextureUsed |= 1;
-#endif
 
 }
 
@@ -1973,8 +1870,8 @@ void CGraphics::StreamEnd() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   vtxBuffer = nullptr;
-  vtxDescr.streamFlags = 0;
-  vtxDescr.textureUsed = 0;
+  vtxDescr.mStreamFlags = 0;
+  vtxDescr.mTextureUsed = 0;
   nrmBuffer = nullptr;
   txtBuffer0 = nullptr;
   txtBuffer1 = nullptr;
@@ -1997,65 +1894,31 @@ void CGraphics::SetLineWidth(float w, ERglTexOffset offs) {
 
 void CGraphics::UpdateVertexDataStream() {
   ++mNumPrimitives;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mpVtxBuffer->x = vtxDescr.vtx.x;
-  mpVtxBuffer->y = vtxDescr.vtx.y;
-  mpVtxBuffer->z = vtxDescr.vtx.z;
-#else
   mpVtxBuffer->x = vtxDescr.mPosition.x;
   mpVtxBuffer->y = vtxDescr.mPosition.y;
   mpVtxBuffer->z = vtxDescr.mPosition.z;
-#endif
 
   ++mpVtxBuffer;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if ((vtxDescr.streamFlags & kHasNormals) != 0) {
-    mpNrmBuffer->x = vtxDescr.nrm.x;
-    mpNrmBuffer->y = vtxDescr.nrm.y;
-    mpNrmBuffer->z = vtxDescr.nrm.z;
-#else
   if ((vtxDescr.mStreamFlags & kHasNormals) != 0) {
     mpNrmBuffer->x = vtxDescr.mNormal.x;
     mpNrmBuffer->y = vtxDescr.mNormal.y;
     mpNrmBuffer->z = vtxDescr.mNormal.z;
-#endif
 
     ++mpNrmBuffer;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if ((vtxDescr.streamFlags & kHasTexture) != 0) {
-    mpTxtBuffer0->x = vtxDescr.uv0.x;
-    mpTxtBuffer0->y = vtxDescr.uv0.y;
-#else
   if ((vtxDescr.mStreamFlags & kHasTexture) != 0) {
     mpTxtBuffer0->x = vtxDescr.mTexCoord0.x;
     mpTxtBuffer0->y = vtxDescr.mTexCoord0.y;
-#endif
 
     ++mpTxtBuffer0;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mpTxtBuffer1->x = vtxDescr.uv1.x;
-    mpTxtBuffer1->y = vtxDescr.uv1.y;
-#else
     mpTxtBuffer1->x = vtxDescr.mTexCoord1.x;
     mpTxtBuffer1->y = vtxDescr.mTexCoord1.y;
-#endif
 
     ++mpTxtBuffer1;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if ((vtxDescr.streamFlags & kHasColor) != 0) {
-    *mpClrBuffer = vtxDescr.color;
-#else
   if ((vtxDescr.mStreamFlags & kHasColor) != 0) {
     *mpClrBuffer = vtxDescr.mColor;
-#endif
 
     ++mpClrBuffer;
   }
@@ -2093,74 +1956,38 @@ void CGraphics::ResetVertexDataStream(bool initial) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mpVtxBuffer = vtxBuffer + 1;
-    memcpy(mpVtxBuffer, &vtxDescr.vtx, sizeof(Vec));
 #else
     mpVtxBuffer = mVertexBuffer + 1;
-    memcpy(mpVtxBuffer, &vtxDescr.mPosition, sizeof(Vec));
 #endif
+    memcpy(mpVtxBuffer, &vtxDescr.mPosition, sizeof(Vec));
 
     ++mpVtxBuffer;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if ((vtxDescr.streamFlags & kHasNormals) != 0) {
-#else
     if ((vtxDescr.mStreamFlags & kHasNormals) != 0) {
-#endif
 
       ++mpNrmBuffer;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      memcpy(mpNrmBuffer, &vtxDescr.nrm, sizeof(Vec));
-#else
       memcpy(mpNrmBuffer, &vtxDescr.mNormal, sizeof(Vec));
-#endif
 
       ++mpNrmBuffer;
     }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if ((vtxDescr.streamFlags & kHasTexture) != 0) {
-#else
     if ((vtxDescr.mStreamFlags & kHasTexture) != 0) {
-#endif
 
       ++mpTxtBuffer0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      memcpy(mpTxtBuffer0, &vtxDescr.uv0, sizeof(Vec2));
-#else
       memcpy(mpTxtBuffer0, &vtxDescr.mTexCoord0, sizeof(Vec2));
-#endif
 
       ++mpTxtBuffer0;
 
       ++mpTxtBuffer1;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      memcpy(mpTxtBuffer1, &vtxDescr.uv1, sizeof(Vec2));
-#else
       memcpy(mpTxtBuffer1, &vtxDescr.mTexCoord1, sizeof(Vec2));
-#endif
 
       ++mpTxtBuffer1;
     }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if ((vtxDescr.streamFlags & kHasColor) != 0) {
-#else
     if ((vtxDescr.mStreamFlags & kHasColor) != 0) {
-#endif
 
       ++mpClrBuffer;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      *mpClrBuffer = vtxDescr.color;
-#else
       *mpClrBuffer = vtxDescr.mColor;
-#endif
 
       ++mpClrBuffer;
     }
@@ -2176,18 +2003,6 @@ void CGraphics::ResetVertexDataStream(bool initial) {
 }
 
 void CGraphics::FlushStream() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  GXVtxDescList vtxDesc[10];
-
-  GXVtxDescList* curDesc = vtxDesc;
-  const GXVtxDescList vtxDescPos = {GX_VA_POS, GX_DIRECT};
-  *curDesc++ = vtxDescPos;
-
-  if ((vtxDescr.streamFlags & kHasNormals) != 0) {
-    const GXVtxDescList vtxDescNrm = {GX_VA_NRM, GX_DIRECT};
-    *curDesc++ = vtxDescNrm;
-#else
   GXVtxDescList descriptors[10];
   GXVtxDescList* next = descriptors;
   const GXVtxDescList position = {GX_VA_POS, GX_DIRECT};
@@ -2195,45 +2010,24 @@ void CGraphics::FlushStream() {
   if ((vtxDescr.mStreamFlags & kHasNormals) != 0) {
     const GXVtxDescList normal = {GX_VA_NRM, GX_DIRECT};
     *next++ = normal;
-#endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if ((vtxDescr.streamFlags & kHasColor) != 0) {
-    const GXVtxDescList vtxDescClr0 = {GX_VA_CLR0, GX_DIRECT};
-    *curDesc++ = vtxDescClr0;
-#else
   if ((vtxDescr.mStreamFlags & kHasColor) != 0) {
     const GXVtxDescList color = {GX_VA_CLR0, GX_DIRECT};
     *next++ = color;
-#endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if ((vtxDescr.streamFlags & kHasTexture) != 0) {
-    const GXVtxDescList vtxDescTex0 = {GX_VA_TEX0, GX_DIRECT};
-    *curDesc++ = vtxDescTex0;
-#else
   if ((vtxDescr.mStreamFlags & kHasTexture) != 0) {
     const GXVtxDescList texture = {GX_VA_TEX0, GX_DIRECT};
     *next++ = texture;
-#endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const GXVtxDescList vtxDescNull = {GX_VA_NULL, GX_NONE};
-  *curDesc = vtxDescNull;
-
-  CGX::SetVtxDescv(vtxDesc);
-  SetTevStates(vtxDescr.streamFlags);
-#else
   const GXVtxDescList end = {GX_VA_NULL, GX_NONE};
   *next = end;
   CGX::SetVtxDescv(descriptors);
   SetTevStates(vtxDescr.mStreamFlags);
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   if (sUseStreamVertexDelay) {
     FullRenderWithVertexDelay();
   } else {
@@ -2263,12 +2057,7 @@ void CGraphics::SetTevStates(uchar flags) {
   case kHasColor | kHasTexture:
   case kHasNormals | kHasColor | kHasTexture:
     CGX::SetNumChans(1);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if ((vtxDescr.textureUsed & 3) != 0) {
-#else
     if ((vtxDescr.mTextureUsed & 3) != 0) {
-#endif
 
       CGX::SetNumTexGens(2);
     } else {
@@ -2367,12 +2156,7 @@ void CGraphics::FullRenderWithVertexDelay() {
 
 void CGraphics::FullRender() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  switch (vtxDescr.streamFlags) {
-#else
   switch (vtxDescr.mStreamFlags) {
-#endif
 
   case 0:
     for (int i = 0; i < mNumPrimitives; i++) {

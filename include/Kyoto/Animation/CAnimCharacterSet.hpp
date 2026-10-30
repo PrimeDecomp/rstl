@@ -45,16 +45,13 @@ private:
 #else
   CCEAnimationSet mAnimationSet;
 #endif
-
 };
-#if !RSTL_PRIME1
-CHECK_SIZEOF(CAnimCharacterSet, 0x7c)
-#endif
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CAnimCharacterSet, 0x78)
 #else
+CHECK_SIZEOF(CAnimCharacterSet, 0x7c)
+
 CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
                                    const CVParamTransfer& xfer);
 #endif

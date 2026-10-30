@@ -8,10 +8,6 @@
 
 class CInputStream;
 
-#if !RSTL_PRIME1
-class IMetaAnim;
-#endif
-
 class CAnimation {
 public:
   CAnimation(CInputStream& in);

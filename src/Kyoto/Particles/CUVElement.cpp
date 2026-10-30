@@ -57,14 +57,12 @@ CUVEAnimTexture::CUVEAnimTexture(TToken< CTexture > tex, CIntElement* tileW, CIn
       SUVElementSet uvs;
       uvs.xMin = CCast::ToReal32(mStrideW * x) / CCast::ToReal32(width);
       uvs.yMin = CCast::ToReal32(mStrideH * y) / CCast::ToReal32(height);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       uvs.xMax = CCast::ToReal32(mStrideW * x + mTileW) / CCast::ToReal32(width);
       uvs.yMax = CCast::ToReal32(mStrideH * y + mTileH) / CCast::ToReal32(height);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
       mUvElems.push_back(uvs);
 #else
-      uvs.xMax = CCast::ToReal32((mStrideW * x) + mTileW) / CCast::ToReal32(width);
-      uvs.yMax = CCast::ToReal32((mStrideH * y) + mTileH) / CCast::ToReal32(height);
       mUvElems.push_back_unsafe(uvs);
 #endif
 
@@ -77,18 +75,12 @@ CUVEAnimTexture::~CUVEAnimTexture() { delete mCycleFrames; }
 void CUVEAnimTexture::GetValueUV(int frame, SUVElementSet& valOut) const {
   int cv = 1;
   mCycleFrames->GetValue(frame, cv);
-#if !RSTL_PRIME1
-  int tile = 0;
-  if (cv != 0) {
-#endif
-
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   float cvf =
       static_cast< float >(frame) / (static_cast< float >(cv) / static_cast< float >(mTiles));
 
-#if RSTL_PRIME1
   int tile;
-#endif
-
   if (mLoop) {
     tile = rstl::max_val(static_cast< int >(cvf), 0);
     if (tile >= mTiles) {
@@ -100,7 +92,23 @@ void CUVEAnimTexture::GetValueUV(int frame, SUVElementSet& valOut) const {
       tile = mTiles - 1;
     }
   }
-#if !RSTL_PRIME1
+#else
+  int tile = 0;
+  if (cv != 0) {
+    float cvf =
+        static_cast< float >(frame) / (static_cast< float >(cv) / static_cast< float >(mTiles));
+
+    if (mLoop) {
+      tile = rstl::max_val(static_cast< int >(cvf), 0);
+      if (tile >= mTiles) {
+        tile = tile % mTiles;
+      }
+    } else {
+      tile = static_cast< int >(cvf);
+      if (static_cast< int >(cvf) >= mTiles) {
+        tile = mTiles - 1;
+      }
+    }
   }
 #endif
 

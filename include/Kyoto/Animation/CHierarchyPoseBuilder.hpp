@@ -14,10 +14,8 @@
 #include "rstl/construction_deferred.hpp"
 
 class CCharLayoutInfo;
-#if RSTL_PRIME1
 class CPoseAsTransforms;
 class CTransform4f;
-#endif
 
 class CHierarchyPoseBuilder {
 public:
@@ -40,15 +38,10 @@ public:
   class CTreeNode {
   public:
     CTreeNode(const CSegId& sibling, const CSegId& child, const CVector3f& offset)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     : mChild(child)
     , mSibling(sibling)
     , mRotation(CQuaternion::NoRotation())
     , mOffset(offset) {}
-#else
-    : mChild(child), mSibling(sibling), mRotation(CQuaternion::NoRotation()), mOffset(offset) {}
-#endif
 
     const CQuaternion& GetRotation() const { return mRotation; }
     const CVector3f& GetOffset() const { return mOffset; }
@@ -58,12 +51,7 @@ public:
 #endif
 
     void SetRotation(const CQuaternion& rot) { mRotation = rot; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    void SetOffset(const CVector3f& off) { mOffset = off; }
-#else
     void SetOffset(const CVector3f& offset) { mOffset = offset; }
-#endif
 
     CTreeNode NodeForNextChildInserted(const CSegId& child, const CSegId& nullId,
                                        const CVector3f& offset) {
@@ -116,7 +104,6 @@ private:
 #if !RSTL_PRIME1
   rstl::auto_ptr< ScaleMap > mScales;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

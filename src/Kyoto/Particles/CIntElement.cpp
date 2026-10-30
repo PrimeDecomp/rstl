@@ -91,10 +91,10 @@ bool CIEMultiply::GetValue(int frame, int& valOut) const {
   mA->GetValue(frame, a);
   mB->GetValue(frame, b);
   valOut = a * b;
-#if !RSTL_PRIME1
   return false;
 }
 
+#if !RSTL_PRIME1
 CIEDivide::CIEDivide(CIntElement* a, CIntElement* b) : mDividend(a), mDivisor(b) {}
 
 CIEDivide::~CIEDivide() {
@@ -111,10 +111,9 @@ bool CIEDivide::GetValue(int frame, int& valOut) const {
   } else {
     valOut = a;
   }
-#endif
-
   return false;
 }
+#endif
 
 CIEModulo::CIEModulo(CIntElement* a, CIntElement* b) : mA(a), mB(b) {}
 
@@ -239,13 +238,7 @@ bool CIETimeChain::GetValue(int frame, int& valOut) const {
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CIEClamp::CIEClamp(CIntElement* a, CIntElement* b, CIntElement* c)
-: mMin(a), mMax(b), mVal(c) {}
-#else
 CIEClamp::CIEClamp(CIntElement* a, CIntElement* b, CIntElement* c) : mMin(a), mMax(b), mVal(c) {}
-#endif
 
 CIEClamp::~CIEClamp() {
   delete mMin;
@@ -348,19 +341,16 @@ bool CIEKeyframeEmitter::GetValue(int frame, int& valOut) const {
         emitterTime = emitterTime % (mLoopEnd - mLoopStart);
         emitterTime += mLoopStart;
       }
-#else
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-#endif
-
       valOut = mKeys[emitterTime];
-#if RSTL_PRIME1
     } else {
       emitterTime = rstl::min_val(emitterTime, mLoopEnd - 1);
       valOut = mKeys[emitterTime];
     }
+#else
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
 #endif
-
     return false;
   } else {
     int ltPerc = CParticleGlobals::GetParticleLifetimePercentage();
@@ -373,9 +363,9 @@ bool CIEKeyframeEmitter::GetValue(int frame, int& valOut) const {
     }
     return false;
   }
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 CIEKeyframeInput::CIEKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
 , mUnk1(in.ReadInt32())
@@ -406,9 +396,8 @@ bool CIEKeyframeInput::GetValue(int frame, int& valOut) const {
     }
   }
   return false;
-#endif
-
 }
+#endif
 
 CIESubtract::CIESubtract(CIntElement* a, CIntElement* b) : mA(a), mB(b) {}
 

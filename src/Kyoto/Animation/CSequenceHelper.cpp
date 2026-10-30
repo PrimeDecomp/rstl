@@ -19,7 +19,6 @@ CSequenceHelper::CSequenceHelper(const rstl::ncrc_ptr< CAnimTreeNode >& a,
   mNodes.push_back_unsafe(a);
   mNodes.push_back_unsafe(b);
 #endif
-
 }
 
 CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >& anims,
@@ -35,7 +34,6 @@ CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator it = anims.begin();
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator end = anims.end();
 #endif
-
   for (; it != end; ++it) {
     const rstl::rc_ptr< IMetaAnim >& anim = *it;
 // TODO: verify that this Prime/Echoes difference is real
@@ -44,7 +42,6 @@ CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >
 #else
     mNodes.push_back_unsafe(
 #endif
-
         anim->GetAnimationTree(context, CMetaAnimTreeBuildOrders::NoSpecialOrders()));
   }
 }
@@ -74,7 +71,6 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 #else
         boolNodes.push_back_unsafe(poi);
 #endif
-
       }
 
       CInt32POINode int32Array[64];
@@ -89,7 +85,6 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 #else
         int32Nodes.push_back_unsafe(poi);
 #endif
-
       }
 
       CParticlePOINode partArray[64];
@@ -105,7 +100,6 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 #else
         partNodes.push_back_unsafe(poi);
 #endif
-
       }
 
       CSoundPOINode soundArray[64];
@@ -120,7 +114,6 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 #else
         soundNodes.push_back_unsafe(poi);
 #endif
-
       }
 
       duration += node->GetTimeRemaining();
@@ -144,7 +137,6 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 #else
         const rstl::optional_object< CVector3f > delta = result.mDeltas.mPosDelta;
 #endif
-
         offset += *delta;
       }
 

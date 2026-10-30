@@ -10,13 +10,12 @@ CSaveableState::CSaveableState()
 , mJust(kJustification_Left)
 , mVjust(kVerticalJustification_Top) {}
 
+bool CSaveableState::IsFinishedLoading()
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-bool CSaveableState::IsFinishedLoading() {
-#else
-bool CSaveableState::IsFinishedLoading() const {
+#if !RSTL_PRIME1
+    const
 #endif
-
+{
   if (mFont) {
     TToken< CRasterFont > font(mFont.data());
     return font.IsLoaded() && font.GetT()->IsFinishedLoading();

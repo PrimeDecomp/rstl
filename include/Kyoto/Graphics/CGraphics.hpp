@@ -283,23 +283,18 @@ public:
 #endif
 
     bool IsValid() const { return mValid; }
+    RSTL_PRIME1_CONST int GetX() const { return mX; }
+    RSTL_PRIME1_CONST int GetY() const { return mY; }
+    RSTL_PRIME1_CONST int GetWidth() const { return mWidth; }
+    RSTL_PRIME1_CONST int GetHeight() const { return mHeight; }
+    RSTL_PRIME1_CONST int GetTexWidth() const { return mTexWidth; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    const int GetX() const { return mX; }
-    const int GetY() const { return mY; }
-    const int GetWidth() const { return mWidth; }
-    const int GetHeight() const { return mHeight; }
-    const int GetTexWidth() const { return mTexWidth; }
     float GetMinU() const { return mMinU; }
     float GetMaxU() const { return mMaxU; }
     float GetMinV() const { return mMinV; }
     float GetMaxV() const { return mMaxV; }
 #else
-    int GetX() const { return mX; }
-    int GetY() const { return mY; }
-    int GetWidth() const { return mWidth; }
-    int GetHeight() const { return mHeight; }
-    int GetTexWidth() const { return mTexWidth; }
     const CVector2f& GetTexCoord(int index) const { return mTexCoords[index]; }
 #endif
 
@@ -379,13 +374,13 @@ public:
   static CMatrix4f GetPerspectiveProjectionMatrix();
   static CMatrix4f CalculatePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
   static void ResetGfxStates();
+  static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, void* data,
+                                      void* data,
 #else
-  static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, const void* data,
+                                      const void* data,
 #endif
-
                                       GXTexMapID texId);
   static void LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, GXTlut tlut,
                                       void* data, GXTexMapID texId);
@@ -394,24 +389,30 @@ public:
   static void SetProjectionState(const CProjectionState& proj);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2,
+  static CClippedScreenRect ClipScreenRectFromVS(
 #else
   // Guessed name; projects all four model-space corners independently.
-  static CClippedScreenQuad ClipScreenQuadFromMS(const CVector3f& p1, const CVector3f& p2,
-                                                 const CVector3f& p3, const CVector3f& p4,
+  static CClippedScreenQuad ClipScreenQuadFromMS(
 #endif
-
-                                                 ETexelFormat fmt);
+      const CVector3f& p1, const CVector3f& p2,
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+      const CVector3f& p3, const CVector3f& p4,
+#endif
+      ETexelFormat fmt);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromMS(const CVector3f& p1, const CVector3f& p2,
+  static CClippedScreenRect ClipScreenRectFromMS(
 #else
   // Guessed name; the view-space counterpart of ClipScreenQuadFromMS.
-  static CClippedScreenQuad ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2,
-                                                 const CVector3f& p3, const CVector3f& p4,
+  static CClippedScreenQuad ClipScreenQuadFromVS(
 #endif
-
-                                                 ETexelFormat fmt);
+      const CVector3f& p1, const CVector3f& p2,
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+      const CVector3f& p3, const CVector3f& p4,
+#endif
+      ETexelFormat fmt);
   static CVector2i ProjectPoint(const CVector3f& point);
 
 #if RSTL_PRIME1
@@ -469,9 +470,9 @@ public:
   static bool BeginRender2D(const CTexture& tex);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void DoRender2D(const CTexture& tex, int x, int y, int srcX, int srcY,
-                         int srcW, int srcH, int w, int h, const CColor& col);
-  static void EndRender2D(bool lightsWereOn);
+  static void DoRender2D(const CTexture& tex, int x, int y, int texX, int texY, int texW, int texH,
+                         int w, int h, const CColor& col);
+  static void EndRender2D(bool restoreLights);
 #else
   static void EndRender2D(bool restoreLights);
   static void DoRender2D(const CTexture& tex, int x, int y, int texX, int texY, int texW, int texH,
@@ -543,7 +544,6 @@ public:
 
   static void SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op, ERglAlphaFunc comp1,
                               uchar ref1);
-// TODO: verify that this Prime/Echoes difference is real
   static void SetDepthWriteMode(RSTL_PRIME1_CONST bool test, ERglEnum comp, RSTL_PRIME1_CONST bool write);
 
   static void SetBlendMode(ERglBlendMode mode, ERglBlendFactor src, ERglBlendFactor dst,
@@ -555,7 +555,6 @@ public:
   static void SetCullMode(ERglCullMode cullMode);
   static void SetTevStates(uchar);
 
-// TODO: verify that this Prime/Echoes difference is real
   static void SetUseVideoFilter(RSTL_PRIME1_CONST bool b);
 
   static bool GetDolphinLastFrameAbove() { return mLastFrameUsedAbove; }

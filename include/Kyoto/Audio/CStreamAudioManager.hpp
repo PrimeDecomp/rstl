@@ -18,13 +18,12 @@ struct SDSPStreamCacheEntry {
 
   SDSPStreamCacheEntry();
   SDSPStreamCacheEntry(int playState, const rstl::string& fileName, int volume, float fadeIn,
+                       float fadeOut,
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                       float fadeOut, int handle, bool music);
-#else
-                       float fadeOut, float fadeFactor, int handle, bool music);
+#if !RSTL_PRIME1
+                       float fadeFactor,
 #endif
-
+                       int handle, bool music);
 };
 
 class CStreamAudioManager {
@@ -65,14 +64,8 @@ public:
   static void SetCurrentAudio(const rstl::string& fileName, float fadeIn, float fadeOut,
                               unsigned char volume);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static void FadeInHardwareAudio(float fadeTime);
   static void FadeOutHardwareAudio(float fadeTime);
-#else
-  static void FadeInHardwareAudio(float fadeTime);  // Guessed name
-  static void FadeOutHardwareAudio(float fadeTime); // Guessed name
-#endif
 
 private:
   static void HandleMusicUnmute();

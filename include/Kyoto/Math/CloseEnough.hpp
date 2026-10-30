@@ -21,7 +21,6 @@ struct Double {
 #else
   static inline double Epsilon() { return 1.e-5; } // TODO check
 #endif
-
 };
 static inline float vector3_epsilon() { return 1.e-4f; }
 static inline float vector2_epsilon() { return 1.e-4f; }
@@ -47,7 +46,6 @@ inline bool close_enough(float a, float b, float epsilon = Real32::Epsilon()) {
 inline bool close_enough(float a, const float b, float epsilon = Real32::Epsilon()) {
   return CMath::AbsF(a - b) < epsilon;
 #endif
-
 }
 inline bool close_enough(double a, double b, double epsilon = Double::Epsilon()) {
   return fabs(a - b) < epsilon;

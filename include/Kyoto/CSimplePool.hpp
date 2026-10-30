@@ -17,15 +17,14 @@
 class IFactory;
 class CSimplePool : public IObjectStore {
   struct TagIdLess {
+    bool operator()(const SObjectTag& a, const SObjectTag& b) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    bool operator()(const SObjectTag& a, const SObjectTag& b) const {
       return a.GetId() < b.GetId();
-    }
 #else
-    bool operator()(const SObjectTag& a, const SObjectTag& b) const { return a.id < b.id; }
+      return a.id < b.id;
 #endif
-
+    }
   };
   typedef rstl::map< SObjectTag, CObjectReference*, TagIdLess > ResourceMap;
 
@@ -33,29 +32,21 @@ public:
   CSimplePool(IFactory& factory);
   ~CSimplePool();
   void DebugDumpPool() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  // IObjectStore
   CToken GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) override;
   CToken GetObj(const SObjectTag& tag) override;
   CToken GetObj(const char* name) override;
   CToken GetObj(const char* name, const CVParamTransfer& xfer) override;
   bool HasObject(const SObjectTag& tag) const override;
   bool ObjectIsLive(const SObjectTag& tag) const override;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   IFactory& GetFactory() const override { return mFactory; }
+#else
+  IFactory& GetFactory() override { return *mFactory; }
+#endif
   void Flush() override;
   void ObjectUnreferenced(const SObjectTag& tag) override;
-#else
-  // IObjectStore
-  virtual CToken GetObj(const SObjectTag& tag, const CVParamTransfer& xfer);
-  virtual CToken GetObj(const SObjectTag& tag);
-  virtual CToken GetObj(const char* name);
-  virtual CToken GetObj(const char* name, const CVParamTransfer& xfer);
-  virtual bool HasObject(const SObjectTag& tag) const;
-  virtual bool ObjectIsLive(const SObjectTag& tag) const;
-  virtual IFactory& GetFactory() { return *mFactory; }
-  virtual void Flush();
-  virtual void ObjectUnreferenced(const SObjectTag& tag);
-#endif
 
   rstl::vector< SObjectTag > GetReferencedTags() const;
 

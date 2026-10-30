@@ -19,8 +19,7 @@ protected:
   static const float kRelativeMaximum;
 
 public:
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   enum EDeviceType {
     kDT_Wiimote,
     kDT_Nunchuk,
@@ -35,7 +34,6 @@ public:
     kPRM_X,
     kPRM_Y,
   };
-#endif
 #endif
 
   IController();
@@ -55,8 +53,7 @@ public:
 
   virtual uint GetDeviceCount() const = 0;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   virtual CControllerData& GetInput(uint channel) = 0;
   virtual void SetInput(const CControllerData& input, int channel) = 0;
   virtual EDeviceType GetControllerType(int channel) const = 0;
@@ -71,28 +68,18 @@ public:
   virtual bool HasMotionActivity(uint channel) const = 0;
 
   CControllerGamepadData& GetGamepadData(int controller); // To let old code compile
-
-#else
-  virtual CControllerGamepadData& GetGamepadData(int controller) = 0;
-  virtual uint GetControllerType(int) const = 0;
-  virtual void SetMotorState(EIOPort port, EMotorState state) = 0;
-#endif
-#else
-#if RSTL_VERSION >= RSTL_R32J
+#elif !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
   virtual CControllerData& GetGamepadData(uint channel) = 0;
   // Temporary GC snapshot declaration for unrecovered Wii source. Native Wii calls
   // use the uint channel overload above; the two snapshot layouts are different.
   CControllerGamepadData& GetGamepadData(int controller);
+  virtual void SetInput(int controller) = 0; // Guessed name
+  virtual uint GetControllerType(int) const = 0;
+  virtual void SetMotorEnabled(int channel, bool enabled) = 0; // Guessed name
+  virtual void SetMotorState(EIOPort port, EMotorState state) = 0;
 #else
   virtual CControllerGamepadData& GetGamepadData(int controller) = 0;
-#endif
-#if RSTL_VERSION >= RSTL_R32J
-  virtual void SetInput(int controller) = 0; // Guessed name
-#endif
   virtual uint GetControllerType(int) const = 0;
-#if RSTL_VERSION >= RSTL_R32J
-  virtual void SetMotorEnabled(int channel, bool enabled) = 0; // Guessed name
-#endif
   virtual void SetMotorState(EIOPort port, EMotorState state) = 0;
 #endif
 

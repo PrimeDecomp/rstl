@@ -34,16 +34,12 @@ public:
 #if RSTL_PRIME1
   size_type size() const { return mList.size(); }
   size_type Size() const { return mList.size(); } // Guessed name, alternate guess GetCount
-#else
-  const_iterator begin() const { return mList.begin(); }
-#endif
-
-#if RSTL_PRIME1
   iterator begin() { return mList.begin(); }
+#endif
   const_iterator begin() const { return mList.begin(); }
+#if RSTL_PRIME1
   iterator end() { return mList.end(); }
 #endif
-
   const_iterator end() const { return mList.end(); }
 
 #if RSTL_PRIME1

@@ -12,16 +12,12 @@
 
 class CColorElement;
 class CEmitterElement;
-#if !RSTL_PRIME1
 class CGenDescription;
-#endif
 
 class CIntElement;
 class CRealElement;
-#if !RSTL_PRIME1
 class CSwooshDescription;
 class CUVElement;
-#endif
 
 class CElectricDescription {
 public:

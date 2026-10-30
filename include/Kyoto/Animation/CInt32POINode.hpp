@@ -9,24 +9,17 @@ class CInt32POINode : public CPOINode {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CInt32POINode(const rstl::string name = rstl::string_l(""), const EPOIType type = kPT_EmptyInt32,
-                const CCharAnimTime& time = CCharAnimTime(), const int index = -1,
-                const bool unique = false, const float weight = 1.f, const int charIdx = -1,
-                const int flags = 0, const int value = 0,
+  CInt32POINode(const rstl::string name = rstl::string_l("")
 #else
-  CInt32POINode(uint nameHash = -1, EPOIType type = kPT_EmptyInt32,
-                const CCharAnimTime& time = CCharAnimTime(), int index = -1, bool unique = false,
-                float weight = 1.f, int charIdx = -1, int flags = 0, int value = 0,
+  CInt32POINode(uint name = -1
 #endif
-
+                , RSTL_PRIME1_CONST EPOIType type = kPT_EmptyInt32,
+                const CCharAnimTime& time = CCharAnimTime(), RSTL_PRIME1_CONST int index = -1,
+                RSTL_PRIME1_CONST bool unique = false, RSTL_PRIME1_CONST float weight = 1.f,
+                RSTL_PRIME1_CONST int charIdx = -1, RSTL_PRIME1_CONST int flags = 0,
+                RSTL_PRIME1_CONST int value = 0,
                 const rstl::string& locatorName = rstl::string_l("root"))
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   : CPOINode(name, type, time, index, unique, weight, charIdx, flags)
-#else
-  : CPOINode(nameHash, type, time, index, unique, weight, charIdx, flags)
-#endif
-
   , mVal(value)
   , mLctrName(locatorName) {}
 

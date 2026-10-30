@@ -190,17 +190,9 @@ ushort CColor::ToRGB5A3() const {
 #endif
 
   ushort ret = (1 << 15) | ((b & 0xf8) >> 3) | ((g & 0xf8) << 2) | ((r & 0xf8) << 7);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (a != 0xFF) {
-#else
-  if (a != 0xff)
-#endif
-
+  if (a != 0xff) {
     ret = ((a & 0xe0) << 7) | ((b & 0xf0) >> 4) | (g & 0xf0) | ((r & 0xf0) << 4);
-#if RSTL_PRIME1
   }
-#endif
 
   return ret;
 }

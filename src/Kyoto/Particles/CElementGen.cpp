@@ -5281,80 +5281,38 @@ int CElementGen::GetSystemCount() const {
 
 }
 
+void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
   float x = pos.GetX();
   float y = pos.GetY();
   float z = pos.GetZ();
-  if (x > mAabbMax.GetX())
 #else
-void CElementGen::AccumulateBounds(const CVector3f& position, float size) {
-  const float x = position.GetX();
-  const float y = position.GetY();
-  const float z = position.GetZ();
-  if (x > mAabbMax.GetX()) {
+  const float x = pos.GetX();
+  const float y = pos.GetY();
+  const float z = pos.GetZ();
 #endif
-
+  if (x > mAabbMax.GetX()) {
     mAabbMax.SetX(x);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (x < mAabbMin.GetX())
-#else
   }
   if (x < mAabbMin.GetX()) {
-#endif
-
     mAabbMin.SetX(x);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (y > mAabbMax.GetY())
-#else
   }
   if (y > mAabbMax.GetY()) {
-#endif
-
     mAabbMax.SetY(y);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (y < mAabbMin.GetY())
-#else
   }
   if (y < mAabbMin.GetY()) {
-#endif
-
     mAabbMin.SetY(y);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (z > mAabbMax.GetZ())
-#else
   }
   if (z > mAabbMax.GetZ()) {
-#endif
-
     mAabbMax.SetZ(z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (z < mAabbMin.GetZ())
-#else
   }
   if (z < mAabbMin.GetZ()) {
-#endif
-
     mAabbMin.SetZ(z);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (size > mMaxSize)
-#else
   }
   if (size > mMaxSize) {
-#endif
-
     mMaxSize = size;
-#if !RSTL_PRIME1
   }
-#endif
-
 }
 
 void CElementGen::BuildParticleSystemBounds() {

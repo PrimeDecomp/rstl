@@ -19,19 +19,13 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
 #include "rstl/string.hpp"
-#if !RSTL_PRIME1
 #include "rstl/vector.hpp"
-#endif
 
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_GM8P_00
-
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
 typedef rstl::vector< uchar, rstl::aligned_allocator > TCardFileBuffer;
-
 #endif
 
 typedef rstl::vector< char, rstl::aligned_allocator > TCardWorkArea;
-#endif
 
 class CTexture;
 
@@ -293,8 +287,7 @@ public:
   ~CMemoryCardSys();
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION == RSTL_GM8EAB_00
+#if RSTL_PRIME1 && RSTL_VERSION == RSTL_GM8EAB_00
   ECardResult MountCard(EMemoryCardPort port);
   ECardResult UnmountCard(EMemoryCardPort port);
   ECardResult FormatCard(EMemoryCardPort port);
@@ -312,57 +305,40 @@ public:
 #else
   static ECardResult GetResultCode(int);
   static ECardResult MountCard(EMemoryCardPort port);
+#if RSTL_PRIME1
   static ECardResult MountCardSync(EMemoryCardPort port);
+#endif
   static ECardResult CheckCard(EMemoryCardPort port);
   static ECardResult GetStatus(EMemoryCardPort port, int fileNo, CardStat& statOut);
   static ECardResult SetStatus(EMemoryCardPort port, int fileNo, const CardStat& stat);
+#if RSTL_PRIME1
   static ECardResult DeleteFile(EMemoryCardPort port, const rstl::string& name);
+#endif
   static ECardResult FastDeleteFile(EMemoryCardPort port, int fileNo);
   static ECardResult FormatCard(EMemoryCardPort port);
 
   static ProbeResults IsMemoryCardInserted(EMemoryCardPort);
   static ECardResult GetSerialNo(EMemoryCardPort port, long long& serialOut);
   static ECardResult UnmountCard(EMemoryCardPort);
+#if RSTL_PRIME1
   static ECardResult Rename(EMemoryCardPort, const rstl::string&, const rstl::string&);
+#endif
   static ECardResult GetNumFreeBytes(EMemoryCardPort port, uint& freeBytes, uint& freeFiles);
   static TCardWorkArea& WorkAreaVector(EMemoryCardPort port);
   static char* AllocCardWorkArea(EMemoryCardPort port);
   static void FreeCardWorkArea(EMemoryCardPort port);
   inline void Initialize();
-#endif
-#else
-  static ECardResult GetResultCode(int);
-  static ECardResult MountCard(EMemoryCardPort port);
-  static ECardResult CheckCard(EMemoryCardPort port);
-  static ECardResult GetStatus(EMemoryCardPort port, int fileNo, CardStat& statOut);
-  static ECardResult SetStatus(EMemoryCardPort port, int fileNo, const CardStat& stat);
-  static ECardResult FastDeleteFile(EMemoryCardPort port, int fileNo);
-  static ECardResult FormatCard(EMemoryCardPort port);
 
-  static ProbeResults IsMemoryCardInserted(EMemoryCardPort);
-  static ECardResult GetSerialNo(EMemoryCardPort port, long long& serialOut);
-  static ECardResult UnmountCard(EMemoryCardPort);
-  static ECardResult GetNumFreeBytes(EMemoryCardPort port, uint& freeBytes, uint& freeFiles);
-  static rstl::vector< char, rstl::aligned_allocator >& WorkAreaVector(EMemoryCardPort port);
-  static char* AllocCardWorkArea(EMemoryCardPort port);
-  static void FreeCardWorkArea(EMemoryCardPort port);
-  inline void Initialize();
-
+#if !RSTL_PRIME1
   static bool mIsCardBusy;
+#endif
 #endif
 
 private:
   static bool mIsInitialized;
   static bool mIsCardSysExists;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static TCardWorkArea mWorkAreaA;
   static TCardWorkArea mWorkAreaB;
-#else
-  static rstl::vector< char, rstl::aligned_allocator > mWorkAreaA;
-  static rstl::vector< char, rstl::aligned_allocator > mWorkAreaB;
-#endif
-
 };
 
 // TODO: verify that this Prime/Echoes difference is real

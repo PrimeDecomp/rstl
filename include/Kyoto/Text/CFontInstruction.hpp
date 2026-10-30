@@ -9,23 +9,15 @@
 class CFontInstruction : public CInstruction {
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFontInstruction(const TToken< CRasterFont >& font) : mFont(font) { mFont.Lock(); }
-#else
-  explicit CFontInstruction(const TToken< CRasterFont >& font) : mFont(font) { mFont.Lock(); }
+#if !RSTL_PRIME1
+  explicit
 #endif
+  CFontInstruction(const TToken< CRasterFont >& font) : mFont(font) { mFont.Lock(); }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  // CInstruction
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void GetAssets(rstl::vector< CToken >& assetsOut) const override;
-#else
-  // CInstruction
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
-  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
-  void GetAssets(rstl::vector< CToken >& assets) const override;
-#endif
 
   uint GetAssetCount() const override;
 

@@ -22,18 +22,12 @@
 
 class CInputStream;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 class IObjectStore;
-#else
 class CCharLayoutInfo;
 class CJointData_LinearStorage;
-#endif
 
 class CSegIdList;
-#if !RSTL_PRIME1
 class CSegStatement;
-#endif
 
 class CSegStatementSet;
 
@@ -51,28 +45,15 @@ public:
     rstl::vector< CVector3f > mOffsets;
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  RotationAndOffsetStorage(const CRotationAndOffsetVectors&, uint numFrames);
-
-  static uint DataSizeInBytes(uint, uint, uint);
-#else
   RotationAndOffsetStorage(const CRotationAndOffsetVectors& vectors, uint numFrames);
   static uint DataSizeInBytes(uint rotationsPerFrame, uint offsetsPerFrame, uint numFrames);
-#endif
 
   rstl::auto_ptr< uint > GetRotationsAndOffsets(const rstl::vector< CQuaternion >& rotations,
                                                 const rstl::vector< CVector3f >& offsets,
                                                 uint numFrames);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void CopyRotationsAndOffsets(const rstl::vector< CQuaternion >&,
-                                      const rstl::vector< CVector3f >&, uint numFrames, float* buf);
-#else
   static void CopyRotationsAndOffsets(const rstl::vector< CQuaternion >& rotations,
                                       const rstl::vector< CVector3f >& offsets, uint numFrames,
                                       float* buffer);
-#endif
 
   uint GetFrameSizeInBytes() const;
 
@@ -84,7 +65,6 @@ public:
     return mStorage.get() +
            (mRotationsPerFrame * 4 + mOffsetsPerFrame * 3) * rstl::min_val(frame, mNumFrames - 1);
 #endif
-
   }
 
   const CQuaternion& GetRotation(uint channel, uint frame) const {
@@ -125,10 +105,12 @@ public:
 #endif
 
   bool HasOffset(const CSegId& seg) const;
-// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  bool HasScale(const CSegId& seg) const;
+#endif
+  CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
+  CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
 #if RSTL_PRIME1
-  CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& animTime) const;
-  CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& animTime) const;
   void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                           const CCharAnimTime& time) const;
   const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
@@ -140,10 +122,6 @@ public:
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const;
   rstl::set< rstl::pair< rstl::string, int > > GetUniqueBoolPOIs() const;
   CSegId GetPrimaryOffsetChannel() const { return mRoot; }
-#else
-  bool HasScale(const CSegId& seg) const;
-  CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
-  CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
 #endif
 
   CVector3f GetOverallOffset(const CCharAnimTime& time) const {
@@ -189,12 +167,14 @@ private:
 #endif
 
   CSegId mRoot;
+#if !RSTL_PRIME1
+  rstl::vector< signed char > mSegmentChannels;
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::vector< schar > mRotationChannels;
   rstl::vector< schar > mOffsetChannels;
 #else
-  rstl::vector< signed char > mSegmentChannels;
   rstl::vector< signed char > mRotationChannels;
   rstl::vector< signed char > mOffsetChannels;
   rstl::vector< signed char > mScaleChannels;

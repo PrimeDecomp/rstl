@@ -64,46 +64,36 @@ public:
   int GetY() const { return mCurY; }
 #else
   int GetWordCount() const { return mWordCount; }
-  int GetWidth() const { return mCurrentX; }
-  int GetY() const { return mCurrentY; }
+  int GetWidth() const { return mCurX; }
+  int GetY() const { return mCurY; }
 #endif
 
   void IncWords() { ++mWordCount; }
   void DecWords() { --mWordCount; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void AddWidth(int width) { mCurX += width; }
   void SubWidth(int width) { mCurX -= width; }
   void AddHeight(int height) { mCurY += height; }
   void SetHeight(int height) { mCurY = height; }
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   EJustification GetJustification() const { return mJustification; }
-  void SetJustification(const EJustification justification) { mJustification = justification; }
-  EVerticalJustification GetVerticalJustification() const { return mVerticalJustification; }
-  void SetVerticalJustification(const EVerticalJustification justification) {
-#else
-  void AddWidth(int width) { mCurrentX += width; }
-  void SubWidth(int width) { mCurrentX -= width; }
-  void AddHeight(int height) { mCurrentY += height; }
-  void SetHeight(int height) { mCurrentY = height; }
-  void SetJustification(EJustification justification) { mJustification = justification; }
-  void SetVerticalJustification(EVerticalJustification justification) {
 #endif
-
+  void SetJustification(RSTL_PRIME1_CONST EJustification justification) {
+    mJustification = justification;
+  }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  EVerticalJustification GetVerticalJustification() const { return mVerticalJustification; }
+#endif
+  void SetVerticalJustification(RSTL_PRIME1_CONST EVerticalJustification justification) {
     mVerticalJustification = justification;
   }
 
 private:
   int mWordCount;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   int mCurX;
   int mCurY;
-#else
-  int mCurrentX;
-  int mCurrentY;
-#endif
-
   int mLargestFontHeight;
   int mLargestFontWidth;
   int mLargestFontBaseline;

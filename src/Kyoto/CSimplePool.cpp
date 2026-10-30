@@ -1,21 +1,16 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CSimplePool.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/IFactory.hpp"
-#endif
 
 CSimplePool::CSimplePool(IFactory& factory)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-: mFactory(factory), mParamXfr(CVParamTransfer::Null()) {
+: mFactory(factory)
 #else
-: mFactory(&factory), mParamXfr(CVParamTransfer::Null()) {
+: mFactory(&factory)
 #endif
-
+, mParamXfr(CVParamTransfer::Null()) {
   mParamXfr = CVParamTransfer(rs_new TObjOwnerParam< IObjectStore* >(this));
 }
 
@@ -33,7 +28,6 @@ void CSimplePool::ObjectUnreferenced(const SObjectTag& tag) {
 #else
   ResourceMap::iterator it = mResources.find(tag);
 #endif
-
   mResources.erase(it);
 }
 
@@ -44,14 +38,12 @@ CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
 #else
   ResourceMap::iterator it = mResources.find(tag);
 #endif
-
   if (it != mResources.end()) {
     return CToken(it->second);
   }
 
   CObjectReference* ref =
       rs_new CObjectReference(*this, rstl::auto_ptr< IObj >(nullptr), tag, xfer);
-// TODO: verify that this Prime/Echoes difference is real
   RSTL_PRIME1_CONST ResourceMap::value_type item(tag, ref);
 
   mResources.insert(item);
@@ -87,7 +79,6 @@ bool CSimplePool::HasObject(const SObjectTag& tag) const {
   ResourceMap::const_iterator it = mResources.find(tag);
   return it != mResources.end() || (mFactory != nullptr && mFactory->CanBuild(tag));
 #endif
-
 }
 
 bool CSimplePool::ObjectIsLive(const SObjectTag& tag) const {
@@ -97,7 +88,6 @@ bool CSimplePool::ObjectIsLive(const SObjectTag& tag) const {
 #else
   ResourceMap::const_iterator it = mResources.find(tag);
 #endif
-
   if (it == mResources.end()) {
     return false;
   }
@@ -113,12 +103,10 @@ void CSimplePool::DebugDumpPool() const {
 #else
   ResourceMap::const_iterator it = mResources.begin();
 #endif
-
   for (; it != mResources.end(); ++it) {
 #if RSTL_PRIME1
     SObjectTag::Type2Text(it->first.GetType());
 #endif
-
   }
 }
 
@@ -133,7 +121,6 @@ rstl::vector< SObjectTag > CSimplePool::GetReferencedTags() const {
   ResourceMap::const_iterator it = mResources.begin();
   ResourceMap::const_iterator end = mResources.end();
 #endif
-
   for (; it != end; ++it) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -141,7 +128,6 @@ rstl::vector< SObjectTag > CSimplePool::GetReferencedTags() const {
 #else
     tags.push_back_unsafe(it->first);
 #endif
-
   }
   return tags;
 }

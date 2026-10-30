@@ -9,9 +9,9 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 // TODO: verify that this Prime/Echoes difference is real
-RSTL_PRIME1_CONST CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
-
-                                              const CVParamTransfer& transfer) {
+RSTL_PRIME1_CONST CFactoryFnReturn
+FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
+                             const CVParamTransfer& transfer) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::rc_ptr< IVParamObj > obj = transfer.mObj;
@@ -155,13 +155,12 @@ bool CParticleElectricDataFactory::CreateELSM(CElectricDescription* desc, CInput
 
     case '_END':
       done = true;
-#if !RSTL_PRIME1
       break;
+#if !RSTL_PRIME1
     case 'DFLG':
       desc->mDFLG = CParticleDataFactory::GetBitflag(in);
-#endif
-
       break;
+#endif
     default:
       return false;
     }

@@ -12,15 +12,8 @@ rstl::ncrc_ptr< CAnimTreeNode >
 CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
                                      const CMetaAnimTreeBuildOrders& orders) const {
   if (orders.mRecursiveAdvance) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return GetAnimationTree(
-        animSys, CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
-#else
     return GetAnimationTree(animSys,
                             CMetaAnimTreeBuildOrders::PreAdvanceForAll(*orders.mRecursiveAdvance));
-#endif
-
   }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -31,7 +24,6 @@ CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator it = mSequence.begin();
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator end = mSequence.end();
 #endif
-
   rstl::vector< rstl::string > names;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -40,7 +32,6 @@ CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
 #else
   names.reserve(end - it);
 #endif
-
   while (it != end) {
     rstl::rc_ptr< IMetaAnim > anim = *it;
     rstl::ncrc_ptr< CAnimTreeNode > tree = anim->GetAnimationTree(animSys, orders);
@@ -50,7 +41,6 @@ CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
 #else
     names.push_back_unsafe(tree->GetPrimitiveName());
 #endif
-
     ++it;
   }
   return rs_new CAnimTreeSequence(mSequence, animSys,
@@ -88,7 +78,6 @@ rstl::vector< rstl::rc_ptr< IMetaAnim > > CMetaAnimSequence::CreateSequence(CInp
 #else
     sequence.push_back_unsafe(anim);
 #endif
-
   }
   return sequence;
 }

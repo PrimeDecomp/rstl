@@ -25,118 +25,62 @@ static const char* const skAssetIdFormat = "%02x%02x%02x%02x";
 CTextParser::CTextParser(IObjectStore& store) : mObjectStore(store) {}
 
 void CTextParser::ParseText(CTextExecuteBuffer& buffer, const wchar_t* str, int len,
+                            const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                            const rstl::vector< rstl::pair< CAssetId, CAssetId > >* txtrMap) {
   int b = 0, e = 0;
   for (b = 0, e = 0; str[e] && (len == -1 || e < len);) {
+#else
+  int b = 0;
+  int e = 0;
+  while (str[e] && (len == -1 || e < len)) {
+#endif
     if (str[e] == L'&') {
       if ((len == -1 || e + 1 < len) && str[e + 1] != L'&') {
         if (e > b) {
           buffer.AddString(str + b, e - b);
-#else
-                            const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap) {
-  int begin = 0;
-  int end = 0;
-  while (str[end] && (len == -1 || end < len)) {
-    if (str[end] == L'&') {
-      if ((len == -1 || end + 1 < len) && str[end + 1] != L'&') {
-        if (end > begin) {
-          buffer.AddString(str + begin, end - begin);
-#endif
-
         }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         ++e;
         b = e;
-
-        while ((len == -1 || e < len) && str[e] && str[e] != L';')
+        while ((len == -1 || e < len) && str[e] && str[e] != L';') {
           ++e;
-
-        ParseTag(buffer, str + b, e - b, txtrMap);
-        b = e + 1;
-#else
-        ++end;
-        begin = end;
-        while ((len == -1 || end < len) && str[end] && str[end] != L';') {
-          ++end;
         }
-        ParseTag(buffer, str + begin, end - begin, textureMap);
-        begin = end + 1;
-#endif
-
+        ParseTag(buffer, str + b, e - b, textureMap);
+        b = e + 1;
       } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         buffer.AddString(str + b, e + 1 - b);
         e += 2;
         b = e;
-#else
-        buffer.AddString(str + begin, end + 1 - begin);
-        end += 2;
-        begin = end;
-#endif
-
       }
     } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       ++e;
-#else
-      ++end;
     }
   }
-  if (end > begin) {
-    buffer.AddString(str + begin, end - begin);
-#endif
-
-    }
-  }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (e > b)
+  if (e > b) {
     buffer.AddString(str + b, e - b);
+  }
 }
 
-const CAssetId
-CTextParser::GetAssetIdFromString(const rstl::string& inStr,
-                                  const rstl::vector< rstl::pair< CAssetId, CAssetId > >* txtrMap) {
+RSTL_PRIME1_CONST CAssetId CTextParser::GetAssetIdFromString(
+    const rstl::string& inStr, const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   rstl::wstring str = CStringExtras::ConvertToUNICODE(inStr);
   int id = (GetColorValue(str.data()) << 24) | (GetColorValue(str.data() + 2) << 16) |
            (GetColorValue(str.data() + 4) << 8) | GetColorValue(str.data() + 6);
-  if (txtrMap) {
 #else
-CAssetId CTextParser::GetAssetIdFromString(
-    const rstl::string& text, const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap) {
-  const rstl::wstring str = CStringExtras::ConvertToUNICODE(text);
+  const rstl::wstring str = CStringExtras::ConvertToUNICODE(inStr);
   const CAssetId id = (static_cast< uint >(GetColorValue(str.data())) << 24) |
                       (GetColorValue(str.data() + 2) << 16) | (GetColorValue(str.data() + 4) << 8) |
                       GetColorValue(str.data() + 6);
+#endif
   if (textureMap) {
-#endif
-
     typedef rstl::pair< CAssetId, CAssetId > AssetPair;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     rstl::vector< AssetPair >::const_iterator search = rstl::binary_find(
-        txtrMap->begin(), txtrMap->end(), static_cast< CAssetId >(id),
-#else
-    rstl::vector< AssetPair >::const_iterator it = rstl::binary_find(
-        textureMap->begin(), textureMap->end(), CAssetId(id),
-#endif
-
+        textureMap->begin(), textureMap->end(), static_cast< CAssetId >(id),
         rstl::pair_sorter_finder< AssetPair, rstl::less< CAssetId > >(rstl::less< CAssetId >()));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if (search != txtrMap->end()) {
+    if (search != textureMap->end()) {
       return search->second;
-#else
-    if (it != textureMap->end()) {
-      return it->second;
-#endif
-
     }
   }
 
@@ -153,7 +97,6 @@ TToken< CRasterFont > CTextParser::GetFont(const wchar_t* str, int len) {
                       (GetColorValue(str + 2) << 16) | (GetColorValue(str + 4) << 8) |
                       GetColorValue(str + 6);
 #endif
-
   return mObjectStore.GetObj(SObjectTag('FONT', id));
 }
 
@@ -184,7 +127,6 @@ CFontImageDef CTextParser::GetImage(const wchar_t* str, int len,
 #else
         textures.push_back_unsafe(
 #endif
-
             mObjectStore.GetObj(SObjectTag('TXTR', GetAssetIdFromString(tokens[i], vec))));
       }
       return CFontImageDef(textures, fps, CVector2f(1.f, 1.f));
@@ -203,7 +145,6 @@ CFontImageDef CTextParser::GetImage(const wchar_t* str, int len,
 #else
         textures.push_back_unsafe(
 #endif
-
             mObjectStore.GetObj(SObjectTag('TXTR', GetAssetIdFromString(tokens[i], vec))));
       }
       return CFontImageDef(textures, fps, CVector2f(cropX, cropY));
@@ -221,13 +162,7 @@ CFontImageDef CTextParser::GetImage(const wchar_t* str, int len,
                        CVector2f(1.f, 1.f));
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 uint CTextParser::HandleUserTag(CTextExecuteBuffer& buffer, const wchar_t* string, int len) {
-#else
-uint CTextParser::HandleUserTag(CTextExecuteBuffer& buffer, const wchar_t* str, int len) {
-#endif
-
   return 0;
 }
 
@@ -270,17 +205,10 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
     buffer.AddLineSpacing(v / 100.f);
   } else if (BeginsWith(string, len, L"line-extra-space=")) {
     buffer.AddLineExtraSpace(ParseInt(string + 17, len - 17, true));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   } else if (BeginsWith(string, len, L"character-extra-space=")) {
     buffer.AddCharacterExtraSpace(ParseInt(string + 22, len - 22, true));
 #endif
-#else
-  } else if (BeginsWith(string, len, L"character-extra-space=")) {
-    buffer.AddCharacterExtraSpace(ParseInt(string + 22, len - 22, true));
-#endif
-
   } else if (BeginsWith(string, len, L"just=")) {
     if (Equals(string + 5, len - 5, L"left")) {
       buffer.AddJustification(kJustification_Left);
@@ -322,143 +250,94 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 bool CTextParser::BeginsWith(const wchar_t* str1, int len, const wchar_t* str2) {
-#else
-bool CTextParser::BeginsWith(const wchar_t* str, int len, const wchar_t* prefix) {
-#endif
-
   int i = 0;
+  for (;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (; str2[i] != L'\x0' && i < len; ++i) {
-    if (str1[i] != str2[i]) {
+       str2[i] != L'\x0'
 #else
-  for (; prefix[i] && i < len; ++i) {
-    if (str[i] != prefix[i]) {
+       str2[i]
 #endif
-
+       && i < len;
+       ++i) {
+    if (str1[i] != str2[i]) {
       return false;
     }
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return str2[i] == L'\x0';
-#else
-  return prefix[i] == L'\0';
-#endif
-
+  return str2[i] == L'\0';
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 bool CTextParser::Equals(const wchar_t* str1, int len, const wchar_t* str2) {
-#else
-bool CTextParser::Equals(const wchar_t* str, int len, const wchar_t* other) {
-#endif
-
   int i = 0;
+  for (;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (; str2[i] != L'\x0' && i < len; ++i) {
-    if (str1[i] != str2[i]) {
+       str2[i] != L'\x0'
 #else
-  for (; other[i] && i < len; ++i) {
-    if (str[i] != other[i]) {
+       str2[i]
 #endif
-
+       && i < len;
+       ++i) {
+    if (str1[i] != str2[i]) {
       return false;
     }
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return str2[i] == L'\x0';
-#else
-  return other[i] == L'\0';
-#endif
-
+  return str2[i] == L'\0';
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 int CTextParser::ParseInt(const wchar_t* str, int len, bool signVal) {
   bool neg = false;
   int procCur = 0;
-  if (signVal && len > 0 && *str == L'-') {
-    neg = true;
-    procCur = 1;
-#else
-int CTextParser::ParseInt(const wchar_t* str, int len, bool allowSign) {
-  bool negative = false;
-  int pos = 0;
-  if (allowSign && len > 0 && str[0] == L'-') {
-    negative = true;
-    pos = 1;
-#endif
-
-  }
-
+  if (signVal && len > 0 &&
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+      *str
+#else
+      str[0]
+#endif
+          == L'-') {
+    neg = true;
+    procCur = 1;
+  }
+
   int val = 0;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   while (len > procCur) {
     val *= 10;
     wchar_t ch = str[procCur];
     val += ch - L'0';
     ++procCur;
+  }
 #else
-  int value = 0;
-  for (; pos < len; ++pos) {
-    value = value * 10 + (str[pos] - L'0');
+  for (; procCur < len; ++procCur) {
+    val = val * 10 + (str[procCur] - L'0');
   }
-  return negative ? -value : value;
 #endif
-
-  }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   return neg ? -val : val;
-#else
-int CTextParser::FromHex(wchar_t c) {
-  if (c >= L'0' && c <= L'9') {
-    return c - L'0';
-#endif
-
 }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+
 int CTextParser::FromHex(wchar_t ch) {
-  if (ch >= L'0' && ch <= L'9')
+  if (ch >= L'0' && ch <= L'9') {
     return ch - L'0';
-
-  if (ch >= L'A' && ch <= L'F')
+  }
+  if (ch >= L'A' && ch <= L'F') {
     return ch - L'A' + 10;
-
-  if (ch >= L'a' && ch <= L'f')
+  }
+  if (ch >= L'a' && ch <= L'f') {
     return ch - L'a' + 10;
-#else
-  if (c >= L'A' && c <= L'F') {
-    return c - L'A' + 10;
   }
-  if (c >= L'a' && c <= L'f') {
-    return c - L'a' + 10;
-  }
-#endif
-
   return 0;
 }
 
+RSTL_PRIME1_CONST int CTextParser::GetColorValue(const wchar_t* str) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-const int CTextParser::GetColorValue(const wchar_t* str) {
   return FromHex(str[1]) + (FromHex(str[0]) << 4);
 #else
-int CTextParser::GetColorValue(const wchar_t* str) {
   return (FromHex(str[0]) * 16) + FromHex(str[1]);
 #endif
-
 }
 
 CTextColor CTextParser::ParseColor(const wchar_t* str, int len) {
@@ -474,7 +353,6 @@ CTextColor CTextParser::ParseColor(const wchar_t* str, int len) {
   const int b = GetColorValue(str + 5);
   const int a = len == 9 ? GetColorValue(str + 7) : 255;
 #endif
-
   return CTextColor(r, g, b, a);
 }
 

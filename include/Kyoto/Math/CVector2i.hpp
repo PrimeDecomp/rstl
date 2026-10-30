@@ -41,15 +41,14 @@ public:
   const int& operator[](int idx) const { return *(&mX + idx); }
 #endif
 
+  static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float t) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float v) {
-    float inv = 1.f - v;
-    int x = static_cast< int >(a.GetX() * inv + b.GetX() * v);
-    int y = static_cast< int >(a.GetY() * inv + b.GetY() * v);
+    float inv = 1.f - t;
+    int x = static_cast< int >(a.GetX() * inv + b.GetX() * t);
+    int y = static_cast< int >(a.GetY() * inv + b.GetY() * t);
     return CVector2i(x, y);
 #else
-  static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float t) {
     const float inv = 1.f - t;
     return CVector2i(static_cast< int >(a.GetX() * inv + b.GetX() * t),
                      static_cast< int >(a.GetY() * inv + b.GetY() * t));

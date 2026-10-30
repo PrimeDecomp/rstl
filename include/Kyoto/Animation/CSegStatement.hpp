@@ -8,11 +8,11 @@
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-struct CSegStatement {
+struct
 #else
-class CSegStatement {
+class
 #endif
-
+CSegStatement {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -58,13 +58,14 @@ public:
     mStatus = 1;
 #else
     mOffsetValid = true;
+#endif
   }
+#if !RSTL_PRIME1
   void SetScale(const CVector3f& scale) {
     mScale = scale;
     mScaleValid = true;
-#endif
-
   }
+#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -84,7 +85,6 @@ private:
   bool mOffsetValid : 1;
   bool mScaleValid : 1;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

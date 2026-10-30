@@ -9,11 +9,9 @@
 #include "rstl/rc_ptr.hpp"
 
 class CAnimTreeNode;
-#if RSTL_PRIME1
 class CCharLayoutInfo;
 class CSegIdList;
 class CSegStatementSet;
-#endif
 
 class CAdditiveAnimPlayback {
 public:

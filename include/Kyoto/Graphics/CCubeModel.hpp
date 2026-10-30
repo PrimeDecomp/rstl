@@ -13,23 +13,12 @@
 
 class CStopwatch;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class IObjectStore;
-#else
 class CCubeSurface;
 class CModelFlags;
-#endif
-
 class CTexture;
 class CTransform4f;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class CCubeSurface;
-#else
 class CVector3f;
 class IObjectStore;
-#endif
 
 enum ESurfaceSelection {
   kSS_Unsorted,
@@ -43,14 +32,12 @@ public:
   public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    ModelInstance(rstl::vector< void* >& surfaces, const void* materialData, const void* positions,
-                  const void* normals, const void* colors, const void* uvs,
+    ModelInstance(rstl::vector< void* >& surfaces,
 #else
-    ModelInstance(rstl::vector< CCubeSurface >& surfaces, const void* materialData,
-                  const void* positions, const void* normals, const void* colors, const void* uvs,
+    ModelInstance(rstl::vector< CCubeSurface >& surfaces,
 #endif
-
-                  const void* packedTexCoords)
+                  const void* materialData, const void* positions, const void* normals,
+                  const void* colors, const void* uvs, const void* packedTexCoords)
     : mSurfacePtrs(surfaces)
     , mMaterialData(materialData)
     , mPositions(positions)
@@ -69,12 +56,7 @@ public:
 #endif
 
     const void* GetMaterialPointer() const { return mMaterialData; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    void SetMaterialPointer(const void* mat) { mMaterialData = mat; }
-#else
     void SetMaterialPointer(const void* data) { mMaterialData = data; }
-#endif
 
     const void* GetVertexPointer() const { return mPositions; }
     const void* GetNormalPointer() const { return mNormals; }
@@ -97,20 +79,17 @@ public:
     const void* mTexCoords;
     const void* mPackedTexCoords;
   };
+  CCubeModel(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CCubeModel(rstl::vector< void* >* surfaces, rstl::vector< TCachedToken< CTexture > >* textures,
-             const void* materialData, const void* positions, const void* normals,
-             const void* colors, const void* uvs, const void* compressedUvs, const CAABox& bounds,
-             uchar visorFlags, bool texturesLoaded, uint idx);
+      rstl::vector< void* >* surfaces,
 #else
-  // Echoes method names below are inferred from Prime and call sites.
-  CCubeModel(rstl::vector< CCubeSurface >* surfaces,
-             rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
-             const void* positions, const void* normals, const void* colors, const void* uvs,
-             const void* compressedUvs, const CAABox& bounds, uchar visorFlags, bool texturesLoaded,
-             uint idx);
+      rstl::vector< CCubeSurface >* surfaces,
 #endif
+      rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
+      const void* positions, const void* normals, const void* colors, const void* uvs,
+      const void* compressedUvs, const CAABox& bounds, uchar visorFlags, bool texturesLoaded,
+      uint idx);
 
   static void SetRenderModelBlack(bool v);
   static void SetModelWireframe(bool v);
@@ -122,19 +101,16 @@ public:
 
   static void DisableShadowMaps();
   static void EnableShadowMaps(const CTexture*, const CTransform4f&, unsigned char, unsigned char);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SetNewPlayerPositionAndTime(const CVector3f&, const CStopwatch&);
-#else
   static void SetNewPlayerPositionAndTime(const CVector3f& pos, const CStopwatch& stopwatch);
-#endif
 
   static void SetDrawingOccluders(bool);
   static void MakeTexturesFromMats(const void* data,
                                    rstl::vector< TCachedToken< CTexture > >& textures,
                                    IObjectStore& store, bool cache);
 
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
+  // Echoes method names below are inferred from Prime and call sites.
   void UnlockTextures() const;
   void RemapMaterialData(const void* data, rstl::vector< TCachedToken< CTexture > >* textures);
   bool TryLockTextures() const;

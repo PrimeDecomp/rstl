@@ -15,7 +15,6 @@ CCharAnimTime CAnimTreeBlend::VGetTimeRemaining() const {
 #else
   return rstl::max_val< const CCharAnimTime& >(mA->VGetTimeRemaining(), mB->VGetTimeRemaining());
 #endif
-
 }
 
 CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
@@ -33,7 +32,6 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
 #else
     const float scale = durationB / durationA;
 #endif
-
     offset = offsetA * scale * mBlendWeight + offsetB * (1.f - mBlendWeight);
   } else if (durationB < durationA) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -42,7 +40,6 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
 #else
     const float scale = durationA / durationB;
 #endif
-
     offset = offsetA * mBlendWeight + offsetB * scale * (1.f - mBlendWeight);
   } else {
     offset = offsetA + offsetB;
@@ -56,7 +53,6 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
       infoB.IsLooping(),
       rstl::max_val< const CCharAnimTime& >(infoA.GetDuration(), infoB.GetDuration()), offset);
 #endif
-
 }
 
 rstl::string CAnimTreeBlend::CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& a,
@@ -70,22 +66,20 @@ void CAnimTreeBlend::SetBlendingWeight(float weight) { mBlendWeight = weight; }
 SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 
   IncAdvancementDepth();
+  SAdvancementResults resA = mA->AdvanceView(time);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8E_02
-  SAdvancementResults resA = mA->AdvanceView(time);
-  SAdvancementResults resB = mB->AdvanceView(time);
-#else
-  SAdvancementResults resA = mA->AdvanceView(time);
+#if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasA = resA.GetAdvancementDeltas();
+#endif
+#endif
   SAdvancementResults resB = mB->AdvanceView(time);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasB = resB.GetAdvancementDeltas();
 #endif
-#else
-  SAdvancementResults resA = mA->AdvanceView(time);
-  SAdvancementResults resB = mB->AdvanceView(time);
 #endif
-
   DecAdvancementDepth();
   if (ShouldCullTree()) {
     if (GetBlendingWeight() < 0.5f)
@@ -96,17 +90,20 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimTime remainder = rstl::max_val(resA.GetRemainder(), resB.GetRemainder());
+#else
+  const CCharAnimTime remainder =
+      rstl::max_val< const CCharAnimTime& >(resA.GetRemainder(), resB.GetRemainder());
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8E_02
   const CAdvancementDeltas& deltasA = resA.GetAdvancementDeltas();
   const CAdvancementDeltas& deltasB = resB.GetAdvancementDeltas();
 #endif
 #else
-  const CCharAnimTime remainder =
-      rstl::max_val< const CCharAnimTime& >(resA.GetRemainder(), resB.GetRemainder());
   const CAdvancementDeltas& deltasA = resA.mDeltas;
   const CAdvancementDeltas& deltasB = resB.mDeltas;
 #endif
-
   if (GetBlendRoot() & kBlendRoot_Offset)
     return SAdvancementResults(remainder,
                                CAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));

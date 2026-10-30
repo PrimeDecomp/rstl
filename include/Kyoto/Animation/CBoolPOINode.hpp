@@ -8,17 +8,16 @@ class CBoolPOINode : public CPOINode {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CBoolPOINode(const rstl::string name = "", const EPOIType type = kPT_EmptyBool,
-               const CCharAnimTime& time = CCharAnimTime(), const int index = -1,
-               const bool unique = false, const float weight = 1.f, const int charIdx = -1,
-               const int flags = 0, const bool value = false)
-  : CPOINode(name, type, time, index, unique, weight, charIdx, flags), mVal(value) {}
+  CBoolPOINode(const rstl::string name = ""
 #else
-  CBoolPOINode(uint nameHash = -1, EPOIType type = kPT_EmptyBool,
-               const CCharAnimTime& time = CCharAnimTime(), int index = -1, bool unique = false,
-               float weight = 1.f, int charIdx = -1, int flags = 0, bool value = false)
-  : CPOINode(nameHash, type, time, index, unique, weight, charIdx, flags), mVal(value) {}
+  CBoolPOINode(uint name = -1
 #endif
+               , RSTL_PRIME1_CONST EPOIType type = kPT_EmptyBool,
+               const CCharAnimTime& time = CCharAnimTime(), RSTL_PRIME1_CONST int index = -1,
+               RSTL_PRIME1_CONST bool unique = false, RSTL_PRIME1_CONST float weight = 1.f,
+               RSTL_PRIME1_CONST int charIdx = -1, RSTL_PRIME1_CONST int flags = 0,
+               RSTL_PRIME1_CONST bool value = false)
+  : CPOINode(name, type, time, index, unique, weight, charIdx, flags), mVal(value) {}
 
   CBoolPOINode(CInputStream& in);
   static CBoolPOINode CopyNodeMinusStartTime(const CBoolPOINode& node,

@@ -16,15 +16,8 @@ public:
 
   virtual const rstl::rc_ptr< IMetaTrans >& GetMetaTrans(uint from, uint to) const = 0;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  explicit CTransitionDatabase(
-      const rstl::optional_object< TToken< CTransitionDatabase > >& token = rstl::optional_object_null())
-#else
   explicit CTransitionDatabase(const rstl::optional_object< TToken< CTransitionDatabase > >& token =
                                    rstl::optional_object_null())
-#endif
-
   : mToken(token) {}
 #if RSTL_PRIME1
   ~CTransitionDatabase() {}

@@ -78,13 +78,12 @@ private:
   rstl::string mFilename;
 };
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CDvdFile, 0x28)
 #endif
-#else
-CHECK_SIZEOF(CDvdFile, 0x28)
 
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 // Guessed name. Set whenever a DVD read is issued or completes; retail code never reads it.
 extern bool gDvdActivity;
 #endif

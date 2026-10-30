@@ -2,17 +2,11 @@
 #include "Kyoto/Text/CFontRenderState.hpp"
 
 CFontRenderState::CFontRenderState()
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 : mCurBlock(nullptr)
 , mCurX(0)
 , mCurY(0)
 , mCurrentLineInst(nullptr)
 , mLineInitialized(true) {
-#else
-: mCurBlock(nullptr), mCurX(0), mCurY(0), mCurrentLineInst(nullptr), mLineInitialized(true) {
-#endif
-
   GetColors()[0] = CTextColor(255, 255, 255, 255);
   GetColors()[1] = CTextColor(128, 128, 128, 255);
   GetColors()[2] = CTextColor(255, 255, 255, 255);
@@ -24,8 +18,6 @@ void CFontRenderState::RefreshColor(const EColorType col) {
   case kCT_Main: {
     if (IsFinishedLoading() && GetFont().IsLoaded()) {
       switch (GetFont()->GetMode()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
       case kFM_OneLayer:
       case kFM_OneLayerOutline:
@@ -49,18 +41,6 @@ void CFontRenderState::RefreshColor(const EColorType col) {
         break;
       }
 #endif
-#else
-      case kFM_OneLayer:
-      case kFM_OneLayerOutline:
-      case kFM_FourLayers:
-      case kFM_TwoLayersOutline:
-      case kFM_TwoLayers:
-        if (!GetOverride()[0]) {
-          GetOptions().SetPaletteEntry(0, ConvertToTextureSpace(GetColors()[0]));
-        }
-        break;
-#endif
-
       default:
         break;
       }
@@ -74,19 +54,11 @@ void CFontRenderState::RefreshColor(const EColorType col) {
   } break;
   case kCT_Outline: {
     if (IsFinishedLoading() && GetFont().IsLoaded() && !GetOverride()[1]) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+      if (GetFont()->GetMode() == kFM_OneLayerOutline
 #if RSTL_VERSION >= RSTL_GM8P_00
-      if (GetFont()->GetMode() == kFM_OneLayerOutline ||
-          GetFont()->GetMode() == kFM_TwoLayersOutline) {
-#else
-      if (GetFont()->GetMode() == kFM_OneLayerOutline) {
+          || GetFont()->GetMode() == kFM_TwoLayersOutline
 #endif
-#else
-      if (GetFont()->GetMode() == kFM_OneLayerOutline ||
-          GetFont()->GetMode() == kFM_TwoLayersOutline) {
-#endif
-
+      ) {
         GetOptions().SetPaletteEntry(1, ConvertToTextureSpace(GetColors()[1]));
       }
     }

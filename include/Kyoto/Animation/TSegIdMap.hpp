@@ -13,15 +13,10 @@ template < typename T >
 class TSegIdMap {
 public:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-  TSegIdMap(uchar count);
-#else
-  inline TSegIdMap(uchar count);
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
+  inline
 #endif
-#else
   TSegIdMap(uchar count);
-#endif
 
   TSegIdMap(CInputStream& in);
 
@@ -45,7 +40,6 @@ public:
 #else
     return mNodes[mIndirectionMap[id.val()].second.val()];
 #endif
-
   }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -95,7 +89,6 @@ private:
 #else
   CSegId mCurPrevBone;
 #endif
-
 };
 #if !RSTL_PRIME1
 typedef TSegIdMap< uchar > TSegIdMapSizeCheck;
@@ -112,17 +105,15 @@ TSegIdMap< T >::TSegIdMap(CInputStream& in)
 #else
 , mIndirectionMap(100, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
 #endif
-
 , mNodes(reinterpret_cast< T* >(rs_new char[mCapacity * sizeof(T)]))
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mCurPrevBone(0) {
-  for (int i = 0; i < mCapacity; i++) {
+, mCurPrevBone(0)
 #else
-, mCurPrevBone(CSegId::Null()) {
-  for (int i = 0; i < mCapacity; ++i) {
+, mCurPrevBone(CSegId::Null())
 #endif
-
+{
+  for (int i = 0; i < mCapacity; ++i) {
     CSegId seg(in);
     T node(in);
     insert(seg, node);
@@ -130,7 +121,6 @@ TSegIdMap< T >::TSegIdMap(CInputStream& in)
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
 }
 
 template < typename T >
@@ -143,20 +133,18 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 #else
 , mIndirectionMap(100, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
 #endif
-
 , mNodes(nullptr)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mCurPrevBone(0) {
+, mCurPrevBone(0)
 #else
-, mCurPrevBone(CSegId::Null()) {
+, mCurPrevBone(CSegId::Null())
 #endif
-
+{
   mNodes = reinterpret_cast< T* >(rs_new uchar[count * sizeof(T)]);
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
 }
 
 template < typename T >
@@ -164,13 +152,11 @@ TSegIdMap< T >::~TSegIdMap() {
 #if RSTL_PRIME1
   const rstl::pair< char, char >* const links = mIndirectionMap.data();
 #endif
-
   CSegId id(mCurPrevBone);
   while (id != CSegId::Null()) {
 #if !RSTL_PRIME1
     const int index = id.val();
 #endif
-
     (*this)[id].~T();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -178,13 +164,10 @@ TSegIdMap< T >::~TSegIdMap() {
 #else
     id = mIndirectionMap.begin()[index].first;
 #endif
-
   }
-
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
 #endif
-
   delete[] reinterpret_cast< char* >(mNodes);
 }
 

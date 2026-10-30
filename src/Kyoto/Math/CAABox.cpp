@@ -27,12 +27,12 @@ CAABox::CAABox(const CVector3f& min, const CVector3f& max) : min(min), max(max) 
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CLineSeg CAABox::GetEdge(EBoxEdgeId id) const {
+CLineSeg CAABox::GetEdge(EBoxEdgeId id) const
 #else
 // Guessed name: Echoes returns the endpoint indices rather than a line segment.
-rstl::pair< int, int > CAABox::GetEdge(EBoxEdgeId id) {
+rstl::pair< int, int > CAABox::GetEdge(EBoxEdgeId id)
 #endif
-
+{
   switch (id) {
   case kE_Z0:
 // TODO: verify that this Prime/Echoes difference is real
@@ -150,7 +150,6 @@ rstl::pair< int, int > CAABox::GetEdge(EBoxEdgeId id) {
 #else
     return rstl::pair< int, int >(4, 0);
 #endif
-
   }
 }
 
@@ -201,9 +200,9 @@ CTri CAABox::GetTri(EBoxFaceId face, int windOffset) const {
     break;
   }
   return CTri(verts[windOffset], verts[(windOffset + 1) % 4], verts[(windOffset + 2) % 4]);
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 CQuad CAABox::GetQuad(EBoxFaceId face) const {
   switch (face) {
   case kF_YMin:
@@ -242,9 +241,8 @@ CQuad CAABox::GetQuad(EBoxFaceId face) const {
                  CVector3f(max.GetX(), min.GetY(), min.GetZ()),
                  CVector3f(min.GetX(), min.GetY(), min.GetZ()));
   }
-#endif
-
 }
+#endif
 
 bool CAABox::DoBoundsOverlap(const CAABox& other) const {
   if (other.min.GetX() > max.GetX() || min.GetX() > other.max.GetX() ||

@@ -39,8 +39,8 @@ class CConstantAnimationTimeScale : public IVaryingAnimationTimeScale {
 public:
 #if !RSTL_PRIME1
   explicit CConstantAnimationTimeScale(float scale) : mScale(scale) {}
-
 #endif
+
   EVaryingAnimationTimeScaleType GetType() const override { return kVATST_Constant; }
   float VTimeScaleIntegral(const float& lowerLimit, const float& upperLimit) const override;
   float VFindUpperLimit(const float& lowerLimit, const float& root) const override;

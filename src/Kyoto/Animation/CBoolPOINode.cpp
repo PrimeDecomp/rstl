@@ -7,14 +7,14 @@ CBoolPOINode::CBoolPOINode(CInputStream& in) : CPOINode(in), mVal(in.ReadBool())
 
 CBoolPOINode CBoolPOINode::CopyNodeMinusStartTime(const CBoolPOINode& node,
                                                   const CCharAnimTime& startTime) {
+  return CBoolPOINode(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  return CBoolPOINode(node.GetString(), node.GetPoiType(), node.GetTime() - startTime,
+      node.GetString(),
 #else
-  return CBoolPOINode(node.GetNameHash(), node.GetPoiType(), node.GetTime() - startTime,
+      node.GetNameHash(),
 #endif
-
-                      node.GetIndex(), node.GetSaveState(), node.GetWeight(),
-                      node.GetCharacterIndex(), node.GetFlags(), node.GetValue());
+      node.GetPoiType(), node.GetTime() - startTime, node.GetIndex(), node.GetSaveState(),
+      node.GetWeight(), node.GetCharacterIndex(), node.GetFlags(), node.GetValue());
 }
 

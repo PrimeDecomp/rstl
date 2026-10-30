@@ -22,30 +22,18 @@
 #include "rstl/vector.hpp"
 
 CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 : mInitialized(false)
 , mMonoWidth(16)
 , mMonoHeight(16)
 , mMode(kFM_OneLayer)
 , mLineMargin(0) {
-#else
-: mInitialized(false), mMonoWidth(16), mMonoHeight(16), mMode(kFM_OneLayer), mLineMargin(0) {
-#endif
-
   if (in.ReadInt32() == 'FONT') {
     int version = in.ReadInt32();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
     if (version >= 0 && version <= 4) {
 #else
     if (version >= 0 && version <= 2) {
 #endif
-#else
-    if (version >= 0 && version <= 4) {
-#endif
-
       mMonoWidth = in.ReadInt32();
       mMonoHeight = in.ReadInt32();
       if (version >= 1) {
@@ -80,8 +68,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
       case 1:
         mMode = kFM_OneLayerOutline;
         break;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
       case 2:
         mMode = kFM_FourLayers;
@@ -93,18 +79,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
         mMode = kFM_TwoLayers;
         break;
 #endif
-#else
-      case 2:
-        mMode = kFM_FourLayers;
-        break;
-      case 3:
-        mMode = kFM_TwoLayersOutline;
-        break;
-      case 4:
-        mMode = kFM_TwoLayers;
-        break;
-#endif
-
       }
 
       int glyphCount = in.ReadInt32();
@@ -153,7 +127,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
             rstl::pair< wchar_t, CGlyph >(chr, CGlyph(a, b, c, startU, startV, endU, endV, layer,
                                                       cellWidth, cellHeight, baseline, kernStart)));
 #endif
-
       }
       rstl::sort_by_key(mGlyphs);
 
@@ -170,7 +143,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
 #else
         mKerning.push_back_unsafe(CKernPair(first, second, howMuch));
 #endif
-
       }
 
       mInitialized = true;
@@ -186,17 +158,11 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
   height = 0;
   int curWidth = 0;
   const CGlyph* prevGlyph = nullptr;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
   for (const wchar_t* ptr = str; (length == -1 || ptr - str < length) && *ptr != 0; ++ptr) {
 #else
   for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || ptr - str < length); ++ptr) {
 #endif
-#else
-  for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || ptr - str < length); ++ptr) {
-#endif
-
     const CGlyph* glyph = GetGlyph(*ptr);
     if (glyph != nullptr) {
       int kerning =
@@ -205,11 +171,17 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                      options.GetExtraCharacterSpacing();
-      int newHeight = mMonoHeight - glyph->GetBaseLine() + glyph->GetCellHeight();
 #else
                      options.GetCharacterExtraSpace();
-      int newHeight = mMonoHeight - glyph->GetBaseline() + glyph->GetCellHeight();
 #endif
+      int newHeight = mMonoHeight -
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+                      glyph->GetBaseLine()
+#else
+                      glyph->GetBaseline()
+#endif
+                      + glyph->GetCellHeight();
 
       if (options.GetTextDirection() == kTD_Horizontal) {
         width = newWidth;
@@ -223,21 +195,21 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8P_00
 int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
 
 int CRasterFont::GetMonoHeight() const { return mMonoHeight; }
 #endif
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
 int CRasterFont::GetCarriageAdvance() { return GetMonoHeight() + GetLineMargin(); }
+#else
+int CRasterFont::GetCarriageAdvance() const { return mMonoHeight + mLineMargin; }
+#endif
 
 #if RSTL_VERSION < RSTL_GM8P_00
 const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }
-#endif
-#else
-int CRasterFont::GetCarriageAdvance() const { return mMonoHeight + mLineMargin; }
 #endif
 
 void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
@@ -254,17 +226,11 @@ void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, in
     data[2] = CBasics::SwapBytes(CColor(options.GetPaletteEntry(1)).ToRGB5A3());
     data[3] = CBasics::SwapBytes(CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3());
     pal.UnLock();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
     buffer->AddPaletteChange(pal, GetMode());
 #else
     buffer->AddPaletteChange(pal);
 #endif
-#else
-    buffer->AddPaletteChange(pal, GetMode());
-#endif
-
   }
 
   SinglePassDrawString(options, x, y, xOut, yOut, buffer, str, length);
@@ -298,17 +264,11 @@ void CRasterFont::SinglePassDrawString(const CDrawStringOptions& options, const 
   if (mInitialized) {
     int curX = x;
     const CGlyph* prevGlyph = nullptr;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if NONMATCHING
+#if RSTL_PRIME1 && NONMATCHING
     for (const wchar_t* ptr = str; (length == -1 || ptr - str < length) && *ptr != 0; ++ptr) {
 #else
     for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || (ptr - str) < length); ++ptr) {
 #endif
-#else
-    for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || (ptr - str) < length); ++ptr) {
-#endif
-
       const CGlyph* curGlyph = GetGlyph(*ptr);
       if (curGlyph != nullptr) {
         int xOffset = 0;
@@ -323,24 +283,26 @@ void CRasterFont::SinglePassDrawString(const CDrawStringOptions& options, const 
         }
 
         if (buffer) {
+          buffer->AddCharacter(CVector2i(curX + xOffset,
+                                         yOffset + (y -
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-          buffer->AddCharacter(CVector2i(curX + xOffset, yOffset + (y - curGlyph->GetBaseLine())),
+                                                    curGlyph->GetBaseLine()
 #else
-          buffer->AddCharacter(CVector2i(curX + xOffset, yOffset + (y - curGlyph->GetBaseline())),
+                                                    curGlyph->GetBaseline()
 #endif
-
+                                                    )),
                                *ptr, options.GetPaletteEntry(2));
         }
 
         if (options.GetTextDirection() == kTD_Horizontal) {
+          curX += curGlyph->GetB() + curGlyph->GetC() +
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-          curX += curGlyph->GetB() + curGlyph->GetC() + options.GetExtraCharacterSpacing();
+                  options.GetExtraCharacterSpacing();
 #else
-          curX += curGlyph->GetB() + curGlyph->GetC() + options.GetCharacterExtraSpace();
+                  options.GetCharacterExtraSpace();
 #endif
-
         }
       }
       prevGlyph = curGlyph;
@@ -364,8 +326,7 @@ const CGlyph* CRasterFont::InternalGetGlyph(const wchar_t chr) const {
 
 // TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, CInputStream& in,
-
-                                          const CVParamTransfer& xfer) {
+                                                      const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::rc_ptr< IVParamObj > obj = xfer.mObj;
@@ -402,12 +363,10 @@ void CRasterFont::SetupRenderState() {
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
 }
 
-#if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8P_00
 int CRasterFont::GetBaseLine() const { return mBaseline; }
 
 int CRasterFont::GetLineMargin() { return mLineMargin; }
-#endif
 #endif
 
 bool CRasterFont::IsFinishedLoading() { return mTexture && mTexture->IsLoaded(); }

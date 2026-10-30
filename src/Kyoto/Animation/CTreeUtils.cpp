@@ -20,7 +20,6 @@ CTreeUtils::GetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 #else
   rstl::rc_ptr< IMetaTrans > trans = GetMetaTrans(a, b, animCtx);
 #endif
-
   return trans->GetTransitionTree(a, b, animCtx);
 }
 

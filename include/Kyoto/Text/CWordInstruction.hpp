@@ -6,14 +6,8 @@
 
 class CWordInstruction : public CInstruction {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const;
-  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const;
-#else
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-#endif
 
   void InvokeLTR(CFontRenderState& state) const;
 };

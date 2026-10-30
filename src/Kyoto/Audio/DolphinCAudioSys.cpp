@@ -220,21 +220,23 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
 
   sndSetHooks(&hooks);
   if (mProLogic2) {
+    sndInit(numVoices, numMusic, numSfx,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    sndInit(numVoices, numMusic, numSfx, 1, 1, aramSize);
+            1,
 #else
-    sndInit(numVoices, numMusic, numSfx, 3, 1, aramSize);
+            3,
 #endif
-
+            1, aramSize);
   } else {
+    sndInit(numVoices, numMusic, numSfx,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    sndInit(numVoices, numMusic, numSfx, 1, 0, aramSize);
+            1,
 #else
-    sndInit(numVoices, numMusic, numSfx, 3, 0, aramSize);
+            3,
 #endif
-
+            0, aramSize);
   }
 #if !RSTL_PRIME1
   for (int i = 1; i < 3; ++i) {
@@ -260,16 +262,11 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
 
   mpDVDTrackDB = rs_new rstl::map< rstl::string, rstl::ncrc_ptr< CTrkData > >();
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8E_02
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8E_02
   mpEmitterDB = rs_new rstl::vector< CEmitterData >(maxNumEmitters, CEmitterData(),
-                                                 rstl::rmemory_allocator());
+                                                    rstl::rmemory_allocator());
 #else
   mpEmitterDB = rs_new rstl::vector< CEmitterData >(maxNumEmitters, CEmitterData());
-#endif
-#else
-  mpEmitterDB = rs_new rstl::vector< CEmitterData >(maxNumEmitters, CEmitterData(),
-                                                 rstl::rmemory_allocator());
 #endif
 
   mpListener = rs_new SND_LISTENER;
@@ -308,13 +305,14 @@ CAudioSys::~CAudioSys() {
   mInitialized = false;
 }
 
+void CAudioSys::SysSetVolume(const uchar volume,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CAudioSys::SysSetVolume(const uchar volume, const ushort time, const uchar group) {
+                             const ushort time,
 #else
-void CAudioSys::SysSetVolume(const uchar volume, const uint time, const uchar group) {
+                             const uint time,
 #endif
-
+                             const uchar group) {
   sndVolume(volume, time, group);
 }
 
@@ -449,13 +447,16 @@ rstl::ncrc_ptr< CAudioGroupSet > CAudioSys::FindGroupSet(const rstl::string& nam
   }
   return rstl::ncrc_ptr< CAudioGroupSet >();
 }
-
-SND_VOICEID CAudioSys::SfxStart(const SND_FXID sfxId, const uchar vol, const uchar pan,
-#else
-SND_VOICEID CAudioSys::SfxStart(const ushort sfxId, const uchar vol, const uchar pan,
 #endif
 
-                                const uchar prio) {
+SND_VOICEID CAudioSys::SfxStart(
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    const SND_FXID sfxId,
+#else
+    const ushort sfxId,
+#endif
+    const uchar vol, const uchar pan, const uchar prio) {
   const uchar scaledVol = (mVolumeScale * (vol > 0x7f ? 0x7f : vol)) / 0x7f;
   return sndFXStartEx(sfxId, scaledVol, pan, prio);
 }
@@ -470,14 +471,16 @@ SND_VOICEID CAudioSys::SfxCheck(const SND_VOICEID handle) { return sndFXCheck(ha
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CAudioSys::SfxSpan(SND_VOICEID handle, const uchar span) {
-#else
+#if !RSTL_PRIME1
 void CAudioSys::SfxPan(const SND_VOICEID handle, const uchar pan) { sndFXPanning(handle, pan); }
 
-void CAudioSys::SfxSpan(const SND_VOICEID handle, const uchar span) {
 #endif
-
+void CAudioSys::SfxSpan(
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+    const
+#endif
+    SND_VOICEID handle, const uchar span) {
   sndFXSurroundPanning(handle, span);
 }
 
@@ -488,13 +491,12 @@ void CAudioSys::SfxVolume(SND_VOICEID handle, const u8 vol) { sndFXVolume(handle
 void CAudioSys::SfxVolume(const SND_VOICEID handle, const uchar vol) { sndFXVolume(handle, vol); }
 #endif
 
+void CAudioSys::SfxPitchBend(
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CAudioSys::SfxPitchBend(SND_VOICEID handle, const ushort pitch) {
-#else
-void CAudioSys::SfxPitchBend(const SND_VOICEID handle, const ushort pitch) {
+#if !RSTL_PRIME1
+    const
 #endif
-
+    SND_VOICEID handle, const ushort pitch) {
   sndFXPitchBend(handle, pitch);
 }
 
@@ -511,13 +513,14 @@ bool CAudioSys::SfxSetFilter(const SND_VOICEID handle, const uint filter, const 
 
 int CAudioSys::TrkQueueTrack(const rstl::string& name, void (*callback)(u32),
                              const uint eventMask) {
+  while (TrkGetState() ==
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  while (TrkGetState() == 3) {
+         3
 #else
-  while (TrkGetState() == kTPS_Busy) {
+         kTPS_Busy
 #endif
-
+  ) {
   }
 
   rstl::ncrc_ptr< CTrkData > trk = FindTrack(name);
@@ -646,7 +649,6 @@ bool CAudioSys::S3dRemoveListener() {
 
 uint CAudioSys::S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort groupId,
                                     SND_PARAMETER_INFO* paraInfo) {
-
   uint handle = mUnusedEmitterHandle;
   if (handle == -1) {
     uint lowerHandle = S3dFindLowerPriorityHandle(params.mPrio);
@@ -672,49 +674,34 @@ uint CAudioSys::S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort gro
   const uchar scaledMaxVol =
       (mVolumeScale * (params.mMaxVol > 0x7f ? 0x7f : params.mMaxVol)) / 0x7f;
   const char maxVol = scaledMaxVol;
-  const uchar minVol =
-      (mVolumeScale * (params.mMinVol > 0x7f ? 0x7f : params.mMinVol)) / 0x7f;
-#else
-  const char maxVol = static_cast< uchar >(
-      (mVolumeScale * (params.mMaxVol > 0x7f ? 0x7f : params.mMaxVol)) / 0x7f);
-  const char minVol = static_cast< uchar >(
-      (mVolumeScale * (params.mMinVol > 0x7f ? 0x7f : params.mMinVol)) / 0x7f);
-  if (params.mStudio == 0) {
-#endif
+  const uchar minVol = (mVolumeScale * (params.mMinVol > 0x7f ? 0x7f : params.mMinVol)) / 0x7f;
 
   sndAddEmitterParaEx(&data.mEmitter, &_pos, &_dir, params.mMaxDist, params.mDistComp,
-                      params.mFlags, params.mSfxId, groupId, maxVol, minVol, nullptr,
-                      paraInfo);
-#if !RSTL_PRIME1
+                      params.mFlags, params.mSfxId, groupId, maxVol, minVol, nullptr, paraInfo);
+#else
+  const char maxVol =
+      static_cast< uchar >((mVolumeScale * (params.mMaxVol > 0x7f ? 0x7f : params.mMaxVol)) / 0x7f);
+  const char minVol =
+      static_cast< uchar >((mVolumeScale * (params.mMinVol > 0x7f ? 0x7f : params.mMinVol)) / 0x7f);
+  if (params.mStudio == 0) {
+    sndAddEmitterParaEx(&data.mEmitter, &_pos, &_dir, params.mMaxDist, params.mDistComp,
+                        params.mFlags, params.mSfxId, groupId, maxVol, minVol, nullptr, paraInfo);
   } else {
-    sndAddEmitter2StudioParaEx(&data.mEmitter, &_pos, &_dir, params.mMaxDist,
-                               params.mDistComp, params.mFlags, params.mSfxId, groupId,
-                               maxVol, minVol, params.mStudio, paraInfo);
+    sndAddEmitter2StudioParaEx(&data.mEmitter, &_pos, &_dir, params.mMaxDist, params.mDistComp,
+                               params.mFlags, params.mSfxId, groupId, maxVol, minVol,
+                               params.mStudio, paraInfo);
   }
 #endif
 
   data.mUsed = true;
   data.mImportant = params.mImportant;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   data.mPrio = params.mPrio;
-#else
-  data.mPriority = params.mPrio;
-#endif
-
   mUnusedEmitterHandle = S3dFindUnusedHandle();
   return handle;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CAudioSys::S3dUpdateEmitter(const uint handle, const CVector3f& pos,
-                                       const CVector3f& dir, const uchar maxVol) {
-#else
-bool CAudioSys::S3dUpdateEmitter(const uint handle, const CVector3f& pos, const CVector3f& dir,
-                                 const uchar maxVol) {
-#endif
-
+RSTL_PRIME1_CONST bool CAudioSys::S3dUpdateEmitter(const uint handle, const CVector3f& pos,
+                                                  const CVector3f& dir, const uchar maxVol) {
   if (handle == -1) {
     return false;
   }
@@ -731,13 +718,12 @@ bool CAudioSys::S3dUpdateEmitter(const uint handle, const CVector3f& pos, const 
   _dir.z = dir.GetZ();
   return sndUpdateEmitter(&data.mEmitter, &_pos, &_dir, maxVol, nullptr);
 }
+RSTL_PRIME1_CONST bool CAudioSys::S3dRemoveEmitter(
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const bool CAudioSys::S3dRemoveEmitter(uint handle) {
-#else
-bool CAudioSys::S3dRemoveEmitter(const uint handle) {
+#if !RSTL_PRIME1
+    const
 #endif
-
+    uint handle) {
   if (handle == -1) {
     return false;
   }
@@ -779,7 +765,6 @@ void CAudioSys::S3dFlushUnusedEmitters() {
 
 // TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST bool CAudioSys::S3dCheckEmitter(const uint handle) {
-
   if (handle == -1) {
     return false;
   }
@@ -830,13 +815,7 @@ uint CAudioSys::S3dFindLowerPriorityHandle(const uint prio) {
       break;
     }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     if (data.mPrio <= prio && !data.mImportant) {
-#else
-    if (data.mPriority <= prio && !data.mImportant) {
-#endif
-
       S3dRemoveEmitter(i);
       break;
     }
@@ -847,13 +826,12 @@ uint CAudioSys::S3dFindLowerPriorityHandle(const uint prio) {
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-uint CAudioSys::SeqPlayEx(const ushort gid, const ushort sid, void* arrfile, SND_PLAYPARA* para,
-                          const uchar studio) {
+uint
 #else
-SND_SEQID CAudioSys::SeqPlayEx(const ushort gid, const ushort sid, void* arrfile,
-                               SND_PLAYPARA* para, const uchar studio) {
+SND_SEQID
 #endif
-
+CAudioSys::SeqPlayEx(const ushort gid, const ushort sid, void* arrfile, SND_PLAYPARA* para,
+                     const uchar studio) {
   return sndSeqPlayEx(gid, sid, arrfile, para, studio);
 }
 
@@ -871,7 +849,6 @@ void CAudioSys::SeqVolume(const u8 volume, const u16 time, const u32 seqId, cons
 void CAudioSys::SeqVolume(const uchar volume, const ushort time, const SND_SEQID seqId,
                           const uchar mode) {
 #endif
-
   sndSeqVolume(volume, time, seqId, mode);
 }
 
@@ -886,12 +863,7 @@ void CAudioSys::SetStereoMode(const bool mode) {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
-CAudioSys::ESurroundModes CAudioSys::GetSurroundMode() { return mSurroundMode; }
-
-#endif
-#else
+#if !RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
 CAudioSys::ESurroundModes CAudioSys::GetSurroundMode() { return mSurroundMode; }
 #endif
 

@@ -58,16 +58,11 @@ public:
   CAnimTreeEffectiveContribution(float cweight, const rstl::string& name,
                                  const CSteadyStateAnimInfo& ssInfo, const CCharAnimTime& remTime,
                                  u32 dbIdx)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   : mContributionWeight(cweight)
   , mName(name)
   , mSsInfo(ssInfo)
   , mRemTime(remTime)
   , mDbIdx(dbIdx) {}
-#else
-  : mContributionWeight(cweight), mName(name), mSsInfo(ssInfo), mRemTime(remTime), mDbIdx(dbIdx) {}
-#endif
 
   float GetContributionWeight() const { return mContributionWeight; }
   const rstl::string& GetPrimitiveName() const { return mName; }
@@ -86,10 +81,8 @@ class CInt32POINode;
 class CParticlePOINode;
 class CSoundPOINode;
 class CSegStatementSet;
-#if !RSTL_PRIME1
 class CCharLayoutInfo;
 class CJointData_LinearStorage;
-#endif
 
 class IAnimReader {
 public:
@@ -103,38 +96,22 @@ public:
   virtual CVector3f VGetOffset(const CSegId& seg) const = 0;
   virtual CQuaternion VGetRotation(const CSegId& seg) const = 0;
   virtual uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                               uint iterator, int) const = 0;
-#else
                                uint iterator, int additive) const = 0;
-#endif
 
   virtual uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                uint iterator, int) const = 0;
-#else
                                 uint iterator, int additive) const = 0;
-#endif
 
   virtual uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                   uint capacity, uint iterator, int) const = 0;
-#else
                                    uint capacity, uint iterator, int additive) const = 0;
-#endif
 
   virtual uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+                                uint iterator, int additive) const = 0;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                uint iterator, int) const = 0;
   virtual bool VGetBoolPOIState(const char* name) const = 0;
   virtual s32 VGetInt32POIState(const char* name) const = 0;
   virtual CParticleData::EParentedMode VGetParticlePOIState(const char* name) const = 0;
 #else
-                                uint iterator, int additive) const = 0;
   virtual bool VGetBoolPOIState(uint nameHash) const = 0;
   virtual s32 VGetInt32POIState(uint nameHash) const = 0;
   virtual CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const = 0;
@@ -156,13 +133,11 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified();
-  virtual void VSetPhase(float) = 0;
-  virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& aTime,
-                                                     const CCharAnimTime& bTime) const;
-#else
+#endif
   virtual void VSetPhase(float phase) = 0;
   virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const;
+#if !RSTL_PRIME1
 
   rstl::ownership_transfer< IAnimReader > Clone() const { return VClone(); }
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified() {
@@ -175,33 +150,18 @@ public:
 #endif
 
   uint GetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                      uint iterator, int unk) const;
-#else
                       uint iterator, int additive) const;
-#endif
 
   uint GetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                       uint iterator, int unk) const;
-#else
                        uint iterator, int additive) const;
-#endif
 
   uint GetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                          uint iterator, int unk) const;
-#else
                           uint iterator, int additive) const;
-#endif
 
   uint GetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+                       uint iterator, int additive) const;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                       uint iterator, int unk) const;
 
   rstl::ownership_transfer< IAnimReader > Clone() const { return VClone(); }
   CCharAnimTime GetTimeRemaining() const { return VGetTimeRemaining(); }
@@ -226,10 +186,7 @@ public:
   CParticleData::EParentedMode GetParticlePOIState(const char* name) const {
     return VGetParticlePOIState(name);
   }
-#else
-                       uint iterator, int additive) const;
 #endif
-
 };
 #if !RSTL_PRIME1
 DECLARE_FULL_SIZE_FOR(IAnimReader, 0x4)

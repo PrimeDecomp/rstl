@@ -11,12 +11,10 @@
 #include "rstl/vector.hpp"
 
 class CPrimitive;
-#if RSTL_PRIME1
 class CAnimation;
 class CAnimTreeNode;
 class CAnimSysContext;
 class CMetaAnimTreeBuildOrders;
-#endif
 
 class IMetaAnim;
 
@@ -27,10 +25,10 @@ public:
 #if RSTL_VERSION >= RSTL_R3ME_00
   virtual
 #endif
-  ~CAnimationDatabase() {}
 #else
-  TRILOGY_VIRTUAL ~CAnimationDatabase() {}
+  TRILOGY_VIRTUAL
 #endif
+  ~CAnimationDatabase() {}
 
   virtual const rstl::rc_ptr< IMetaAnim >& GetMetaAnim(uint idx) const = 0;
   virtual uint GetNumMetaAnims() const = 0;
@@ -39,15 +37,8 @@ public:
   virtual void GetUniquePrimitivesFromMetaAnim(rstl::set< CPrimitive >& primsOut,
                                                const rstl::string& name) const = 0;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  explicit CAnimationDatabase(
-      const rstl::optional_object< TToken< CAnimationDatabase > >& token = rstl::optional_object_null())
-#else
   explicit CAnimationDatabase(const rstl::optional_object< TToken< CAnimationDatabase > >& token =
                                   rstl::optional_object_null())
-#endif
-
   : x4_(token) {}
 
 private:

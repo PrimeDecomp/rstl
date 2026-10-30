@@ -9,9 +9,7 @@
 #include "rstl/set.hpp"
 #include "rstl/vector.hpp"
 
-#if !RSTL_PRIME1
 class CAnimPOIData;
-#endif
 
 class CAnimSourceReaderBase : public IAnimReader {
 public:
@@ -29,37 +27,42 @@ public:
   bool VGetBoolPOIState(const char* name) const override;
   s32 VGetInt32POIState(const char* name) const override;
   CParticleData::EParentedMode VGetParticlePOIState(const char* name) const override;
-
-  CAnimSourceReaderBase(const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo)
-  : mSourceInfo(sourceInfo), mCurTime(0.f) {}
-#else
-  CAnimSourceReaderBase(const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo,
-                        const CAnimPOIData* poiData)
-  : mSourceInfo(sourceInfo), mPOIData(poiData), mCurTime(0.f) {}
 #endif
 
-  CAnimSourceReaderBase(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo, const CCharAnimTime& time,
-      int passedBoolCount, int passedIntCount, int passedParticleCount, int passedSoundCount,
-      const rstl::vector< rstl::pair< rstl::string, bool > >& boolStates,
-      const rstl::vector< rstl::pair< rstl::string, int > >& intStates,
-      const rstl::vector< rstl::pair< rstl::string, CParticleData::EParentedMode > >&
-          particleStates)
-#else
-      const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo, const CAnimPOIData* poiData,
-      const CCharAnimTime& time, int passedBoolCount, int passedIntCount, int passedParticleCount,
-      int passedSoundCount, const rstl::vector< rstl::pair< uint, bool > >& boolStates,
-      const rstl::vector< rstl::pair< uint, int > >& intStates,
-      const rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > >& particleStates)
+  CAnimSourceReaderBase(const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo
+#if !RSTL_PRIME1
+                        
+                        , const CAnimPOIData* poiData
 #endif
-
+                        )
   : mSourceInfo(sourceInfo)
 #if !RSTL_PRIME1
   , mPOIData(poiData)
 #endif
+  , mCurTime(0.f) {}
 
+  CAnimSourceReaderBase(const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo
+#if !RSTL_PRIME1
+                        , const CAnimPOIData* poiData
+#endif
+                        , const CCharAnimTime& time, int passedBoolCount, int passedIntCount,
+                        int passedParticleCount, int passedSoundCount,
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+                        const rstl::vector< rstl::pair< rstl::string, bool > >& boolStates,
+                        const rstl::vector< rstl::pair< rstl::string, int > >& intStates,
+                        const rstl::vector< rstl::pair< rstl::string, CParticleData::EParentedMode > >&
+                            particleStates)
+#else
+                        const rstl::vector< rstl::pair< uint, bool > >& boolStates,
+                        const rstl::vector< rstl::pair< uint, int > >& intStates,
+                        const rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > >&
+                            particleStates)
+#endif
+  : mSourceInfo(sourceInfo)
+#if !RSTL_PRIME1
+  , mPOIData(poiData)
+#endif
   , mCurTime(time)
   , mPassedBoolCount(passedBoolCount)
   , mPassedIntCount(passedIntCount)
@@ -108,7 +111,6 @@ protected:
 #if !RSTL_PRIME1
   const CAnimPOIData* mPOIData;
 #endif
-
   CCharAnimTime mCurTime;
   int mPassedBoolCount;
   int mPassedIntCount;
@@ -124,7 +126,6 @@ protected:
   rstl::vector< rstl::pair< uint, int > > mInt32States;
   rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > > mParticleStates;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

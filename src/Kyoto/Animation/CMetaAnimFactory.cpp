@@ -16,7 +16,6 @@ rstl::rc_ptr< IMetaAnim > CMetaAnimFactory::CreateMetaAnim(CInputStream& in) {
 #else
   EMetaAnimType type = static_cast< EMetaAnimType >(in.ReadInt32());
 #endif
-
   switch (type) {
   case kMAT_Play:
     return rs_new CMetaAnimPlay(in);

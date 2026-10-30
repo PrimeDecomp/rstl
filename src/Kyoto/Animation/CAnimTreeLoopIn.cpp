@@ -41,13 +41,13 @@ CAnimTreeLoopIn::CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 , mCurTime(0.f) {}
 
 CAnimTreeLoopIn::CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
+                                 const rstl::ncrc_ptr< CAnimTreeNode >& b,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                 const rstl::ncrc_ptr< CAnimTreeNode >& b, bool didLoopIn,
+                                 bool didLoopIn,
 #else
-                                 const rstl::ncrc_ptr< CAnimTreeNode >& b, const bool didLoopIn,
+                                 const bool didLoopIn,
 #endif
-
                                  const CAnimSysContext& animCtx, const rstl::string& name,
                                  const CSequenceFundamentals& fundamentals,
                                  const CCharAnimTime& time)
@@ -87,53 +87,39 @@ CSteadyStateAnimInfo CAnimTreeLoopIn::VGetSteadyStateAnimInfo() const {
 }
 
 uint CAnimTreeLoopIn::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
-                                      uint capacity, uint iterator, int unk) const {
-  return _getPOIList(time, listOut, capacity, iterator, unk,
+                                      uint capacity, uint iterator, int additive) const {
+  return _getPOIList(time, listOut, capacity, iterator, additive,
                      mFundamentals.GetBoolPointsOfInterest(), mCurTime);
 }
 
 uint CAnimTreeLoopIn::VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut,
-                                       uint capacity, uint iterator, int unk) const {
-  return _getPOIList(time, listOut, capacity, iterator, unk,
+                                       uint capacity, uint iterator, int additive) const {
+  return _getPOIList(time, listOut, capacity, iterator, additive,
                      mFundamentals.GetInt32PointsOfInterest(), mCurTime);
 }
 
 uint CAnimTreeLoopIn::VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
-                                          uint capacity, uint iterator, int unk) const {
-  return _getPOIList(time, listOut, capacity, iterator, unk,
+                                          uint capacity, uint iterator, int additive) const {
+  return _getPOIList(time, listOut, capacity, iterator, additive,
                      mFundamentals.GetParticlePointsOfInterest(), mCurTime);
 }
 
 uint CAnimTreeLoopIn::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut,
-                                       uint capacity, uint iterator, int unk) const {
-  return _getPOIList(time, listOut, capacity, iterator, unk,
+                                       uint capacity, uint iterator, int additive) const {
+  return _getPOIList(time, listOut, capacity, iterator, additive,
                      mFundamentals.GetSoundPointsOfInterest(), mCurTime);
 }
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeLoopIn::VClone() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return rs_new CAnimTreeLoopIn(Cast(mChild->Clone()), mNextAnim, mDidLoopIn, mAnimCtx,
-                                mName, mFundamentals, mCurTime);
-#else
   return rs_new CAnimTreeLoopIn(Cast(mChild->Clone()), mNextAnim, mDidLoopIn, mAnimCtx, mName,
                                 mFundamentals, mCurTime);
-#endif
-
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeLoopIn::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > child = mChild->GetBestUnblendedChild();
   if (child)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    return rs_new CAnimTreeLoopIn(Cast(child->Clone()), mNextAnim, mDidLoopIn, mAnimCtx,
-                                  mName, mFundamentals, mCurTime);
-#else
     return rs_new CAnimTreeLoopIn(Cast(child->Clone()), mNextAnim, mDidLoopIn, mAnimCtx, mName,
                                   mFundamentals, mCurTime);
-#endif
-
   return child;
 }
 
@@ -147,13 +133,15 @@ rstl::optional_object< rstl::ownership_transfer< IAnimReader > > CAnimTreeLoopIn
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   } else if (mDidLoopIn && mChild->GetTimeRemaining().EqualsZero()) {
-#else
-  } else if (mDidLoopIn) {
-    if (mChild->GetTimeRemaining().EqualsZero())
-#endif
-
     return mChild->Clone();
   }
+#else
+  } else if (mDidLoopIn) {
+    if (mChild->GetTimeRemaining().EqualsZero()) {
+      return mChild->Clone();
+    }
+  }
+#endif
   return rstl::optional_object_null();
 }
 

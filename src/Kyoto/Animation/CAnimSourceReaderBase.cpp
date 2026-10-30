@@ -15,9 +15,9 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
                  const IAnimSourceInfo& sourceInfo, int passedCount) {
   uint ret = 0;
 #if RSTL_PRIME1
-  if (sourceInfo.HasPOIData()) {
+  if (sourceInfo.HasPOIData())
 #endif
-
+  {
     int count = stream.size();
     if (count > 0) {
       const CCharAnimTime& duration = sourceInfo.GetAnimationDuration();
@@ -26,9 +26,8 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
 #if RSTL_PRIME1
       CCharAnimTime endTime = rstl::min_val(duration, totalTime);
 #else
-    CCharAnimTime endTime = rstl::min_val< const CCharAnimTime& >(duration, totalTime);
+      CCharAnimTime endTime = rstl::min_val< const CCharAnimTime& >(duration, totalTime);
 #endif
-
       if (passedCount < count) {
         int index = passedCount;
         const int initialIndex = index;
@@ -46,10 +45,7 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
         }
       }
     }
-#if RSTL_PRIME1
   }
-#endif
-
   return ret;
 }
 
@@ -129,15 +125,18 @@ uint CAnimSourceReaderBase::VGetSoundPOIList(const CCharAnimTime& time, CSoundPO
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool CAnimSourceReaderBase::VGetBoolPOIState(const char* name) const {
-  int count = mBoolStates.size();
-  for (int i = 0; i < count; ++i) {
-    if (mBoolStates[i].first == name) {
 #else
-bool CAnimSourceReaderBase::VGetBoolPOIState(uint nameHash) const {
-  for (int i = 0; i < mBoolStates.size(); ++i) {
-    if (mBoolStates[i].first == nameHash) {
+bool CAnimSourceReaderBase::VGetBoolPOIState(uint name) const {
 #endif
-
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int count = mBoolStates.size();
+  for (int i = 0; i < count; ++i)
+#else
+  for (int i = 0; i < mBoolStates.size(); ++i)
+#endif
+  {
+    if (mBoolStates[i].first == name) {
       return mBoolStates[i].second;
     }
   }
@@ -147,15 +146,18 @@ bool CAnimSourceReaderBase::VGetBoolPOIState(uint nameHash) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 s32 CAnimSourceReaderBase::VGetInt32POIState(const char* name) const {
-  int count = mInt32States.size();
-  for (int i = 0; i < count; ++i) {
-    if (mInt32States[i].first == name) {
 #else
-s32 CAnimSourceReaderBase::VGetInt32POIState(uint nameHash) const {
-  for (int i = 0; i < mInt32States.size(); ++i) {
-    if (mInt32States[i].first == nameHash) {
+s32 CAnimSourceReaderBase::VGetInt32POIState(uint name) const {
 #endif
-
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int count = mInt32States.size();
+  for (int i = 0; i < count; ++i)
+#else
+  for (int i = 0; i < mInt32States.size(); ++i)
+#endif
+  {
+    if (mInt32States[i].first == name) {
       return mInt32States[i].second;
     }
   }
@@ -165,15 +167,18 @@ s32 CAnimSourceReaderBase::VGetInt32POIState(uint nameHash) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CParticleData::EParentedMode CAnimSourceReaderBase::VGetParticlePOIState(const char* name) const {
-  int count = mParticleStates.size();
-  for (int i = 0; i < count; ++i) {
-    if (mParticleStates[i].first == name) {
 #else
-CParticleData::EParentedMode CAnimSourceReaderBase::VGetParticlePOIState(uint nameHash) const {
-  for (int i = 0; i < mParticleStates.size(); ++i) {
-    if (mParticleStates[i].first == nameHash) {
+CParticleData::EParentedMode CAnimSourceReaderBase::VGetParticlePOIState(uint name) const {
 #endif
-
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int count = mParticleStates.size();
+  for (int i = 0; i < count; ++i)
+#else
+  for (int i = 0; i < mParticleStates.size(); ++i)
+#endif
+  {
+    if (mParticleStates[i].first == name) {
       return mParticleStates[i].second;
     }
   }
@@ -199,49 +204,39 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
   int int32Count = int32Nodes.size();
   int particleCount = particleNodes.size();
   int soundCount = soundNodes.size();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  while (mPassedBoolCount < boolCount &&
-         boolNodes[mPassedBoolCount].GetTime() <= mCurTime) {
-#else
   while (mPassedBoolCount < boolCount && boolNodes[mPassedBoolCount].GetTime() <= mCurTime) {
-#endif
-
     const CBoolPOINode& node = boolNodes[mPassedBoolCount];
     int index = node.GetIndex();
+    if (index >= 0
+#if !RSTL_PRIME1
+        && index < mBoolStates.size()
+#endif
+    ) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (index >= 0) {
       mBoolStates[index] =
           rstl::pair< rstl::string, bool >(mBoolStates[index].first, node.GetValue());
 #else
-    if (index >= 0 && index < mBoolStates.size()) {
       mBoolStates[index] = rstl::pair< uint, bool >(mBoolStates[index].first, node.GetValue());
 #endif
-
     }
     ++mPassedBoolCount;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  while (mPassedIntCount < int32Count &&
-         int32Nodes[mPassedIntCount].GetTime() <= mCurTime) {
-#else
   while (mPassedIntCount < int32Count && int32Nodes[mPassedIntCount].GetTime() <= mCurTime) {
-#endif
-
     const CInt32POINode& node = int32Nodes[mPassedIntCount];
     int index = node.GetIndex();
+    if (index >= 0
+#if !RSTL_PRIME1
+        && index < mInt32States.size()
+#endif
+    ) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (index >= 0) {
       mInt32States[index] =
           rstl::pair< rstl::string, int >(mInt32States[index].first, node.GetValue());
 #else
-    if (index >= 0 && index < mInt32States.size()) {
       mInt32States[index] = rstl::pair< uint, int >(mInt32States[index].first, node.GetValue());
 #endif
-
     }
     ++mPassedIntCount;
   }
@@ -249,27 +244,22 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
          particleNodes[mPassedParticleCount].GetTime() <= mCurTime) {
     const CParticlePOINode& node = particleNodes[mPassedParticleCount];
     int index = node.GetIndex();
+    if (index >= 0
+#if !RSTL_PRIME1
+        && index < mParticleStates.size()
+#endif
+    ) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (index >= 0) {
       mParticleStates[index] = rstl::pair< rstl::string, CParticleData::EParentedMode >(
 #else
-    if (index >= 0 && index < mParticleStates.size()) {
       mParticleStates[index] = rstl::pair< uint, CParticleData::EParentedMode >(
 #endif
-
           mParticleStates[index].first, node.GetParticleData().GetParentedMode());
     }
     ++mPassedParticleCount;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  while (mPassedSoundCount < soundCount &&
-         soundNodes[mPassedSoundCount].GetTime() <= mCurTime) {
-#else
   while (mPassedSoundCount < soundCount && soundNodes[mPassedSoundCount].GetTime() <= mCurTime) {
-#endif
-
     ++mPassedSoundCount;
   }
 }
@@ -279,34 +269,27 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
 rstl::set< rstl::pair< rstl::string, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() const {
   const rstl::vector< CBoolPOINode >& nodes = mSourceInfo->GetBoolPOIStream();
   int count = nodes.size();
-  rstl::set< rstl::pair< rstl::string, int > > ret;
+  rstl::set< rstl::pair< rstl::string, int > > result;
 #else
 rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() const {
   const rstl::vector< CBoolPOINode >& nodes = mPOIData->GetBoolPOIStream();
   const int count = nodes.size();
   rstl::set< rstl::pair< uint, int > > result;
 #endif
-
   for (int i = 0; i < count; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CBoolPOINode& node = nodes[i];
     if (node.GetSaveState()) {
-      ret.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+      result.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+    }
 #else
     if (nodes[i].GetSaveState()) {
       result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
-#endif
-
     }
-  }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return ret;
-#else
-  return result;
 #endif
-
+  }
+  return result;
 }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -314,34 +297,27 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() 
 rstl::set< rstl::pair< rstl::string, int > > CAnimSourceReaderBase::GetUniqueInt32POIs() const {
   const rstl::vector< CInt32POINode >& nodes = mSourceInfo->GetInt32POIStream();
   int count = nodes.size();
-  rstl::set< rstl::pair< rstl::string, int > > ret;
+  rstl::set< rstl::pair< rstl::string, int > > result;
 #else
 rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueInt32POIs() const {
   const rstl::vector< CInt32POINode >& nodes = mPOIData->GetInt32POIStream();
   const int count = nodes.size();
   rstl::set< rstl::pair< uint, int > > result;
 #endif
-
   for (int i = 0; i < count; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CInt32POINode& node = nodes[i];
     if (node.GetSaveState()) {
-      ret.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+      result.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+    }
 #else
     if (nodes[i].GetSaveState()) {
       result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
-#endif
-
     }
-  }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return ret;
-#else
-  return result;
 #endif
-
+  }
+  return result;
 }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -349,34 +325,27 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueInt32POIs()
 rstl::set< rstl::pair< rstl::string, int > > CAnimSourceReaderBase::GetUniqueParticlePOIs() const {
   const rstl::vector< CParticlePOINode >& nodes = mSourceInfo->GetParticlePOIStream();
   int count = nodes.size();
-  rstl::set< rstl::pair< rstl::string, int > > ret;
+  rstl::set< rstl::pair< rstl::string, int > > result;
 #else
 rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueParticlePOIs() const {
   const rstl::vector< CParticlePOINode >& nodes = mPOIData->GetParticlePOIStream();
   const int count = nodes.size();
   rstl::set< rstl::pair< uint, int > > result;
 #endif
-
   for (int i = 0; i < count; ++i) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CParticlePOINode& node = nodes[i];
     if (node.GetSaveState()) {
-      ret.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+      result.insert(rstl::pair< rstl::string, int >(node.GetString(), node.GetIndex()));
+    }
 #else
     if (nodes[i].GetSaveState()) {
       result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
-#endif
-
     }
-  }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return ret;
-#else
-  return result;
 #endif
-
+  }
+  return result;
 }
 
 void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
@@ -396,7 +365,6 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
   const rstl::set< rstl::pair< uint, int > > int32POIs = GetUniqueInt32POIs();
   const rstl::set< rstl::pair< uint, int > > particlePOIs = GetUniqueParticlePOIs();
 #endif
-
     int boolCount = boolPOIs.size();
     int int32Count = int32POIs.size();
     int particleCount = particlePOIs.size();
@@ -405,86 +373,99 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
     mBoolStates.resize(boolCount, rstl::pair< rstl::string, bool >(rstl::string_l(""), false));
     mInt32States.resize(int32Count, rstl::pair< rstl::string, int >(rstl::string_l(""), 0));
     mParticleStates.resize(particleCount,
-                              rstl::pair< rstl::string, CParticleData::EParentedMode >(
-                                  rstl::string_l(""), CParticleData::kPM_Initial));
-    for (AUTO(it, boolPOIs.begin()); it != boolPOIs.end();) {
+                           rstl::pair< rstl::string, CParticleData::EParentedMode >(
+                               rstl::string_l(""), CParticleData::kPM_Initial));
+#else
+    mBoolStates.resize(boolCount, rstl::pair< uint, bool >(CPOINode::skInvalidNameHash, false));
+    mInt32States.resize(int32Count, rstl::pair< uint, int >(CPOINode::skInvalidNameHash, 0));
+    mParticleStates.resize(
+        particleCount,
+        rstl::pair< uint, CParticleData::EParentedMode >(CPOINode::skInvalidNameHash,
+                                                         CParticleData::kPM_Initial));
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    for (AUTO(it, boolPOIs.begin()); it != boolPOIs.end();)
+#else
+    for (rstl::set< rstl::pair< uint, int > >::const_iterator it = boolPOIs.begin(),
+                                                              end = boolPOIs.end();
+         it != end;)
+#endif
+    {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
       rstl::string name = it->first;
 #else
-  mBoolStates.resize(boolCount, rstl::pair< uint, bool >(CPOINode::skInvalidNameHash, false));
-  mInt32States.resize(int32Count, rstl::pair< uint, int >(CPOINode::skInvalidNameHash, 0));
-  mParticleStates.resize(
-      particleCount, rstl::pair< uint, CParticleData::EParentedMode >(CPOINode::skInvalidNameHash,
-                                                                      CParticleData::kPM_Initial));
-  for (rstl::set< rstl::pair< uint, int > >::const_iterator it = boolPOIs.begin(),
-                                                            end = boolPOIs.end();
-       it != end;) {
-    uint name = it->first;
+      uint name = it->first;
 #endif
-
       int index = it->second;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mBoolStates[index] = rstl::pair< rstl::string, bool >(name, false);
 #else
-    if (index >= 0 && index < mBoolStates.size()) {
-      mBoolStates[index] = rstl::pair< uint, bool >(name, false);
-    }
+      if (index >= 0 && index < mBoolStates.size()) {
+        mBoolStates[index] = rstl::pair< uint, bool >(name, false);
+      }
 #endif
-
       ++it;
     }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, int32POIs.begin()); it != int32POIs.end();) {
+    for (AUTO(it, int32POIs.begin()); it != int32POIs.end();)
+#else
+    for (rstl::set< rstl::pair< uint, int > >::const_iterator it = int32POIs.begin(),
+                                                              end = int32POIs.end();
+         it != end;)
+#endif
+    {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
       rstl::string name = it->first;
 #else
-  for (rstl::set< rstl::pair< uint, int > >::const_iterator it = int32POIs.begin(),
-                                                            end = int32POIs.end();
-       it != end;) {
-    uint name = it->first;
+      uint name = it->first;
 #endif
-
       int index = it->second;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mInt32States[index] = rstl::pair< rstl::string, int >(name, 0);
 #else
-    if (index >= 0 && index < mInt32States.size()) {
-      mInt32States[index] = rstl::pair< uint, int >(name, 0);
-    }
+      if (index >= 0 && index < mInt32States.size()) {
+        mInt32States[index] = rstl::pair< uint, int >(name, 0);
+      }
 #endif
-
       ++it;
     }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, particlePOIs.begin()); it != particlePOIs.end();) {
+    for (AUTO(it, particlePOIs.begin()); it != particlePOIs.end();)
+#else
+    for (rstl::set< rstl::pair< uint, int > >::const_iterator it = particlePOIs.begin(),
+                                                              end = particlePOIs.end();
+         it != end;)
+#endif
+    {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
       rstl::string name = it->first;
 #else
-  for (rstl::set< rstl::pair< uint, int > >::const_iterator it = particlePOIs.begin(),
-                                                            end = particlePOIs.end();
-       it != end;) {
-    uint name = it->first;
+      uint name = it->first;
 #endif
-
       int index = it->second;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mParticleStates[index] = rstl::pair< rstl::string, CParticleData::EParentedMode >(
           name, CParticleData::kPM_Initial);
 #else
-    if (index >= 0 && index < mParticleStates.size()) {
-      mParticleStates[index] =
-          rstl::pair< uint, CParticleData::EParentedMode >(name, CParticleData::kPM_Initial);
-    }
+      if (index >= 0 && index < mParticleStates.size()) {
+        mParticleStates[index] =
+            rstl::pair< uint, CParticleData::EParentedMode >(name, CParticleData::kPM_Initial);
+      }
 #endif
-
       ++it;
-#if RSTL_PRIME1
     }
-#endif
-
+#if RSTL_PRIME1
   }
+#endif
   CCharAnimTime remaining = time;
   if (remaining.GreaterThanZero()) {
     while (remaining.GreaterThanZero()) {
@@ -496,7 +477,6 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
 #else
   } else {
 #endif
-
     UpdatePOIStates();
     if (!time.GreaterThanZero()) {
       mPassedBoolCount = 0;
@@ -506,4 +486,3 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
     }
   }
 }
-

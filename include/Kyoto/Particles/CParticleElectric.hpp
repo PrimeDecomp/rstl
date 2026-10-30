@@ -18,9 +18,7 @@
 class CElectricDescription;
 class CElementGen;
 class CParticleSwoosh;
-#if !RSTL_PRIME1
 struct SUVElementSet;
-#endif
 
 class CParticleElectric : public CParticleGen {
 public:
@@ -101,22 +99,12 @@ public:
   class CParticleElectricManager {
     friend class CParticleElectric;
     uint mIdx;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    uint mSlif;
-#else
     uint mSLIF;
-#endif
-
     uint mStartFrame;
     uint mEndFrame;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    int mGpsmIdx;
-    int mEpsmIdx;
-#else
     int mGPSMIdx;
     int mEPSMIdx;
+#if !RSTL_PRIME1
     CVector3f mInitialPos;
     CVector3f mInitialVel;
     CVector3f mFinalPos;
@@ -128,11 +116,11 @@ public:
 #if RSTL_PRIME1
     CParticleElectricManager(uint idx, uint slif, uint startFrame)
     : mIdx(idx)
-    , mSlif(slif)
+    , mSLIF(slif)
     , mStartFrame(startFrame)
     , mEndFrame(startFrame + slif)
-    , mGpsmIdx(-1)
-    , mEpsmIdx(-1) {}
+    , mGPSMIdx(-1)
+    , mEPSMIdx(-1) {}
 #else
     CParticleElectricManager(uint idx, uint slif, uint startFrame);
     const CVector3f& GetInitialPos() const { return mInitialPos; }
@@ -225,14 +213,8 @@ private:
   rstl::reserved_vector< rstl::auto_ptr< CParticleSwoosh >, 32 > mSwooshGenerators;
   rstl::reserved_vector< rstl::auto_ptr< CLineManager >, 32 > mLineManagers;
   rstl::list< CParticleElectricManager > mElectricManagers;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::vector< rstl::auto_ptr< CElementGen > > mGpsmGenerators;
-  rstl::vector< rstl::auto_ptr< CElementGen > > mEpsmGenerators;
-#else
   rstl::vector< rstl::auto_ptr< CElementGen > > mGPSMGenerators;
   rstl::vector< rstl::auto_ptr< CElementGen > > mEPSMGenerators;
-#endif
 
   rstl::vector< CVector3f, rstl::aligned_allocator > mCalculatedVerts;
   rstl::vector< float > mFractalMags;

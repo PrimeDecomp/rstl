@@ -34,25 +34,13 @@ public:
   virtual uint VGetNumChildren() const = 0;
   virtual rstl::rc_ptr< CAnimTreeNode > VGetBestUnblendedChild() const = 0;
   virtual void VGetWeightedReaders(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      float w, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const = 0;
-#else
       float weight, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const = 0;
-#endif
 
   CAnimTreeEffectiveContribution GetContributionOfHighestInfluence() const {
     return VGetContributionOfHighestInfluence();
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::rc_ptr< CAnimTreeNode > GetBestUnblendedChild() const {
-    return VGetBestUnblendedChild();
-  }
-#else
   rstl::rc_ptr< CAnimTreeNode > GetBestUnblendedChild() const { return VGetBestUnblendedChild(); }
-#endif
 
   const rstl::string& GetPrimitiveName() const { return mName; }
 #if RSTL_PRIME1

@@ -409,15 +409,13 @@ CGX::SGXState::SGXState()
 , mFogType(0)
 , mLineWidthAndOffset(USHRT_MAX)
 , mBlendMode(USHRT_MAX)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mAlphaCompare(UINT_MAX) {
-#else
 , mAlphaCompare(UINT_MAX)
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 , mDstAlphaEnabled(false)
-, mDstAlpha(0) {
+, mDstAlpha(0)
 #endif
-
+{
   const GXColor sGXClear = {0, 0, 0, 0};
   const GXColor sGXWhite = {255, 255, 255, 255};
   for (int i = 0; i < 2; ++i) {
@@ -497,12 +495,10 @@ void CGX::ResetGXStatesFull() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   new (&sGXState) SGXState();
-  ResetGXStates();
 #else
   new (gpGXState) SGXState();
-  CGX::ResetGXStates();
 #endif
-
+  ResetGXStates();
 }
 
 // TODO: verify that this Prime/Echoes difference is real

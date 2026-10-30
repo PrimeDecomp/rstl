@@ -7,17 +7,9 @@
 #include "Kyoto/Animation/CSoundPOINode.hpp"
 
 SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (dt.EqualsZero() && dt > CCharAnimTime::ZeroFlat())
-#else
   if (dt.EqualsZero() && dt > CCharAnimTime::ZeroFlat()) {
-#endif
-
     return mChild->AdvanceView(dt);
-#if !RSTL_PRIME1
   }
-#endif
 
   CCharAnimTime origAccelTime = mCurAccelTime;
   CCharAnimTime newTime = mCurAccelTime + dt;
@@ -38,21 +30,16 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
     }
   } else {
     CCharAnimTime newDt = mTimeScale->TimeScaleIntegral(origAccelTime, mTargetAccelTime);
+    SAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    SAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas());
-    if (newDt.GreaterThanZero())
-#else
-    SAdvancementResults res(CCharAnimTime(0.f),
-                           CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-    if (newDt.GreaterThanZero()) {
-#endif
-
-      res = mChild->AdvanceView(newDt);
 #if !RSTL_PRIME1
-    }
+                                                    CVector3f::Zero()
+                                                    , CQuaternion::NoRotation()
 #endif
-
+                                                    ));
+    if (newDt.GreaterThanZero()) {
+      res = mChild->AdvanceView(newDt);
+    }
     CCharAnimTime remTime = res.mRemTime + (newTime - mTargetAccelTime);
     mCurAccelTime = mTargetAccelTime;
     return SAdvancementResults(remTime, res.mDeltas);
@@ -63,14 +50,7 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
 CCharAnimTime CAnimTreeTimeScale::VGetTimeRemaining() const {
   CCharAnimTime timeRem = mChild->GetTimeRemaining();
   if (mTargetAccelTime == CCharAnimTime::Infinity()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CCharAnimTime remaining =
-        mTimeScale->FindUpperLimit(mCurAccelTime, timeRem) - mCurAccelTime;
-#else
     CCharAnimTime remaining = mTimeScale->FindUpperLimit(mCurAccelTime, timeRem) - mCurAccelTime;
-#endif
-
     return remaining;
   }
   return GetRealLifeTime(timeRem);
@@ -84,14 +64,7 @@ CSteadyStateAnimInfo CAnimTreeTimeScale::VGetSteadyStateAnimInfo() const {
         mTimeScale->FindUpperLimit(CCharAnimTime::ZeroFlat(), originalDuration);
     return CSteadyStateAnimInfo(info.IsLooping(), duration, info.GetOffset());
   } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CCharAnimTime time =
-        mCurAccelTime.GreaterThanZero()
-#else
     CCharAnimTime time = mCurAccelTime.GreaterThanZero()
-#endif
-
             ? mTimeScale->TimeScaleIntegral(CCharAnimTime::ZeroFlat(), mCurAccelTime)
             : CCharAnimTime::ZeroFlat();
     CCharAnimTime remaining = GetTimeRemaining();
@@ -101,32 +74,16 @@ CSteadyStateAnimInfo CAnimTreeTimeScale::VGetSteadyStateAnimInfo() const {
 }
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeTimeScale::VClone() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return rs_new CAnimTreeTimeScale(Cast(mChild->Clone()), mTimeScale->Clone(),
-                                   mCurAccelTime, mTargetAccelTime, mInitialTime, mName);
-#else
   return rs_new CAnimTreeTimeScale(Cast(mChild->Clone()), mTimeScale->Clone(), mCurAccelTime,
                                    mTargetAccelTime, mInitialTime, mName);
-#endif
-
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeTimeScale::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > child = mChild->GetBestUnblendedChild();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (child)
-#else
   if (child) {
-#endif
-
     return rs_new CAnimTreeTimeScale(Cast(child->Clone()), mTimeScale->Clone(), mCurAccelTime,
                                      mTargetAccelTime, mInitialTime, mName);
-#if !RSTL_PRIME1
   }
-#endif
-
   return child;
 }
 
@@ -141,22 +98,10 @@ CAnimTreeEffectiveContribution CAnimTreeTimeScale::VGetContributionOfHighestInfl
 }
 
 uint CAnimTreeTimeScale::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                         uint capacity, uint iterator, int unk) const {
-#else
                                          uint capacity, uint iterator, int additive) const {
-#endif
-
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint ret = mChild->GetBoolPOIList(useTime, listOut, capacity, iterator, unk);
-#else
   const uint ret = mChild->GetBoolPOIList(useTime, listOut, capacity, iterator, additive);
-#endif
-
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -167,22 +112,10 @@ uint CAnimTreeTimeScale::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode
 }
 
 uint CAnimTreeTimeScale::VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                          uint capacity, uint iterator, int unk) const {
-#else
                                           uint capacity, uint iterator, int additive) const {
-#endif
-
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint ret = mChild->GetInt32POIList(useTime, listOut, capacity, iterator, unk);
-#else
   const uint ret = mChild->GetInt32POIList(useTime, listOut, capacity, iterator, additive);
-#endif
-
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -193,22 +126,10 @@ uint CAnimTreeTimeScale::VGetInt32POIList(const CCharAnimTime& time, CInt32POINo
 }
 
 uint CAnimTreeTimeScale::VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                             uint capacity, uint iterator, int unk) const {
-#else
                                              uint capacity, uint iterator, int additive) const {
-#endif
-
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint ret = mChild->GetParticlePOIList(useTime, listOut, capacity, iterator, unk);
-#else
   const uint ret = mChild->GetParticlePOIList(useTime, listOut, capacity, iterator, additive);
-#endif
-
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -219,22 +140,10 @@ uint CAnimTreeTimeScale::VGetParticlePOIList(const CCharAnimTime& time, CParticl
 }
 
 uint CAnimTreeTimeScale::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                          uint capacity, uint iterator, int unk) const {
-#else
                                           uint capacity, uint iterator, int additive) const {
-#endif
-
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const uint ret = mChild->GetSoundPOIList(useTime, listOut, capacity, iterator, unk);
-#else
   const uint ret = mChild->GetSoundPOIList(useTime, listOut, capacity, iterator, additive);
-#endif
-
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -244,71 +153,73 @@ uint CAnimTreeTimeScale::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINo
   return ret;
 }
 
+bool CAnimTreeTimeScale::VGetBoolPOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-bool CAnimTreeTimeScale::VGetBoolPOIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mChild->GetBoolPOIState(name);
 #else
-bool CAnimTreeTimeScale::VGetBoolPOIState(uint nameHash) const {
-  return mChild->VGetBoolPOIState(nameHash);
+  return mChild->VGetBoolPOIState(name);
 #endif
-
 }
+s32 CAnimTreeTimeScale::VGetInt32POIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-s32 CAnimTreeTimeScale::VGetInt32POIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mChild->GetInt32POIState(name);
 #else
-s32 CAnimTreeTimeScale::VGetInt32POIState(uint nameHash) const {
-  return mChild->VGetInt32POIState(nameHash);
+  return mChild->VGetInt32POIState(name);
 #endif
-
 }
+CParticleData::EParentedMode CAnimTreeTimeScale::VGetParticlePOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CParticleData::EParentedMode CAnimTreeTimeScale::VGetParticlePOIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   return mChild->GetParticlePOIState(name);
 #else
-CParticleData::EParentedMode CAnimTreeTimeScale::VGetParticlePOIState(uint nameHash) const {
-  return mChild->VGetParticlePOIState(nameHash);
+  return mChild->VGetParticlePOIState(name);
 #endif
-
 }
 
 rstl::optional_object< rstl::ownership_transfer< IAnimReader > > CAnimTreeTimeScale::VSimplified() {
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simp = mChild->Simplified();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (simp)
-#else
   if (simp) {
-#endif
-
     return rstl::ownership_transfer< IAnimReader >(
         rs_new CAnimTreeTimeScale(Cast(*simp), mTimeScale->Clone(), mCurAccelTime,
                                   mTargetAccelTime, mInitialTime, mName));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (mCurAccelTime == mTargetAccelTime)
-#else
   }
   if (mCurAccelTime == mTargetAccelTime) {
-#endif
-
     return mChild->Clone();
-#if !RSTL_PRIME1
   }
-#endif
-
   return rstl::optional_object_null();
 }
 
+void CAnimTreeTimeScale::VSetPhase(float phase) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CAnimTreeTimeScale::VSetPhase(float phase) { mChild->SetPhase(phase); }
+  mChild->SetPhase(phase);
 #else
-void CAnimTreeTimeScale::VSetPhase(float phase) { mChild->VSetPhase(phase); }
+  mChild->VSetPhase(phase);
 #endif
+}
 
 CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) const {
   CCharAnimTime timeRem = mChild->GetTimeRemaining();
@@ -318,14 +229,7 @@ CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) con
     if (ret < accelRemaining) {
       return mTimeScale->TimeScaleIntegral(mCurAccelTime, mCurAccelTime + ret);
     } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      CCharAnimTime integral =
-          mTimeScale->TimeScaleIntegral(mCurAccelTime, mTargetAccelTime);
-#else
       CCharAnimTime integral = mTimeScale->TimeScaleIntegral(mCurAccelTime, mTargetAccelTime);
-#endif
-
       if (integral > ret) {
         CCharAnimTime upper = mTimeScale->FindUpperLimit(mCurAccelTime, ret);
         return upper - mCurAccelTime;
@@ -346,6 +250,4 @@ rstl::string CAnimTreeTimeScale::CreatePrimitiveName(const rstl::ncrc_ptr< CAnim
 #else
   return rstl::string_l("");
 #endif
-
 }
-

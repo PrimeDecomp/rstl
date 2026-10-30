@@ -18,11 +18,10 @@ enum EPOIType {
   kPT_Particle = 5,
   kPT_UserEvent = 6,
   kPT_RandRate = 7,
-  kPT_Sound = 8,
+  kPT_Sound = 8
 #if !RSTL_PRIME1
-  kPT_StopLoopedSound = 9, // Guessed name
+  , kPT_StopLoopedSound = 9 // Guessed name
 #endif
-
 };
 
 // Echoes replaces Prime's node name string with a CRC32 hash of it.
@@ -30,11 +29,11 @@ class CPOINode {
 public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CPOINode(const rstl::string& name, EPOIType type, const CCharAnimTime& time, const int index,
+  CPOINode(const rstl::string& name, EPOIType type
 #else
-  CPOINode(const uint nameHash, const EPOIType type, const CCharAnimTime& time, const int index,
+  CPOINode(const uint nameHash, const EPOIType type
 #endif
-
+           , const CCharAnimTime& time, const int index,
            const bool unique, const float weight, const int charIdx, const int flags);
   CPOINode(CInputStream& in);
   virtual ~CPOINode() {}

@@ -79,12 +79,7 @@ public:
 
   static void Initialize();
   static void Shutdown();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static int StartStreaming(const rstl::string& fileName, int volume, int oneshot);
-#else
   static int StartStreaming(const rstl::string& fileName, int volume, int type);
-#endif
 
   static void StopStreaming(int handle);
   static void UpdateVolume(int handle, int volume);
@@ -182,7 +177,7 @@ private:
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CHECK_SIZEOF(CDSPStreamManager, 0xC0);
+CHECK_SIZEOF(CDSPStreamManager, 0xC0)
 #else
 CHECK_SIZEOF(CDSPStreamManager, 0x300)
 #endif

@@ -11,12 +11,9 @@
 class CControllerGamepadData {
 public:
   void SetDeviceIsPresent(bool present) { mPresent = present; }
+  RSTL_PRIME1_CONST bool DeviceIsPresent() const { return mPresent; }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const bool DeviceIsPresent() const { return mPresent; }
-#else
-  bool DeviceIsPresent() const { return mPresent; }
-
+#if !RSTL_PRIME1
   void SetDeviceJustDisconnected(bool disconnected) { mJustDisconnected = disconnected; }
   bool DeviceJustDisconnected() const { return mJustDisconnected; }
 #endif

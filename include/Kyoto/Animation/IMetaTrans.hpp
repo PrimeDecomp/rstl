@@ -17,17 +17,7 @@ class COutputStream;
 
 class CAnimSysContext;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-enum EMetaTransType {
-  kMTT_MetaAnim,
-  kMTT_Trans,
-  kMTT_PhaseTrans,
-  kMTT_Snap,
-};
-#else
 enum EMetaTransType { kMTT_MetaAnim, kMTT_Trans, kMTT_PhaseTrans, kMTT_Snap };
-#endif
 
 class IMetaTrans {
 public:
@@ -37,12 +27,7 @@ public:
                      const rstl::ncrc_ptr< CAnimTreeNode >& b,
                      const CAnimSysContext& animSys) const = 0;
   virtual EMetaTransType GetType() const = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  virtual void WriteTransData(COutputStream&) const = 0;
-#else
   virtual void WriteTransData(COutputStream& out) const = 0;
-#endif
 
   rstl::ncrc_ptr< CAnimTreeNode > GetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                                     const rstl::ncrc_ptr< CAnimTreeNode >& b,

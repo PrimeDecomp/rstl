@@ -12,12 +12,12 @@
 class CSaveableState {
 public:
   CSaveableState();
+  bool IsFinishedLoading()
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool IsFinishedLoading();
-#else
-  bool IsFinishedLoading() const;
+#if !RSTL_PRIME1
+      const
 #endif
+      ;
 
   CDrawStringOptions& GetOptions() { return mDrawStringOptions; }
 // TODO: verify that this Prime/Echoes difference is real
@@ -44,23 +44,20 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void SetLineExtraSpace(int spacing) { mExtraLineSpacing = spacing; }
-  void SetWordWrapping(const bool wrap) { mEnableWordWrap = wrap; }
-#else
-  void SetWordWrapping(bool wrap) { mEnableWordWrap = wrap; }
 #endif
+  void SetWordWrapping(RSTL_PRIME1_CONST bool wrap) { mEnableWordWrap = wrap; }
 
   bool IsWordWrapping() const { return mEnableWordWrap; }
+  void SetJustification(EJustification just) { mJust = just; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  void SetJustification(EJustification just) { mJust = just; }
   void SetVerticalJustification(EVerticalJustification just) { mVjust = just; }
-#else
-  void SetJustification(EJustification justification) { mJust = justification; }
 #endif
 
   EJustification GetJustification() const { return mJust; }
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
-  void SetVerticalJustification(EVerticalJustification justification) { mVjust = justification; }
+  void SetVerticalJustification(EVerticalJustification just) { mVjust = just; }
 #endif
 
   EVerticalJustification GetVerticalJustification() const { return mVjust; }
@@ -80,12 +77,6 @@ private:
   EVerticalJustification mVjust;
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSaveableState,
-             (RSTL_VERSION >= RSTL_GM8P_00 ? 0x8c : 0x88))
-#else
-CHECK_SIZEOF(CSaveableState, 0x8c)
-#endif
+CHECK_SIZEOF(CSaveableState, (RSTL_VERSION >= RSTL_GM8P_00 ? 0x8c : 0x88))
 
 #endif // _CSAVEABLESTATE

@@ -5,18 +5,20 @@
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "rstl/reserved_vector.hpp"
 
+CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout)
-: mLayoutDesc(layout), mTreeMap(layout.GetNumSegments()) {
-#else
-CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout, bool animatedScale)
+#if !RSTL_PRIME1
+                                             , bool animatedScale
+#endif
+                                             )
 : mLayoutDesc(layout)
 , mTreeMap(layout.GetNumSegments())
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 , mScales(animatedScale ? rstl::auto_ptr< ScaleMap >(rs_new ScaleMap(layout.GetNumSegments()))
-                        : rstl::auto_ptr< ScaleMap >()) {
+                        : rstl::auto_ptr< ScaleMap >())
 #endif
-
+{
   TToken< CCharLayoutInfo > layoutToken = layout.ScaledLayout();
   const CCharLayoutInfo& layoutInfo = **layoutToken;
   const CSegIdList& segments = layoutInfo.GetBodyPartSegIds();
@@ -28,7 +30,6 @@ CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout, b
       mScales->insert(seg, CVector3f::One());
     }
 #endif
-
   }
 }
 
@@ -37,23 +38,19 @@ void CHierarchyPoseBuilder::BuildIntoHeirarchy(const CCharLayoutInfo& layout, co
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId id = seg;
-  if (!mTreeMap.ContainsDataFor(id)) {
-#else
-  if (!mTreeMap.ContainsDataFor(seg)) {
 #endif
-
+  if (!mTreeMap.ContainsDataFor(
+#if RSTL_PRIME1
+          id
+#else
+          seg
+#endif
+          )) {
     CSegId parent = layout.GetOriginalParent(seg);
     if (parent == root) {
       mRootId.build(seg);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      mTreeMap.insert(seg, CTreeNode(CSegId::Null(), CSegId::Null(),
-                                     layout.GetFromParentUnrotated(seg)));
-#else
       mTreeMap.insert(
           seg, CTreeNode(CSegId::Null(), CSegId::Null(), layout.GetFromParentUnrotated(seg)));
-#endif
-
     } else {
       BuildIntoHeirarchy(layout, parent, root);
       mTreeMap.insert(seg, mTreeMap[parent].NodeForNextChildInserted(
@@ -145,6 +142,5 @@ uchar CLayoutDescription::GetNumSegments() const {
 #else
   return mLayoutToken->GetBodyPartSegIds().Size();
 #endif
-
 }
 

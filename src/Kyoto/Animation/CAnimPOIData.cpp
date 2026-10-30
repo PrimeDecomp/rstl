@@ -21,7 +21,6 @@ CAnimPOIData::CAnimPOIData(CInputStream& in)
 #else
     mSoundNodes = rstl::vector< CSoundPOINode >(in);
 #endif
-
   }
 }
 

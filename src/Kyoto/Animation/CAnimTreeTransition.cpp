@@ -5,91 +5,62 @@
 
 #include "Kyoto/Math/CloseEnough.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CAnimTreeTransition::CAnimTreeTransition(const bool b1, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-#else
+#if !RSTL_PRIME1
 uint CAnimTreeTransition::GetLoopPOIHash() {
   static uint hash = CPOINode::GetHashForString("Loop");
   return hash;
 }
+#endif
 
 CAnimTreeTransition::CAnimTreeTransition(const bool characterSpaceBlend,
                                          const rstl::ncrc_ptr< CAnimTreeNode >& a,
-#endif
-
                                          const rstl::ncrc_ptr< CAnimTreeNode >& b,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                         const CCharAnimTime& transDur, const bool runA,
-                                         const int flags, const rstl::string& name)
-: CAnimTreeTweenBase(b1, a, b, flags, name)
-, mTransDur(transDur)
-#else
-                                         const CCharAnimTime& duration, bool runA, int flags,
+                                         const CCharAnimTime& duration,
+                                         RSTL_PRIME1_CONST bool runA, RSTL_PRIME1_CONST int flags,
                                          const rstl::string& name)
 : CAnimTreeTweenBase(characterSpaceBlend, a, b, flags, name)
 , mTransDur(duration)
-#endif
-
 , mTimeInTrans(0.f)
 , mRunA(runA)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mLoopA(a->GetBoolPOIState("Loop"))
-, mInitialized(false) {
-  CCharAnimMemoryMetrics::AddToTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
-}
 #else
 , mLoopA(a->GetBoolPOIState(GetLoopPOIHash()))
-, mInitialized(false) {}
 #endif
-
+, mInitialized(false) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAnimTreeTransition::CAnimTreeTransition(const bool b1, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-#else
+  CCharAnimMemoryMetrics::AddToTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
+#endif
+}
+
 CAnimTreeTransition::CAnimTreeTransition(const bool characterSpaceBlend,
                                          const rstl::ncrc_ptr< CAnimTreeNode >& a,
-#endif
-
                                          const rstl::ncrc_ptr< CAnimTreeNode >& b,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                         const CCharAnimTime& transDur,
-                                         const CCharAnimTime& timeInTrans, const bool runA,
-                                         const bool loopA, const int flags,
-                                         const rstl::string& name, const bool initialized)
-: CAnimTreeTweenBase(b1, a, b, flags, name)
-, mTransDur(transDur)
-#else
                                          const CCharAnimTime& duration,
-                                         const CCharAnimTime& timeInTrans, bool runA, bool loopA,
-                                         int flags, const rstl::string& name, bool initialized)
+                                         const CCharAnimTime& timeInTrans,
+                                         RSTL_PRIME1_CONST bool runA, RSTL_PRIME1_CONST bool loopA,
+                                         RSTL_PRIME1_CONST int flags, const rstl::string& name,
+                                         RSTL_PRIME1_CONST bool initialized)
 : CAnimTreeTweenBase(characterSpaceBlend, a, b, flags, name)
 , mTransDur(duration)
-#endif
-
 , mTimeInTrans(timeInTrans)
 , mRunA(runA)
 , mLoopA(loopA)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 , mInitialized(initialized) {
-  CCharAnimMemoryMetrics::AddToTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
-}
-#else
-, mInitialized(initialized) {}
-#endif
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CAnimTreeTransition::~CAnimTreeTransition() {
-  CCharAnimMemoryMetrics::SubtractFromTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
-}
-#else
-CAnimTreeTransition::~CAnimTreeTransition() {}
+  CCharAnimMemoryMetrics::AddToTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
 #endif
+}
+
+CAnimTreeTransition::~CAnimTreeTransition() {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  CCharAnimMemoryMetrics::SubtractFromTotalSize(19, CCharAnimMemoryMetrics::kASS_Two);
+#endif
+}
 
 rstl::optional_object< rstl::ownership_transfer< IAnimReader > >
 CAnimTreeTransition::VSimplified() {
@@ -110,7 +81,6 @@ CAnimTreeTransition::VReverseSimplified() {
 }
 
 rstl::pair< CCharAnimTime, CAdvancementDeltas >
-
 CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time) {
   IncAdvancementDepth();
   CDoubleChildAdvancementResult res = AdvanceViewBothChildren(time, mRunA, mLoopA);
@@ -118,7 +88,6 @@ CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time)
   const CCharAnimTime& trueAdvancement = res.GetTrueAdvancement();
   if (trueAdvancement.EqualsZero())
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
-
         CCharAnimTime::ZeroFlat(),
         CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 
@@ -136,7 +105,6 @@ CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time)
 
   if (GetBlendRoot() & kBlendRoot_Offset)
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
-
         trueAdvancement,
         CAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
   return rstl::pair< CCharAnimTime, CAdvancementDeltas >(trueAdvancement, rightDeltas);
@@ -186,18 +154,9 @@ rstl::ownership_transfer< IAnimReader > CAnimTreeTransition::VClone() const {
 }
 
 float CAnimTreeTransition::VGetBlendingWeight() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (mTransDur.GreaterThanZero())
-#else
   if (mTransDur.GreaterThanZero()) {
-#endif
-
     return (1.f / mTransDur.GetSeconds()) * mTimeInTrans.GetSeconds();
-#if !RSTL_PRIME1
   }
-#endif
-
   return 1.f;
 }
 
@@ -208,7 +167,6 @@ CCharAnimTime CAnimTreeTransition::VGetTimeRemaining() const {
 #else
   return rstl::max_val< const CCharAnimTime& >(mB->VGetTimeRemaining(), mTransDur - mTimeInTrans);
 #endif
-
 }
 
 CSteadyStateAnimInfo CAnimTreeTransition::VGetSteadyStateAnimInfo() const {
@@ -223,7 +181,6 @@ CSteadyStateAnimInfo CAnimTreeTransition::VGetSteadyStateAnimInfo() const {
                               rstl::max_val< const CCharAnimTime& >(mTransDur, info.GetDuration()),
                               info.GetOffset());
 #endif
-
 }
 
 rstl::string CAnimTreeTransition::CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& a,
@@ -239,30 +196,14 @@ void CAnimTreeTransition::SetBlendingWeight(float weight) {
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeTransition::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > right = GetRightChild();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::rc_ptr< CAnimTreeNode > child = right->GetBestUnblendedChild();
-  if (!child)
-#else
   rstl::rc_ptr< CAnimTreeNode > best = right->GetBestUnblendedChild();
   if (!best) {
-#endif
-
     return right;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return child;
-#else
   }
   return best;
-#endif
-
 }
 
 #if !RSTL_PRIME1
 const int CAnimTreeTweenBase::kBlendRoot_Offset = 1;
-#endif
-
-#if !RSTL_PRIME1
 const int CAnimTreeTweenBase::kBlendRoot_Rotation = 2;
 #endif

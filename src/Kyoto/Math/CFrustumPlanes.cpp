@@ -50,22 +50,10 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
 
   mPlanes.push_back(
       CPlane(nearPos, CreateNormal(worldCorners[0], worldCorners[2], worldCorners[1])));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mPlanes.push_back(
-      CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[1], worldCorners[0])));
-  mPlanes.push_back(
-      CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[3], worldCorners[2])));
-  mPlanes.push_back(
-      CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[0], worldCorners[3])));
-  mPlanes.push_back(
-      CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[2], worldCorners[1])));
-#else
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[1], worldCorners[0])));
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[3], worldCorners[2])));
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[0], worldCorners[3])));
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[2], worldCorners[1])));
-#endif
 
   if (useFarPlane) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -76,7 +64,6 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
     float constant = farZ - mPlanes[0].GetConstant();
     mPlanes.push_back(CPlane(constant, normal));
 #endif
-
   }
 }
 

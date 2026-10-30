@@ -62,7 +62,6 @@ private:
   rstl::single_ptr< CTransform4f > mTransformArr;
   CSegId mLastInserted;
 #endif
-
 };
 CHECK_SIZEOF(CPoseAsTransforms, 0xd8)
 

@@ -8,9 +8,7 @@
 class CInputStream;
 
 class CSimplePool;
-#if !RSTL_PRIME1
 class CSwooshDescription;
-#endif
 
 class CParticleSwooshDataFactory {
 public:
@@ -20,18 +18,12 @@ private:
 #endif
 
   static CSwooshDescription* CreateGeneratorDescription(CInputStream& in, CSimplePool* pool);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static bool CreateWPSM(CSwooshDescription* swoosh, CInputStream& in, CSimplePool* pool);
-#else
   static bool CreateWPSM(CSwooshDescription* desc, CInputStream& in, CSimplePool* pool);
-#endif
-
 };
 
 // TODO: verify that this Prime/Echoes difference is real
-RSTL_PRIME1_CONST CFactoryFnReturn FParticleSwooshDataFactory(const SObjectTag& tag, CInputStream& in,
-
-                                            const CVParamTransfer& transfer);
+RSTL_PRIME1_CONST CFactoryFnReturn
+FParticleSwooshDataFactory(const SObjectTag& tag, CInputStream& in,
+                           const CVParamTransfer& transfer);
 
 #endif

@@ -15,12 +15,9 @@ CMidiManager::CMidiWrapper::CMidiWrapper() : mSysHandle(0), mAvailable(true) {}
 
 const CSfxHandle& CMidiManager::CMidiWrapper::GetManagerHandle() const { return mMidiHandle; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const u32 CMidiManager::CMidiWrapper::GetAudioSysHandle() const { return mSysHandle; }
-#else
-const uint CMidiManager::CMidiWrapper::GetAudioSysHandle() const { return mSysHandle; }
-#endif
+const CMidiManager::CMidiWrapper::TSysHandle CMidiManager::CMidiWrapper::GetAudioSysHandle() const {
+  return mSysHandle;
+}
 
 const bool CMidiManager::CMidiWrapper::IsAvailable() const { return mAvailable; }
 
@@ -28,12 +25,9 @@ const short CMidiManager::CMidiWrapper::GetSongId() const { return mSongId; }
 
 void CMidiManager::CMidiWrapper::SetAvailable(const bool v) { mAvailable = v; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CMidiManager::CMidiWrapper::SetAudioSysHandle(const u32 handle) { mSysHandle = handle; }
-#else
-void CMidiManager::CMidiWrapper::SetAudioSysHandle(const uint handle) { mSysHandle = handle; }
-#endif
+void CMidiManager::CMidiWrapper::SetAudioSysHandle(const TSysHandle handle) {
+  mSysHandle = handle;
+}
 
 void CMidiManager::CMidiWrapper::SetMidiHandle(const CSfxHandle& handle) { mMidiHandle = handle; }
 
@@ -42,13 +36,7 @@ void CMidiManager::CMidiWrapper::SetSongId(const short id) { mSongId = id; }
 CSfxHandle CMidiManager::Play(const CMidiData& data, unsigned short fadeTime, bool stopExisting,
                               short volume) {
   bool foundExisting = false;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  u32 sysHandle = 0;
-#else
-  uint sysHandle = 0;
-#endif
-
+  CMidiWrapper::TSysHandle sysHandle = 0;
   CSfxHandle handle = LocateHandle();
   if (!handle) {
     return CSfxHandle();
@@ -76,13 +64,8 @@ CSfxHandle CMidiManager::Play(const CMidiData& data, unsigned short fadeTime, bo
     wrapper.SetAudioSysHandle(sysHandle);
     wrapper.SetSongId(data.GetSongId());
   } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    u32 sysHandle = CAudioSys::SeqPlayEx(data.GetGroupId(), data.GetSongId(), data.GetData(), nullptr, 0);
-#else
-    uint sysHandle = CAudioSys::SeqPlayEx(data.GetGroupId(), data.GetSongId(), data.GetData(), nullptr, 0);
-#endif
-
+    CMidiWrapper::TSysHandle sysHandle =
+        CAudioSys::SeqPlayEx(data.GetGroupId(), data.GetSongId(), data.GetData(), nullptr, 0);
     if (fadeTime != 0) {
       CAudioSys::SeqVolume(0, 0, sysHandle, 0);
     }
@@ -103,13 +86,7 @@ void CMidiManager::Stop(const CSfxHandle& handle, ushort fadeTime) {
     return;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  u32 sysHandle = mMidiWrappers[handle.GetIndex()].GetAudioSysHandle();
-#else
-  uint sysHandle = mMidiWrappers[handle.GetIndex()].GetAudioSysHandle();
-#endif
-
+  CMidiWrapper::TSysHandle sysHandle = mMidiWrappers[handle.GetIndex()].GetAudioSysHandle();
   if (fadeTime == 0) {
     CAudioSys::SeqStop(sysHandle);
   } else {
@@ -156,15 +133,14 @@ CMidiManager::CMidiData::CMidiData(CInputStream& in)
   mGroupId = in.ReadInt32();
   mAgscId = in.ReadInt32();
 #endif
-
   int len = in.ReadInt32();
   mData = rs_new uchar[len];
   in.Get(mData.get(), len);
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-RSTL_PRIME1_CONST CFactoryFnReturn FMidiDataFactory(const SObjectTag& tag, CInputStream& in, const CVParamTransfer&) {
-
+RSTL_PRIME1_CONST CFactoryFnReturn FMidiDataFactory(const SObjectTag& tag, CInputStream& in,
+                                                    const CVParamTransfer&) {
   return rs_new CMidiManager::CMidiData(in);
 }
 

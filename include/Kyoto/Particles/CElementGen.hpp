@@ -83,19 +83,16 @@ public:
     int mStartFrame;
 #if RSTL_PRIME1
     union {
-#endif
-
       float mLineLengthOrSize;
-#if RSTL_PRIME1
       uint mLineLengthOrSizeBits;
     };
     union {
-#endif
-
       float mLineWidthOrRota;
-#if RSTL_PRIME1
       uint mLineWidthOrRotaBits;
     };
+#else
+    float mLineLengthOrSize;
+    float mLineWidthOrRota;
 #endif
 
     CColor mColor;

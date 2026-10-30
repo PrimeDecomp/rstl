@@ -21,10 +21,8 @@ public:
 
   class CScaledLayoutDescription {
   public:
-#if !RSTL_PRIME1
     typedef rstl::pair< rstl::pair< const CLayoutScaleInfo*, const CLayoutScaleInfo* >, float >
         ScaleInfo;
-#endif
 
     const TLockedToken< CCharLayoutInfo >& ScaledLayout() const { return mLayoutToken; }
 #if RSTL_PRIME1
@@ -34,15 +32,7 @@ public:
   private:
     TLockedToken< CCharLayoutInfo > mLayoutToken;
     float mScale;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::optional_object<
-        rstl::pair< rstl::pair< const CLayoutScaleInfo*, const CLayoutScaleInfo* >, float > >
-        mScaleInfo;
-#else
     rstl::optional_object< ScaleInfo > mScaleInfo;
-#endif
-
   };
 
   uchar GetNumSegments() const;

@@ -38,6 +38,9 @@ short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriorit
     mPeriodTime[port] = 0.f;
     mOnTime[port] = 0.f;
     return mVoices[port].Activate(adsr, freeChan, gain, prio);
+  }
+  return -1;
+}
 #else
 short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriority prio) {
   ushort freeChan = mVoice.GetFreeChannel();
@@ -45,11 +48,10 @@ short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriorit
     mPeriodTime = 0.f;
     mOnTime = 0.f;
     return mVoice.Activate(adsr, freeChan, gain, prio);
-#endif
-
   }
   return -1;
 }
+#endif
 
 void CRumbleGenerator::Update(float dt) {
   if (!mDisabled) {
@@ -146,12 +148,10 @@ void CRumbleGenerator::Update(float dt) {
     }
 #endif
 #endif
-
   }
 }
 
 void CRumbleGenerator::HardStopAll() {
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (int i = 0; i < 4; ++i) {
@@ -173,7 +173,6 @@ void CRumbleGenerator::HardStopAll() {
   PADControlMotor(mInputIndex, kMS_StopHard);
 #endif
 #endif
-
 }
 
 void CRumbleGenerator::SetDisabled(const bool disabled) {

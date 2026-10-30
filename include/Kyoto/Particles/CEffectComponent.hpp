@@ -26,12 +26,7 @@ public:
 
   float GetScale() const { return mScale; }
   CParticleData::EParentedMode GetParentedMode() const { return mParentedMode; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  uint GetFlags() const {return mFlags; }
-#else
   uint GetFlags() const { return mFlags; }
-#endif
 
 private:
   SObjectTag GetSObjectTagFromStream(CInputStream& in);

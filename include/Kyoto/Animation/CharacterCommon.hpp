@@ -2,7 +2,6 @@
 #define _CHARACTERCOMMON
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "types.h"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -67,17 +66,14 @@ enum EAnimationState {
   kAS_AdditiveIdle = 21,
   kAS_AdditiveAim = 22,
   kAS_AdditiveFlinch = 23,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kAS_AdditiveReaction = 24
-#else
-  kAS_AdditiveReaction = 24,
-  kAS_AdditiveDirectionalReaction = 25, // Guessed name
-  kAS_Unknown26 = 26,
-  kAS_Unknown27 = 27,
-  kAS_AdditiveLoopReaction = 28 // Guessed name
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kAS_AdditiveDirectionalReaction = 25 // Guessed name
+  , kAS_Unknown26 = 26
+  , kAS_Unknown27 = 27
+  , kAS_AdditiveLoopReaction = 28 // Guessed name
 #endif
-
 };
 
 enum EHurledState {
@@ -108,12 +104,19 @@ enum EAdditiveReactionType {
   kART_Seven
 };
 
+enum EJumpType {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-enum EJumpType { kJT_Normal, kJT_One, kJT_Ambush };
-#else
-enum EJumpType { kJT_Invalid = -1, kJT_Normal, kJT_One, kJT_Ambush, kJT_Three };
+#if !RSTL_PRIME1
+  kJT_Invalid = -1,
 #endif
+  kJT_Normal,
+  kJT_One,
+  kJT_Ambush
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kJT_Three
+#endif
+};
 
 enum EJumpState {
   kJS_Invalid = -1,
@@ -122,14 +125,11 @@ enum EJumpState {
   kJS_Loop,
   kJS_OutOfJump,
   kJS_WallBounceLeft,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kJS_WallBounceRight
-#else
-  kJS_WallBounceRight,
-  kJS_ExitJump // Guessed name
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kJS_ExitJump // Guessed name
 #endif
-
 };
 
 enum EStepDirection {
@@ -139,17 +139,14 @@ enum EStepDirection {
   kSD_Left = 2,
   kSD_Right = 3,
   kSD_Up = 4,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kSD_Down = 5
-#else
-  kSD_Down = 5,
-  kSD_ForwardLeft = 6,   // Guessed name
-  kSD_ForwardRight = 7,  // Guessed name
-  kSD_BackwardLeft = 8,  // Guessed name
-  kSD_BackwardRight = 9  // Guessed name
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kSD_ForwardLeft = 6 // Guessed name
+  , kSD_ForwardRight = 7 // Guessed name
+  , kSD_BackwardLeft = 8 // Guessed name
+  , kSD_BackwardRight = 9 // Guessed name
 #endif
-
 };
 
 enum EStepType { kStep_Normal = 0, kStep_Dodge = 1, kStep_BreakDodge = 2, kStep_RollDodge = 3 };
@@ -164,37 +161,32 @@ enum ESeverity {
   kS_Five = 5,
   kS_Six = 6,
   kS_Seven = 7,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kS_Eight = 8
-#else
-  kS_Eight = 8,
-  kS_Nine = 9,
-  kS_Ten = 10,
-  kS_Eleven = 11
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kS_Nine = 9
+  , kS_Ten = 10
+  , kS_Eleven = 11
 #endif
-
 };
 
 enum EGetupType { kGetup_Invalid = -1, kGetup_Zero = 0, kGetup_One = 1, kGetup_Two = 2 };
 
 enum ELoopState { kLS_Invalid = -1, kLS_Begin, kLS_Loop, kLS_End };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-enum ELoopAttackType { kLAT_Invalid = -1, kLAT_Zero, kLAT_One, kLAT_Two, kLAT_Three };
-#else
 enum ELoopAttackType {
   kLAT_Invalid = -1,
   kLAT_Zero,
   kLAT_One,
   kLAT_Two,
-  kLAT_Three,
-  kLAT_Four,
-  kLAT_Five,
-  kLAT_Six
-};
+  kLAT_Three
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kLAT_Four
+  , kLAT_Five
+  , kLAT_Six
 #endif
+};
 
 enum EGenerateType {
   kGType_Invalid = -1,
@@ -206,38 +198,33 @@ enum EGenerateType {
   kGType_Five,
   kGType_Six,
   kGType_Seven,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kGType_Eight
-#else
-  kGType_Eight,
-  kGType_Nine // Guessed name
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kGType_Nine // Guessed name
 #endif
-
 };
 
 enum ESlideType { kSlide_Invalid = -1, kSlide_Zero = 0 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-enum ETauntType { kTT_Invalid = -1, kTT_Zero, kTT_One, kTT_Two };
-#else
 enum ETauntType {
   kTT_Invalid = -1,
   kTT_Zero,
   kTT_One,
-  kTT_Two,
-  kTT_Three, // Guessed name
-  kTT_Four,  // Guessed name; Rezbit alert taunt.
-  kTT_Five,  // Guessed name
-  kTT_Six = 6, // Guessed name
-  kTT_Seven,    // Guessed name
-  kTT_Eight,    // Guessed name
-  kTT_Nine = 9, // Guessed name
-  kTT_Ten,      // Guessed name
-  kTT_Eleven    // Guessed name
-};
+  kTT_Two
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kTT_Three // Guessed name
+  , kTT_Four // Guessed name; Rezbit alert taunt.
+  , kTT_Five // Guessed name
+  , kTT_Six = 6 // Guessed name
+  , kTT_Seven // Guessed name
+  , kTT_Eight // Guessed name
+  , kTT_Nine = 9 // Guessed name
+  , kTT_Ten // Guessed name
+  , kTT_Eleven // Guessed name
 #endif
+};
 
 enum ECoverState { kCS_Invalid = -1, kCS_IntoCover, kCS_Cover, kCS_Lean, kCS_OutOfCover };
 
@@ -273,7 +260,6 @@ enum EBodyType {
   kBT_PitchableFlyer, // Cross-game name (DKCR HD); Echoes factory corroborated.
   kBT_Floater,        // Cross-game name (DKCR HD); Echoes factory corroborated.
 #endif
-
   kBT_WallWalker,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -282,7 +268,6 @@ enum EBodyType {
   kBT_AiMovedFlyer, // Cross-game name (DKCR HD); Echoes factory corroborated.
   kBT_4WayBlended   // Guessed name from DKCR HD; Echoes blends four movement directions.
 #endif
-
 };
 
 enum EBodyStateCmd {
@@ -302,7 +287,6 @@ enum EBodyStateCmd {
 #if !RSTL_PRIME1
   kBSC_AbortScripted, // Guessed name
 #endif
-
   kBSC_MaintainVelocity,
   kBSC_Generate,
   kBSC_Hurled,
@@ -311,7 +295,6 @@ enum EBodyStateCmd {
   kBSC_Unknown18,
   kBSC_Unknown19,
 #endif
-
   kBSC_Slide,
   kBSC_Taunt,
   kBSC_Scripted,
@@ -322,16 +305,13 @@ enum EBodyStateCmd {
   kBSC_AdditiveAim,
   kBSC_AdditiveFlinch,
   kBSC_AdditiveReaction,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   kBSC_StopReaction
-#else
-  kBSC_StopReaction,
-  kBSC_AdditiveLoopReaction, // Guessed name
-  kBSC_AdditiveWeight,       // Guessed name
-  kBSC_Unknown33
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+  , kBSC_AdditiveLoopReaction // Guessed name
+  , kBSC_AdditiveWeight // Guessed name
+  , kBSC_Unknown33
 #endif
-
 };
 
 #endif // _CHARACTERCOMMON

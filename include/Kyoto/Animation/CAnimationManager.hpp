@@ -7,15 +7,11 @@
 
 #include "Kyoto/TToken.hpp"
 
-#if !RSTL_PRIME1
 class CAnimationDatabase;
 class CAnimTreeNode;
-#endif
 
 class CMetaAnimTreeBuildOrders;
-#if RSTL_PRIME1
 class CAnimTreeContext;
-#endif
 
 class IMetaAnim;
 class CAnimationManager {
@@ -29,14 +25,8 @@ public:
   ~CAnimationManager() {}
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::ncrc_ptr< CAnimTreeNode >
-  GetAnimationTree(uint animIdx, const CMetaAnimTreeBuildOrders& orders) const;
-#else
   rstl::ncrc_ptr< CAnimTreeNode > GetAnimationTree(uint animIdx,
                                                    const CMetaAnimTreeBuildOrders& orders) const;
-#endif
 
   rstl::rc_ptr< IMetaAnim > GetMetaAnimation(uint animIdx) const;
 #if !RSTL_PRIME1

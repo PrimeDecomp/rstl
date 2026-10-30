@@ -46,14 +46,12 @@ SDSPStreamCacheEntry::SDSPStreamCacheEntry()
 , mMusic(true) {}
 
 SDSPStreamCacheEntry::SDSPStreamCacheEntry(int playState, const rstl::string& fileName, int volume,
+                                           float fadeIn, float fadeOut,
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                           float fadeIn, float fadeOut, int handle, bool music)
-#else
-                                           float fadeIn, float fadeOut, float fadeFactor,
-                                           int handle, bool music)
+#if !RSTL_PRIME1
+                                           float fadeFactor,
 #endif
-
+                                           int handle, bool music)
 : mFileName(fileName)
 , mPlayState(playState)
 , mVolume(volume)
@@ -66,7 +64,6 @@ SDSPStreamCacheEntry::SDSPStreamCacheEntry(int playState, const rstl::string& fi
 #else
 , mFadeFactor(fadeFactor)
 #endif
-
 , mMusic(music) {}
 
 int CStreamAudioManager::GetTargetDSPVolume(int fileVol, bool music) {
@@ -74,13 +71,14 @@ int CStreamAudioManager::GetTargetDSPVolume(int fileVol, bool music) {
     if (!mEnable) {
       return 0;
     }
+    return (fileVol *
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return (fileVol * mGlobalVolume) / 127;
+            mGlobalVolume
 #else
-    return (fileVol * mCurrentGlobalVolume) / 127;
+            mCurrentGlobalVolume
 #endif
-
+            ) / 127;
   }
   if (!mForegroundEnable) {
     return 0;
@@ -93,13 +91,12 @@ void CStreamAudioManager::UpdateSoftwareChannel(ESoftwareChannel chan, float dt)
 
   if (p.mPlayState == 0) {
     SDSPStreamCacheEntry& qp = s_QueuedPlayers[chan];
+    if (qp.mPlayState != 0
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    if (qp.mPlayState != 0) {
-#else
-    if (qp.mPlayState != 0 && IsSoftwareChannelFree(chan)) {
+#if !RSTL_PRIME1
+        && IsSoftwareChannelFree(chan)
 #endif
-
+    ) {
       PlaySoftwareAudio(chan, qp.mFileName, qp.mFadeIn, qp.mFadeOut,
                         static_cast< uchar >(qp.mVolume), qp.mMusic);
       qp = SDSPStreamCacheEntry();
@@ -212,13 +209,12 @@ void CStreamAudioManager::PlaySoftwareAudio(ESoftwareChannel chan, const rstl::s
   bool playing = p.mPlayState != 0;
 
   if (playing && !sameFile) {
+    qp = SDSPStreamCacheEntry(1, fileName, volume & 0xFF, fadeIn, fadeOut,
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    qp = SDSPStreamCacheEntry(1, fileName, volume & 0xFF, fadeIn, fadeOut, -1, music);
-#else
-    qp = SDSPStreamCacheEntry(1, fileName, volume & 0xFF, fadeIn, fadeOut, 0.f, -1, music);
+#if !RSTL_PRIME1
+                              0.f,
 #endif
-
+                              -1, music);
     StopSoftwareAudio(chan, p.mFileName);
   } else if (playing) {
     p.mFadeIn = fadeIn;
@@ -237,33 +233,28 @@ void CStreamAudioManager::PlaySoftwareAudio(ESoftwareChannel chan, const rstl::s
 #if !RSTL_PRIME1
     float fadeFactor;
 #endif
-
     if (fadeIn > 0.f) {
 #if !RSTL_PRIME1
       fadeFactor = 0.f;
 #endif
-
       vol = 0;
       state = 1;
     } else {
 #if !RSTL_PRIME1
       fadeFactor = 1.f;
 #endif
-
       vol = volume & 0xFF;
       state = 2;
     }
     int handle = CDSPStreamManager::StartStreaming(fileName, GetTargetDSPVolume(vol, music),
                                                    chan == kSC_Default ? 0 : 1);
     if (handle != -1) {
+      p = SDSPStreamCacheEntry(state, fileName, volume & 0xFF, fadeIn, fadeOut,
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      p = SDSPStreamCacheEntry(state, fileName, volume & 0xFF, fadeIn, fadeOut, handle, music);
-#else
-      p = SDSPStreamCacheEntry(state, fileName, volume & 0xFF, fadeIn, fadeOut, fadeFactor, handle,
-                               music);
+#if !RSTL_PRIME1
+                               fadeFactor,
 #endif
-
+                               handle, music);
     }
   }
 }
@@ -280,7 +271,6 @@ void CStreamAudioManager::Update(float dt) {
     InternalSetVolume(mCurrentVolume);
   }
 #endif
-
   switch (mCurrentState) {
   case 2: {
     float vol = mCurrentVolume - mVolumeIncrement2 * dt;
@@ -452,13 +442,14 @@ void CStreamAudioManager::StopAllStreams() {
 void CStreamAudioManager::HandleMusicUnmute() { PlayTrack(mCurrentAudioFile); }
 
 void CStreamAudioManager::InternalSetVolume(float vol) {
+  float fMusicVol = static_cast< float >(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  float fMusicVol = static_cast< float >(mGlobalVolume);
+      mGlobalVolume
 #else
-  float fMusicVol = static_cast< float >(mCurrentGlobalVolume);
+      mCurrentGlobalVolume
 #endif
-
+  );
   float fVol = vol * fMusicVol;
   int iVol = static_cast< int >(2.f * fVol / 127.f);
   if (vol != -1.f) {
@@ -476,13 +467,14 @@ void CStreamAudioManager::PlayTrack(const rstl::string& fileName) {
   if (doPlay && mEnable) {
     if (fileName != rstl::string_l("")) {
       CAudioSys::TrkFlushTracks();
+      CAudioSys::TrkQueueTrack(fileName,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      CAudioSys::TrkQueueTrack(fileName, NULL, 0);
+                               NULL,
 #else
-      CAudioSys::TrkQueueTrack(fileName, nullptr, 0);
+                               nullptr,
 #endif
-
+                               0);
       CAudioSys::TrkNextTrack();
       CAudioSys::TrkSetRepeatMode(kTRM_RepeatAll);
       CAudioSys::TrkSetState(kTPS_Playing);
@@ -514,8 +506,18 @@ void CStreamAudioManager::FadeInHardwareAudio(float fadeTime) {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if !RSTL_PRIME1
+rstl::string CStreamAudioManager::GetSoftwareAudioFileName(ESoftwareChannel chan) {
+  const SDSPStreamCacheEntry& p = s_Players[chan];
+  if (p.mPlayState == 0) {
+    return rstl::string_l("");
+  }
+  return p.mFileName;
+}
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
 void CStreamAudioManager::StopSfx() {
   for (int i = 0; i < 2; ++i) {
     SDSPStreamCacheEntry& qp = s_QueuedPlayers[i];
@@ -528,15 +530,6 @@ void CStreamAudioManager::StopSfx() {
       StopSoftwareAudio(static_cast< ESoftwareChannel >(i), p.mFileName);
     }
   }
-}
-#endif
-#else
-rstl::string CStreamAudioManager::GetSoftwareAudioFileName(ESoftwareChannel chan) {
-  const SDSPStreamCacheEntry& p = s_Players[chan];
-  if (p.mPlayState == 0) {
-    return rstl::string_l("");
-  }
-  return p.mFileName;
 }
 #endif
 
@@ -571,23 +564,11 @@ void CStreamAudioManager::AddDebugMessages() {
   }
 }
 #endif
-#else
-void CStreamAudioManager::StopSfx() {
-  for (int i = 0; i < 2; ++i) {
-    SDSPStreamCacheEntry& qp = s_QueuedPlayers[i];
-    if (qp.mPlayState != 0 && !qp.mMusic) {
-      qp = SDSPStreamCacheEntry();
-    }
+#endif
 
-    SDSPStreamCacheEntry& p = s_Players[i];
-    if (!p.mMusic && p.mPlayState != 0) {
-      StopSoftwareAudio(static_cast< ESoftwareChannel >(i), p.mFileName);
-    }
-  }
-}
-
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 bool CStreamAudioManager::IsSoftwareChannelFree(ESoftwareChannel chan) {
   return CDSPStreamManager::CanStop(chan == kSC_Default ? 0 : 1);
 }
 #endif
-

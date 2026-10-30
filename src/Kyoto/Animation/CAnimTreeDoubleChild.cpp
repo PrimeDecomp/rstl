@@ -18,159 +18,134 @@
 CAnimTreeDoubleChild::CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                            const rstl::ncrc_ptr< CAnimTreeNode >& b,
                                            const rstl::string& name)
+: CAnimTreeNode(name)
+, mA(a)
+, mB(b) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-: CAnimTreeNode(name), mA(a), mB(b) {
   CCharAnimMemoryMetrics::AddToTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
-#else
-: CAnimTreeNode(name), mA(a), mB(b) {}
-
-SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time) {
-  SAdvancementResults a = mA->VAdvanceView(time);
-  SAdvancementResults b = mB->VAdvanceView(time);
-  return a.mRemTime > b.mRemTime ? a : b;
 #endif
-
 }
 
+SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& dt) {
-  SAdvancementResults resA = mA->AdvanceView(dt);
-  SAdvancementResults resB = mB->AdvanceView(dt);
+  SAdvancementResults resA = mA->AdvanceView(time);
+  SAdvancementResults resB = mB->AdvanceView(time);
   return resA.GetRemainder() > resB.GetRemainder() ? resA : resB;
+#else
+  SAdvancementResults resA = mA->VAdvanceView(time);
+  SAdvancementResults resB = mB->VAdvanceView(time);
+  return resA.mRemTime > resB.mRemTime ? resA : resB;
+#endif
 }
 
 CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {
-  CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
-}
-#else
-CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {}
-#endif
-
-uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                           uint capacity, uint iterator, int unk) const {
-  int x = mA->GetBoolPOIList(time, listOut, capacity, iterator, unk);
-  x += mB->GetBoolPOIList(time, listOut, capacity, x + iterator, unk);
-  if (x > capacity)
-    x = capacity;
-  qsort(listOut, x, sizeof(CBoolPOINode), CPOINode::compare);
-  return x;
-#else
+  CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
+#endif
+}
+
+uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
                                            uint capacity, uint iterator, int additive) const {
-  uint count = mA->GetBoolPOIList(time, listOut, capacity, iterator, additive);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  int
+#else
+  uint
+#endif
+      count = mA->GetBoolPOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetBoolPOIList(time, listOut, capacity, count + iterator, additive);
   if (count > capacity) {
     count = capacity;
   }
   qsort(listOut, count, sizeof(CBoolPOINode), CPOINode::compare);
   return count;
-#endif
-
 }
 
 uint CAnimTreeDoubleChild::VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut,
+                                            uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                            uint capacity, uint iterator, int unk) const {
-  int x = mA->GetInt32POIList(time, listOut, capacity, iterator, unk);
-  x += mB->GetInt32POIList(time, listOut, capacity, x + iterator, unk);
-  if (x > capacity)
-    x = capacity;
-  qsort(listOut, x, sizeof(CInt32POINode), CPOINode::compare);
-  return x;
+  int
 #else
-                                            uint capacity, uint iterator, int additive) const {
-  uint count = mA->GetInt32POIList(time, listOut, capacity, iterator, additive);
+  uint
+#endif
+      count = mA->GetInt32POIList(time, listOut, capacity, iterator, additive);
   count += mB->GetInt32POIList(time, listOut, capacity, count + iterator, additive);
   if (count > capacity) {
     count = capacity;
   }
   qsort(listOut, count, sizeof(CInt32POINode), CPOINode::compare);
   return count;
-#endif
-
 }
 
 uint CAnimTreeDoubleChild::VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
+                                               uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                               uint capacity, uint iterator, int unk) const {
-  int x = mA->GetParticlePOIList(time, listOut, capacity, iterator, unk);
-  x += mB->GetParticlePOIList(time, listOut, capacity, x + iterator, unk);
-  if (x > capacity)
-    x = capacity;
-  qsort(listOut, x, sizeof(CParticlePOINode), CPOINode::compare);
-  return x;
+  int
 #else
-                                               uint capacity, uint iterator, int additive) const {
-  uint count = mA->GetParticlePOIList(time, listOut, capacity, iterator, additive);
+  uint
+#endif
+      count = mA->GetParticlePOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetParticlePOIList(time, listOut, capacity, count + iterator, additive);
   if (count > capacity) {
     count = capacity;
   }
   qsort(listOut, count, sizeof(CParticlePOINode), CPOINode::compare);
   return count;
-#endif
-
 }
 
 uint CAnimTreeDoubleChild::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut,
+                                            uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                                            uint capacity, uint iterator, int unk) const {
-  int x = mA->GetSoundPOIList(time, listOut, capacity, iterator, unk);
-  x += mB->GetSoundPOIList(time, listOut, capacity, x + iterator, unk);
-  if (x > capacity)
-    x = capacity;
-  qsort(listOut, x, sizeof(CSoundPOINode), CPOINode::compare);
-  return x;
+  int
 #else
-                                            uint capacity, uint iterator, int additive) const {
-  uint count = mA->GetSoundPOIList(time, listOut, capacity, iterator, additive);
+  uint
+#endif
+      count = mA->GetSoundPOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetSoundPOIList(time, listOut, capacity, count + iterator, additive);
   if (count > capacity) {
     count = capacity;
   }
   qsort(listOut, count, sizeof(CSoundPOINode), CPOINode::compare);
   return count;
-#endif
-
 }
 
+bool CAnimTreeDoubleChild::VGetBoolPOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-bool CAnimTreeDoubleChild::VGetBoolPOIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
   return mB->VGetBoolPOIState(name);
-#else
-bool CAnimTreeDoubleChild::VGetBoolPOIState(uint nameHash) const {
-  return mB->VGetBoolPOIState(nameHash);
-#endif
-
 }
 
+s32 CAnimTreeDoubleChild::VGetInt32POIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-s32 CAnimTreeDoubleChild::VGetInt32POIState(const char* name) const {
+    const char* name
+#else
+    uint name
+#endif
+    ) const {
   return mB->VGetInt32POIState(name);
-#else
-s32 CAnimTreeDoubleChild::VGetInt32POIState(uint nameHash) const {
-  return mB->VGetInt32POIState(nameHash);
-#endif
-
 }
 
+CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(const char* name) const {
-  return mB->VGetParticlePOIState(name);
+    const char* name
 #else
-CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(uint nameHash) const {
-  return mB->VGetParticlePOIState(nameHash);
+    uint name
 #endif
-
+    ) const {
+  return mB->VGetParticlePOIState(name);
 }
 
 CAnimTreeEffectiveContribution CAnimTreeDoubleChild::VGetContributionOfHighestInfluence() const {
@@ -184,7 +159,6 @@ CAnimTreeEffectiveContribution CAnimTreeDoubleChild::VGetContributionOfHighestIn
   const float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
   const float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
 #endif
-
   return leftWeight > rightWeight
              ? CAnimTreeEffectiveContribution(leftWeight, a.GetPrimitiveName(),
                                               a.GetSteadyStateAnimInfo(), a.GetTimeRemaining(),
@@ -204,19 +178,13 @@ uint CAnimTreeDoubleChild::VGetNumChildren() const {
   const uint rightCount = mB->VGetNumChildren();
   return mA->VGetNumChildren() + 2 + rightCount;
 #endif
-
 }
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult::CDoubleChildAdvancementResult(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const CCharAnimTime& trueAdvancement, const CAdvancementDeltas& leftDeltas,
-    const CAdvancementDeltas& rightDeltas)
-: mTrueAdvancement(trueAdvancement), mLeftDeltas(leftDeltas), mRightDeltas(rightDeltas) {}
-#else
     const CCharAnimTime& time, const CAdvancementDeltas& left, const CAdvancementDeltas& right)
-: mTrueAdvancement(time), mLeftDeltas(left), mRightDeltas(right) {}
-#endif
+: mTrueAdvancement(time)
+, mLeftDeltas(left)
+, mRightDeltas(right) {}
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult
 CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool runLeft,
@@ -246,7 +214,6 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #else
       CAdvancementDeltas deltas = result.mDeltas;
 #endif
-
       leftOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
       leftRotation *= rotation;
@@ -258,7 +225,6 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #else
       leftRemaining = result.mRemTime;
 #endif
-
     }
     while (rightRemaining.GreaterThanZero() && !close_enough(rightRemaining.GetSeconds(), 0.f)) {
       SAdvancementResults result = mB->AdvanceView(rightRemaining);
@@ -273,7 +239,6 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #else
       CAdvancementDeltas deltas = result.mDeltas;
 #endif
-
       rightOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
       rightRotation *= rotation;
@@ -283,12 +248,10 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #else
       rightRemaining = result.mRemTime;
 #endif
-
     }
   }
   return CDoubleChildAdvancementResult(time, CAdvancementDeltas(leftOffset, leftRotation),
                                        CAdvancementDeltas(rightOffset, rightRotation));
-
 }
 
 void CAnimTreeDoubleChild::VSetPhase(float phase) {
@@ -296,65 +259,37 @@ void CAnimTreeDoubleChild::VSetPhase(float phase) {
   mB->VSetPhase(phase);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-SAdvancementResults CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& a,
-                                                                 const CCharAnimTime& b) const {
-  SAdvancementResults resA = mA->GetAdvancementResults(a, b);
-  SAdvancementResults resB = mB->GetAdvancementResults(a, b);
-  return resA.GetRemainder() > resB.GetRemainder() ? resA : resB;
-#else
 SAdvancementResults
 CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const {
-  SAdvancementResults a = mA->VGetAdvancementResults(time, startOffset);
-  SAdvancementResults b = mB->VGetAdvancementResults(time, startOffset);
-  return a.mRemTime > b.mRemTime ? a : b;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  SAdvancementResults resA = mA->GetAdvancementResults(time, startOffset);
+  SAdvancementResults resB = mB->GetAdvancementResults(time, startOffset);
+  return resA.GetRemainder() > resB.GetRemainder() ? resA : resB;
+#else
+  SAdvancementResults resA = mA->VGetAdvancementResults(time, startOffset);
+  SAdvancementResults resB = mB->VGetAdvancementResults(time, startOffset);
+  return resA.mRemTime > resB.mRemTime ? resA : resB;
 #endif
-
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeDoubleChild::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > child = GetRightChildWeight() > 0.5f ? mB : mA;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (!child)
-#else
   if (!child) {
-#endif
-
     return child;
-#if !RSTL_PRIME1
   }
-#endif
 
   rstl::rc_ptr< CAnimTreeNode > best = child->GetBestUnblendedChild();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (!best)
-#else
   if (!best) {
-#endif
-
     return child;
-#if !RSTL_PRIME1
   }
-#endif
 
   return best;
 }
 
 void CAnimTreeDoubleChild::VGetWeightedReaders(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    float w, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
-  mA->VGetWeightedReaders(w, out);
-  mB->VGetWeightedReaders(w, out);
-#else
     float weight, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
   mA->VGetWeightedReaders(weight, out);
   mB->VGetWeightedReaders(weight, out);
-#endif
-
 }
-

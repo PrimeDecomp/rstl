@@ -4,9 +4,7 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#ifdef ENABLE_DEBUG_TOOLS
+#if RSTL_PRIME1 && defined(ENABLE_DEBUG_TOOLS)
 #include "Kyoto/Text/SystemFont.inc"
 
 int CFont::sNumInstances = 0;
@@ -60,21 +58,11 @@ CFont::CFont(float scale) : mFontSize(scale * 16.f), mScale(scale) {}
 
 CFont::~CFont() {}
 #endif
-#else
-CFont::CFont(float scale) : mFontSize(scale * 16.f), mScale(scale) {}
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 int CFont::CharWidth(char c) const { return mScale * 15.f; }
-#else
-CFont::~CFont() {}
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 void CFont::DrawString(const char* str, long x, long y, const CColor& col) const {
-#ifdef ENABLE_DEBUG_TOOLS
+#if RSTL_PRIME1 && defined(ENABLE_DEBUG_TOOLS)
   const bool lightsWereOn = CGraphics::BeginRender2D(*mpTexture);
   for (const uchar* chr = reinterpret_cast< const uchar* >(str); *chr; ++chr) {
     CGraphics::DoRender2D(*mpTexture, x, y, (*chr & 15) * 16, *chr & 0xf0,
@@ -84,9 +72,4 @@ void CFont::DrawString(const char* str, long x, long y, const CColor& col) const
   CGraphics::EndRender2D(lightsWereOn);
 #endif
 }
-#else
-int CFont::CharWidth(char) const { return mScale * 15.f; }
-
-void CFont::DrawString(const char*, long, long, const CColor&) const {}
-#endif
 

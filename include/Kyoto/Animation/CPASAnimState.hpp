@@ -53,11 +53,7 @@ private:
   mutable rstl::vector< int > mSelectionCache;
 };
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CPASAnimState, 0x34)
-#endif
-#else
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CPASAnimState, 0x34)
 #endif
 

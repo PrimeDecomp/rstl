@@ -251,12 +251,14 @@ CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const b
 , mHasAudio(false)
 , mFieldFlip(false)
 , mCachedBytes(0)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mFieldIndex(0) {
-#else
 , mFieldIndex(0)
-, mVolume(127) {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+, mVolume(127)
+#endif
+{
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   if (sNumReferences == 0 && ShouldEnableLockedCache()) {
     LCEnable();
   }
@@ -653,13 +655,7 @@ static inline void KeepDebugArgument(const volatile T& value) {
 
 void CMoviePlayer::DecodeFromRead(const void* ptr) {
   uchar work[4096 + 32];
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void* alignedWork = reinterpret_cast< void* >(reinterpret_cast< uintptr_t >(work) + 31 & ~31);
-#else
   void* alignedWork = reinterpret_cast< void* >((reinterpret_cast< uintptr_t >(work) + 31) & ~31);
-#endif
-
   if (mTextures.empty()) {
     InitializeTextures();
   }
@@ -695,7 +691,6 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
   }
 
   MOVIE_DEBUG_WARN(offset > 55 * 1024, "WARNING: Movie frame size > 55k! %d\n", offset);
-// TODO: verify that this Prime/Echoes difference is real
   RSTL_PRIME1_CONST int next = mDecodedTexSlot + 1;
 
   mDecodedTexSlot = next;
@@ -706,7 +701,6 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
 
 #undef MOVIE_DEBUG_WARN
 
-// TODO: verify that this Prime/Echoes difference is real
 void CMoviePlayer::Update(RSTL_PRIME1_CONST float dt) {
 
   if (mCurLoadFrame < mPreLoadFrames) {
@@ -1052,17 +1046,11 @@ uint CMoviePlayer::GetWidth() const { return mVideoInfo.mXSize; }
 
 uint CMoviePlayer::GetHeight() const { return mVideoInfo.mYSize; }
 
-// TODO: verify that this Prime/Echoes difference is real
 void CMoviePlayer::SetAudioEnabled(RSTL_PRIME1_CONST bool enabled) { sAudioEnabled = enabled; }
 
 bool CMoviePlayer::GetAudioEnabled() { return sAudioEnabled; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CMoviePlayer::SetSfxVolume(const uchar volume) {
+void CMoviePlayer::SetSfxVolume(RSTL_PRIME1_CONST uchar volume) {
   sSfxVolume = rstl::min_val(static_cast< uchar >(127), volume);
 }
-#else
-void CMoviePlayer::SetSfxVolume(uchar volume) { sSfxVolume = rstl::min_val(uchar(127), volume); }
-#endif
 

@@ -11,23 +11,15 @@
 #include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/vector.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CParticleDatabase.hpp"
-#else
-#include "dolphin/gx/GXEnum.h"
 #endif
-
-#if RSTL_PRIME1
 #include "dolphin/gx/GXEnum.h"
-#endif
 
-#if !RSTL_PRIME1
 class CSwooshDescription;
 class CTexture;
-#endif
 
 class CParticleSwoosh : public CParticleGen {
   friend class CParticleElectric;
@@ -80,12 +72,11 @@ public:
     int mStartFrame;
     CVector3f mVelocity;
   };
+  CParticleSwoosh(TToken< CSwooshDescription > desc, int leng);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CParticleSwoosh(TToken< CSwooshDescription > desc, int i);
   ~CParticleSwoosh();
 #else
-  CParticleSwoosh(TToken< CSwooshDescription > desc, int leng);
   // CParticleGen
   ~CParticleSwoosh() override;
 #endif
@@ -192,14 +183,8 @@ private:
   int mSIDE;
   GXPrimitive mPrim;
   CRandom16 mRand;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float x1c4_;
-  float x1c8_;
-#else
   float mUpdateTime; // Guessed name
   float mRenderTime; // Guessed name
-#endif
 
   float mTSPNFloat;
   bool mEmitting : 1;

@@ -24,17 +24,21 @@ public:
   CParticleData(int duration = 0, const SObjectTag& tag = SObjectTag(0, 0),
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                const rstl::string& boneName = rstl::string_l("root"), float scale = 1.f,
-                EParentedMode mode = kPM_Initial)
+                const rstl::string& boneName = rstl::string_l("root"),
+#else
+                const CSegId& bone = CSegId(0),
+#endif
+                float scale = 1.f, EParentedMode mode = kPM_Initial)
   : mDuration(duration)
   , mParticle(tag)
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   , mBoneName(boneName)
+#else
+  , mBone(bone)
+#endif
   , mScale(scale)
   , mParentMode(mode) {}
-#else
-                const CSegId& bone = CSegId(0), float scale = 1.f, EParentedMode mode = kPM_Initial)
-  : mDuration(duration), mParticle(tag), mBone(bone), mScale(scale), mParentMode(mode) {}
-#endif
 
   CParticleData(CInputStream& in);
 

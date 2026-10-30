@@ -33,16 +33,11 @@ public:
   CMatrix3f(const CMatrix3f& left, float leftScale, const CMatrix3f& right, float rightScale);
   CMatrix3f(CInputStream& in);
   CMatrix3f(const CMatrix3f&);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   //  fake but useful for CEulerAngles?
   CMatrix3f(const CTransform4f& xf); /*
    : m0(xf.GetRow(kDX))
    , m1(xf.GetRow(kDY))
    , m2(xf.GetRow(kDZ)) {}*/
-#else
-  CMatrix3f(const CTransform4f& xf);
-#endif
 
 #if !RSTL_PRIME1
   static CMatrix3f FromColumns(const CVector3f& col0, const CVector3f& col1, const CVector3f& col2);
@@ -96,17 +91,15 @@ public:
     z = GetRow(kDZ)[dim];
     y = GetRow(kDY)[dim];
     x = GetRow(kDX)[dim];
-    return CVector3f(x, y, z);
 #else
     float z = GetRow(kDZ)[dim];
     float y = GetRow(kDY)[dim];
     float x = GetRow(kDX)[dim];
-    return CVector3f(x, y, z);
 #endif
+    return CVector3f(x, y, z);
 #else
     return CVector3f(GetRow(kDX)[dim], GetRow(kDY)[dim], GetRow(kDZ)[dim]);
 #endif
-
   }
 
   inline CVector3f GetColumn(EDimY dim) const {
@@ -117,34 +110,27 @@ public:
     z = GetRow(kDZ)[dim];
     y = GetRow(kDY)[dim];
     x = GetRow(kDX)[dim];
-    return CVector3f(x, y, z);
 #else
     float z = GetRow(kDZ)[dim];
     float y = GetRow(kDY)[dim];
     float x = GetRow(kDX)[dim];
-    return CVector3f(x, y, z);
 #endif
+    return CVector3f(x, y, z);
 #else
     return CVector3f(GetRow(kDX)[dim], GetRow(kDY)[dim], GetRow(kDZ)[dim]);
 #endif
-
   }
 
   inline CVector3f GetColumn(EDimZ dim) const {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-    return CVector3f(GetRow(kDX)[dim], GetRow(kDY)[dim], GetRow(kDZ)[dim]);
-#else
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
     float z = GetRow(kDZ)[dim];
     float y = GetRow(kDY)[dim];
     float x = GetRow(kDX)[dim];
     return CVector3f(x, y, z);
-#endif
 #else
     return CVector3f(GetRow(kDX)[dim], GetRow(kDY)[dim], GetRow(kDZ)[dim]);
 #endif
-
   }
 
   inline CVector3f GetColumn(int idx) const {

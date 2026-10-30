@@ -14,32 +14,26 @@ T GetAverageValue(const T* ptr, int count) {
   T ret = *ptr;
   for (const T* cur = ptr + 1; cur < ptr + count; ++cur) {
     ret += *cur;
+  }
+  const float scale = 1.f / count;
+  return ret * scale;
 #else
   const T* end = ptr + count;
   T sum = *ptr++;
   for (; ptr < end; ++ptr) {
     sum = sum + *ptr;
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const float scale = 1.f / count;
-  return ret * scale;
-#else
   return sum * (1.f / count);
 #endif
-
 }
 
 template < typename T >
+class TAverage
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-class TAverage : rstl::vector< T > {
-#else
-class TAverage {
+: rstl::vector< T >
 #endif
-
+{
 public:
   TAverage() {}
 // TODO: verify that this Prime/Echoes difference is real
@@ -52,53 +46,60 @@ public:
 
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const {
+    if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (this->empty()) {
+        this->empty()
 #else
-    if (mValues.empty()) {
+        mValues.empty()
 #endif
-
+    ) {
       return rstl::optional_object_null();
     } else {
+      return GetAverageValue(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      return GetAverageValue(this->data(), this->size());
+          this->data(), this->size()
 #else
-      return GetAverageValue(mValues.data(), mValues.size());
+          mValues.data(), mValues.size()
 #endif
-
+      );
     }
   }
 #if !RSTL_PRIME1
 private:
   rstl::vector< T > mValues;
 #endif
-
 };
 
 template < typename T >
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-inline TAverage< T >::TAverage(int capacity, const T& value) {
+inline
+#endif
+TAverage< T >::TAverage(int capacity, const T& value) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   this->resize(capacity, value);
 #else
-TAverage< T >::TAverage(int capacity, const T& value) {
   mValues.resize(capacity, value);
 #endif
-
 }
 
 template < typename T >
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-inline void TAverage< T >::AddValue(const T& value) {
-  if (this->size() == this->capacity()) {
-#else
-void TAverage< T >::AddValue(const T& value) {
-  if (mValues.size() == mValues.capacity()) {
+inline
 #endif
-
+void TAverage< T >::AddValue(const T& value) {
+  if (
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+      this->size() == this->capacity()
+#else
+      mValues.size() == mValues.capacity()
+#endif
+  ) {
     // TODO ?
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -106,7 +107,6 @@ void TAverage< T >::AddValue(const T& value) {
 #else
     mValues.mCount -= 1;
 #endif
-
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -114,8 +114,6 @@ void TAverage< T >::AddValue(const T& value) {
 #else
   mValues.insert(mValues.begin(), value);
 #endif
-
 }
 
 #endif // _TAVERAGE
-

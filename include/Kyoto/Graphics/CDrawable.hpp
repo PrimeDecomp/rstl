@@ -19,44 +19,41 @@ enum EDrawableType {
 
 class CDrawable {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CDrawable(EDrawableType dtype, ushort extraSort, float planeDot, const CAABox& aabb,
-            const void* data)
-  : mType(dtype)
-#else
   CDrawable(EDrawableType type, ushort extraSort, float distance, const CAABox& bounds,
-            const void* data, bool alpha)
+            const void* data
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
+            , bool alpha
+#endif
+            )
   : mType(type)
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   , mAlpha(alpha)
 #endif
-
   , mExtraSort(extraSort)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   , mData(const_cast< void* >(data))
-  , mAabb(aabb)
-  , mViewDist(planeDot) {}
+#else
+  , mData(data)
+#endif
+  , mBounds(bounds)
+  , mViewDistance(distance) {}
   // CDrawable(const CDrawable& other)
   // : x0_type(other.x0_type)
   // , x2_extraSort(other.x2_extraSort)
   // , x4_data(other.x4_data)
   // , x8_aabb(other.x8_aabb)
   // , x20_viewDist(other.x20_viewDist) {}
-#else
-  , mData(data)
-  , mBounds(bounds)
-  , mViewDistance(distance) {}
-#endif
 
+  EDrawableType GetType() const { return static_cast< EDrawableType >(mType); }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  EDrawableType GetType() const { return EDrawableType(mType); }
-  const CAABox& GetBounds() const { return mAabb; }
-  float GetDistance() const { return mViewDist; }
+  const CAABox& GetBounds() const { return mBounds; }
+  float GetDistance() const { return mViewDistance; }
   void* GetData() { return mData; }
 #else
-  EDrawableType GetType() const { return static_cast< EDrawableType >(mType); }
   bool IsAlpha() const { return mAlpha; }
   ushort GetExtraSort() const { return mExtraSort; }
 #endif
@@ -83,13 +80,11 @@ private:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void* mData;
-  CAABox mAabb;
-  float mViewDist;
 #else
   const void* mData;
+#endif
   CAABox mBounds;
   float mViewDistance;
-#endif
 
 };
 #if !RSTL_PRIME1

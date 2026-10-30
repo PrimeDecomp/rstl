@@ -21,7 +21,6 @@ CAnimFormatUnion::~CAnimFormatUnion() {
 #else
   case kF_AnimSource:
 #endif
-
     reinterpret_cast< CAnimSource* >(mFormatData)->~CAnimSource();
     break;
 // TODO: verify that this Prime/Echoes difference is real
@@ -30,7 +29,6 @@ CAnimFormatUnion::~CAnimFormatUnion() {
 #else
   case kF_FBStreamedCompression:
 #endif
-
     reinterpret_cast< CFBStreamedCompression* >(mFormatData)->~CFBStreamedCompression();
     break;
   default:
@@ -44,12 +42,14 @@ void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream&
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   case 0:
-    new (ptr) CAnimSource(in, store);
 #else
   case kF_AnimSource:
-    new (ptr) CAnimSource(in);
 #endif
-
+    new (ptr) CAnimSource(in
+#if RSTL_PRIME1
+                          , store
+#endif
+    );
     break;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -57,7 +57,6 @@ void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream&
 #else
   case kF_FBStreamedCompression:
 #endif
-
     new (ptr) CFBStreamedCompression(in, store);
     break;
   default:
@@ -67,16 +66,17 @@ void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream&
 
 CAllFormatsAnimSource::CAllFormatsAnimSource(CInputStream& in, IObjectStore& store,
                                              const SObjectTag& tag)
+: mFormatUnion(in, store)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-: mFormatUnion(in, store), x68_(0.f, 0.f, 0.f), mTag(tag) {}
+, x68_(0.f, 0.f, 0.f)
 #else
-: mFormatUnion(in, store), x88_(0.f, 0.f, 0.f), mTag(tag) {}
+, x88_(0.f, 0.f, 0.f)
 #endif
+, mTag(tag) {}
 
 // TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInputStream& in,
-
                                    const CVParamTransfer& param) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -84,7 +84,6 @@ RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInp
 #else
   const rstl::rc_ptr< IVParamObj > obj = param.GetObj();
 #endif
-
   IObjectStore* pool = static_cast< TObjOwnerParam< IObjectStore* >* >(obj.GetPtr())->GetData();
 
   return rs_new CAllFormatsAnimSource(in, *pool, tag);
@@ -92,37 +91,60 @@ RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInp
 
 rstl::ownership_transfer< IAnimReader >
 CAllFormatsAnimSource::GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok,
+                                    const CCharAnimTime& time
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                    const CCharAnimTime& time) {
-#else
-                                    const CCharAnimTime& time, const CAnimPOIData* poiData) {
+#if !RSTL_PRIME1
+                                    , const CAnimPOIData* poiData
 #endif
-
+                                    ) {
   switch (tok->GetType()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   case 0:
-    return rs_new CAnimSourceReader(tok, time);
-  case 2:
-    return rs_new CFBStreamedAnimReader(tok, time);
 #else
   case CAnimFormatUnion::kF_AnimSource:
-    return rs_new CAnimSourceReader(TSubAnimTypeToken< CAnimSource >(tok), time, poiData);
-  case CAnimFormatUnion::kF_FBStreamedCompression:
-    return rs_new CFBStreamedAnimReader(TSubAnimTypeToken< CFBStreamedCompression >(tok), time,
-                                        poiData);
 #endif
-
-  default:
+    return rs_new CAnimSourceReader(
+#if RSTL_PRIME1
+        tok
+#else
+        TSubAnimTypeToken< CAnimSource >(tok)
+#endif
+        , time
+#if !RSTL_PRIME1
+        , poiData
+#endif
+    );
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    return rs_new CFBStreamedAnimReader(tok, time);
+  case 2:
 #else
-    return rs_new CFBStreamedAnimReader(TSubAnimTypeToken< CFBStreamedCompression >(tok), time,
-                                        poiData);
+  case CAnimFormatUnion::kF_FBStreamedCompression:
 #endif
+    return rs_new CFBStreamedAnimReader(
+#if RSTL_PRIME1
+        tok
+#else
+        TSubAnimTypeToken< CFBStreamedCompression >(tok)
+#endif
+        , time
+#if !RSTL_PRIME1
+        , poiData
+#endif
+    );
 
+  default:
+    return rs_new CFBStreamedAnimReader(
+#if RSTL_PRIME1
+        tok
+#else
+        TSubAnimTypeToken< CFBStreamedCompression >(tok)
+#endif
+        , time
+#if !RSTL_PRIME1
+        , poiData
+#endif
+    );
   }
 }
 

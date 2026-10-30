@@ -8,28 +8,23 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "rstl/auto_ptr.hpp"
-#endif
-
 #include "rstl/list.hpp"
-#if !RSTL_PRIME1
 #include "rstl/pair.hpp"
-#endif
 
 #include "rstl/string.hpp"
-#if !RSTL_PRIME1
 #include "rstl/vector.hpp"
 
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CPakFile.hpp"
+#if !RSTL_PRIME1
 #include "Kyoto/IObjectStore.hpp"
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 class CDvdRequest;
-#else
+
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 class CInputStream;
 
 class CLookaheadRes;
@@ -90,8 +85,14 @@ CHECK_SIZEOF(CLookaheadRes, 0x24)
 
 class CResLoader {
 public:
-#if !RSTL_PRIME1
   typedef rstl::list< rstl::auto_ptr< CPakFile > > PakList;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  typedef CPakFile::SResInfo ResInfo;
+#else
+  typedef CPakFile::CResInfo ResInfo;
+#endif
+#if !RSTL_PRIME1
   typedef rstl::list< CLookaheadRes > GroupCacheList;
 #endif
 
@@ -102,12 +103,10 @@ public:
   CResLoader();
   ~CResLoader();
   void MoveToCorrectLoadedList(const rstl::auto_ptr< CPakFile >& pak);
-// TODO: verify that this Prime/Echoes difference is real
   bool CacheFromPak(RSTL_PRIME1_CONST CPakFile& pak, CAssetId asset) const;
 
   bool CacheFromPakForLoad(CPakFile& pak, CAssetId asset);
   CPakFile* FindResourceForLoad(const SObjectTag& tag);
-// TODO: verify that this Prime/Echoes difference is real
   CPakFile* FindResourceForLoad(RSTL_PRIME1_CONST CAssetId asset);
 
   CPakFile* FindResource(const SObjectTag& tag);
@@ -171,29 +170,19 @@ public:
 
 private:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::list< rstl::auto_ptr< CPakFile > > mAramList;
-  rstl::list< rstl::auto_ptr< CPakFile > > mPakLoadedList;
-  rstl::list< rstl::auto_ptr< CPakFile > > mPakLoadingList;
-  rstl::list< rstl::auto_ptr< CPakFile > >::iterator mCurPak;
-#else
+#if !RSTL_PRIME1
   GroupCacheList::iterator FindGroupCache(const CDvdFile* file, uint offset, uint size);
   GroupCacheList::iterator AddGroupCache(CDvdFile* file, uint offset, uint size);
 
   GroupCacheList mGroupCaches;
+#endif
   PakList mAramList;
   PakList mPakLoadedList;
   PakList mPakLoadingList;
   PakList::iterator mCurPak;
-#endif
 
   mutable CAssetId mCachedResId;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mutable const CPakFile::SResInfo* mCachedResInfo;
-#else
-  mutable const CPakFile::CResInfo* mCachedResInfo;
-#endif
+  mutable const ResInfo* mCachedResInfo;
 
   bool mForwardSeek;
 };

@@ -81,15 +81,10 @@ CGraphicsPalette::~CGraphicsPalette() {
 #endif
 
   if (frameDiff < 2) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CFrameDelayedKiller::ScheduleDeletion(frameDiff > 0 ? CFrameDelayedKiller::kWhichFrame_ThisFrame : CFrameDelayedKiller::kWhichFrame_NextFrame, mEntries.release());
-#else
     CFrameDelayedKiller::ScheduleDeletion(frameDiff > 0
                                               ? CFrameDelayedKiller::kWhichFrame_ThisFrame
                                               : CFrameDelayedKiller::kWhichFrame_NextFrame,
                                           mEntries.release());
-#endif
 
   }
 }

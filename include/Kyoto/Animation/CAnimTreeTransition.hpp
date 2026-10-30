@@ -10,11 +10,12 @@ public:
 #if !RSTL_PRIME1
   CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
                       const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
-                      const bool runA, int flags, const rstl::string& name);
+                      const bool runA, RSTL_PRIME1_CONST int flags, const rstl::string& name);
   CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
                       const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
-                      const CCharAnimTime& timeInTrans, bool runA, bool loopA, int flags,
-                      const rstl::string& name, bool initialized);
+                      const CCharAnimTime& timeInTrans, RSTL_PRIME1_CONST bool runA,
+                      RSTL_PRIME1_CONST bool loopA, RSTL_PRIME1_CONST int flags,
+                      const rstl::string& name, RSTL_PRIME1_CONST bool initialized);
 
   // IAnimReader
 #endif
@@ -34,23 +35,19 @@ public:
   float VGetBlendingWeight() const override;
 
 #if RSTL_PRIME1
-  CAnimTreeTransition(const bool b1, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& transDur,
-                      const bool runA, const int flags, const rstl::string& name);
-  CAnimTreeTransition(const bool b1, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& transDur,
-                      const CCharAnimTime& timeInTrans, const bool runA, const bool loopA,
-                      const int flags, const rstl::string& name, const bool initialized);
+  CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
+                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
+                      const bool runA, RSTL_PRIME1_CONST int flags, const rstl::string& name);
+  CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
+                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
+                      const CCharAnimTime& timeInTrans, RSTL_PRIME1_CONST bool runA,
+                      RSTL_PRIME1_CONST bool loopA, RSTL_PRIME1_CONST int flags,
+                      const rstl::string& name, RSTL_PRIME1_CONST bool initialized);
 #endif
 
   static rstl::string CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& a,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
                                           const rstl::ncrc_ptr< CAnimTreeNode >& b,
-                                          const float duration);
-#else
-                                          const rstl::ncrc_ptr< CAnimTreeNode >& b, float duration);
-#endif
+                                          RSTL_PRIME1_CONST float duration);
 
 private:
   rstl::pair< CCharAnimTime, CAdvancementDeltas >

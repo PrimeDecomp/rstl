@@ -15,19 +15,11 @@ class CInputStream;
 class CVParamTransfer;
 class SObjectTag;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-typedef const CFactoryFnReturn (*FFactoryFunc)(const SObjectTag&, CInputStream&,
-                                               const CVParamTransfer&);
-typedef const CFactoryFnReturn (*FMemFactoryFunc)(const SObjectTag&, const rstl::auto_ptr< uchar >&,
-                                                  int, const CVParamTransfer&);
-#else
-typedef CFactoryFnReturn (*FFactoryFunc)(const SObjectTag& tag, CInputStream& in,
-                                         const CVParamTransfer& xfer);
-typedef CFactoryFnReturn (*FMemFactoryFunc)(const SObjectTag& tag,
-                                            const rstl::auto_ptr< uchar >& buffer, int size,
-                                            const CVParamTransfer& xfer);
-#endif
+typedef RSTL_PRIME1_CONST CFactoryFnReturn (*FFactoryFunc)(const SObjectTag& tag, CInputStream& in,
+                                                           const CVParamTransfer& xfer);
+typedef RSTL_PRIME1_CONST CFactoryFnReturn (*FMemFactoryFunc)(
+    const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer, int size,
+    const CVParamTransfer& xfer);
 
 class CFactoryMgr {
 public:
@@ -46,24 +38,18 @@ public:
   bool CanMakeMemory(const SObjectTag& tag) const;
   rstl::auto_ptr< IObj > MakeObject(const SObjectTag& tag, CInputStream& in,
                                     const CVParamTransfer& params);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::auto_ptr< IObj > MakeObjectFromMemory(const SObjectTag& tag, void* buffer, int size,
-#else
   rstl::auto_ptr< IObj > MakeObjectFromMemory(const SObjectTag& tag,
-                                              const rstl::auto_ptr< uchar >& buffer, int size,
-#endif
-
-                                              bool compressed, const CVParamTransfer& params);
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+                                              void* buffer,
+#else
+                                              const rstl::auto_ptr< uchar >& buffer,
+#endif
+                                              int size, bool compressed,
+                                              const CVParamTransfer& params);
+
   static uint FourCCToTypeIdx(uint fcc);
   static uint TypeIdxToFourCC(uint idx);
-#else
-  static uint FourCCToTypeIdx(uint fourCC);
-  static uint TypeIdxToFourCC(uint typeIdx);
-#endif
 
 private:
   rstl::map< int, FFactoryFunc > mFactories;
@@ -74,9 +60,7 @@ CHECK_SIZEOF(CFactoryMgr, 0x28)
 #if !RSTL_PRIME1
 CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
                                      const CVParamTransfer& xfer);
-#endif
 
-#if !RSTL_PRIME1
 CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
                                          const CVParamTransfer& xfer);
 #endif

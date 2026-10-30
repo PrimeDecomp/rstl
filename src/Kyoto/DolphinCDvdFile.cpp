@@ -43,12 +43,15 @@ struct CDvdFileARAM {
 
   ARQRequest mARQRequest;
   struct SDvdInfo {
+    SDvdInfo()
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    SDvdInfo() : mDvdFileInfo(), mDvdFile(nullptr), mNextfile(nullptr) {}
+    : mDvdFileInfo()
+    , mDvdFile(nullptr)
 #else
-    SDvdInfo() : mDvdFile(nullptr), mNextfile(nullptr) {}
+    : mDvdFile(nullptr)
 #endif
+    , mNextfile(nullptr) {}
 
     DVDFileInfo mDvdFileInfo;
     CDvdFile* mDvdFile;
@@ -80,24 +83,23 @@ const char* DecodeARAMFile(const char* filename) {
 void CDvdFile::DVDARAMXferCallback(s32 result, DVDFileInfo* info) {
   CDvdFileARAM::SDvdInfo* ptr = reinterpret_cast< CDvdFileARAM::SDvdInfo* >(info);
 #if !RSTL_PRIME1
-  if (!sPollingMode) {
+  if (!sPollingMode)
 #endif
-
-  DVDClose(&ptr->mDvdFileInfo);
-#if !RSTL_PRIME1
+  {
+    DVDClose(&ptr->mDvdFileInfo);
   }
-#endif
 
   ptr->mDvdFile->HandleDVDInterrupt();
 }
 
+void CDvdFile::ARAMARAMXferCallback(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CDvdFile::ARAMARAMXferCallback(uintptr_t addr) {
+    uintptr_t
 #else
-void CDvdFile::ARAMARAMXferCallback(u32 addr) {
+    u32
 #endif
-
+    addr) {
   reinterpret_cast< CDvdFileARAM* >(addr)->mInfo.mDvdFile->HandleARAMInterrupt();
 }
 
@@ -107,13 +109,12 @@ void CDvdFile::HandleARAMInterrupt() {
 
   arFile->mGotARAMInterrupt = true;
 
+  if (
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
-#else
-  if (!sPollingMode && arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
+#if !RSTL_PRIME1
+      !sPollingMode &&
 #endif
-
+      arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
     PingARAMTransfer();
   }
 
@@ -126,13 +127,12 @@ void CDvdFile::HandleDVDInterrupt() {
 
   arFile->mGotDvdInterrupt = true;
 
+  if (
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
-#else
-  if (!sPollingMode && arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
+#if !RSTL_PRIME1
+      !sPollingMode &&
 #endif
-
+      arFile->mGotARAMInterrupt && arFile->mGotDvdInterrupt) {
     PingARAMTransfer();
   }
 
@@ -152,12 +152,12 @@ void CDvdFile::PingARAMTransfer() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                  reinterpret_cast< uintptr_t >(aramFile->mBuffers[aramFile->mBufferIndex].get()),
-                 reinterpret_cast< uintptr_t >(mARAMBuffer + aramFile->mAramOffset), length,
+                 reinterpret_cast< uintptr_t >(mARAMBuffer + aramFile->mAramOffset),
 #else
                  reinterpret_cast< u32 >(aramFile->mBuffers[aramFile->mBufferIndex].get()),
-                 reinterpret_cast< u32 >(mARAMBuffer + aramFile->mAramOffset), length,
+                 reinterpret_cast< u32 >(mARAMBuffer + aramFile->mAramOffset),
 #endif
-
+                 length,
                  ARAMARAMXferCallback);
 
   aramFile->mBufferLen -= length;
@@ -170,32 +170,30 @@ void CDvdFile::PingARAMTransfer() {
 #if !RSTL_PRIME1
     aramFile->mGotDvdInterrupt = false;
 #endif
-
     DVDFastOpen(mFileEntry, &aramFile->mInfo.mDvdFileInfo);
     DVDReadAsync(&aramFile->mInfo.mDvdFileInfo, aramFile->mBuffers[aramFile->mBufferIndex].get(),
                  length2, aramFile->mFileSize2, DVDARAMXferCallback);
 #if !RSTL_PRIME1
     gDvdActivity = true;
 #endif
-
     aramFile->mFileSize2 += length2;
     aramFile->mCurBufferLen -= length2;
 #if RSTL_PRIME1
     aramFile->mGotDvdInterrupt = false;
 #endif
-
   }
 }
 
 void CDvdFile::TryARAMFile() {
   mARAMBuffer = static_cast< uchar* >(CARAMManager::Alloc(mSize));
+  if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  if (CARAMManager::GetInvalidAlloc() == mARAMBuffer) {
+      CARAMManager::GetInvalidAlloc() == mARAMBuffer
 #else
-  if (!CARAMManager::IsValidAlloc(mARAMBuffer)) {
+      !CARAMManager::IsValidAlloc(mARAMBuffer)
 #endif
-
+  ) {
     return;
   }
   mARAMFile = rs_new CDvdFileARAM();
@@ -217,7 +215,6 @@ void CDvdFile::PushARAMFileLoad() {
     enabled = OSDisableInterrupts();
   }
 #endif
-
   CDvdFile* file = sFirstARAM;
   if (file == NULL) {
     sFirstARAM = this;
@@ -231,14 +228,11 @@ void CDvdFile::PushARAMFileLoad() {
     }
   }
 #if !RSTL_PRIME1
-  if (!sPollingMode) {
+  if (!sPollingMode)
 #endif
-
-  OSRestoreInterrupts(enabled);
-#if !RSTL_PRIME1
+  {
+    OSRestoreInterrupts(enabled);
   }
-#endif
-
 }
 
 void CDvdFile::PopARAMFileLoad() {
@@ -251,7 +245,6 @@ void CDvdFile::PopARAMFileLoad() {
     enabled = OSDisableInterrupts();
   }
 #endif
-
   CDvdFile* file = mARAMFile->mInfo.mNextfile;
   mARAMPopped = true;
   sFirstARAM = file;
@@ -260,14 +253,11 @@ void CDvdFile::PopARAMFileLoad() {
   }
 
 #if !RSTL_PRIME1
-  if (!sPollingMode) {
+  if (!sPollingMode)
 #endif
-
-  OSRestoreInterrupts(enabled);
-#if !RSTL_PRIME1
+  {
+    OSRestoreInterrupts(enabled);
   }
-#endif
-
 }
 
 bool CDvdFile::IsARAMFileLoaded() {
@@ -281,7 +271,6 @@ bool CDvdFile::IsARAMFileLoaded() {
       PingARAMTransfer();
     }
 #endif
-
     return false;
   }
 
@@ -300,23 +289,20 @@ void CDvdFile::StartARAMFileLoad() {
   int len = rstl::min_val(mSize, 65536);
   aramFile->mCurBufferLen -= len;
   aramFile->mFileSize2 = len;
-#if !RSTL_PRIME1
-  if (!sPollingMode) {
-#endif
-
+#if RSTL_PRIME1
   DVDFastOpen(mFileEntry, &aramFile->mInfo.mDvdFileInfo);
-#if !RSTL_PRIME1
+#else
+  if (!sPollingMode) {
+    DVDFastOpen(mFileEntry, &aramFile->mInfo.mDvdFileInfo);
   } else {
     DVDOpen(const_cast< char* >(DecodeARAMFile(mFilename.data())), &aramFile->mInfo.mDvdFileInfo);
   }
 #endif
-
   DVDReadAsync(&aramFile->mInfo.mDvdFileInfo, aramFile->mBuffers[0].get(), len, 0,
                DVDARAMXferCallback);
 #if !RSTL_PRIME1
   gDvdActivity = true;
 #endif
-
 }
 
 void CDvdFile::StallForARAMFile() {
@@ -366,22 +352,19 @@ void CDvdFile::SyncSeekRead(void* dest, uint len, ESeekOrigin origin, int offset
         mARAMBuffer + mOffset, dest, roundedLen, CARAMManager::kDMAPrio_One));
   } else {
     DVDFileInfo info;
-#if !RSTL_PRIME1
-    if (!sPollingMode) {
-#endif
-
+#if RSTL_PRIME1
     DVDFastOpen(mFileEntry, &info);
-#if !RSTL_PRIME1
+#else
+    if (!sPollingMode) {
+      DVDFastOpen(mFileEntry, &info);
     } else {
       DVDOpen(const_cast< char* >(DecodeARAMFile(mFilename.data())), &info);
     }
 #endif
-
     DVDReadAsync(&info, dest, (len + 31) & ~31, mOffset, internalCallback);
 #if !RSTL_PRIME1
     gDvdActivity = true;
 #endif
-
     while (DVDGetCommandBlockStatus(&info.cb) != DVD_STATE_END) {
     }
     DVDClose(&info);
@@ -407,13 +390,11 @@ CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, i
 #else
     DVDFileInfo* info = &req->FileInfo();
 #endif
-
     DVDFastOpen(mFileEntry, info);
     DVDReadAsync(info, dest, (len + 31) & ~31, mOffset, internalCallback);
 #if !RSTL_PRIME1
     gDvdActivity = true;
 #endif
-
     request = req;
   }
 
@@ -447,7 +428,6 @@ void CDvdFile::internalCallback(s32 res, DVDFileInfo* info) {
     gDvdActivity = true;
   }
 #endif
-
 }
 
 void CDvdFile::CalcFileOffset(int offset, ESeekOrigin origin) {

@@ -15,23 +15,23 @@
 struct SSkinWeighting {
   CSegId mId;
   float mWeight;
+  explicit SSkinWeighting(CInputStream& in)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  explicit SSkinWeighting(CInputStream& in)
-  : mId((uchar)in.ReadLong()), mWeight(in.ReadFloat()) {}
+  : mId((uchar)in.ReadLong())
+  , mWeight(in.ReadFloat())
 #else
-  explicit SSkinWeighting(CInputStream& in) : mId(in.Get< int >()), mWeight(in.Get< float >()) {}
+  : mId(in.Get< int >())
+  , mWeight(in.Get< float >())
 #endif
-
+  {}
 };
 #if !RSTL_PRIME1
 CHECK_SIZEOF(SSkinWeighting, 0x8)
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 class CPoseAsTransforms;
-#else
+#if !RSTL_PRIME1
 // Guessed name. GPU matrix records occupy three cache lines.
 struct SSkinningMatrices {
   ATTRIBUTE_ALIGN_DECL(32, Mtx mPosition);
@@ -81,7 +81,6 @@ private:
 #else
   uint mVertexCount;
 #endif
-
 };
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

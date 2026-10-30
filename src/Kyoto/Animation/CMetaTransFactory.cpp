@@ -17,7 +17,6 @@ rstl::rc_ptr< IMetaTrans > CMetaTransFactory::CreateMetaTrans(CInputStream& in) 
 #else
   EMetaTransType type = static_cast< EMetaTransType >(in.ReadInt32());
 #endif
-
   switch (type) {
   case kMTT_MetaAnim:
     return rs_new CMetaTransMetaAnim(in);

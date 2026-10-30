@@ -18,13 +18,14 @@ CResLoader::CResLoader()
 , mForwardSeek(false) {}
 
 CResLoader::~CResLoader() {
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mPakLoadingList.begin()); it != mPakLoadingList.end(); ++it) {
+      AUTO(it, mPakLoadingList.begin());
 #else
-  for (PakList::iterator it = mPakLoadingList.begin(); it != mPakLoadingList.end(); ++it) {
+      PakList::iterator it = mPakLoadingList.begin();
 #endif
-
+      it != mPakLoadingList.end(); ++it) {
     CPakFile* pak = it->get();
     while (!pak->IsCompletelyLoaded()) {
       pak->AsyncIdle();
@@ -40,14 +41,8 @@ void CResLoader::MoveToCorrectLoadedList(const rstl::auto_ptr< CPakFile >& pak) 
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-bool CResLoader::CacheFromPak(const CPakFile& pak, const CAssetId asset) const {
-  const CPakFile::SResInfo* resInfo = pak.GetResInfo(asset);
-#else
-bool CResLoader::CacheFromPak(CPakFile& pak, const CAssetId asset) const {
-  const CPakFile::CResInfo* resInfo = pak.GetResInfo(asset);
-#endif
+bool CResLoader::CacheFromPak(RSTL_PRIME1_CONST CPakFile& pak, const CAssetId asset) const {
+  const ResInfo* resInfo = pak.GetResInfo(asset);
 
   if (!resInfo) {
     return false;
@@ -60,12 +55,7 @@ bool CResLoader::CacheFromPak(CPakFile& pak, const CAssetId asset) const {
 }
 
 bool CResLoader::CacheFromPakForLoad(CPakFile& pak, const CAssetId asset) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CPakFile::SResInfo* resInfo = nullptr;
-#else
-  const CPakFile::CResInfo* resInfo = nullptr;
-#endif
+  const ResInfo* resInfo = nullptr;
 
   if (mForwardSeek) {
     resInfo = pak.GetResInfoForLoadPreferForward(asset);
@@ -89,12 +79,7 @@ CPakFile* CResLoader::FindResourceForLoad(const SObjectTag& tag) {
 }
 
 CPakFile* CResLoader::FindResourceForLoad(const CAssetId asset) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::list< rstl::auto_ptr< CPakFile > >::iterator it;
-#else
   PakList::iterator it;
-#endif
 
   for (it = mAramList.begin(); it != mAramList.end(); ++it) {
     CPakFile* pak = it->get();
@@ -164,13 +149,14 @@ void CResLoader::ClearCache() {
 
 void CResLoader::AsyncIdlePakLoading() {
   bool skipIdle = false;
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mPakLoadingList.begin()); it != mPakLoadingList.end();) {
+      AUTO(it, mPakLoadingList.begin());
 #else
-  for (PakList::iterator it = mPakLoadingList.begin(); it != mPakLoadingList.end();) {
+      PakList::iterator it = mPakLoadingList.begin();
 #endif
-
+      it != mPakLoadingList.end();) {
     CPakFile* pak = it->get();
     const bool aramPak = pak->IsARAMPak();
     if (aramPak || !skipIdle) {
@@ -178,12 +164,7 @@ void CResLoader::AsyncIdlePakLoading() {
     }
 
     if (pak->IsCompletelyLoaded()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      MoveToCorrectLoadedList((*it));
-#else
       MoveToCorrectLoadedList(*it);
-#endif
 
       it = mPakLoadingList.erase(it);
     } else {
@@ -198,26 +179,28 @@ void CResLoader::AsyncIdlePakLoading() {
 bool CResLoader::AreAllPaksLoaded() const { return mPakLoadingList.empty(); }
 
 const SObjectTag* CResLoader::GetResourceIdByName(const char* name) const {
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mAramList.begin()); it != mAramList.end(); ++it) {
+      AUTO(it, mAramList.begin());
 #else
-  for (PakList::const_iterator it = mAramList.begin(); it != mAramList.end(); ++it) {
+      PakList::const_iterator it = mAramList.begin();
 #endif
-
+      it != mAramList.end(); ++it) {
     const SObjectTag* id = (*it)->GetResIdByName(name);
     if (id != nullptr) {
       return id;
     }
   }
 
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mPakLoadedList.begin()); it != mPakLoadedList.end(); ++it) {
+      AUTO(it, mPakLoadedList.begin());
 #else
-  for (PakList::const_iterator it = mPakLoadedList.begin(); it != mPakLoadedList.end(); ++it) {
+      PakList::const_iterator it = mPakLoadedList.begin();
 #endif
-
+      it != mPakLoadedList.end(); ++it) {
     const SObjectTag* id = (*it)->GetResIdByName(name);
     if (id != nullptr) {
       return id;
@@ -228,16 +211,18 @@ const SObjectTag* CResLoader::GetResourceIdByName(const char* name) const {
 }
 
 FourCC CResLoader::GetResourceTypeById(const CAssetId asset) const {
+  if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  if (const_cast< CResLoader& >(*this).ResourceExists(asset)) {
-#if RSTL_VERSION >= RSTL_GM8E_02
+      const_cast< CResLoader& >(*this).ResourceExists(asset)
+#else
+      const_cast< CResLoader& >(*this).FindResourceForLoad(asset)
+#endif
+  ) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8E_02
     const_cast< CResLoader& >(*this).FindResourceForLoad(asset);
 #endif
-#else
-  if (const_cast< CResLoader& >(*this).FindResourceForLoad(asset)) {
-#endif
-
     return mCachedResInfo->GetType();
   }
 
@@ -255,20 +240,21 @@ bool CResLoader::ResourceExists(const SObjectTag& tag) const {
 #else
   return const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId()) != nullptr;
 #endif
-
 }
 
 uint CResLoader::ResourceSize(const SObjectTag& tag) const {
+  if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  if (const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())) {
-#if RSTL_VERSION >= RSTL_GM8E_02
+      const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())
+#else
+      const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId())
+#endif
+  ) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8E_02
     const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId());
 #endif
-#else
-  if (const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId())) {
-#endif
-
     return mCachedResInfo->GetSize();
   }
 
@@ -286,18 +272,21 @@ uint CResLoader::GetResourceOffset(const SObjectTag& tag) const {
 #endif
 
 CResLoader::ECompressionType CResLoader::GetResourceCompression(const SObjectTag& tag) const {
+  if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  if (const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())) {
-#if RSTL_VERSION >= RSTL_GM8E_02
-    const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId());
-#endif
+      const_cast< CResLoader& >(*this).ResourceExists(tag.GetId())
 #else
-  if (const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId())) {
+      const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId())
+#endif
+  ) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8E_02
+    const_cast< CResLoader& >(*this).FindResourceForLoad(tag.GetId());
 #endif
 
     return mCachedResInfo->IsCompressed() ? kCompressionType_Compressed
-                                             : kCompressionType_Uncompressed;
+                                          : kCompressionType_Uncompressed;
   }
 
   return kCompressionType_Uncompressed;
@@ -305,16 +294,13 @@ CResLoader::ECompressionType CResLoader::GetResourceCompression(const SObjectTag
 
 CDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag, char* extBuf) {
   CPakFile* curPak = FindResourceForLoad(tag);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CPakFile::SResInfo* info = mCachedResInfo;
-  return curPak->DvdFile().AsyncSeekRead(extBuf, align_size(info->GetSize()), kSO_Begin, info->GetOffset());
-#else
-  const CPakFile::CResInfo* info = mCachedResInfo;
+  const ResInfo* info = mCachedResInfo;
   return curPak->DvdFile().AsyncSeekRead(extBuf, align_size(info->GetSize()), kSO_Begin,
                                          info->GetOffset());
 }
 
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
 CBufferedDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag) {
   CPakFile* curPak = FindResourceForLoad(tag);
   const CPakFile::CResInfo* info = mCachedResInfo;
@@ -333,30 +319,19 @@ CBufferedDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag) {
     it = AddGroupCache(&curPak->DvdFile(), info->GetOffset(), groupedSize + info->GetSize());
   }
   return it->MakeRequest(info->GetOffset()).release();
-#endif
-
 }
+#endif
 
 CDvdRequest* CResLoader::LoadResourcePartAsync(const SObjectTag& tag, const int offset,
                                                const int length, char* extBuf) {
   CPakFile* curPak = FindResourceForLoad(tag);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CPakFile::SResInfo* info = mCachedResInfo;
-#else
-  const CPakFile::CResInfo* info = mCachedResInfo;
-#endif
+  const ResInfo* info = mCachedResInfo;
 
   return curPak->DvdFile().AsyncSeekRead(extBuf, length, kSO_Begin, info->GetOffset() + offset);
 }
 CInputStream* CResLoader::LoadNewResourceSync(const SObjectTag& tag, char* extBuf) {
   CPakFile* curPak = FindResourceForLoad(tag);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CPakFile::SResInfo* info = mCachedResInfo;
-#else
-  const CPakFile::CResInfo* info = mCachedResInfo;
-#endif
+  const ResInfo* info = mCachedResInfo;
 
   uint len = align_size(info->GetSize());
   void* dest = extBuf ? extBuf : CMemory::Alloc(len, IAllocator::kHI_RoundUpLen);
@@ -382,7 +357,6 @@ CInputStream* CResLoader::LoadNewResourceSync(const SObjectTag& tag, char* extBu
     const int length = input->ReadInt32();
     return rs_new CLZOInputStream(input, info->GetSize() - input->GetReadPosition(), length);
 #endif
-
   }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -391,17 +365,15 @@ CInputStream* CResLoader::LoadNewResourceSync(const SObjectTag& tag, char* extBu
 #else
   return input.release();
 #endif
-
 }
 
 CInputStream* CResLoader::LoadResourceFromMemorySync(const SObjectTag& tag, const void* extBuf) {
   FindResourceForLoad(tag);
+  const ResInfo* info = mCachedResInfo;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const CPakFile::SResInfo* info = mCachedResInfo;
   CInputStream* input = rs_new CMemoryInStream(extBuf, info->GetSize());
 #else
-  const CPakFile::CResInfo* info = mCachedResInfo;
   rstl::auto_ptr< CInputStream > input(rs_new CMemoryInStream(extBuf, info->GetSize()));
 #endif
 
@@ -414,7 +386,6 @@ CInputStream* CResLoader::LoadResourceFromMemorySync(const SObjectTag& tag, cons
     const int length = input->ReadInt32();
     return rs_new CLZOInputStream(input, info->GetSize() - input->GetReadPosition(), length);
 #endif
-
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -422,17 +393,11 @@ CInputStream* CResLoader::LoadResourceFromMemorySync(const SObjectTag& tag, cons
 #else
   return input.release();
 #endif
-
 }
 
 void CResLoader::LoadMemResourceSync(const SObjectTag& tag, char** bufOut, int* lenOut) {
   CPakFile* curPak = FindResourceForLoad(tag);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CPakFile::SResInfo* info = mCachedResInfo;
-#else
-  const CPakFile::CResInfo* info = mCachedResInfo;
-#endif
+  const ResInfo* info = mCachedResInfo;
 
   uint len = align_size(info->GetSize());
   char* buf = static_cast< char* >(CMemory::Alloc(len, IAllocator::kHI_RoundUpLen));
@@ -446,7 +411,7 @@ void CResLoader::LoadMemResourceSync(const SObjectTag& tag, char** bufOut, int* 
 CInputStream* CResLoader::LoadNewResourcePartSync(const SObjectTag& tag, int offset, int length,
                                                   char* extBuf) {
   CPakFile* curPak = FindResourceForLoad(tag);
-  const CPakFile::SResInfo* info = mCachedResInfo;
+  const ResInfo* info = mCachedResInfo;
 
   void* dest = extBuf ? extBuf : CMemory::Alloc(length, IAllocator::kHI_RoundUpLen);
   curPak->DvdFile().SyncSeekRead(dest, length, kSO_Begin, info->GetOffset() + offset);
@@ -455,12 +420,10 @@ CInputStream* CResLoader::LoadNewResourcePartSync(const SObjectTag& tag, int off
       dest, length, extBuf == nullptr ? CMemoryInStream::kOS_Owned : CMemoryInStream::kOS_NotOwned);
   return input;
 }
-
-void CResLoader::AddPakFileAsync(const rstl::string& filePath, const bool a, const bool b) {
-#else
-void CResLoader::AddPakFileAsync(const rstl::string& filePath, bool a, bool b) {
 #endif
 
+void CResLoader::AddPakFileAsync(const rstl::string& filePath, RSTL_PRIME1_CONST bool a,
+                                 RSTL_PRIME1_CONST bool b) {
   const rstl::string pathWithExt(filePath + ".pak");
 
   if (CDvdFile::FileExists(pathWithExt.data())) {
@@ -471,45 +434,35 @@ void CResLoader::AddPakFileAsync(const rstl::string& filePath, bool a, bool b) {
 void CResLoader::RemovePakFile(const rstl::string& filePath) {
   rstl::string pathWithExt(filePath + ".pak");
   ClearCache();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::list< rstl::auto_ptr< CPakFile > >* lists[] = {&mAramList, &mPakLoadedList};
-#else
   PakList* lists[] = {&mAramList, &mPakLoadedList};
-#endif
 
   for (int i = 0; i < ARRAY_SIZE(lists); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::list< rstl::auto_ptr< CPakFile > >& list = *lists[i];
-    for (AUTO(it, list.begin()); it != list.end(); ++it) {
-#else
     PakList& list = *lists[i];
-    for (PakList::iterator it = list.begin(); it != list.end(); ++it) {
-#endif
-
-      const CPakFile* pak = it->get();
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      if (CStringExtras::CompareCaseInsensitive(pak->GetDvdFile().GetFilename(), pathWithExt) == 0) {
+        AUTO(it, list.begin());
 #else
+        PakList::iterator it = list.begin();
+#endif
+        it != list.end(); ++it) {
+      const CPakFile* pak = it->get();
       if (CStringExtras::CompareCaseInsensitive(pak->GetDvdFile().GetFilename(), pathWithExt) ==
           0) {
-#endif
-
         list.erase(it);
         return;
       }
     }
   }
 
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mPakLoadingList.begin()); it != mPakLoadingList.end(); ++it) {
+      AUTO(it, mPakLoadingList.begin());
 #else
-  for (PakList::iterator it = mPakLoadingList.begin(); it != mPakLoadingList.end(); ++it) {
+      PakList::iterator it = mPakLoadingList.begin();
 #endif
-
+      it != mPakLoadingList.end(); ++it) {
     const CPakFile* pak = it->get();
     if (CStringExtras::CompareCaseInsensitive(pak->GetDvdFile().GetFilename(), pathWithExt) == 0) {
       while (!pak->IsCompletelyLoaded()) {
@@ -542,24 +495,19 @@ const rstl::vector< CAssetId >* CResLoader::GetTagListForFile(const rstl::string
 #endif
 
 rstl::vector< rstl::pair< rstl::string, SObjectTag > > CResLoader::GetResourceIdToNameList() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const rstl::list< rstl::auto_ptr< CPakFile > >* lists[] = {&mAramList, &mPakLoadedList};
-#else
   const PakList* lists[] = {&mAramList, &mPakLoadedList};
-#endif
 
   int nameCount = 0;
   for (int i = 0; i < ARRAY_SIZE(lists); ++i) {
+    const PakList& list = *lists[i];
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    const rstl::list< rstl::auto_ptr< CPakFile > >& list = *lists[i];
-    for (AUTO(it, list.begin()); it != list.end(); ++it) {
+        AUTO(it, list.begin());
 #else
-    const PakList& list = *lists[i];
-    for (PakList::const_iterator it = list.begin(); it != list.end(); ++it) {
+        PakList::const_iterator it = list.begin();
 #endif
-
+        it != list.end(); ++it) {
       const CPakFile* pak = it->get();
       if (!pak->IsStashedInARAM()) {
         nameCount += pak->GetStringToObjectList().size();
@@ -576,16 +524,8 @@ rstl::vector< rstl::pair< rstl::string, SObjectTag > > CResLoader::GetResourceId
 #endif
 
   for (int i = 0; i < ARRAY_SIZE(lists); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const rstl::list< rstl::auto_ptr< CPakFile > >& list = *lists[i];
-    for (rstl::list< rstl::auto_ptr< CPakFile > >::const_iterator it = list.begin();
-         it != list.end(); ++it) {
-#else
     const PakList& list = *lists[i];
     for (PakList::const_iterator it = list.begin(); it != list.end(); ++it) {
-#endif
-
       const CPakFile* pak = it->get();
       if (!pak->IsStashedInARAM()) {
         const rstl::vector< rstl::pair< rstl::string, SObjectTag > >& tagList =
@@ -600,11 +540,11 @@ rstl::vector< rstl::pair< rstl::string, SObjectTag > > CResLoader::GetResourceId
 int CResLoader::GetPakCount() const { return mAramList.size() + mPakLoadedList.size(); }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-CPakFile* CResLoader::GetPakFile(const int idx) const {
+CPakFile*
 #else
-const CPakFile* CResLoader::GetPakFile(const int idx) const {
+const CPakFile*
 #endif
-
+CResLoader::GetPakFile(const int idx) const {
   int numAramPaks = mAramList.size();
   if (idx < numAramPaks) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -613,7 +553,6 @@ const CPakFile* CResLoader::GetPakFile(const int idx) const {
 #else
     PakList::const_iterator it = mAramList.begin();
 #endif
-
     for (int i = 0; i < idx; ++it, ++i) {
     }
     return it->get();
@@ -625,7 +564,6 @@ const CPakFile* CResLoader::GetPakFile(const int idx) const {
 #else
   PakList::const_iterator it = mPakLoadedList.begin();
 #endif
-
   for (int i = 0; i < idx - numAramPaks; ++it, ++i) {
   }
   return it->get();
@@ -640,9 +578,6 @@ CPakFile* CResLoader::GetPakFile(const int idx) {
     }
     return it->get();
   }
-#endif
-
-#if !RSTL_PRIME1
   PakList::const_iterator it = mPakLoadedList.begin();
   for (int i = 0; i < idx - numAramPaks; ++it, ++i) {
   }

@@ -4,9 +4,7 @@
 
 #include "Kyoto/Math/CVector3f.hpp"
 
-#if !RSTL_PRIME1
 class CMotionState;
-#endif
 
 class CVector3d {
 public:
@@ -24,17 +22,16 @@ public:
   double GetX() const { return mX; }
   double GetY() const { return mY; }
   double GetZ() const { return mZ; }
+  double& operator[](int i) { return (&mX)[i]; }
+  const double& operator[](RSTL_PRIME1_CONST int i) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  double& operator[](int i) { return (&mX)[i]; }
-  const double& operator[](const int i) const {
     const double* data = &mX;
     return data[i];
-  }
 #else
-  double& operator[](int index) { return (&mX)[index]; }
-  const double& operator[](int index) const { return (&mX)[index]; }
+    return (&mX)[i];
 #endif
+  }
 
   static double Dot(const CVector3d& a, const CVector3d& b);
   static CVector3d Cross(const CVector3d& a, const CVector3d& b);
@@ -55,7 +52,6 @@ private:
   static CVector3d sForwardVector;
   static CVector3d sBackVector;
 #endif
-
 };
 
 CVector3d operator+(const CVector3d& lhs, const CVector3d& rhs);

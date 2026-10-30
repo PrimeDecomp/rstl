@@ -51,22 +51,19 @@ public:
     rstl::single_ptr< uchar > mData;
 
   public:
+    CDumpedBitmapDataReloader(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CDumpedBitmapDataReloader(uint unk1, uint unk2, bool unk3);
+        uint textureId,
 #else
-    CDumpedBitmapDataReloader(CAssetId textureId, uint bitmapSize, bool loadToARAM);
+        CAssetId textureId,
 #endif
+        uint bitmapSize, bool loadToARAM);
 
     void BeginReloadBitmapData(CResFactory& factory);
     void* TryBuildReloadedBitmapData(CResFactory& factory);
     int GetStatus() const { return mState; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     const bool GetShouldBeInARAM() const { return mShouldBeInARAM; }
-#else
-    const bool GetShouldBeInARAM() const { return mShouldBeInARAM; } // Guessed name.
-#endif
 
   };
 
@@ -112,7 +109,7 @@ public:
   const char GetBitsPerPixel() const { return mBitsPerPixel; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  void UnloadBitmapData(uint unk) const;
+  void UnloadBitmapData(uint textureId) const;
 #else
   void UnloadBitmapData(CAssetId textureId) const;
 #endif

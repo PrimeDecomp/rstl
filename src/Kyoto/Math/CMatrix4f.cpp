@@ -47,13 +47,7 @@ CVector3f CMatrix4f::MultiplyOneOverW(const CVector3f& vec) const {
   y *= (1.f / w);
   z *= (1.f / w);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return CVector3f(x , y, z);
-#else
   return CVector3f(x, y, z);
-#endif
-
 }
 
 float CMatrix4f::MultiplyGetW(const CVector3f& vec) const {

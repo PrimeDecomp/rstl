@@ -82,7 +82,6 @@ public:
 #else
     return CVector3f::Dot(a.GetVector(), b.GetVector()) + a.GetScalar() * b.GetScalar();
 #endif
-
   }
 
   bool LocalTo(const CQuaternion& other) const { return Dot(other, *this) >= 0.f; }

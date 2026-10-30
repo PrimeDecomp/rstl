@@ -78,9 +78,6 @@ void CAdditiveAnimPlayback::AddToSegStatementSet(const CSegIdList& list,
                                                  const CCharLayoutInfo& charInfo,
                                                  CSegStatementSet& set) const {
   CStackSegStatementSet stackSegSet;
-#endif
-
-#if RSTL_PRIME1
   mAnim->VGetSegStatementSet(list, stackSegSet);
 
   const size_t count = list.Size();

@@ -39,22 +39,7 @@ ECardResult SMemoryCardFileInfo::FileRead() {
     if (result != kCR_READY) {
       mSaveFileData = rstl::vector< uchar, rstl::aligned_allocator >();
       return result;
-#else
-CMemoryCardSys::CCardFileInfo::Icon::Icon(CAssetId id, int speed, CSimplePool& pool)
-: mId(id), mSpeed(speed), mTex(pool.GetObj(SObjectTag('TXTR', id))) {}
-
-CMemoryCardSys::CCardFileInfo::SSaveSlot::SSaveSlot() : mGeneration(0), mCorrupt(false) {}
-
-void CMemoryCardSys::CCardFileInfo::SSaveSlot::CheckCrc() {
-  const uint* data = reinterpret_cast< const uint* >(mData.data());
-  const uint crc = BE_SWAP(data[0]);
-  mCorrupt = CCRC32::Calculate(data + 1, mData.size() - 4, 0xFFFFFFFF) != crc;
-  mGeneration = BE_SWAP(data[1]);
-#endif
-
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     const uint saveSize = size - offset;
     saveData.assign(saveSize);
     (memcpy)(saveData.data(), static_cast< const uchar* >(data) + offset, saveSize);
@@ -63,64 +48,23 @@ void CMemoryCardSys::CCardFileInfo::SSaveSlot::CheckCrc() {
   } else {
     mSaveFileData = rstl::vector< uchar, rstl::aligned_allocator >();
     return kCR_CRC_MISMATCH;
-#else
-CMemoryCardSys::CCardFileInfo::CCardFileInfo(EMemoryCardPort port, const rstl::string& name)
-: mSlotBlocks(0)
-, mAlignedUserDataSize(0)
-, mSlot(0)
-, mGeneration(0)
-, mState(kS_Standby)
-, mNewFile(false)
-, mFileName(name)
-, x4c_(0)
-, mBannerTex(kInvalidAssetId)
-, mHeaderBuffer(0x2000, uchar())
-, mSlots(2, SSaveSlot()) {
-  mFileInfo.chan = port;
-  mFileInfo.fileNo = -1;
-}
-
-CMemoryCardSys::CCardFileInfo::~CCardFileInfo() {
-  if (mFileInfo.fileNo != -1) {
-    CARDClose(&mFileInfo);
-#endif
-
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 static int RoundUpCardSize(int size, int align) { return (size + align - 1) & ~(align - 1); }
 
+#endif
 CMemoryCardSys::CCardFileInfo::Icon::Icon(CAssetId id, int speed, CSimplePool& pool)
 : mId(id)
 , mSpeed(speed)
 , mTex(pool.GetObj(SObjectTag('TXTR', id))) {}
 
-CMemoryCardSys::EMemoryCardPort SMemoryCardFileInfo::GetFileCardPort() {
-  return static_cast< CMemoryCardSys::EMemoryCardPort >(mFileInfo.chan);
-#else
-ECardResult CMemoryCardSys::CCardFileInfo::Open() {
-  const EMemoryCardPort port = GetPort();
-  ECardResult result = static_cast< ECardResult >(CARDOpen(port, mFileName.data(), &mFileInfo));
-  mFileInfo.chan = port;
-  if (result == kCR_READY) {
-    CardStat stat;
-    ECardResult statResult = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
-    if (statResult != kCR_READY) {
-      return statResult;
-    }
-    const int blocks = stat.GetFileLength() / 0x2000;
-    mSlotBlocks = (blocks - 1) / 2;
-    mAlignedUserDataSize = mSlotBlocks * 0x2000;
-  }
-  return result;
-#endif
-
-}
-
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+CMemoryCardSys::EMemoryCardPort SMemoryCardFileInfo::GetFileCardPort() {
+  return static_cast< CMemoryCardSys::EMemoryCardPort >(mFileInfo.chan);
+}
+
 int SMemoryCardFileInfo::GetFileNo() const { return mFileInfo.fileNo; }
 
 CMemoryCardSys::CCardFileInfo::SSaveBlock::SSaveBlock()
@@ -132,20 +76,8 @@ void CMemoryCardSys::CCardFileInfo::SSaveBlock::Check() {
   const uint crc = data[0];
   mCorrupted = crc != CCRC32::Calculate(data + 1, mData.size() - 4);
   mSequence = data[1];
-#else
-ECardResult CMemoryCardSys::CCardFileInfo::CreateFile() {
-  mNewFile = true;
-  mAlignedUserDataSize = RoundUp(mUserDataWrite.size(), 0x2000);
-  mSlotBlocks = mAlignedUserDataSize / 0x2000;
-  const int size = GetTotalNumBlocks() * 0x2000;
-  return static_cast< ECardResult >(
-      CARDCreateAsync(GetPort(), mFileName.data(), size, &mFileInfo, nullptr));
-#endif
-
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
 CMemoryCardSys::CCardFileInfo::CCardFileInfo(EMemoryCardPort port, const rstl::string& name)
 : mBlockCount(0)
@@ -158,8 +90,7 @@ CMemoryCardSys::CCardFileInfo::CCardFileInfo(EMemoryCardPort port, const rstl::s
 , x38_(0)
 , mBannerTex(kInvalidAssetId)
 , mHeaderBuffer(8192, static_cast< uchar >(0), rstl::aligned_allocator())
-, mSaveBlocks(2, SSaveBlock())
-{
+, mSaveBlocks(2, SSaveBlock()) {
   mFileInfo.chan = port;
   mFileInfo.fileNo = -1;
 }
@@ -357,6 +288,63 @@ ECardResult CMemoryCardSys::CCardFileInfo::PumpCardTransfer() {
 }
 #endif
 #else
+CMemoryCardSys::CCardFileInfo::SSaveSlot::SSaveSlot() : mGeneration(0), mCorrupt(false) {}
+
+void CMemoryCardSys::CCardFileInfo::SSaveSlot::CheckCrc() {
+  const uint* data = reinterpret_cast< const uint* >(mData.data());
+  const uint crc = BE_SWAP(data[0]);
+  mCorrupt = CCRC32::Calculate(data + 1, mData.size() - 4, 0xFFFFFFFF) != crc;
+  mGeneration = BE_SWAP(data[1]);
+}
+
+CMemoryCardSys::CCardFileInfo::CCardFileInfo(EMemoryCardPort port, const rstl::string& name)
+: mSlotBlocks(0)
+, mAlignedUserDataSize(0)
+, mSlot(0)
+, mGeneration(0)
+, mState(kS_Standby)
+, mNewFile(false)
+, mFileName(name)
+, x4c_(0)
+, mBannerTex(kInvalidAssetId)
+, mHeaderBuffer(0x2000, uchar())
+, mSlots(2, SSaveSlot()) {
+  mFileInfo.chan = port;
+  mFileInfo.fileNo = -1;
+}
+
+CMemoryCardSys::CCardFileInfo::~CCardFileInfo() {
+  if (mFileInfo.fileNo != -1) {
+    CARDClose(&mFileInfo);
+  }
+}
+
+ECardResult CMemoryCardSys::CCardFileInfo::Open() {
+  const EMemoryCardPort port = GetPort();
+  ECardResult result = static_cast< ECardResult >(CARDOpen(port, mFileName.data(), &mFileInfo));
+  mFileInfo.chan = port;
+  if (result == kCR_READY) {
+    CardStat stat;
+    ECardResult statResult = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
+    if (statResult != kCR_READY) {
+      return statResult;
+    }
+    const int blocks = stat.GetFileLength() / 0x2000;
+    mSlotBlocks = (blocks - 1) / 2;
+    mAlignedUserDataSize = mSlotBlocks * 0x2000;
+  }
+  return result;
+}
+
+ECardResult CMemoryCardSys::CCardFileInfo::CreateFile() {
+  mNewFile = true;
+  mAlignedUserDataSize = RoundUp(mUserDataWrite.size(), 0x2000);
+  mSlotBlocks = mAlignedUserDataSize / 0x2000;
+  const int size = GetTotalNumBlocks() * 0x2000;
+  return static_cast< ECardResult >(
+      CARDCreateAsync(GetPort(), mFileName.data(), size, &mFileInfo, nullptr));
+}
+
 ECardResult CMemoryCardSys::CCardFileInfo::StartRead() {
   CardStat stat;
   ECardResult result = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
@@ -374,12 +362,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::StartRead() {
   }
   return result;
 }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CMemoryCardSys::EMemoryCardPort CMemoryCardSys::CCardFileInfo::GetCardPort() {
-#else
 ECardResult CMemoryCardSys::CCardFileInfo::PumpCardRead() {
   if (mState == kS_Standby) {
     return kCR_READY;
@@ -485,10 +468,16 @@ ECardResult CMemoryCardSys::CCardFileInfo::PumpCardTransfer() {
     return kCR_READY;
   }
 }
-
-CMemoryCardSys::EMemoryCardPort CMemoryCardSys::CCardFileInfo::GetPort() {
 #endif
 
+CMemoryCardSys::EMemoryCardPort CMemoryCardSys::CCardFileInfo::
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+GetCardPort
+#else
+GetPort
+#endif
+() {
   return static_cast< EMemoryCardPort >(mFileInfo.chan);
 }
 
@@ -511,12 +500,6 @@ ECardResult SMemoryCardFileInfo::GetSaveDataOffset(uint& offOut) {
   } else if (bannerFormat == CARD_STAT_BANNER_RGB5A3) {
     offOut += 6144;
   }
-#else
-int CMemoryCardSys::CCardFileInfo::GetTotalNumBlocks() { return mSlotBlocks * 2 + 1; }
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   bool palette = false;
   int idx = 0;
   int format = stat.GetIconFormat(idx);
@@ -539,12 +522,18 @@ int CMemoryCardSys::CCardFileInfo::GetTotalNumBlocks() { return mSlotBlocks * 2 
 #if RSTL_VERSION >= RSTL_GM8P_00
 int CMemoryCardSys::CCardFileInfo::GetTotalBlockCount() { return 2 * mBlockCount + 1; }
 #endif
-
-void CMemoryCardSys::CCardFileInfo::ResetBannerAndIcons() {
 #else
-void CMemoryCardSys::CCardFileInfo::ResetHeaderInfo() {
+int CMemoryCardSys::CCardFileInfo::GetTotalNumBlocks() { return mSlotBlocks * 2 + 1; }
 #endif
 
+void CMemoryCardSys::CCardFileInfo::
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+ResetBannerAndIcons
+#else
+ResetHeaderInfo
+#endif
+() {
   mComment = rstl::string();
   mBannerTex = kInvalidAssetId;
   mBannerTok = rstl::optional_object< TLockedToken< CTexture > >();
@@ -552,54 +541,7 @@ void CMemoryCardSys::CCardFileInfo::ResetHeaderInfo() {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-void CMemoryCardSys::CCardFileInfo::SetComment(const rstl::string& comment) {
-  mComment = comment;
-}
-
-void CMemoryCardSys::CCardFileInfo::LockBannerToken(CAssetId bannerTxtr, CSimplePool& pool) {
-  mBannerTex = bannerTxtr;
-  mBannerTok = TLockedToken< CTexture >(pool.GetObj(SObjectTag('TXTR', mBannerTex)));
-}
-
-void CMemoryCardSys::CCardFileInfo::LockIconToken(CAssetId iconTxtr, int speed, CSimplePool& pool) {
-  mIconToks.push_back(Icon(iconTxtr, speed, pool));
-}
-
-ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
-  ECardResult result = CMemoryCardSys::GetStatus(GetCardPort(), GetFileNo(), stat);
-  if (result != kCR_READY) {
-    return result;
-  }
-  stat.SetCommentAddr(4);
-  stat.SetIconAddr(68);
-  int bannerFormat;
-  if (mBannerTex == kInvalidAssetId) {
-    bannerFormat = CARD_STAT_BANNER_NONE;
-  } else if ((*mBannerTok)->GetTexelFormat() == kTF_RGB5A3) {
-    bannerFormat = CARD_STAT_BANNER_RGB5A3;
-  } else {
-    bannerFormat = CARD_STAT_BANNER_C8;
-  }
-  stat.SetBannerFormat(bannerFormat);
-  int i = 0;
-  for (; i < mIconToks.size(); ++i) {
-    int format = CARD_STAT_ICON_C8;
-    if (mIconToks[i].mTex->GetTexelFormat() == kTF_RGB5A3) {
-      format = CARD_STAT_ICON_RGB5A3;
-    }
-    stat.SetIconFormat(format, i);
-    stat.SetIconSpeed(mIconToks[i].mSpeed, i);
-  }
-  if (i < 8) {
-    stat.SetIconFormat(CARD_STAT_ICON_NONE, i);
-    stat.SetIconSpeed(CARD_STAT_SPEED_END, i);
-  }
-  return kCR_READY;
-}
-#endif
-#else
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
 void CMemoryCardSys::CCardFileInfo::SetComment(const rstl::string& comment) { mComment = comment; }
 
 void CMemoryCardSys::CCardFileInfo::LockBannerToken(CAssetId bannerTxtr, CSimplePool& pool) {
@@ -612,7 +554,14 @@ void CMemoryCardSys::CCardFileInfo::LockIconToken(CAssetId iconTxtr, int speed, 
 }
 
 ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
-  ECardResult result = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
+  ECardResult result = CMemoryCardSys::GetStatus(
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+      GetCardPort(),
+#else
+      GetPort(),
+#endif
+      GetFileNo(), stat);
   if (result != kCR_READY) {
     return result;
   }
@@ -621,17 +570,41 @@ ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
   int bannerFormat;
   if (mBannerTex == kInvalidAssetId) {
     bannerFormat = CARD_STAT_BANNER_NONE;
-  } else if ((*mBannerTok.data())->GetTexelFormat() == kTF_RGB5A3) {
+  } else if (
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+      (*mBannerTok)->GetTexelFormat()
+#else
+      (*mBannerTok.data())->GetTexelFormat()
+#endif
+      == kTF_RGB5A3) {
     bannerFormat = CARD_STAT_BANNER_RGB5A3;
   } else {
     bannerFormat = CARD_STAT_BANNER_C8;
   }
   stat.SetBannerFormat(bannerFormat);
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   const int count = mIconToks.size();
+#endif
   int i = 0;
-  for (; i < count; ++i) {
+  for (; i <
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+              mIconToks.size()
+#else
+              count
+#endif
+       ; ++i) {
     int format = CARD_STAT_ICON_C8;
-    if ((*mIconToks[i].mTex)->GetTexelFormat() == kTF_RGB5A3) {
+    if (
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+        mIconToks[i].mTex->GetTexelFormat()
+#else
+        (*mIconToks[i].mTex)->GetTexelFormat()
+#endif
+        == kTF_RGB5A3) {
       format = CARD_STAT_ICON_RGB5A3;
     }
     stat.SetIconFormat(format, i);
@@ -653,7 +626,6 @@ void CMemoryCardSys::CCardFileInfo::WriteBannerData(COutputStream& out) {
 #else
     const CTexture& texture = **mBannerTok.data();
 #endif
-
     const ETexelFormat format = texture.GetTexelFormat();
     const void* data = texture.GetConstBitMapData(0);
     const uint size = format == kTF_RGB5A3 ? 6144 : 3072;
@@ -667,13 +639,17 @@ void CMemoryCardSys::CCardFileInfo::WriteBannerData(COutputStream& out) {
 void CMemoryCardSys::CCardFileInfo::WriteIconData(COutputStream& out) {
   const void* palette = nullptr;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  for (int i = 0; i < mIconToks.size(); ++i) {
-#else
+#if !RSTL_PRIME1
   const int count = mIconToks.size();
-  for (int i = 0; i < count; ++i) {
 #endif
-
+  for (int i = 0; i <
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+                    mIconToks.size()
+#else
+                    count
+#endif
+       ; ++i) {
     const CTexture& texture = **mIconToks[i].mTex;
     const ETexelFormat format = texture.GetTexelFormat();
     const void* data = texture.GetConstBitMapData(0);
@@ -688,19 +664,24 @@ void CMemoryCardSys::CCardFileInfo::WriteIconData(COutputStream& out) {
   }
 }
 
+void CMemoryCardSys::CCardFileInfo::
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-void CMemoryCardSys::CCardFileInfo::BuildCardBuffer() {
+BuildCardBuffer
+#else
+BuildHeaderBuffer
+#endif
+() {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   const uint bannerSize = CalculateBannerDataSize();
   const uint totalSize = (bannerSize + mSaveBuffer.size() + 8191) & ~8191;
   mCardBuffer.assign(totalSize);
   void* data = mCardBuffer.data();
 #else
-void CMemoryCardSys::CCardFileInfo::BuildHeaderBuffer() {
   mHeaderBuffer.assign(0x2000);
   uint* data = reinterpret_cast< uint* >(mHeaderBuffer.data());
 #endif
-
   {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -708,7 +689,6 @@ void CMemoryCardSys::CCardFileInfo::BuildHeaderBuffer() {
 #else
     CMemoryStreamOut out(data, 0x2000);
 #endif
-
     out.WriteInt32(0);
     char comment[64];
     strncpy(comment, mComment.data(), sizeof(comment));
@@ -728,7 +708,6 @@ void CMemoryCardSys::CCardFileInfo::BuildHeaderBuffer() {
 #else
   data[0] = BE_SWAP(CCRC32::Calculate(data + 1, 0x2000 - 4, 0xFFFFFFFF));
 #endif
-
 }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -738,66 +717,22 @@ uint CMemoryCardSys::CCardFileInfo::CalculateTotalDataSize() {
   uint totalSize = CalculateBannerDataSize();
   totalSize += saveSize;
   return (totalSize + 8191) & ~8191;
-#else
-void CMemoryCardSys::CCardFileInfo::BuildSaveSlot() {
-  SSaveSlot& slot = mSlots[mSlot];
-  slot.mData.assign(mAlignedUserDataSize);
-  uint* data = reinterpret_cast< uint* >(slot.mData.data());
-  (memcpy)(data + 2, mUserDataWrite.data(), mUserDataWrite.size());
-  data[1] = BE_SWAP(mGeneration);
-  data[0] = BE_SWAP(CCRC32::Calculate(data + 1, mAlignedUserDataSize - 4, 0xFFFFFFFF));
-  mUserDataWrite = rstl::vector< uchar >();
-#endif
-
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 uint CMemoryCardSys::CCardFileInfo::CalculateBannerDataSize() {
   uint size = 68;
   if (mBannerTex != kInvalidAssetId) {
     if ((*mBannerTok)->GetTexelFormat() == kTF_RGB5A3) {
       size = 6212;
-#else
-ECardResult CMemoryCardSys::CCardFileInfo::SelectSaveSlot() {
-  SSaveSlot& slotA = mSlots[0];
-  SSaveSlot& slotB = mSlots[1];
-  slotA.CheckCrc();
-  slotB.CheckCrc();
-
-  ECardResult result = kCR_READY;
-  int slot = -1;
-  if (slotA.mCorrupt) {
-    if (slotB.mCorrupt) {
-      result = kCR_CRC_MISMATCH;
-#endif
-
     } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       size = 3652;
-#else
-      slot = 1;
-      mGeneration = slotB.mGeneration;
-#endif
-
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   }
   bool palette = false;
   for (int i = 0; i < mIconToks.size(); ++i) {
     if (mIconToks[i].mTex->GetTexelFormat() == kTF_RGB5A3) {
       size += 2048;
-#else
-  } else if (slotB.mCorrupt) {
-    slot = 0;
-    mGeneration = 1 - slotA.mGeneration;
-#endif
-
     } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       size += 1024;
       palette = true;
     }
@@ -806,15 +741,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::SelectSaveSlot() {
     size += 512;
   }
   return size;
-#else
-    slot = slotA.mGeneration ^ slotB.mGeneration;
-    mGeneration = slot != 0 ? slotB.mGeneration : 1 - slotA.mGeneration;
-#endif
-
 }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
 void CMemoryCardSys::CCardFileInfo::BuildHeader() {
   mHeaderBuffer.assign(8192);
@@ -884,6 +811,38 @@ ECardResult CMemoryCardSys::CCardFileInfo::CheckHeader() {
 }
 #endif
 #else
+void CMemoryCardSys::CCardFileInfo::BuildSaveSlot() {
+  SSaveSlot& slot = mSlots[mSlot];
+  slot.mData.assign(mAlignedUserDataSize);
+  uint* data = reinterpret_cast< uint* >(slot.mData.data());
+  (memcpy)(data + 2, mUserDataWrite.data(), mUserDataWrite.size());
+  data[1] = BE_SWAP(mGeneration);
+  data[0] = BE_SWAP(CCRC32::Calculate(data + 1, mAlignedUserDataSize - 4, 0xFFFFFFFF));
+  mUserDataWrite = rstl::vector< uchar >();
+}
+
+ECardResult CMemoryCardSys::CCardFileInfo::SelectSaveSlot() {
+  SSaveSlot& slotA = mSlots[0];
+  SSaveSlot& slotB = mSlots[1];
+  slotA.CheckCrc();
+  slotB.CheckCrc();
+
+  ECardResult result = kCR_READY;
+  int slot = -1;
+  if (slotA.mCorrupt) {
+    if (slotB.mCorrupt) {
+      result = kCR_CRC_MISMATCH;
+    } else {
+      slot = 1;
+      mGeneration = slotB.mGeneration;
+    }
+  } else if (slotB.mCorrupt) {
+    slot = 0;
+    mGeneration = 1 - slotA.mGeneration;
+  } else {
+    slot = slotA.mGeneration ^ slotB.mGeneration;
+    mGeneration = slot != 0 ? slotB.mGeneration : 1 - slotA.mGeneration;
+  }
   mLoadedData = rstl::vector< uchar >();
   if (slot != -1) {
     mSlot = 1 - slot;
@@ -895,20 +854,21 @@ ECardResult CMemoryCardSys::CCardFileInfo::CheckHeader() {
   slotB.mData = rstl::vector< uchar, rstl::aligned_allocator >();
   return result;
 }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CardStat::GetFileLength() { return mStat.length; }
-#else
 ECardResult CMemoryCardSys::CCardFileInfo::CheckHeaderCrc() {
   const uint* data = reinterpret_cast< const uint* >(mHeaderBuffer.data());
   const uint crc = BE_SWAP(data[0]);
   return crc == CCRC32::Calculate(data + 1, 0x2000 - 4, 0xFFFFFFFF) ? kCR_READY : kCR_CRC_MISMATCH;
 }
-
-uint CardStat::GetFileLength() { return mStat.length; }
 #endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+int
+#else
+uint
+#endif
+CardStat::GetFileLength() { return mStat.length; }
 
 int CardStat::GetTime() const { return mStat.time; }
 #if RSTL_PRIME1
@@ -929,12 +889,8 @@ void CardStat::SetIconAddr(int addr) { CARDSetIconAddress(&mStat, addr); }
 
 void CardStat::SetCommentAddr(int addr) { CARDSetCommentAddress(&mStat, addr); }
 
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_GM8P_00
-void CMemoryCardSys::CCardFileInfo::SetComment(const rstl::string& comment) {
-  mComment = comment;
-}
-#endif
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
+void CMemoryCardSys::CCardFileInfo::SetComment(const rstl::string& comment) { mComment = comment; }
 #endif
 
 CMemoryCardSys::CMemoryCardSys() {
@@ -943,16 +899,7 @@ CMemoryCardSys::CMemoryCardSys() {
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if !TARGET_PC
-void CMemoryCardSys::Initialize() {
-  if (!mIsInitialized) {
-    CARDInit();
-    mIsInitialized = true;
-  }
-}
-#endif
-#else
+#if !RSTL_PRIME1 || !TARGET_PC
 void CMemoryCardSys::Initialize() {
   if (!mIsInitialized) {
     CARDInit();
@@ -976,14 +923,14 @@ ProbeResults CMemoryCardSys::IsMemoryCardInserted(EMemoryCardPort port) {
 
 ECardResult CMemoryCardSys::GetResultCode(int port) {
   return static_cast< ECardResult >(CARDGetResultCode(port));
-#if RSTL_PRIME1
 }
 
+#if RSTL_PRIME1
 ECardResult CMemoryCardSys::MountCardSync(EMemoryCardPort port) {
   return static_cast< ECardResult >(CARDMount(port, AllocCardWorkArea(port), nullptr));
-#endif
-
 }
+
+#endif
 
 ECardResult CMemoryCardSys::MountCard(EMemoryCardPort port) {
   return static_cast< ECardResult >(
@@ -1023,8 +970,7 @@ CMemoryCardSys::CCardFileInfo::CCardFileInfo(EMemoryCardPort port, const rstl::s
 : mStatus(kS_Standby)
 , mFileName(name)
 , x38_(0)
-, mBannerTex(kInvalidAssetId)
-{
+, mBannerTex(kInvalidAssetId) {
   mFileInfo.chan = port;
   mFileInfo.fileNo = -1;
 }
@@ -1089,9 +1035,9 @@ ECardResult CMemoryCardSys::Rename(EMemoryCardPort port, const rstl::string& old
 
 ECardResult CMemoryCardSys::CheckCard(EMemoryCardPort port) {
   return static_cast< ECardResult >(CARDCheckAsync(port, nullptr));
-#if RSTL_PRIME1
 }
 
+#if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8P_00
 ECardResult CMemoryCardSys::CCardFileInfo::WriteFile() {
   BuildCardBuffer();
@@ -1194,9 +1140,8 @@ ECardResult SMemoryCardFileInfo::TryFileRead() {
     return result;
   }
   return FileRead();
-#endif
-
 }
+#endif
 
 ECardResult CMemoryCardSys::GetSerialNo(EMemoryCardPort port, long long& serialOut) {
   return static_cast< ECardResult >(CARDGetSerialNo(port, reinterpret_cast< u64* >(&serialOut)));
@@ -1215,19 +1160,15 @@ ECardResult CMemoryCardSys::SetStatus(EMemoryCardPort port, int fileNo, const Ca
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-TCardWorkArea&
-#else
+#if !RSTL_PRIME1
 bool CMemoryCardSys::mIsInitialized;
 bool CMemoryCardSys::mIsCardSysExists;
 bool CMemoryCardSys::mIsCardBusy;
-rstl::vector< char, rstl::aligned_allocator > CMemoryCardSys::mWorkAreaA;
-rstl::vector< char, rstl::aligned_allocator > CMemoryCardSys::mWorkAreaB;
+TCardWorkArea CMemoryCardSys::mWorkAreaA;
+TCardWorkArea CMemoryCardSys::mWorkAreaB;
 
-rstl::vector< char, rstl::aligned_allocator >&
 #endif
-
-CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
+TCardWorkArea& CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
   switch (port) {
   case kCS_SlotA:
     return mWorkAreaA;
@@ -1239,13 +1180,7 @@ CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
 }
 
 char* CMemoryCardSys::AllocCardWorkArea(EMemoryCardPort port) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   TCardWorkArea& area = WorkAreaVector(port);
-#else
-  rstl::vector< char, rstl::aligned_allocator >& area = WorkAreaVector(port);
-#endif
-
   area.resize(0xa000);
   char* data = area.data();
   DCInvalidateRange(data, area.size());
@@ -1253,14 +1188,6 @@ char* CMemoryCardSys::AllocCardWorkArea(EMemoryCardPort port) {
 }
 
 void CMemoryCardSys::FreeCardWorkArea(EMemoryCardPort port) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   TCardWorkArea& area = WorkAreaVector(port);
   area = TCardWorkArea();
-#else
-  rstl::vector< char, rstl::aligned_allocator >& area = WorkAreaVector(port);
-  area = rstl::vector< char, rstl::aligned_allocator >();
-#endif
-
 }
-

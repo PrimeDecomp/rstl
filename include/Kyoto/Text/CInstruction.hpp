@@ -18,15 +18,9 @@ public:
   virtual void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const {}
   virtual void GetAssets(rstl::vector< CToken >& assetsOut) const {}
   virtual uint GetAssetCount() const { return 0; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   virtual bool IsLineInstruction() const { return false; }
 #endif
-#else
-  virtual bool IsLineInstruction() const { return false; }
-#endif
-
 };
 
 inline CInstruction::~CInstruction() {}

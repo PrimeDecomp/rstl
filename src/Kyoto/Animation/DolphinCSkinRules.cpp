@@ -25,17 +25,7 @@ static int StreamFloatToShort(CInputStream& in) {
   const int result = in.Get< int >();
   if (result == -1) {
     return in.ReadLong();
-#else
-CSkinRules::CSkinRules(CInputStream& in)
-: mBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
-  if (mVertexCount > 0) {
-    mVertexToBone = rs_new uchar[mVertexCount];
-    in.Get(mVertexToBone.get(), mVertexCount);
-#endif
-
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   uchar junk[780];
   for (int i = 0, iVar2 = 0; i < (result * 3); i += iVar2) {
     iVar2 = rstl::min_val(((result * 3) - i), 192);
@@ -48,13 +38,18 @@ CSkinRules::CSkinRules(CInputStream& in)
 : mVirtualBones(in)
 , mVertexCount(StreamFloatToShort(in))
 , mNormalCount(StreamFloatToShort(in)) {
-
   CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
-#else
-  CModel::AddToTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
-#endif
-
 }
+#else
+CSkinRules::CSkinRules(CInputStream& in)
+: mBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
+  if (mVertexCount > 0) {
+    mVertexToBone = rs_new uchar[mVertexCount];
+    in.Get(mVertexToBone.get(), mVertexCount);
+  }
+  CModel::AddToTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+}
+#endif
 
 CSkinRules::~CSkinRules() {
 // TODO: verify that this Prime/Echoes difference is real
@@ -63,7 +58,6 @@ CSkinRules::~CSkinRules() {
 #else
   CModel::RemoveFromTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
 #endif
-
 }
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -75,7 +69,6 @@ void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose
                                             const CCharLayoutInfo& layoutInfo,
                                             CTransform4f* out) const {
 #endif
-
   float pointStorage[100][3];
   CVector3f* points = reinterpret_cast< CVector3f* >(pointStorage);
 // TODO: verify that this Prime/Echoes difference is real
@@ -86,30 +79,29 @@ void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose
     const CVector3f& rotatedOrigin = pose.GetTransformMinusOffset(id) * origin;
     points[id.val()] = pose.GetOffset(id) - rotatedOrigin;
     id = pose.GetTransforms().GetIdAfter(id);
+  }
 #else
   const CVector3f* offsets = layoutInfo.GetLinearReferenceStanceOffsets().data();
   const int count = pose.GetElements().size();
   const CPoseAsTransforms_Linear::CElementType* elements = pose.GetElements().data();
   for (int i = 0; i < count; ++i) {
     points[i] = elements[i].mOffset - elements[i].mRotation * offsets[i];
-#endif
-
   }
+#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (int i = 0; i < mVirtualBones.size(); ++i) {
     mVirtualBones[i].BuildAccumulatedTransform(pose, points);
+  }
 #else
   const int boneCount = mBones.size();
   for (int i = 0; i < boneCount; ++i) {
     mBones[i].BuildAccumulatedTransform(pose, points, out[i]);
-#endif
-
   }
+#endif
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CSkinRules::BuildPoints(volatile void* pipe) const {
   for (int i = 0; i < mVirtualBones.size(); ++i) {
@@ -119,28 +111,10 @@ void CSkinRules::BuildPoints(volatile void* pipe) const {
       const int count = ProcessingPoints(vertexCount - done, &buffer);
       mVirtualBones[i].BuildPoints(buffer, pipe, count);
       done += count;
-#else
-CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
-                                   const CVParamTransfer& params) {
-  return rs_new CSkinRules(in);
-}
-
-void CSkinRules::LoadMatrixBank(int bank) const {
-  const int start = bank * 10;
-  const int end = start + 10 > mMatrixIndices.size() ? mMatrixIndices.size() : start + 10;
-  for (int i = start; i < end; ++i) {
-    const int index = mMatrixIndices[i];
-    if (index != -1) {
-      const int slot = (i - start) * 3;
-      GXLoadPosMtxIndx(index, slot);
-      GXLoadNrmMtxIndx3x3(index, slot);
-#endif
-
     }
   }
 }
 
-#if RSTL_PRIME1
 void CSkinRules::BuildNormals(volatile void* pipe) const {
   for (int i = 0; i < mVirtualBones.size(); ++i) {
     int vertexCount = mVirtualBones[i].GetNumIndices();
@@ -152,9 +126,7 @@ void CSkinRules::BuildNormals(volatile void* pipe) const {
     }
   }
 }
-#endif
 
-#if RSTL_PRIME1
 void CSkinRules::BuildNormalsFrom(const CVector3f* averageNormals, CVector3f* out) const {
   int offset = 0;
   for (int i = 0; i < mVirtualBones.size(); ++i) {
@@ -164,12 +136,14 @@ void CSkinRules::BuildNormalsFrom(const CVector3f* averageNormals, CVector3f* ou
     offset += count;
   }
 }
+#endif
 
-const CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
-                                         const CVParamTransfer&) {
+RSTL_PRIME1_CONST CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
+                                                     const CVParamTransfer&) {
   return rs_new CSkinRules(in);
 }
 
+#if RSTL_PRIME1
 static CSkinRules* sLockedRules = nullptr;
 static const CModel* sCurrentTransaction = nullptr;
 static int sCurrentPointCount = 0;
@@ -278,6 +252,19 @@ int CSkinRules::ProcessingNormals(int count, ushort** buf) {
     *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
     sCurrentNormal += count;
     return count;
+  }
+}
+#else
+void CSkinRules::LoadMatrixBank(int bank) const {
+  const int start = bank * 10;
+  const int end = start + 10 > mMatrixIndices.size() ? mMatrixIndices.size() : start + 10;
+  for (int i = start; i < end; ++i) {
+    const int index = mMatrixIndices[i];
+    if (index != -1) {
+      const int slot = (i - start) * 3;
+      GXLoadPosMtxIndx(index, slot);
+      GXLoadNrmMtxIndx3x3(index, slot);
+    }
   }
 }
 #endif

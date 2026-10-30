@@ -8,31 +8,33 @@
 #include "rstl/StringExtras.hpp"
 
 // TODO: verify that this Prime/Echoes difference is real
-RSTL_PRIME1_CONST CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, CInputStream& in, const CVParamTransfer&) {
-
+RSTL_PRIME1_CONST CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, CInputStream& in,
+                                                   const CVParamTransfer&) {
   return rs_new CCharLayoutInfo(in);
 }
 
 CCharLayoutNode::CCharLayoutNode(CInputStream& in)
+: mParent(in)
+, mReferenceStanceOffset(in)
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-: mParent(in), mReferenceStanceOffset(in), mConnectedParts(in) {}
-#else
-: mParent(in), mReferenceStanceOffset(in), mRotation(in), mLocalRotation(in), mConnectedParts(in) {}
+#if !RSTL_PRIME1
+, mRotation(in)
+, mLocalRotation(in)
 #endif
+, mConnectedParts(in) {}
 
 CCharLayoutInfo::CCharLayoutInfo(CInputStream& in)
 : mNodes(rstl::ownership_transfer< TSegIdMap< CCharLayoutNode > >(
       rs_new TSegIdMap< CCharLayoutNode >(in)))
 , mSegIdList(in)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mNameMap(in) {}
-#else
 , mNameMap(in) {
+// TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_PRIME1
   InitializeLinearData();
+#endif
 }
 
+#if !RSTL_PRIME1
 // Stripped by the linker; they keep the original template emission order.
 static void DeleteSegIdList(CSegIdList* list) { delete list; }
 
@@ -65,18 +67,16 @@ CSegId CCharLayoutInfo::GetSegIdFromString(const rstl::string& bone) const {
 #if RSTL_PRIME1
   AUTO(it, mNameMap.find(bone));
   if (it != mNameMap.end()) {
+    return it->second;
+  }
 #else
   for (rstl::map< rstl::string, CSegId >::const_iterator it = mNameMap.begin();
        it != mNameMap.end(); ++it) {
     if (CStringExtras::CompareCaseInsensitive(it->first, bone) == 0) {
-#endif
-
-    return it->second;
-#if !RSTL_PRIME1
+      return it->second;
     }
-#endif
-
   }
+#endif
   return CSegId::Invalid();
 }
 
@@ -86,21 +86,17 @@ CSegId CCharLayoutInfo::GetSegIdFromString(const rstl::string& bone) const {
 static void UnusedLayoutOperation(CSegIdList* list) {
   TSegIdMap< CCharLayoutNode > map(uchar(0));
   delete list;
+}
 #else
 // Stripped by the linker; they keep the original template emission order.
 static void InsertLayoutNode(const CCharLayoutNode& node) {
   TSegIdMap< CCharLayoutNode > map(uchar(1));
   map.insert(CSegId(0), node);
-#endif
-
 }
 
-#if !RSTL_PRIME1
 static void CopyConnectedParts(const CCharLayoutNode& node) {
   rstl::vector< CSegId > parts(node.GetConnectedParts());
 }
-#endif
 
-#if !RSTL_PRIME1
 static void DeleteLayoutNode(CCharLayoutNode* node) { delete node; }
 #endif

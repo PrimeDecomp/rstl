@@ -162,9 +162,7 @@ class CMVEBoxVolume : public CModVectorElement {
   CVectorElement* mCenter;
   CVectorElement* mSize;
   CModVectorElement* mModifier;
-#endif
 
-#if !RSTL_PRIME1
 public:
   CMVEBoxVolume(CVectorElement* center, CVectorElement* size, CModVectorElement* modifier);
 

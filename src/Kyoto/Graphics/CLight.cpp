@@ -199,13 +199,7 @@ float CLight::GetIntensity() const {
       coef = mAngleC;
     }
     mCachedIntensity =
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        coef *
-        rstl::max_val(mColor.GetRed(), rstl::max_val(mColor.GetGreen(), mColor.GetBlue()));
-#else
         coef * rstl::max_val(mColor.GetRed(), rstl::max_val(mColor.GetGreen(), mColor.GetBlue()));
-#endif
 
   }
   return mCachedIntensity;

@@ -8,7 +8,6 @@
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/auto_ptr.hpp"
 #include "rstl/StringExtras.hpp"
 #include "rstl/string.hpp"
@@ -23,9 +22,7 @@
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CAudioGroupSet::CAudioGroupSet(const TLockedToken< CAudioGrpSetLoc >& group)
-: mBaseDir(group->GetBaseDirName())
-, mGroupSetName(group->GetGroupSetName())
-, mGroupSetTok(group) {}
+: mBaseDir(group->GetBaseDirName()), mGroupSetName(group->GetGroupSetName()), mGroupSetTok(group) {}
 
 CAudioGroupSet::~CAudioGroupSet() {}
 
@@ -86,22 +83,20 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
   mSampleDir = mGroupData.get() + roundedProjectSize;
   memcpy(mSampleDir, ptr + (sdirOffset + 4), sdirSize);
   mSamples = &ptr[sampOffset + 4];
+}
+
+void CAudioGrpSetLoc::FreeSampleBuffer() const {
+  mData = nullptr;
+  mSamples = nullptr;
+}
 #else
 extern "C" {
 u32 sndStackGetSize(void);
 u32 sndStackAdd(void* buffer, const void* aramAddr, u32 size);
 bool sndStackSetCurrent(u32 id);
 void sndStackRemove(u32 id);
-#endif
-
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CAudioGrpSetLoc::FreeSampleBuffer() const {
-  mData = nullptr;
-  mSamples = nullptr;
-#else
 bool CAudioGrpSetLoc::sInSinglePlayer;
 static uchar* sUploadBuffer;
 
@@ -109,18 +104,17 @@ static void* UploadCallback(u32 offset, u32 bytes) {
   memcpy(sUploadBuffer, reinterpret_cast< void* >(offset), bytes);
   DCFlushRange(sUploadBuffer, bytes);
   return sUploadBuffer;
+}
 #endif
 
-}
-
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-
-                                                    const rstl::auto_ptr< uchar >& data, int length,
-                                                    const CVParamTransfer& xfer) {
+                                                                const rstl::auto_ptr< uchar >& data,
+                                                                int length,
+                                                                const CVParamTransfer& xfer) {
   return rs_new CAudioGrpSetLoc(data, length);
 }
 
+// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length)
 : mStackId(-2), mAramAlloc(CARAMManager::GetInvalidAlloc()) {
@@ -199,4 +193,3 @@ CAudioGrpSetLoc::~CAudioGrpSetLoc() {
   }
 }
 #endif
-

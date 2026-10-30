@@ -52,16 +52,14 @@ public:
   , mMatSetIdx(0)
   , mFlags(kF_DepthCompare | kF_DepthUpdate)
   , mColor(1.f, 1.f, 1.f, rgba) {}
-  CModelFlags(const ETrans trans, const CColor& color)
+#else
+  CModelFlags(ETrans trans, float rgba);
+#endif
+  CModelFlags(RSTL_PRIME1_CONST ETrans trans, const CColor& color)
   : mBlendMode(trans)
   , mMatSetIdx(0)
   , mFlags(kF_DepthCompare | kF_DepthUpdate)
   , mColor(color) {}
-#else
-  CModelFlags(ETrans trans, float rgba);
-  CModelFlags(ETrans trans, const CColor& color)
-  : mBlendMode(trans), mMatSetIdx(0), mFlags(kF_DepthCompare | kF_DepthUpdate), mColor(color) {}
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -72,7 +70,6 @@ public:
 
   : mBlendMode(blendMode), mMatSetIdx(shadIdx), mFlags(flags), mColor(col) {}
 
-// TODO: verify that this Prime/Echoes difference is real
   CModelFlags(const CModelFlags& flags, RSTL_PRIME1_CONST uint otherFlags)
 
   : mBlendMode(flags.mBlendMode)
@@ -80,9 +77,7 @@ public:
   , mFlags(otherFlags)
   , mColor(flags.mColor) {}
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CModelFlags(const CModelFlags& flags, const bool b /* TODO what's this? */, const int shaderSet)
-#else
+#if !RSTL_PRIME1
   // Guessed: a second flag-copying constructor that reads the shader set through its getter,
   // used by AddFlags.
   CModelFlags(uint otherFlags, const CModelFlags& flags)
@@ -90,9 +85,9 @@ public:
   , mMatSetIdx(flags.GetMatSetIdx())
   , mFlags(otherFlags)
   , mColor(flags.mColor) {}
-  CModelFlags(const CModelFlags& flags, bool b /* TODO what's this? */, int shaderSet)
 #endif
-
+  CModelFlags(const CModelFlags& flags, RSTL_PRIME1_CONST bool b /* TODO what's this? */,
+              RSTL_PRIME1_CONST int shaderSet)
   : mBlendMode(flags.GetBlendMode())
   , mMatSetIdx(shaderSet)
 // TODO: verify that this Prime/Echoes difference is real
@@ -111,11 +106,12 @@ public:
 #endif
 
   // CModelFlags(const CModelFlags& other)
-#if RSTL_PRIME1
   // : x0_blendMode(other.x0_blendMode)
   // , x1_matSetIdx(other.x1_matSetIdx)
   // , x2_flags(other.x2_flags)
   // , x4_color(other.x4_color) {}
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   CModelFlags& operator=(const CModelFlags& other) {
     mBlendMode = other.GetBlendMode();
     mMatSetIdx = other.mMatSetIdx;
@@ -200,8 +196,9 @@ public:
   }
 
   static CModelFlags Normal() { return CModelFlags(kT_Opaque, 1.f); }
-// TODO: verify that this Prime/Echoes difference is real
-  static CModelFlags AlphaBlended(RSTL_PRIME1_CONST float alpha) { return CModelFlags(kT_Blend, alpha); }
+  static CModelFlags AlphaBlended(RSTL_PRIME1_CONST float alpha) {
+    return CModelFlags(kT_Blend, alpha);
+  }
 
   static CModelFlags AlphaBlended(const CColor& color) { return CModelFlags(kT_Blend, color); }
 // TODO: verify that this Prime/Echoes difference is real
@@ -214,18 +211,16 @@ public:
                                                     const bool update) {
     return AlphaBlended(color).DepthCompareUpdate(compare, update);
   }
-  static CModelFlags Additive(const float f) { return CModelFlags(kT_Additive, f); }
+#endif
+  static CModelFlags Additive(RSTL_PRIME1_CONST float f) { return CModelFlags(kT_Additive, f); }
   static CModelFlags Additive(const CColor& color) { return CModelFlags(kT_Additive, color); }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   static CModelFlags AdditiveDepthCompareUpdate(const CColor& color, const bool compare,
                                                 const bool update) {
     return Additive(color).DepthCompareUpdate(compare, update);
-#else
-  static CModelFlags Additive(float f) { return CModelFlags(CModelFlags::kT_Additive, f); }
-  static CModelFlags Additive(const CColor& color) {
-    return CModelFlags(CModelFlags::kT_Additive, color);
-#endif
-
   }
+#endif
   static CModelFlags AdditiveRGB(const CColor& color) { return CModelFlags(kT_Additive2, color); }
   static CModelFlags ColorModulate(const CColor& color) { return CModelFlags(kT_One, color); }
 
