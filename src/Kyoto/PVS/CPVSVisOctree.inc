@@ -1,0 +1,75 @@
+CPVSVisOctree::CPVSVisOctree(const CAABox& bounds, const int numObjects, const int numLights,
+                             const char* octreeData)
+: mBounds(bounds)
+, mNumObjects(numObjects)
+, mNumLights(numLights)
+, mOctreeData(const_cast< char* >(octreeData))
+, mMin(mBounds.GetMinPoint())
+, mMax(mBounds.GetMaxPoint()) {
+  mOctreeData.release();
+}
+
+CPVSVisOctree CPVSVisOctree::MakePVSVisOctree(const char* data, int len) {
+  CMemoryInStream in(data, len);
+  CAABox bounds(in);
+  int numObjects = in.Get< int >();
+  int numLights = in.Get< int >();
+  in.Get< int >();
+
+  return CPVSVisOctree(bounds, numObjects, numLights, data + in.GetReadPosition());
+}
+
+CPVSVisSet CPVSVisOctree::GetVisSet(const CVector3f& point) const {
+  if (!GetBounds().PointInside(point)) {
+    return CPVSVisSet(kVSS_OutOfBounds);
+  }
+
+  uchar nodeData;
+  const char* data = mOctreeData.get();
+  mMin = mBounds.GetMinPoint();
+  mMax = mBounds.GetMaxPoint();
+
+  int child;
+  while ((child = IterateSearch((nodeData = CCast::ToUint8(*data++)), point)) != -1) {
+    if (child != 0) {
+      if ((nodeData & 0x60) == 0) {
+        const uint index = child - 1;
+#ifdef __MWERKS__
+        data += CBasics::SwapBytes(reinterpret_cast< const ushort* >(data)[index]);
+#else
+        ushort offset;
+        memcpy(&offset, data + index * sizeof(offset), sizeof(offset));
+        data += CBasics::SwapBytes(offset);
+#endif
+      } else if (nodeData & 0x20) {
+        --child;
+        data += CCast::ToUint8(data[child]);
+      } else {
+        const uchar* offset = reinterpret_cast< const uchar* >(data) + (child - 1) * 3;
+        data += (offset[0] << 16) + (offset[1] << 8) + offset[2];
+      }
+    }
+
+    if ((nodeData & 0x60) == 0) {
+      data += (GetNumChildren(nodeData) - 1) * 2;
+    } else if (nodeData & 0x20) {
+      data += GetNumChildren(nodeData) - 1;
+    } else {
+      data += (GetNumChildren(nodeData) - 1) * 3;
+    }
+  }
+
+  switch (nodeData & 0x18) {
+  case 24: {
+    rstl::auto_ptr< const char > leaf(data);
+    leaf.release();
+    return CPVSVisSet(GetNumObjects(), GetNumLights(), rstl::auto_ptr< const char >(leaf));
+  }
+  case 8:
+    return CPVSVisSet(kVSS_OutOfBounds);
+  case 16:
+    return CPVSVisSet(kVSS_EndOfTree);
+  default:
+    return CPVSVisSet(kVSS_OutOfBounds);
+  }
+}

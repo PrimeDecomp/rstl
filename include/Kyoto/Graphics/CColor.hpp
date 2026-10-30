@@ -1,0 +1,283 @@
+#ifndef _CCOLOR
+#define _CCOLOR
+#include "rstl/RstlVersions.h"
+
+#include "types.h"
+
+#if !RSTL_PRIME1
+#include "Kyoto/Math/CMath.hpp"
+#endif
+
+#include "Kyoto/Basics/CCast.hpp"
+#if RSTL_PRIME1
+#include "Kyoto/Math/CMath.hpp"
+#include "Kyoto/Math/CVector3f.hpp"
+#endif
+
+#include "dolphin/gx/GXStruct.h"
+#if RSTL_PRIME1
+#ifdef __MWERKS__
+#pragma cpp_extensions on
+#endif
+#endif
+
+class CInputStream;
+
+#if !RSTL_PRIME1
+#ifdef __MWERKS__
+#pragma cpp_extensions on
+#endif
+#endif
+
+class CColor {
+public:
+  CColor() { Set(255, 0, 255); }
+  CColor(RSTL_PRIME1_CONST uint col) { Set(col); }
+
+  CColor(CInputStream& in);
+  CColor(const float r, const float g, const float b, const float a = 1.f);
+  CColor(const uchar r, const uchar g, const uchar b, const uchar a = 255) {
+    mR = r;
+    mG = g;
+    mB = b;
+    mA = a;
+  }
+#ifdef __MWERKS__
+  CColor(const CColor& other) : mRgba(other.mRgba) {}
+#else
+  CColor(const CColor& other) : mR(other.mR), mG(other.mG), mB(other.mB), mA(other.mA) {}
+#endif
+
+  CColor& operator=(const CColor& other) {
+#ifdef __MWERKS__
+    mRgba = other.mRgba;
+#else
+    Set(other.mR, other.mG, other.mB, other.mA);
+#endif
+    return *this;
+  }
+
+  void Set(RSTL_PRIME1_CONST float r, RSTL_PRIME1_CONST float g, RSTL_PRIME1_CONST float b,
+           RSTL_PRIME1_CONST float a);
+
+  void Set(uchar r, uchar g, uchar b, uchar a = 255) {
+    mR = r;
+    mG = g;
+    mB = b;
+    mA = a;
+  }
+#ifdef __MWERKS__
+  void Set(uint col) { mRgba = col; }
+#else
+  void Set(uint col) {
+    mR = static_cast< uchar >(col >> 24);
+    mG = static_cast< uchar >(col >> 16);
+    mB = static_cast< uchar >(col >> 8);
+    mA = static_cast< uchar >(col);
+  }
+#endif
+  void Get(float& r, float& g, float& b, float& a) const;
+  void Get(float& r, float& g, float& b) const;
+  // TODO check. Maybe this calls SetAlpha(uchar)?
+#if !RSTL_PRIME1
+  void SetRed(float r) { mR = CCast::ToUint8(r * 255.f); }
+  void SetGreen(float g) { mG = CCast::ToUint8(g * 255.f); }
+  void SetBlue(float b) { mB = CCast::ToUint8(b * 255.f); }
+#endif
+
+  void SetAlpha(float a) { mA = CCast::ToUint8(a * 255.f); }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  void SetAlpha(uchar a) { mA = a; }
+#else
+#ifdef __MWERKS__
+  void SetAlpha(uchar a) { mRgba = (mRgba & ~0xff) | a; }
+#else
+  void SetAlpha(uchar a) { mA = a; }
+#endif
+#endif
+
+  void SetRed(uchar r) { mR = r; }
+  void SetGreen(uchar g) { mG = g; }
+  void SetBlue(uchar b) { mB = b; }
+
+  static CColor Lerp(const CColor& a, const CColor& b, RSTL_PRIME1_CONST float t);
+
+  static uint Lerp(uint a, uint b, float t);
+  static CColor Modulate(const CColor& a, const CColor& b);
+  static CColor Add(const CColor& a, const CColor& b);
+  float GetRed() const { return CCast::ToReal32(mR) * (1.f / 255.f); }
+  float GetGreen() const { return CCast::ToReal32(mG) * (1.f / 255.f); }
+  float GetBlue() const { return CCast::ToReal32(mB) * (1.f / 255.f); }
+  float GetAlpha() const { return CCast::ToReal32(mA) * (1.f / 255.f); }
+  uchar GetRedu8() const { return mR; }
+  uchar GetGreenu8() const { return mG; }
+  uchar GetBlueu8() const { return mB; }
+  uchar GetAlphau8() const { return mA; }
+  ushort ToRGB5A3() const;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  static CColor FromRGB5A3(uint color);
+#else
+  // Guessed names; see DolphinCColor.cpp for target evidence.
+  ushort ToRGB565() const;
+  static CColor FromRGB5A3(ushort value);
+#endif
+
+#ifdef __MWERKS__
+  uint GetColor_u32() const { return mRgba; }
+#else
+  uint GetColor_u32() const {
+    return (uint(mR) << 24) | (uint(mG) << 16) | (uint(mB) << 8) | mA;
+  }
+#endif
+#ifdef __MWERKS__
+  const GXColor& GetGXColor() const { return *reinterpret_cast< const GXColor* >(this); }
+#else
+  GXColor GetGXColor() const {
+    const GXColor color = {mR, mG, mB, mA};
+    return color;
+  }
+#endif
+
+#ifdef __MWERKS__
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  CColor WithAlphaOf(float a) const { return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f)); }
+#else
+  CColor WithAlphaOf(float a) const {
+    const float value = a;
+    const float byteScale = 255.f;
+    return CColor((mRgba & ~0xff) | CCast::ToUint8(byteScale * value));
+  }
+#endif
+#else
+  CColor WithAlphaOf(float a) const { return CColor(mR, mG, mB, CCast::ToUint8(a * 255.f)); }
+#endif
+
+  CColor WithAlphaModulatedBy(float a) const {
+#ifdef __MWERKS__
+    return CColor((mRgba & ~0xff) | CCast::ToUint8(a * static_cast< float >(mA)));
+#else
+    return CColor(mR, mG, mB, CCast::ToUint8(a * static_cast< float >(mA)));
+#endif
+  }
+
+#ifdef __MWERKS__
+  bool operator==(const CColor& other) const { return mRgba == other.mRgba; }
+#else
+  bool operator==(const CColor& other) const { return GetColor_u32() == other.GetColor_u32(); }
+#endif
+
+  // TODO check
+#ifdef __MWERKS__
+  static GXColor ToGX(uint c) { return *reinterpret_cast< const GXColor* >(&c); }
+#else
+  static GXColor ToGX(uint c) {
+    const GXColor color = {static_cast< uchar >(c >> 24), static_cast< uchar >(c >> 16),
+                           static_cast< uchar >(c >> 8), static_cast< uchar >(c)};
+    return color;
+  }
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  // Fake?
+  CVector3f ToVector3f() const { return CVector3f(GetRed(), GetGreen(), GetBlue()); }
+
+#endif
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if RSTL_VERSION >= RSTL_R3IJ
+  static const CColor& Black() { return sBlackColor; }
+  static const CColor& White() { return sWhiteColor; }
+#else
+  static const CColor& Black();
+  static const CColor& White();
+#endif
+#else
+#if RSTL_VERSION >= RSTL_R32J
+  static const CColor& Black() { return sBlackColor; }
+  static const CColor& White() { return sWhiteColor; }
+#else
+  static const CColor& Black();
+  static const CColor& White();
+#endif
+#endif
+
+  static const CColor& Grey();
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if RSTL_VERSION >= RSTL_R3IJ
+  static const CColor& Red() { return sRedColor; }
+  static const CColor& Green() { return sGreenColor; }
+  static const CColor& Purple() { return sPurpleColor; }
+#else
+  static const CColor& Red();
+  static const CColor& Green();
+  static const CColor& Purple();
+#endif
+#else
+  static const CColor& Red();
+  static const CColor& Green();
+#endif
+
+  static const CColor& Blue();
+  static const CColor& Yellow();
+#if !RSTL_PRIME1
+  static const CColor& Purple();
+#endif
+
+  static const CColor& Orange();
+
+private:
+#ifdef __MWERKS__
+  union {
+    struct {
+      uchar mR;
+      uchar mG;
+      uchar mB;
+      uchar mA;
+    };
+    uint mRgba;
+  };
+#else
+  ALIGNAS(uint) uchar mR;
+  uchar mG;
+  uchar mB;
+  uchar mA;
+#endif
+
+  static const CColor sBlackColor;
+  static const CColor sWhiteColor;
+  static const CColor sGreyColor;
+  static const CColor sRedColor;
+  static const CColor sGreenColor;
+  static const CColor sBlueColor;
+  static const CColor sYellowColor;
+  static const CColor sPurpleColor;
+  static const CColor sOrangeColor;
+};
+#if !RSTL_PRIME1
+#ifdef __MWERKS__
+#pragma cpp_extensions reset
+#endif
+#endif
+
+CHECK_SIZEOF(CColor, 0x4)
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#ifdef __MWERKS__
+#pragma cpp_extensions off
+#endif
+#else
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CColor)
+} // namespace rstl
+namespace rstl {
+RSTL_DECLARE_DIRECT_CONSTRUCTION(CColor)
+} // namespace rstl
+#endif
+
+#endif // _CCOLOR

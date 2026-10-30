@@ -544,7 +544,16 @@
 // const uint/short/ushort, and whose float overload returns its operand instead of going through
 // a union) and SObjectTag::GetType. MWCC allocates registers differently around the non-const
 // forms (CCubeModel, CWallWalker and CAreaOctTree in Prime GC; CParticleDatabase in Trilogy).
+// CRandom16 follows the same split in member order and signatures (Prime: const float Float(); Echoes:
+// GetSeed first, const parameters on Range), as MWCC codegen of CFlyingPirate::CoverCheck,
+// CShrieker::ShouldDodge and CSpacePirate::Lurk depends on them.
 #define RSTL_KYOTO_CONST_SCALAR_RETURNS RSTL_PRIME1
+// `const` on by-value scalar parameters follows the same split.
+#if RSTL_KYOTO_CONST_SCALAR_RETURNS
+#define RSTL_PRIME1_CONST const
+#else
+#define RSTL_PRIME1_CONST
+#endif
 // CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
 // The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
 #define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1
@@ -597,6 +606,9 @@
 // CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
 // prototype; Prime, including Prime Trilogy, uses push_back).
 #define RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE (!RSTL_PRIME1)
+// Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo) declare their
+// rstl container copy policies (Echoes). Prime leaves the defaults.
+#define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
 // Allocation.
 // The allocator reports metrics through `GetMetrics(bool resetPeriodicPeak, bool resetPeak)`:
 // `SMetrics` gains the periodic peak (x2c) and its trailing unknowns move by a word, CGameAllocator

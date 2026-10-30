@@ -3,24 +3,19 @@
 #include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1
-#include "Prime/Kyoto/CResFactory.hpp"
-#define RSTL_CONST_FACTORY_FN_RETURN const
+#include "Kyoto/CResFactory.hpp"
 #elif RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CFactoryMgr.hpp"
 #include "Corruption/Kyoto/IObjectStore.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CDependencyGroupToken.hpp"
-#define RSTL_CONST_FACTORY_FN_RETURN
 #else
-#include "Echoes/Kyoto/CDependencyGroupToken.hpp"
-#include "Echoes/Kyoto/CFactoryMgr.hpp"
-#include "Echoes/Kyoto/IObjectStore.hpp"
-#define RSTL_CONST_FACTORY_FN_RETURN
+#include "Kyoto/CDependencyGroupToken.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/IObjectStore.hpp"
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_KYOTO_BUFFER_FACTORIES
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 CDependencyGroup::CDependencyGroup(CInputStream& in) { ReadFromStream(in); }
 
@@ -69,8 +64,8 @@ CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
   return rs_new_line(87) CDependencyGroup(in);
 }
 #else
-RSTL_CONST_FACTORY_FN_RETURN CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
-                                         const CVParamTransfer& xfer) {
+RSTL_PRIME1_CONST CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
+                                                           const CVParamTransfer& xfer) {
   return rs_new CDependencyGroup(in);
 }
 #endif

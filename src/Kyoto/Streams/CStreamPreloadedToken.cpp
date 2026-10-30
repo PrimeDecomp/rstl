@@ -1,12 +1,12 @@
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/RstlVersions.h"
 
+#include "Kyoto/CDvdFile.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #if RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CDvdFile.hpp"
 #include "Corruption/Kyoto/CDvdRequest.hpp"
 #else
-#include "Echoes/Kyoto/CDvdFile.hpp"
-#include "Echoes/Kyoto/CDvdRequest.hpp"
 #include "EchoesNamespace.h"
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
@@ -72,7 +72,7 @@ CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
     rstl::auto_ptr< uchar > buffer(
         static_cast< uchar* >(rs_aligned_new_line(alignedLength, 78)));
     rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > request(
-        file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Set, offset));
+        file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Begin, offset));
     mBuffers.push_back_unsafe(buffer);
     mRequests.push_back_unsafe(request);
   }

@@ -1,7 +1,7 @@
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 
-#if RSTL_KYOTO_REL_ERROR_HANDLER
 #include "Kyoto/CRelFileDebugInfo.hpp"
+#if RSTL_KYOTO_REL_ERROR_HANDLER
 #include "dolphin/ai.h"
 #include "dolphin/dvd.h"
 #include "dolphin/os/OSReset.h"
