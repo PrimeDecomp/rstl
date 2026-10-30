@@ -11,22 +11,88 @@
 #include <string.h>
 #endif
 
+#if RSTL_KYOTO_WII_OS_CONTEXT
+#include "revolution/sc.h"
+
+// Guessed names for the private system-configuration helpers.
+static void EnsureSystemConfigReady() {
+  static bool initialized = false;
+  if (!initialized) {
+    SCInit();
+    initialized = true;
+  }
+  while (SCCheckStatus() == SC_STATUS_BUSY) {
+  }
+}
+
+static int GetSystemLanguage() {
+  EnsureSystemConfigReady();
+  const uint language = SCGetLanguage();
+  if (language < SC_LANG_ENGLISH || language > SC_LANG_DUTCH) {
+    return 0;
+  }
+  return language - SC_LANG_ENGLISH;
+}
+
+#if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
+static COsContext::EAspectRatio GetSystemAspectRatio() {
+  EnsureSystemConfigReady();
+  return static_cast< COsContext::EAspectRatio >(SCGetAspectRatio() == SC_ASPECT_RATIO_16x9);
+}
+#endif
+
+bool COsContext::GetEuRgb60Mode() const {
+  EnsureSystemConfigReady();
+  return SCGetEuRgb60Mode() == 1;
+}
+#endif
+
 COsContext::COsContext(bool, bool)
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
+#if RSTL_KYOTO_WII_OS_CONTEXT
+: mLanguage(RSTL_VERSION == RSTL_R32J ? kLang_Japanese : GetSystemLanguage())
+#if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
+, mAspectRatio(GetSystemAspectRatio())
+#endif
+, mMem1ArenaLo(nullptr)
+, mMem1ArenaHi(nullptr)
+, mMem1ArenaCurrent(nullptr)
+#else
 : mLanguage(OSGetLanguage())
+#endif
 , mArenaLo1(nullptr)
 , mArenaHi(nullptr)
 , mArenaLo2(nullptr)
+#if !RSTL_KYOTO_WII_OS_CONTEXT
 , mArenaBlock(nullptr)
 , x28_(nullptr)
+#endif
 , mArenaBlockSize(0)
+#if RSTL_KYOTO_WII_OS_CONTEXT
+, mFifo(nullptr)
+, mFifoSize(0)
+, mGpuBuffer(nullptr)
+, mGpuBufferSize(0)
+, mSpareFrameBuffer(nullptr)
+, mSpareFrameBufferSize(0)
+, mSpareTexture(nullptr)
+, mSpareTextureFormat(GX_TF_RGB565)
+, mSpareTextureSize(0)
+, mFrameBuffer1(nullptr)
+, mFrameBuffer2(nullptr)
+, mFrameBufferSize(0)
+#endif
 #endif
 {
   CBasics::Init();
 
   switch (OSGetConsoleType()) {
   case OS_CONSOLE_RETAIL1:
+#if RSTL_KYOTO_WII_OS_CONTEXT
+    mConsoleType = 4; // GameCube retail classification in the Wii engine.
+#else
     mConsoleType = kCT_Retail;
+#endif
     break;
   case OS_CONSOLE_DEVHW1:
     mConsoleType = kCT_Development1;
@@ -38,9 +104,45 @@ COsContext::COsContext(bool, bool)
   case OS_CONSOLE_EMULATOR:
     mConsoleType = kCT_Emulator;
     break;
+#if RSTL_KYOTO_WII_OS_CONTEXT
+  // The Wii console classifications; original SDK constant names remain unresolved.
+  case 0x10000010:
+  case 0x10000011:
+  case 0x10000012:
+  case 0x10000020:
+  case 0x10000021:
+    mConsoleType = 3;
+    break;
+#endif
   }
 
-#if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
+#if RSTL_KYOTO_WII_OS_CONTEXT
+  VIInit();
+  VISetBlack(TRUE);
+  int height;
+  int fifoSize;
+  int gpuBufferSize;
+  if (VIGetTvFormat() == VI_PAL && !GetEuRgb60Mode()) {
+    height = 528;
+    fifoSize = 0x3d800;
+    gpuBufferSize = RSTL_PRIME1 ? 0x64000 : 0x24000;
+  } else {
+    height = 448;
+    fifoSize = 0x60000;
+    gpuBufferSize = RSTL_PRIME1 ? 0x80000 : 0x40000;
+  }
+  mFifo = AllocFromMem1Arena(fifoSize);
+  mFifoSize = fifoSize;
+  mGpuBuffer = AllocFromMem1Arena(gpuBufferSize);
+  mGpuBufferSize = gpuBufferSize;
+  mSpareTextureSize = GXGetTexBufferSize(320, height / 2, mSpareTextureFormat, false, 0);
+  mSpareTexture = AllocFromArena(mSpareTextureSize);
+  mFrameBufferSize = height * 1280;
+  mFrameBuffer1 = AllocFromArena(mFrameBufferSize);
+  mFrameBuffer2 = AllocFromArena(mFrameBufferSize);
+  mSpareFrameBufferSize = height * 1280;
+  mSpareFrameBuffer = AllocFromArena(mSpareFrameBufferSize);
+#elif RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
   mArenaBlockSize = RSTL_VERSION == RSTL_GM8P_00 ? 0x23e000 : 0x1fe000;
   mArenaBlock = AllocFromArena(mArenaBlockSize);
 #endif
@@ -117,15 +219,31 @@ void* COsContext::AllocFromArena(size_t sz) {
 #if defined(TARGET_PC)
   return operator new(sz);
 #else
+#if RSTL_KYOTO_WII_OS_CONTEXT
+  void* ret = OSAllocFromMEM2ArenaLo(sz, 32);
+  mArenaLo2 = OSGetMEM2ArenaLo();
+  mArenaLo1 = OSGetMEM2ArenaLo();
+  mArenaHi = OSGetMEM2ArenaHi();
+#else
   void* ret = OSAllocFromArenaLo(sz, 32);
-
   mArenaLo2 = OSGetArenaLo();
   mArenaLo1 = OSGetArenaLo();
   mArenaHi = OSGetArenaHi();
+#endif
   return ret;
 #endif
 }
 
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 int COsContext::GetLanguage() const { return mLanguage; }
+#endif
+
+#if RSTL_KYOTO_WII_OS_CONTEXT
+void* COsContext::AllocFromMem1Arena(size_t sz) {
+  void* result = OSAllocFromArenaLo(sz, 32);
+  mMem1ArenaCurrent = OSGetMEM1ArenaLo();
+  mMem1ArenaLo = OSGetMEM1ArenaLo();
+  mMem1ArenaHi = OSGetMEM1ArenaHi();
+  return result;
+}
 #endif
