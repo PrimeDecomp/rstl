@@ -37,11 +37,6 @@ public:
 private:
   float mBlendWeight;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeBlend, 0x28)
-#else
 CHECK_CHILD_SIZEOF(CAnimTreeBlend, CAnimTreeTweenBase, 0x4)
-#endif
 
 #endif // _CANIMTREEBLEND

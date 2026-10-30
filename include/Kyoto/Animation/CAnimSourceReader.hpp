@@ -55,12 +55,7 @@ private:
   TSubAnimTypeToken< CAnimSource > mSource;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimSourceInfo, 0x14)
-#else
 CHECK_CHILD_SIZEOF(CAnimSourceInfo, IAnimSourceInfo, 0x10)
-#endif
 
 class CAnimSourceReader : public CAnimSourceReaderBase {
 public:
@@ -136,11 +131,6 @@ private:
   TSubAnimTypeToken< CAnimSource > mSource;
   CSteadyStateAnimInfo mSteadyStateInfo;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimSourceReader, 0x7c)
-#else
 CHECK_CHILD_SIZEOF(CAnimSourceReader, CAnimSourceReaderBase, 0x28)
-#endif
 
 #endif // _CANIMSOURCEREADER

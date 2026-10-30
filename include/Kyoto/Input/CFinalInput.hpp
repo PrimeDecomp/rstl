@@ -702,17 +702,11 @@ private:
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-CHECK_SIZEOF(CFinalInput, 0x218)
-#else
-CHECK_SIZEOF(CFinalInput, 48)
-#endif
-#else
-DECLARE_FULL_SIZE_FOR(CFinalInput, RSTL_VERSION >= RSTL_R32J ? 0x218 : 0x2c)
+DECLARE_FULL_SIZE_FOR(CFinalInput,
+                      (RSTL_PRIME1 ? RSTL_VERSION >= RSTL_R3IJ : RSTL_VERSION >= RSTL_R32J)
+                          ? 0x218
+                          : (RSTL_PRIME1 ? 0x30 : 0x2c))
 CHECK_SIZEOF(CFinalInput, CFinalInput_FULL_SIZE)
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

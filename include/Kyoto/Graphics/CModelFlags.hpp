@@ -249,11 +249,9 @@ private:
   ushort mFlags;
   CColor mColor;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CModelFlags, 0x8)
-#else
-CHECK_SIZEOF(CModelFlags, 0xc)
+CHECK_SIZEOF(CModelFlags, RSTL_PRIME1 ? 0x8 : 0xc)
+#if !RSTL_PRIME1
+
 
 #ifdef __MWERKS__
 #pragma cpp_extensions on

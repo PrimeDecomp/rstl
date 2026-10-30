@@ -91,14 +91,7 @@ protected:
   int mCharIdx;
   int mFlags;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CPOINode, 0x38)
-#endif
-#else
-DECLARE_FULL_SIZE_FOR(CPOINode, 0x2c)
+DECLARE_FULL_SIZE_FOR(CPOINode, RSTL_PRIME1 ? 0x38 : 0x2c)
 CHECK_SIZEOF(CPOINode, CPOINode_FULL_SIZE)
-#endif
 
 #endif // _CPOINODE

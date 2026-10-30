@@ -51,11 +51,8 @@ public:
   uint mNameHash;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CPreAdvanceIndicator, 0x40)
-#else
-CHECK_SIZEOF(CPreAdvanceIndicator, 0x10)
+CHECK_SIZEOF(CPreAdvanceIndicator, RSTL_PRIME1 ? 0x40 : 0x10)
+#if !RSTL_PRIME1
 
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPreAdvanceIndicator)

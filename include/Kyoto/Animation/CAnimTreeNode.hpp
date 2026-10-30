@@ -50,16 +50,7 @@ public:
 protected:
   rstl::string mName;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-CHECK_SIZEOF(CAnimTreeNode, 0x10)
-#else
-CHECK_SIZEOF(CAnimTreeNode, 0x14)
-#endif
-#else
-CHECK_CHILD_SIZEOF(CAnimTreeNode, IAnimReader, RSTL_VERSION >= RSTL_R32J ? 0xc : 0x10)
-#endif
+CHECK_CHILD_SIZEOF(CAnimTreeNode, IAnimReader, (RSTL_PRIME1 ? RSTL_VERSION >= RSTL_R3IJ : RSTL_VERSION >= RSTL_R32J) ? 0xc : 0x10)
 
 rstl::ncrc_ptr< CAnimTreeNode > Cast(const rstl::ownership_transfer< IAnimReader >& ptr);
 

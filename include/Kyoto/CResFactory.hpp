@@ -148,15 +148,10 @@ private:
   rstl::map< SObjectTag, LoadList::iterator > mLoadMap;
   LoadList mCancelledList;
 };
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
 NESTED_CHECK_SIZEOF(CResFactory, SLoadingData, 0x38)
-CHECK_SIZEOF(CResFactory, 0xc8)
 #endif
-#else
-CHECK_SIZEOF(CResFactory, 0xe0)
-#endif
+CHECK_SIZEOF(CResFactory, RSTL_PRIME1 ? 0xc8 : 0xe0)
 
 extern CResFactory* gpResourceFactory;
 

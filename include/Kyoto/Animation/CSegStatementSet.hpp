@@ -38,13 +38,8 @@ public:
 protected:
   CSegStatement* mSegData;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSegStatementSet, 0x8)
-#else
 DECLARE_FULL_SIZE_FOR(CSegStatementSet, 0x8)
 CHECK_SIZEOF(CSegStatementSet, CSegStatementSet_FULL_SIZE)
-#endif
 
 inline CSegStatementSet::~CSegStatementSet() {}
 
@@ -61,11 +56,6 @@ public:
   CStackSegStatementSet();
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CStackSegStatementSet, 0x8)
-#else
 CHECK_CHILD_SIZEOF(CStackSegStatementSet, CSegStatementSet, 0x0)
-#endif
 
 #endif // _CSEGSTATEMENTSET

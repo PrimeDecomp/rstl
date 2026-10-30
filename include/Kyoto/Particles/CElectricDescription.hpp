@@ -50,11 +50,6 @@ public:
   rstl::optional_object< TCachedToken< CGenDescription > > mEPSM;
   bool mZERY;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CElectricDescription, 0x74)
-#else
-CHECK_SIZEOF(CElectricDescription, 0x7c)
-#endif
+CHECK_SIZEOF(CElectricDescription, RSTL_PRIME1 ? 0x74 : 0x7c)
 
 #endif // _CELECTRICDESCRIPTION

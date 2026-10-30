@@ -55,14 +55,7 @@ private:
 
   rstl::vector< CSegId > mConnectedParts;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CCharLayoutNode, 0x20)
-#endif
-#else
-CHECK_SIZEOF(CCharLayoutNode, 0x40)
-#endif
+CHECK_SIZEOF(CCharLayoutNode, RSTL_PRIME1 ? 0x20 : 0x40)
 
 class CCharLayoutInfo {
 public:
@@ -143,13 +136,6 @@ private:
   rstl::vector< CQuaternion > mLinearLocalRotations;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CCharLayoutInfo, 0x2c)
-#endif
-#else
-CHECK_SIZEOF(CCharLayoutInfo, 0x7c)
-#endif
+CHECK_SIZEOF(CCharLayoutInfo, RSTL_PRIME1 ? 0x2c : 0x7c)
 
 #endif // _CCHARLAYOUTINFO

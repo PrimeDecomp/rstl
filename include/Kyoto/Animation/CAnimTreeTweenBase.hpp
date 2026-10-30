@@ -91,11 +91,6 @@ private:
   static s32 sAdvancementDepth;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeTweenBase, 0x24)
-#else
 CHECK_CHILD_SIZEOF(CAnimTreeTweenBase, CAnimTreeDoubleChild, 0x8)
-#endif
 
 #endif // _CANIMTREETWEENBASE

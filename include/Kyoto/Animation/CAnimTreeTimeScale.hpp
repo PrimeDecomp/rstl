@@ -102,11 +102,6 @@ private:
   CCharAnimTime mTargetAccelTime;
   CCharAnimTime mInitialTime;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeTimeScale, 0x38)
-#else
 CHECK_CHILD_SIZEOF(CAnimTreeTimeScale, CAnimTreeSingleChild, 0x20)
-#endif
 
 #endif // _CANIMTREETIMESCALE

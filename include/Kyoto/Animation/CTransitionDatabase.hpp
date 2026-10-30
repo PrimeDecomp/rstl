@@ -26,12 +26,7 @@ public:
 private:
   rstl::optional_object< TToken< CTransitionDatabase > > mToken;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTransitionDatabase, 0x10)
-#else
 DECLARE_FULL_SIZE_FOR(CTransitionDatabase, 0x10)
 CHECK_SIZEOF(CTransitionDatabase, CTransitionDatabase_FULL_SIZE)
-#endif
 
 #endif // _CTRANSITIONDATABASE

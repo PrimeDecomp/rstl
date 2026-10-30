@@ -203,14 +203,6 @@ private:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-// This is the GameCube instance layout; Trilogy currently uses only the static audio API.
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CMoviePlayer, 0x100)
-#endif
-#else
-CHECK_SIZEOF(CMoviePlayer, 0x120)
-#endif
+CHECK_SIZEOF(CMoviePlayer, RSTL_PRIME1 ? 0x100 : 0x120)
 
 #endif // _CMOVIEPLAYER

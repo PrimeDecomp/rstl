@@ -61,12 +61,7 @@ private:
 
   CVParamTransfer mParamXfr;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSimplePool, (RSTL_VERSION >= RSTL_R3IJ ? 0x24 : 0x20))
-#else
-CHECK_SIZEOF(CSimplePool, 0x24)
-#endif
+CHECK_SIZEOF(CSimplePool, (RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ) ? 0x20 : 0x24)
 
 extern CSimplePool* gpSimplePool;
 

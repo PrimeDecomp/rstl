@@ -86,11 +86,6 @@ private:
   bool mScaleValid : 1;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSegStatement, 0x20)
-#else
-CHECK_SIZEOF(CSegStatement, 0x2c)
-#endif
+CHECK_SIZEOF(CSegStatement, RSTL_PRIME1 ? 0x20 : 0x2c)
 
 #endif // _CSEGSTATEMENT

@@ -25,11 +25,6 @@ private:
   rstl::vector< bool > x28_;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSequenceHelper, 0x30)
-#else
-CHECK_SIZEOF(CSequenceHelper, 0x38)
-#endif
+CHECK_SIZEOF(CSequenceHelper, RSTL_PRIME1 ? 0x30 : 0x38)
 
 #endif // _CSEQUENCEHELPER

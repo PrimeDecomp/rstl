@@ -141,11 +141,6 @@ public:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CGenDescription, 0x12c)
-#else
-CHECK_SIZEOF(CGenDescription, 0x150)
-#endif
+CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : 0x150)
 
 #endif // _CGENDESCRIPTION
