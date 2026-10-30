@@ -211,12 +211,7 @@ private:
   static uint mSwooshAliveCount;
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CParticleSwoosh, RSTL_VERSION >= RSTL_R3IJ ? 0x200 : 0x210)
-#else
-CHECK_SIZEOF(CParticleSwoosh, 0x218)
-#endif
+CHECK_SIZEOF(CParticleSwoosh, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x200 : 0x210) : 0x218)
 
 NESTED_CHECK_SIZEOF(CParticleSwoosh, SSwooshData, 0x80)
 

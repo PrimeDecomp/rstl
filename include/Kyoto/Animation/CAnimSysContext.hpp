@@ -61,13 +61,8 @@ private:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CAnimSysContext, 0x10)
-#endif
-#else
-CHECK_SIZEOF(CAnimSysContext, 0x18)
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+CHECK_SIZEOF(CAnimSysContext, RSTL_PRIME1 ? 0x10 : 0x18)
 #endif
 
 #endif // _CANIMSYSCONTEXT

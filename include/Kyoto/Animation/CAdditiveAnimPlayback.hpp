@@ -55,13 +55,8 @@ private:
   EPlaybackPhase mPhase;
   bool mNeedsFadeOut;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CAdditiveAnimPlayback, 0x24)
-#endif
-#else
-CHECK_SIZEOF(CAdditiveAnimPlayback, 0x28)
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+CHECK_SIZEOF(CAdditiveAnimPlayback, RSTL_PRIME1 ? 0x24 : 0x28)
 #endif
 
 #endif // _CADDITIVEANIMPLAYBACK

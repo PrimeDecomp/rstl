@@ -51,11 +51,6 @@ private:
   CSequenceFundamentals mFundamentals;
   CCharAnimTime mCurTime;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeSequence, 0x9C)
-#else
-CHECK_CHILD_SIZEOF(CAnimTreeSequence, CAnimTreeSingleChild, RSTL_VERSION >= RSTL_R32J ? 0x78 : 0x8c)
-#endif
+CHECK_CHILD_SIZEOF(CAnimTreeSequence, CAnimTreeSingleChild, RSTL_PRIME1 ? 0x84 : (RSTL_VERSION >= RSTL_R32J ? 0x78 : 0x8c))
 
 #endif // _CANIMTREESEQUENCE

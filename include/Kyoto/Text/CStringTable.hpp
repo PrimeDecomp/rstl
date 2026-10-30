@@ -84,16 +84,7 @@ private:
 #endif
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-CHECK_SIZEOF(CStringTable, 0xc)
-#else
-CHECK_SIZEOF(CStringTable, 0x8)
-#endif
-#else
-CHECK_SIZEOF(CStringTable, 0x18)
-#endif
+CHECK_SIZEOF(CStringTable, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_GM8P_00 ? 0xc : 0x8) : 0x18)
 
 NESTED_CHECK_SIZEOF(CStringTable, SReloadData, 0x10)
 

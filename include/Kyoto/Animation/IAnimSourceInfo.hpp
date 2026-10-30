@@ -31,12 +31,7 @@ public:
 
   virtual ~IAnimSourceInfo() {}
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(IAnimSourceInfo, 0x4)
-#else
 DECLARE_FULL_SIZE_FOR(IAnimSourceInfo, 0x4)
 CHECK_SIZEOF(IAnimSourceInfo, IAnimSourceInfo_FULL_SIZE)
-#endif
 
 #endif // _IANIMSOURCEINFO

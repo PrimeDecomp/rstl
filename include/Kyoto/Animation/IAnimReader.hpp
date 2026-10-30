@@ -188,9 +188,7 @@ public:
   }
 #endif
 };
-#if !RSTL_PRIME1
 DECLARE_FULL_SIZE_FOR(IAnimReader, 0x4)
 CHECK_SIZEOF(IAnimReader, IAnimReader_FULL_SIZE)
-#endif
 
 #endif // _IANIMREADER

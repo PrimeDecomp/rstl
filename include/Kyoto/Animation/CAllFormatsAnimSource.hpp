@@ -65,9 +65,7 @@ private:
                                                 : sizeof(CFBStreamedCompression)]);
 #endif
 };
-#if !RSTL_PRIME1
-CHECK_SIZEOF(CAnimFormatUnion, 0x88)
-#endif
+CHECK_SIZEOF(CAnimFormatUnion, RSTL_PRIME1 ? 0x68 : 0x88)
 
 class CAllFormatsAnimSource {
 public:
@@ -149,13 +147,7 @@ private:
 
   SObjectTag mTag;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimFormatUnion, 0x68)
-CHECK_SIZEOF(CAllFormatsAnimSource, 0x7c)
-#else
-CHECK_SIZEOF(CAllFormatsAnimSource, 0x9c)
-#endif
+CHECK_SIZEOF(CAllFormatsAnimSource, RSTL_PRIME1 ? 0x7c : 0x9c)
 
 template < typename T >
 // TODO: verify that this Prime/Echoes difference is real

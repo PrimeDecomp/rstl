@@ -82,11 +82,6 @@ private:
   uint mVertexCount;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CVirtualBone, 0x74)
-#else
-CHECK_SIZEOF(CVirtualBone, 0x20)
-#endif
+CHECK_SIZEOF(CVirtualBone, RSTL_PRIME1 ? 0x74 : 0x20)
 
 #endif // _CVIRTUALBONE

@@ -190,11 +190,6 @@ private:
 
   float mAverageVelocity;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimSource, 0x64)
-#else
-CHECK_SIZEOF(CAnimSource, 0x84)
-#endif
+CHECK_SIZEOF(CAnimSource, RSTL_PRIME1 ? 0x64 : 0x84)
 
 #endif // _CANIMSOURCE

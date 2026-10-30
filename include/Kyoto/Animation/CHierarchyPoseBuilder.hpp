@@ -105,12 +105,7 @@ private:
   rstl::auto_ptr< ScaleMap > mScales;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CHierarchyPoseBuilder, 0x110)
-#else
-CHECK_SIZEOF(CHierarchyPoseBuilder, 0x118)
-#endif
+CHECK_SIZEOF(CHierarchyPoseBuilder, RSTL_PRIME1 ? 0x110 : 0x118)
 
 NESTED_CHECK_SIZEOF(CHierarchyPoseBuilder, CTreeNode, 0x20)
 

@@ -64,11 +64,6 @@ private:
   bool mLoopA;
   bool mInitialized;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeTransition, 0x38)
-#else
 CHECK_CHILD_SIZEOF(CAnimTreeTransition, CAnimTreeTweenBase, 0x14)
-#endif
 
 #endif // _CANIMTREETRANSITION

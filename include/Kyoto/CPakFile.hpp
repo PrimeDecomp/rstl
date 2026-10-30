@@ -170,14 +170,12 @@ private:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CPakFile, 0x88)
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : 0x9c)
 #endif
+#if RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CPakFile, SResInfo, 0xa)
 #else
-CHECK_SIZEOF(CPakFile, 0x9c)
 NESTED_CHECK_SIZEOF(CPakFile, CResInfo, 0xb)
 
 ECHOES_RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPakFile::CResInfo)

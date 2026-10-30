@@ -41,13 +41,8 @@ private:
   TToken< CAnimationDatabase > mAnimDB;
   CAnimSysContext mSysCtx;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-CHECK_SIZEOF(CAnimationManager, 0x18)
-#endif
-#else
-CHECK_SIZEOF(CAnimationManager, 0x20)
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+CHECK_SIZEOF(CAnimationManager, RSTL_PRIME1 ? 0x18 : 0x20)
 #endif
 
 #endif // _CANIMATIONMANAGER

@@ -27,13 +27,8 @@ public:
     return CCharAnimTime(VFindUpperLimit(lower.GetSeconds(), root.GetSeconds()));
   }
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(IVaryingAnimationTimeScale, 0x4)
-#else
 DECLARE_FULL_SIZE_FOR(IVaryingAnimationTimeScale, 0x4)
 CHECK_SIZEOF(IVaryingAnimationTimeScale, IVaryingAnimationTimeScale_FULL_SIZE)
-#endif
 
 class CConstantAnimationTimeScale : public IVaryingAnimationTimeScale {
 public:
@@ -55,12 +50,7 @@ public:
 private:
   float mScale;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CConstantAnimationTimeScale, 0x8)
-#else
 CHECK_CHILD_SIZEOF(CConstantAnimationTimeScale, IVaryingAnimationTimeScale, 0x4)
-#endif
 
 class CLinearAnimationTimeScale : public IVaryingAnimationTimeScale {
 public:
@@ -118,11 +108,6 @@ private:
   }
   CFunctionDescription mDesc;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CLinearAnimationTimeScale, 0x14)
-#else
 CHECK_CHILD_SIZEOF(CLinearAnimationTimeScale, IVaryingAnimationTimeScale, 0x10)
-#endif
 
 #endif // _CTIMESCALEFUNCTIONS

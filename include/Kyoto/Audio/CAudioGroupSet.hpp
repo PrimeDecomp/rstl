@@ -74,9 +74,7 @@ private:
 #endif
 
 };
-#if !RSTL_PRIME1
-CHECK_SIZEOF(CAudioGrpSetLoc, 0x18)
-#endif
+CHECK_SIZEOF(CAudioGrpSetLoc, RSTL_PRIME1 ? 0x44 : 0x18)
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -100,7 +98,6 @@ private:
   rstl::optional_object< TLockedToken< CAudioGrpSetLoc > > mGroupSetTok;
 };
 
-CHECK_SIZEOF(CAudioGrpSetLoc, 0x44)
 CHECK_SIZEOF(CAudioGroupSet, 0x30)
 #else
 CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,

@@ -21,11 +21,6 @@ private:
   uint mId;
   rstl::rc_ptr< IMetaTrans > mTrans;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CHalfTransition, 0x8)
-#else
-CHECK_SIZEOF(CHalfTransition, 0xc)
-#endif
+CHECK_SIZEOF(CHalfTransition, RSTL_PRIME1 ? 0x8 : 0xc)
 
 #endif // _CHALFTRANSITION

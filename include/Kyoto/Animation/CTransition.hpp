@@ -37,11 +37,6 @@ public:
 
   const rstl::rc_ptr< IMetaTrans >& GetMetaTrans() const { return mTrans; }
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTransition, 0x10)
-#else
-CHECK_SIZEOF(CTransition, 0x14)
-#endif
+CHECK_SIZEOF(CTransition, RSTL_PRIME1 ? 0x10 : 0x14)
 
 #endif // _CTRANSITION

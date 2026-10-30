@@ -51,12 +51,7 @@ public:
   }
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CUnitVector3f, 0xc)
-#else
 CHECK_CHILD_SIZEOF(CUnitVector3f, CVector3f, 0x0)
-#endif
 
 inline const CUnitVector3f& CVector3f::Up() { return sUpVector; }
 inline const CUnitVector3f& CVector3f::Down() { return sDownVector; }

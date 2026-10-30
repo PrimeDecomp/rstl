@@ -175,11 +175,6 @@ private:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CDSPStreamManager, 0xC0)
-#else
-CHECK_SIZEOF(CDSPStreamManager, 0x300)
-#endif
+CHECK_SIZEOF(CDSPStreamManager, RSTL_PRIME1 ? 0xC0 : 0x300)
 
 #endif // _CDSPSTREAMMANAGER

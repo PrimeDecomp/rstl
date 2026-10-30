@@ -92,12 +92,7 @@ private:
   uint x24_;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CStandardMultiFormatHeader, 0x24)
-#else
-CHECK_SIZEOF(CStandardMultiFormatHeader, 0x28)
-#endif
+CHECK_SIZEOF(CStandardMultiFormatHeader, RSTL_PRIME1 ? 0x24 : 0x28)
 
 // Channel records have no padding; their scalar fields may start at any byte.
 // Channel records are packed and their scalar fields need not be aligned.
@@ -350,12 +345,7 @@ private:
   CSegId mSegId;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBStreamedPerChannelHeader, 0x4)
-#else
-CHECK_SIZEOF(CFBStreamedPerChannelHeader, 0x1)
-#endif
+CHECK_SIZEOF(CFBStreamedPerChannelHeader, RSTL_PRIME1 ? 0x4 : 0x1)
 
 class TLoadedContainerBase {
 protected:
@@ -537,13 +527,8 @@ public:
 private:
   uint mBitCount;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBKeyFrameReductionPerChannel_HeaderForAll, 0x4)
-#else
 DECLARE_FULL_SIZE_FOR(CFBKeyFrameReductionPerChannel_HeaderForAll, 0x4)
 CHECK_SIZEOF(CFBKeyFrameReductionPerChannel_HeaderForAll, CFBKeyFrameReductionPerChannel_HeaderForAll_FULL_SIZE)
-#endif
 
 class CFBStreamedCompressionTimeHeader : public CFBKeyFrameReductionPerChannel_HeaderForAll {
 public:
@@ -556,12 +541,7 @@ public:
 #endif
   : CFBKeyFrameReductionPerChannel_HeaderForAll(in) {}
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBStreamedCompressionTimeHeader, 0x4)
-#else
 CHECK_CHILD_SIZEOF(CFBStreamedCompressionTimeHeader, CFBKeyFrameReductionPerChannel_HeaderForAll, 0x0)
-#endif
 
 class CFBStreamedCompression {
 public:

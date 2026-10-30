@@ -97,11 +97,6 @@ private:
   rstl::object_owner< IAnimReader, rstl::call_deep_clone< IAnimReader > > mReader;
   uint mAnimDbIdx;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeAnimReaderContainer, 0x20)
-#else
-CHECK_CHILD_SIZEOF(CAnimTreeAnimReaderContainer, CAnimTreeNode, 0xc)
-#endif
+CHECK_CHILD_SIZEOF(CAnimTreeAnimReaderContainer, CAnimTreeNode, (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ) ? 0x10 : 0xc)
 
 #endif // _CANIMTREEANIMREADERCONTAINER

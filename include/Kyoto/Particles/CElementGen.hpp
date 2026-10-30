@@ -477,19 +477,12 @@ public:
 #endif
 
 };
-// TODO: verify that this Prime/Echoes difference is real
+CHECK_SIZEOF(CElementGen, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-CHECK_SIZEOF(CElementGen, 0x328)
-#else
-CHECK_SIZEOF(CElementGen, 0x340)
-#endif
 
 #ifdef __MWERKS__
 #pragma cpp_extensions reset
 #endif
-#else
-CHECK_SIZEOF(CElementGen, 0x338)
 #endif
 
 #endif // _CELEMENTGEN

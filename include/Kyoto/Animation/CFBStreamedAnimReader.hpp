@@ -164,12 +164,7 @@ private:
   uchar mValuesPerChannel;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBStreamedAnimReaderTotals, 0x28)
-#else
-CHECK_SIZEOF(CFBStreamedAnimReaderTotals, 0x3c)
-#endif
+CHECK_SIZEOF(CFBStreamedAnimReaderTotals, RSTL_PRIME1 ? 0x28 : 0x3c)
 
 class CFBFullBodyAspectsForStream {
 public:
@@ -216,12 +211,7 @@ private:
   CFBFullBodyAspectsForStream mAspects;
   uint mCurKey;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBStreamedPairOfTotals, 0x88)
-#else
-CHECK_SIZEOF(CFBStreamedPairOfTotals, 0xb0)
-#endif
+CHECK_SIZEOF(CFBStreamedPairOfTotals, RSTL_PRIME1 ? 0x88 : 0xb0)
 
 class CMemoryInputToBitLevelLoader {
   friend class CBitLevelLoader< CMemoryInputToBitLevelLoader >;
@@ -405,11 +395,6 @@ private:
   mutable CBitLevelLoader< CMemoryInputToBitLevelLoader > mBitLoader;
   CSegIdToIndexConverter mSegIdToIndex;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CFBStreamedAnimReader, 0x2a4)
-#else
-CHECK_CHILD_SIZEOF(CFBStreamedAnimReader, CAnimSourceReaderBase, 0x278)
-#endif
+CHECK_CHILD_SIZEOF(CFBStreamedAnimReader, CAnimSourceReaderBase, RSTL_PRIME1 ? 0x250 : 0x278)
 
 #endif // _CFBSTREAMEDANIMREADER

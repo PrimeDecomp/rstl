@@ -234,15 +234,9 @@ private:
 
   static ushort sSeed;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CParticleElectric, RSTL_VERSION >= RSTL_R3IJ ? 0x440 : 0x458)
-NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager, RSTL_VERSION >= RSTL_R3IJ ? 0x3c : 0x40)
-NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, 0x18)
-#else
-CHECK_SIZEOF(CParticleElectric, 0x460)
-NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager, 0x40)
-NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, 0x48)
-#endif
+CHECK_SIZEOF(CParticleElectric, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x440 : 0x458) : 0x460)
+NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager,
+                    (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ) ? 0x3c : 0x40)
+NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, RSTL_PRIME1 ? 0x18 : 0x48)
 
 #endif // _CPARTICLEELECTRIC

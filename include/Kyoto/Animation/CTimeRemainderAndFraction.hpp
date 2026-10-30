@@ -28,13 +28,8 @@ private:
   uint mIntegerTime;
   float mRemainder;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CIntegerTimeAndRemainder, 0xc)
-#else
 DECLARE_FULL_SIZE_FOR(CIntegerTimeAndRemainder, 0xc)
 CHECK_SIZEOF(CIntegerTimeAndRemainder, CIntegerTimeAndRemainder_FULL_SIZE)
-#endif
 
 class CTimeRemainderAndFraction : public CIntegerTimeAndRemainder {
 public:
@@ -53,11 +48,6 @@ private:
   float mFraction;
   float mFinestSample;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTimeRemainderAndFraction, 0x14)
-#else
 CHECK_CHILD_SIZEOF(CTimeRemainderAndFraction, CIntegerTimeAndRemainder, 0x8)
-#endif
 
 #endif

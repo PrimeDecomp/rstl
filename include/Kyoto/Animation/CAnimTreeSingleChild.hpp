@@ -68,11 +68,6 @@ public:
 protected:
   rstl::ncrc_ptr< CAnimTreeNode > mChild;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimTreeSingleChild, 0x18)
-#else
-CHECK_CHILD_SIZEOF(CAnimTreeSingleChild, CAnimTreeNode, 0x8)
-#endif
+CHECK_CHILD_SIZEOF(CAnimTreeSingleChild, CAnimTreeNode, (RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ) ? 0x4 : 0x8)
 
 #endif // _CANIMTREESINGLECHILD

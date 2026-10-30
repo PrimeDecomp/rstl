@@ -38,11 +38,6 @@ private:
   rstl::vector< CParticlePOINode > mParticlePOINodes;
   rstl::vector< CSoundPOINode > mSoundPOINodes;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CSequenceFundamentals, 0x58)
-#else
-CHECK_SIZEOF(CSequenceFundamentals, RSTL_VERSION >= RSTL_R32J ? 0x48 : 0x58)
-#endif
+CHECK_SIZEOF(CSequenceFundamentals, RSTL_PRIME1 ? 0x58 : (RSTL_VERSION >= RSTL_R32J ? 0x48 : 0x58))
 
 #endif // _CSEQUENCEFUNDAMENTALS

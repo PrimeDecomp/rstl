@@ -127,12 +127,9 @@ protected:
   rstl::vector< rstl::pair< uint, CParticleData::EParentedMode > > mParticleStates;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CAnimSourceReaderBase, 0x54)
-#else
-CHECK_CHILD_SIZEOF(CAnimSourceReaderBase, IAnimReader, RSTL_VERSION >= RSTL_R32J ? 0x48 : 0x54)
+CHECK_CHILD_SIZEOF(CAnimSourceReaderBase, IAnimReader, RSTL_PRIME1 ? 0x50 : (RSTL_VERSION >= RSTL_R32J ? 0x48 : 0x54))
 
+#if !RSTL_PRIME1
 inline CAnimSourceReaderBase::~CAnimSourceReaderBase() {}
 #endif
 

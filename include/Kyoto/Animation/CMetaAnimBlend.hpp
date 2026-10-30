@@ -25,11 +25,6 @@ private:
   float mBlend;
   bool mCharacterSpaceBlend;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CHECK_SIZEOF(CMetaAnimBlend, 0x14)
-#else
-CHECK_SIZEOF(CMetaAnimBlend, 0x1c)
-#endif
+CHECK_SIZEOF(CMetaAnimBlend, RSTL_PRIME1 ? 0x14 : 0x1c)
 
 #endif // _CMETAANIMBLEND
