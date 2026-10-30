@@ -111,13 +111,13 @@ public:
   };
   // Guessed type name, based on Prime; Echoes adds ADV9 and VAV1/VAV2/VAV3.
   struct CAdvancedValues {
-// TODO: verify that this Prime/Echoes difference is real
+    float mValues[
 #if RSTL_PRIME1
-    float values[8];
+        8
 #else
-    float mValues[9];
+        9
 #endif
-
+    ];
   };
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -226,77 +226,23 @@ public:
 #endif
 
   void EndLifetime();
-#if RSTL_PRIME1
-  void ForceParticleCreation(int amount);
+  void ForceParticleCreation(int count);
 
   bool InternalUpdate(double dt);
   void UpdateLightParameters();
-  void UpdateAdvanceAccessParameters(int, int);
-  bool UpdateVelocitySource(int, int, CParticle&);
-  void UpdateExistingParticles();
-  void CreateNewParticles(int);
-  void UpdatePSTranslationAndOrientation();
-  CElementGen* ConstructChildParticleSystem(TToken< CGenDescription >) const;
-  void UpdateChildParticleSystems(double);
-  void RenderModels();
-  void RenderLines();
-  void RenderParticlesIndirectTexture();
-  static void RenderParticlesFlameThrower(CElementGen* const* gens, int count);
-  void RenderParticles();
-  void RenderBasicParticlesRotNoTS(const CTransform4f&);
-  void RenderBasicParticlesNoRotNoTS(const CTransform4f&);
-  void RenderBasicParticlesRotTS(const CTransform4f&);
-  void RenderBasicParticlesNoRotTS(const CTransform4f&);
-#endif
-
-  int GetParticleCountAll() const;
-  int GetParticleCountAllInternal() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void AccumulateBounds(const CVector3f&, float);
-#else
-  void AccumulateBounds(const CVector3f& position, float size);
-#endif
-
-  void BuildParticleSystemBounds();
-#if !RSTL_PRIME1
-  void UpdatePSTranslationAndOrientation();
-  void UpdateLightParameters();
-  bool InternalUpdate(double dt);
   void UpdateAdvanceAccessParameters(int particleIndex, int particleFrame);
-  bool UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle,
-                            const CVector3f& scaledTranslation);
+  bool UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle
+#if !RSTL_PRIME1
+                            ,
+                            const CVector3f& scaledTranslation
+#endif
+  );
   void UpdateExistingParticles();
   void CreateNewParticles(int count);
-  void ForceParticleCreation(int count);
-  void UpdateChildParticleSystems(double dt);
-  void RenderModels();
-  // Guessed names; Echoes separates model setup, drawing and cleanup.
-  void BeginModelRender(SModelRenderState& state);
-  void BeginIndirectModelRender(SModelRenderState& state);
-  void RenderModelParticle(SModelRenderState& state, const CColor& color,
-                           const CParticle& particle);
-  void RenderIndirectModelParticle(SModelRenderState& state, const CColor& color,
-                                   const CParticle& particle);
-  void EndModelRender(const SModelRenderState& state) const;
-  void EndIndirectModelRender(const SModelRenderState& state);
-  void RenderLines();
-  void RenderParticles();
-  void RenderParticlesIndirectTexture();
-  static void RenderParticlesFlameThrower(CElementGen* const* gens, int count,
-                                          const CVector3f* globalTranslation,
-                                          const CTransform4f* globalOrientation,
-                                          const CVector3f* globalScale,
-                                          const CTransform4f* localScale);
-  // Guessed names, extending Prime's basic-render variants with modulation color.
-  void RenderBasicParticlesNoRotTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotNoTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const;
-  void RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const;
+  void UpdatePSTranslationAndOrientation();
+#if RSTL_PRIME1
+  CElementGen* ConstructChildParticleSystem(TToken< CGenDescription >) const;
+#else
   CParticleGen* ConstructChildParticleSystem(const CToken& description, uint type,
                                              ushort seed) const;
   static CParticleGen*
@@ -307,6 +253,52 @@ public:
                                const CTransform4f& globalOrientation, const CVector3f& globalScale,
                                const CColor& modulationColor, const CVector3f& localScale);
 #endif
+  void UpdateChildParticleSystems(double dt);
+  void RenderModels();
+#if !RSTL_PRIME1
+  // Guessed names; Echoes separates model setup, drawing and cleanup.
+  void BeginModelRender(SModelRenderState& state);
+  void BeginIndirectModelRender(SModelRenderState& state);
+  void RenderModelParticle(SModelRenderState& state, const CColor& color,
+                           const CParticle& particle);
+  void RenderIndirectModelParticle(SModelRenderState& state, const CColor& color,
+                                   const CParticle& particle);
+  void EndModelRender(const SModelRenderState& state) const;
+  void EndIndirectModelRender(const SModelRenderState& state);
+#endif
+  void RenderLines();
+  void RenderParticlesIndirectTexture();
+  static void RenderParticlesFlameThrower(CElementGen* const* gens, int count
+#if !RSTL_PRIME1
+                                          ,
+                                          const CVector3f* globalTranslation,
+                                          const CTransform4f* globalOrientation,
+                                          const CVector3f* globalScale,
+                                          const CTransform4f* localScale
+#endif
+  );
+  void RenderParticles();
+#if RSTL_PRIME1
+  void RenderBasicParticlesRotNoTS(const CTransform4f& xf);
+  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf);
+  void RenderBasicParticlesRotTS(const CTransform4f& xf);
+  void RenderBasicParticlesNoRotTS(const CTransform4f& xf);
+#else
+  // Guessed names, extending Prime's basic-render variants with modulation color.
+  void RenderBasicParticlesNoRotTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotNoTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const;
+#endif
+
+  int GetParticleCountAll() const;
+  int GetParticleCountAllInternal() const;
+  void AccumulateBounds(const CVector3f& position, float size);
+  void BuildParticleSystemBounds();
 
 #if RSTL_PRIME1
   int GetNumActiveChildParticles() const;
@@ -447,15 +439,8 @@ public:
   CVector3f mSSPO;
   int mSESD;
   CVector3f mSEPO;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float x2cc;
-  float x2d0;
-#else
   float mUpdateTime; // Guessed name; elapsed update time measured by CStopwatch.
   float mRenderTime; // Guessed name; elapsed render time measured by CStopwatch.
-#endif
-
   CVector3f mAabbMin;
   CVector3f mAabbMax;
   float mMaxSize;

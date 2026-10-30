@@ -18,7 +18,6 @@
 
 #if RSTL_PRIME1
 // Unused asset-ID format retained in the original string pool.
-
 static const char* const skAssetIdFormat = "%02x%02x%02x%02x";
 #endif
 
@@ -26,13 +25,12 @@ CTextParser::CTextParser(IObjectStore& store) : mObjectStore(store) {}
 
 void CTextParser::ParseText(CTextExecuteBuffer& buffer, const wchar_t* str, int len,
                             const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int b = 0, e = 0;
-  for (b = 0, e = 0; str[e] && (len == -1 || e < len);) {
-#else
   int b = 0;
   int e = 0;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  for (b = 0, e = 0; str[e] && (len == -1 || e < len);) {
+#else
   while (str[e] && (len == -1 || e < len)) {
 #endif
     if (str[e] == L'&') {
@@ -66,14 +64,13 @@ RSTL_PRIME1_CONST CAssetId CTextParser::GetAssetIdFromString(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::wstring str = CStringExtras::ConvertToUNICODE(inStr);
-  int id = (GetColorValue(str.data()) << 24) | (GetColorValue(str.data() + 2) << 16) |
-           (GetColorValue(str.data() + 4) << 8) | GetColorValue(str.data() + 6);
+  int id = (GetColorValue(str.data()) << 24)
 #else
   const rstl::wstring str = CStringExtras::ConvertToUNICODE(inStr);
-  const CAssetId id = (static_cast< uint >(GetColorValue(str.data())) << 24) |
-                      (GetColorValue(str.data() + 2) << 16) | (GetColorValue(str.data() + 4) << 8) |
-                      GetColorValue(str.data() + 6);
+  const CAssetId id = (static_cast< uint >(GetColorValue(str.data())) << 24)
 #endif
+           | (GetColorValue(str.data() + 2) << 16) | (GetColorValue(str.data() + 4) << 8) |
+           GetColorValue(str.data() + 6);
   if (textureMap) {
     typedef rstl::pair< CAssetId, CAssetId > AssetPair;
     rstl::vector< AssetPair >::const_iterator search = rstl::binary_find(
@@ -83,20 +80,18 @@ RSTL_PRIME1_CONST CAssetId CTextParser::GetAssetIdFromString(
       return search->second;
     }
   }
-
   return id;
 }
 
 TToken< CRasterFont > CTextParser::GetFont(const wchar_t* str, int len) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  uint id = (GetColorValue(str) << 24) | GetColorValue(str + 2) << 16 |
-            GetColorValue(str + 4) << 8 | GetColorValue(str + 6);
+  uint id = (GetColorValue(str) << 24)
 #else
-  const CAssetId id = (static_cast< uint >(GetColorValue(str)) << 24) |
-                      (GetColorValue(str + 2) << 16) | (GetColorValue(str + 4) << 8) |
-                      GetColorValue(str + 6);
+  const CAssetId id = (static_cast< uint >(GetColorValue(str)) << 24)
 #endif
+            | (GetColorValue(str + 2) << 16) | (GetColorValue(str + 4) << 8) |
+            GetColorValue(str + 6);
   return mObjectStore.GetObj(SObjectTag('FONT', id));
 }
 
@@ -300,7 +295,6 @@ int CTextParser::ParseInt(const wchar_t* str, int len, bool signVal) {
     neg = true;
     procCur = 1;
   }
-
   int val = 0;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

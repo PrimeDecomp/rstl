@@ -21,11 +21,9 @@
 #include "Kyoto/Graphics/CModelFlags.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-
 #include "dolphin/base/PPCArch.h"
 #else
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-
 #endif
 
 #include "dolphin/gx.h"
@@ -109,7 +107,6 @@ void Skinning::DelSkinnedRef() {
   if (sNumSkinnedObjects == 0) {
     sSkinningBuffer.clear();
     sAllocations.clear();
-
   }
 }
 
@@ -131,7 +128,6 @@ CSkinnedModel::CSkinnedModel(const TLockedToken< CModel >& model,
 , mOwned(ownership == kDO_Owned)
 , mDisableWorkspaces(false) {
   Construct();
-
 }
 
 CSkinnedModel::CSkinnedModel(const CSkinnedModel& other)
@@ -143,7 +139,6 @@ CSkinnedModel::CSkinnedModel(const CSkinnedModel& other)
 , mOwned(other.mOwned)
 , mDisableWorkspaces(false) {
   Construct();
-
 }
 CSkinnedModel::~CSkinnedModel() { Skinning::DelSkinnedRef(); }
 
@@ -154,11 +149,9 @@ void CSkinnedModel::Construct() {
     uint numNormals = mSkinRules->GetNumNormals();
     mVertWorkspace = rs_new float[numPoints * 12];
     mNormalWorkspace = rs_new float[numNormals * 12];
-
   }
   if (mSkinRules->GetNumVirtualBones() == 1) {
     mDisableWorkspaces = true;
-
   }
 }
 
@@ -173,7 +166,6 @@ void CSkinnedModel::Draw(const CModelFlags& flags) const {
   } else {
     mModel->Draw(mVertWorkspace.get(), mNormalWorkspace.get(), flags);
     PostDrawFunc();
-
   }
 }
 
@@ -193,7 +185,6 @@ void CSkinnedModel::Draw(const TDrawFunc func, void* data) {
     DCFlushRangeNoSync(mNormalWorkspace.get(), normSize);
     PPCSync();
     PostDrawFunc();
-
   }
 }
 
@@ -365,7 +356,6 @@ void CSkinnedModel::SetPointGeneratorFunc(void* data, void (*func)(void*, const 
                                                                    const CVector3f*, int)) {
   sPointGen = func;
   sPointGenData = data;
-
 }
 
 void CSkinnedModel::ClearPointGeneratorFunc() { sPointGen = nullptr; }
@@ -388,11 +378,7 @@ float* CSkinnedModel::AllocateNewWorkspace(float** nrmOut) {
 #endif
   }
   return ptr;
-
 }
-
-
-
 #else
 namespace {
 // Descriptive name for the scoped release of a temporary GX matrix allocation.
@@ -403,9 +389,8 @@ public:
   ~CMatrixPoolGuard() {
     if (mActive) {
       GPUMemory::ReleaseAllocation();
-
+    }
   }
-}
 
 private:
   bool mActive;
@@ -553,7 +538,6 @@ CSkinnedModel::~CSkinnedModel() {}
 
 CSkinnedModelState CSkinnedModel::MakeStorage(bool transient) const {
   return CSkinnedModelState(mSkinRules->GetNumVirtualBones(), transient);
-
 }
 
 CSkinnedModelState CSkinnedModel::MakeDefaultStorage() const { return MakeStorage(false); }
@@ -568,14 +552,12 @@ void CSkinnedModel::StoreCalculation(CSkinnedModelState& state,
     for (int i = 0; i < count; ++i) {
       *transforms = CTransform4f::Identity();
       ++transforms;
-
-}
+    }
   } else {
     mSkinRules->BuildAccumulatedTransforms(*pose, **mLayoutInfo, transforms);
     if (!pose->HasScale() && pose->HasUniformScale()) {
       uniformScale = true;
-
-  }
+    }
   }
   workspace.mUniformScale = uniformScale;
   if (workspace.mMatrices != nullptr) {
@@ -583,7 +565,6 @@ void CSkinnedModel::StoreCalculation(CSkinnedModelState& state,
   }
   if (sPointGen != nullptr && mSkinRules->GetNumPoints() != 0) {
     sPointGen(*this, workspace, sPointGenData);
-
   }
 }
 
@@ -625,7 +606,6 @@ void CSkinnedModel::LoadMatrixBank(int& currentBank, int bank) const {
   if (bank != currentBank) {
     mSkinRules->LoadMatrixBank(bank);
     currentBank = bank;
-
   }
 }
 
@@ -639,14 +619,12 @@ void CSkinnedModel::BuildSkinningMatrices(const CTransform4f* transforms,
        ++it, ++matrix, ++transform) {
     it->BuildSkinningMatrices(*transform, *matrix, uniformScale);
     DCFlushRange(matrix, sizeof(SSkinningMatrices));
-
   }
 }
 
 void CSkinnedModel::SetPointGeneratorFunc(void* context, TPointGenFunc callback) {
   sPointGen = callback;
   sPointGenData = context;
-
 }
 
 void CSkinnedModel::ClearPointGeneratorFunc() { sPointGen = nullptr; }
@@ -655,7 +633,6 @@ CVector3f CSkinnedModel::GetSkinnedPosition(const SSkinningWorkspace& workspace,
   const CTransform4f* transforms = workspace.mTransforms;
   const int bone = mSkinRules->GetVertexToBoneMap()[vertex];
   return transforms[bone] * reinterpret_cast< const CVector3f* >(mModel->GetPositions())[vertex];
-
 }
 
 CVector3f CSkinnedModel::GetSkinnedNormal(const SSkinningWorkspace& workspace, int vertex) const {

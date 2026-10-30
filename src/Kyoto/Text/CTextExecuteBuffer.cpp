@@ -90,11 +90,10 @@ void CTextExecuteBuffer::AddFont(const TToken< CRasterFont >& font) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CFontInstruction(font);
-  Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CFontInstruction(font));
-  Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CFontInstruction(font));
 #endif
+  Add(instruction);
   mState.SetFont(font);
   if (font.IsLoaded()) {
     if (mCurBlock) {
@@ -236,11 +235,10 @@ void CTextExecuteBuffer::AddLineSpacing(float spacing) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CLineSpacingInstruction(spacing);
-  Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CLineSpacingInstruction(spacing));
-  Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CLineSpacingInstruction(spacing));
 #endif
+  Add(instruction);
   mState.SetLineSpacing(spacing);
 }
 
@@ -248,11 +246,10 @@ void CTextExecuteBuffer::AddLineExtraSpace(int space) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CLineExtraSpaceInstruction(space);
-  Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CLineExtraSpaceInstruction(space));
-  Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CLineExtraSpaceInstruction(space));
 #endif
+  Add(instruction);
   mState.SetLineExtraSpace(space);
 }
 
@@ -282,11 +279,10 @@ void CTextExecuteBuffer::AddPushState() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CPushStateInstruction();
-  Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CPushStateInstruction());
-  Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CPushStateInstruction());
 #endif
+  Add(instruction);
   mStateStack.push_front(mState);
 }
 
@@ -294,11 +290,10 @@ void CTextExecuteBuffer::AddPopState() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CPopStateInstruction();
-  Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CPopStateInstruction());
-  Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CPopStateInstruction());
 #endif
+  Add(instruction);
   mState = mStateStack.front();
   mStateStack.pop_front();
   if (mCurLine->GetWidth() == 0) {
@@ -353,11 +348,10 @@ void CTextExecuteBuffer::StartNewWord() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new CWordInstruction();
-  mCurWordIt = Add(instruction);
 #else
-  rstl::ncrc_ptr< CInstruction > inst(rs_new CWordInstruction());
-  mCurWordIt = Add(inst);
+  rstl::ncrc_ptr< CInstruction > instruction(rs_new CWordInstruction());
 #endif
+  mCurWordIt = Add(instruction);
   mCurX = 0;
   mCurY = 0;
   mCurWordX = mCurLine->GetWidth();
@@ -454,20 +448,16 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
     if (mState.IsWordWrapping()) {
       if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() &&
           mCurLine->GetWordCount() > 1 && mCurX + width < mCurBlock->GetOutputWidth()) {
-
         MoveWordLTR();
       }
+      if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() && len > 1) {
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() && len > 1) {
-#else
-      if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() && len > 1) {
+#if !RSTL_PRIME1
         const int lineWidth = mCurLine->GetWidth();
         const int outputWidth = mCurBlock->GetOutputWidth();
         rem = rstl::max_val(1, rstl::min_val(len, 2 * ((outputWidth - lineWidth) /
                                                        mState.GetFont()->GetMonoWidth())));
 #endif
-
         int rank = 5;
         do {
           --rem;
@@ -486,34 +476,27 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
 #endif
           }
         } while (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() && rem > 1);
-
       }
     }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if ((*mState.GetFont())->GetCarriageAdvance() > mCurY) {
       mCurY = (*mState.GetFont())->GetCarriageAdvance();
+    }
+    mCurLine->TestLargestFont((*mState.GetFont())->GetMonoWidth(),
+                              (*mState.GetFont())->GetCarriageAdvance(),
+                              (*mState.GetFont())->GetBaseLine());
 #else
     if (mState.GetFont()->GetCarriageAdvance() > mCurY) {
       mCurY = mState.GetFont()->GetCarriageAdvance();
-#endif
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mCurLine->TestLargestFont((*mState.GetFont())->GetMonoWidth(),
-                                 (*mState.GetFont())->GetCarriageAdvance(),
-                                 (*mState.GetFont())->GetBaseLine());
-    mCurLine->AddWidth(width);
-    if (mCurLine->GetWidth() > mCurBlock->GetLineX()) {
-      mCurBlock->SetWidth(mCurLine->GetWidth());
-#else
     mCurLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
-                                  mState.GetFont()->GetCarriageAdvance(),
-                                  mState.GetFont()->GetBaseLine());
+                              mState.GetFont()->GetCarriageAdvance(),
+                              mState.GetFont()->GetBaseLine());
+#endif
     mCurLine->AddWidth(width);
     if (mCurLine->GetWidth() > mCurBlock->GetLineX()) {
       mCurBlock->SetWidth(mCurLine->GetWidth());
-#endif
     }
     mCurX += width;
 
@@ -527,25 +510,16 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
 }
 
 void CTextExecuteBuffer::AddStringFragment(const wchar_t* str, int len) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int i = 0;
-  if (mCurBlock->GetTextDirection() == kTD_Horizontal) {
-    while (i != len) {
-      i += WrapOneLTR(str + i, len - i);
-#else
   int consumed = 0;
   if (mCurBlock->GetTextDirection() == kTD_Horizontal) {
     while (consumed != len) {
       consumed += WrapOneLTR(str + consumed, len - consumed);
-#endif
     }
   }
 }
 
 void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
   if (!mCurLine) {
-
     StartNewLine();
   }
   int wordStart = 0;
@@ -571,11 +545,9 @@ void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
         }
         if (mCurBlock->GetTextDirection() == kTD_Horizontal) {
           mCurLine->AddWidth(width);
-
           mSpaceDistance = width;
         } else {
           mCurLine->AddHeight(height);
-
           mSpaceDistance = height;
         }
       }
@@ -588,25 +560,27 @@ void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
 
 rstl::vector< CToken > CTextExecuteBuffer::GetAssets() const {
   int count = 0;
+  for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  for (AUTO(it, mInstructions.begin()); it != mInstructions.end(); ++it) {
+       AUTO(it, mInstructions.begin());
 #else
-  for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
+       InstList::const_iterator it = mInstructions.begin();
 #endif
-
+       it != mInstructions.end(); ++it) {
     count += (*it)->GetAssetCount();
   }
   rstl::vector< CToken > assets;
   if (count > 0) {
     assets.reserve(count);
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, mInstructions.begin()); it != mInstructions.end(); ++it) {
+         AUTO(it, mInstructions.begin());
 #else
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
+         InstList::const_iterator it = mInstructions.begin();
 #endif
-
+         it != mInstructions.end(); ++it) {
       (*it)->GetAssets(assets);
     }
   }
@@ -617,26 +591,28 @@ CTextRenderBuffer CTextExecuteBuffer::BuildRenderBuffer() const {
   CTextRenderBuffer buffer(CTextRenderBuffer::kM_AllocTally);
   {
     CFontRenderState state;
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, mInstructions.begin()); it != mInstructions.end(); ++it) {
+         AUTO(it, mInstructions.begin());
 #else
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
+         InstList::const_iterator it = mInstructions.begin();
 #endif
-
+         it != mInstructions.end(); ++it) {
       (*it)->Invoke(state, &buffer);
     }
   }
   buffer.SetMode(CTextRenderBuffer::kM_BufferFill);
   {
     CFontRenderState state;
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it, mInstructions.begin()); it != mInstructions.end(); ++it) {
+         AUTO(it, mInstructions.begin());
 #else
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
+         InstList::const_iterator it = mInstructions.begin();
 #endif
-
+         it != mInstructions.end(); ++it) {
       (*it)->Invoke(state, &buffer);
     }
   }
@@ -677,14 +653,14 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
     CTextRenderBuffer buffer(CTextRenderBuffer::kM_AllocTally);
     {
       CFontRenderState state;
+      for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-      for (AUTO(it2, mInstructions.begin()); it2 != mInstructions.end(); ++it2) {
+           AUTO(it2, mInstructions.begin());
 #else
-      for (InstList::const_iterator it2 = mInstructions.begin(); it2 != mInstructions.end();
-           ++it2) {
+           InstList::const_iterator it2 = mInstructions.begin();
 #endif
-
+           it2 != mInstructions.end(); ++it2) {
         (*it2)->Invoke(state, &buffer);
       }
     }
@@ -692,13 +668,14 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
     CFontRenderState state;
     InstList::const_iterator pageEnd = it;
     bool seeking = true;
+    for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    for (AUTO(it2, mInstructions.begin()); it2 != mInstructions.end(); ++it2) {
+         AUTO(it2, mInstructions.begin());
 #else
-    for (InstList::const_iterator it2 = mInstructions.begin(); it2 != mInstructions.end(); ++it2) {
+         InstList::const_iterator it2 = mInstructions.begin();
 #endif
-
+         it2 != mInstructions.end(); ++it2) {
       if (it2 == it) {
         seeking = false;
       }
@@ -712,7 +689,6 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
 #else
         if ((*it2)->IsLineInstruction() && state.GetY() > extent.GetY()) {
 #endif
-
           break;
         }
         ++pageEnd;
