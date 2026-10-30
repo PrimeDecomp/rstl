@@ -4,7 +4,7 @@
 
 #include "Corruption/Kyoto/CResLoader.hpp"
 #else
-#include "Echoes/Kyoto/CResLoader.hpp"
+#include "Kyoto/CResLoader.hpp"
 
 #include "EchoesNamespace.h"
 #endif

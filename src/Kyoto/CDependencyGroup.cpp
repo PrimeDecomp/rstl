@@ -12,9 +12,9 @@
 #include "Kyoto/CDependencyGroupToken.hpp"
 #define RSTL_CONST_FACTORY_FN_RETURN
 #else
-#include "Echoes/Kyoto/CDependencyGroupToken.hpp"
+#include "Kyoto/CDependencyGroupToken.hpp"
 #include "Echoes/Kyoto/CFactoryMgr.hpp"
-#include "Echoes/Kyoto/IObjectStore.hpp"
+#include "Kyoto/IObjectStore.hpp"
 #define RSTL_CONST_FACTORY_FN_RETURN
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
