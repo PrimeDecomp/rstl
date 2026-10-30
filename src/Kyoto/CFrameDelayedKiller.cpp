@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementAllocationChunk.hpp"
-#endif
 
 #include "Kyoto/Particles/IElement.hpp"
 

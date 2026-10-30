@@ -1,10 +1,8 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatement.hpp"
-#endif
 
 #include "dolphin/os/OSCache.h"
 

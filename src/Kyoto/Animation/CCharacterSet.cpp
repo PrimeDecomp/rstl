@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CCharacterSet.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 CCharacterSet::CCharacterSet(CInputStream& in) : mTableCount(in.Get< ushort >()) {
 // TODO: verify that this Prime/Echoes difference is real

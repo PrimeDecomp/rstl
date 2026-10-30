@@ -5,9 +5,7 @@
 #include "types.h"
 
 #include "Kyoto/CARAMToken.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/SObjectTag.hpp"
-#endif
 
 #include "rstl/single_ptr.hpp"
 

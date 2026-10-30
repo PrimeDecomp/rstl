@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Input/CRumbleGenerator.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Input/IController.hpp"
-#endif
 
 #if RSTL_PRIME1
 const EMotorState CRumbleGenerator::kStopAll[4] = {

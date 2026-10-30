@@ -2,21 +2,14 @@
 #define _CTEXTEXECUTEBUFFER
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/Text/TextCommon.hpp"
-#endif
 
 #include "rstl/list.hpp"
 #include "rstl/rc_ptr.hpp"
-#if !RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
-#if RSTL_PRIME1
-#include "rstl/string.hpp"
-#endif
 
 class CBlockInstruction;
 class CLineInstruction;

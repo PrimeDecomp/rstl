@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimSysContext.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#endif
 
 #if !RSTL_PRIME1
 class CAnimTreeNode;

@@ -17,9 +17,7 @@
 #include "rstl/vector.hpp"
 
 #include "Kyoto/Math/CVector3f.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
-#endif
 
 #if !RSTL_PRIME1
 #include "dolphin/dtk.h"

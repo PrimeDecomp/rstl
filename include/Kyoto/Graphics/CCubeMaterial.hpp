@@ -1,14 +1,9 @@
 #ifndef _CCUBEMATERIAL
 #define _CCUBEMATERIAL
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Basics/CBasics.hpp"
-#if RSTL_PRIME1
-#include "types.h"
-#endif
 
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Math/CVector3f.hpp"

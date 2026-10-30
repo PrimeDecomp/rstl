@@ -1,11 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimCharacterSet.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

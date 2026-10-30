@@ -1,13 +1,9 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CGX.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #if RSTL_PRIME1
-#include "Kyoto/Graphics/CTexture.hpp"
-
 #include "dolphin/gx/GXManage.h"
 #include "dolphin/gx/GXTexture.h"
 #endif

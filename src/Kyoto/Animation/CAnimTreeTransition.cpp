@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimTreeTransition.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 
 #include "Kyoto/Math/CloseEnough.hpp"
 

@@ -1,14 +1,9 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CARAMToken.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/CARAMManager.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemorySys.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/CARAMManager.hpp"
-#endif
 
 #include "rstl/construct.hpp"
 

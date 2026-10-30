@@ -1,35 +1,31 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "Kyoto/Audio/CSfxManager.hpp"
-
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CToken.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Audio/CAudioSys.hpp"
 #include "Kyoto/Audio/CSfxHandle.hpp"
 #include "Kyoto/Basics/CCast.hpp"
+#include "Kyoto/Streams/CInputStream.hpp"
+#if RSTL_PRIME1
 #include "dolphin/types.h"
 #include "musyx/musyx.h"
 #else
-#include "Kyoto/Streams/CInputStream.hpp"
 #endif
 
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 #include "types.h"
-#include "Kyoto/Audio/CSfxManager.hpp"
+#if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #else
 #include "math.h"

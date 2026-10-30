@@ -1,14 +1,10 @@
 #ifndef _CDRAWABLEPLANEOBJECT
 #define _CDRAWABLEPLANEOBJECT
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Graphics/CDrawable.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Math/CAABox.hpp"
-#endif
 
 #include "Kyoto/Math/CPlane.hpp"
 

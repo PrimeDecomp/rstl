@@ -1,29 +1,14 @@
 #include "rstl/RstlVersions.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-// MWCC template emission order depends on these includes.
-// clang-format off
 #include "rstl/list.hpp" // IWYU pragma: keep
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
-// clang-format on
-#else
-#include "rstl/list.hpp"
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CStopwatch.hpp"
-#else
-#include "Kyoto/Particles/CParticleElectric.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
@@ -34,9 +19,6 @@
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
 #include "Kyoto/Particles/IElement.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "dolphin/gx/GXVert.h"
 #include "float.h"

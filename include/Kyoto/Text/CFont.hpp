@@ -2,9 +2,7 @@
 #define _CFONT
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CColor.hpp"
-#endif
 
 #include "types.h"
 

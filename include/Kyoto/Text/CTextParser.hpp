@@ -2,22 +2,14 @@
 #define _CTEXTPARSER
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
-#endif
 
 #include "rstl/string.hpp"
 #include "types.h"
-
-#if RSTL_PRIME1
-#include "Kyoto/SObjectTag.hpp"
-#include "Kyoto/Text/CFontImageDef.hpp"
-#include "Kyoto/TToken.hpp"
-#endif
 
 #include "Kyoto/Text/CTextColor.hpp"
 

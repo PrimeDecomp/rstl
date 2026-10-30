@@ -1,12 +1,12 @@
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/RstlVersions.h"
 
+#include "Kyoto/CDvdFile.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #if RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CDvdFile.hpp"
 #include "Corruption/Kyoto/CDvdRequest.hpp"
 #else
-#include "Kyoto/CDvdFile.hpp"
-#include "Kyoto/CDvdRequest.hpp"
 #include "EchoesNamespace.h"
 #endif
 #include "Kyoto/Alloc/Assert.hpp"

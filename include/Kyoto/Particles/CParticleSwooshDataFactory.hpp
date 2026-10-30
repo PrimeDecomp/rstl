@@ -1,13 +1,9 @@
 #ifndef _CPARTICLESWOOSHDATAFACTORY
 #define _CPARTICLESWOOSHDATAFACTORY
 #include "rstl/RstlVersions.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
 class CInputStream;
 

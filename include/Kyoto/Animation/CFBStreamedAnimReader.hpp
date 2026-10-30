@@ -2,20 +2,16 @@
 #define _CFBSTREAMEDANIMREADER
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
-#endif
 
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
-#endif
 
 #include "Kyoto/Animation/CTimeRemainderAndFraction.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
+#if RSTL_PRIME1
 #else
 #include "Kyoto/Animation/TSubAnimTypeToken.hpp"
 #endif

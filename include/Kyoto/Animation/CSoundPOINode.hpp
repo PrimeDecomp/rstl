@@ -3,12 +3,8 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CPOINode.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CInputStream.hpp"
-#else
 #include "Kyoto/Animation/CSegId.hpp"
-#endif
 
 class CSoundPOINode : public CPOINode {
 public:

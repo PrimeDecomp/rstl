@@ -1,17 +1,12 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CMetaTransFactory.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Animation/CMetaTransMetaAnim.hpp"
 #include "Kyoto/Animation/CMetaTransPhaseTrans.hpp"
 #include "Kyoto/Animation/CMetaTransSnap.hpp"
 #include "Kyoto/Animation/CMetaTransTrans.hpp"
 #include "Kyoto/Animation/IMetaTrans.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

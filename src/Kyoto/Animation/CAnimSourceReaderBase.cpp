@@ -1,15 +1,11 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-#else
 #include "Kyoto/Animation/CAnimPOIData.hpp"
-#endif
 
 #include "rstl/math.hpp"
 

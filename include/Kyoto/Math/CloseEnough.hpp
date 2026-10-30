@@ -4,9 +4,7 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"

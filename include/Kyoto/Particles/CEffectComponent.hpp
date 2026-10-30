@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Particles/CParticleData.hpp"
-#if RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 
 class CEffectComponent {
 public:

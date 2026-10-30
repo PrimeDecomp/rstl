@@ -4,18 +4,11 @@
 
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CGX_Impl.hpp" // IWYU pragma: keep
-#else
-#include "Kyoto/Graphics/CGX_Impl.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGraphics.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
-#endif
 
 #include "dolphin/gx/GXVert.h"
 

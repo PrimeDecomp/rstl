@@ -2,14 +2,10 @@
 #define _CELECTRICDESCRIPTION
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Particles/CGenDescription.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#else
 #include "types.h"
-#endif
 
 #include "Kyoto/TToken.hpp"
 #include "rstl/optional_object.hpp"

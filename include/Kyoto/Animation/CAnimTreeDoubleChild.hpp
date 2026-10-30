@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#if !RSTL_PRIME1
 #include "rstl/math.hpp"
-#endif
 
 class CAnimTreeDoubleChild : public CAnimTreeNode {
 public:

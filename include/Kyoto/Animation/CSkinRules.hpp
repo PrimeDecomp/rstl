@@ -3,13 +3,9 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CVirtualBone.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "rstl/single_ptr.hpp"
 #include "rstl/vector.hpp"
-#endif
 
 class CInputStream;
 #if !RSTL_PRIME1

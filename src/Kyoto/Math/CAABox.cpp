@@ -1,14 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Math/CAABox.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Math/CLineSeg.hpp"
-#endif
 
 #include "Kyoto/Math/CMath.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CQuad.hpp"
-#endif
 
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CTri.hpp"

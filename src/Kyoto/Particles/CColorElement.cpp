@@ -1,16 +1,12 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CColorElement.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "Kyoto/Math/CMath.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"

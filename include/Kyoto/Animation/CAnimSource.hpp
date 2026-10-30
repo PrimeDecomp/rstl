@@ -2,33 +2,21 @@
 #define _CANIMSOURCE
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAnimPOIData.hpp"
-#endif
 
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
-#else
 #include "Kyoto/Animation/IAnimReader.hpp"
-#endif
 
 #include "Kyoto/Math/CQuaternion.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/SObjectTag.hpp"
-#endif
 
 #include "rstl/auto_ptr.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "rstl/pair.hpp"
 #include "rstl/set.hpp"
 #include "rstl/string.hpp"
-#else
 #include "rstl/math.hpp"
-#endif
 
 #include "rstl/vector.hpp"
 

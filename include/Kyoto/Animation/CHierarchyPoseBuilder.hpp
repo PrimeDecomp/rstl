@@ -1,9 +1,7 @@
 #ifndef _CHIERARCHYPOSEBUILDER
 #define _CHIERARCHYPOSEBUILDER
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Animation/CLayoutDescription.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
@@ -11,9 +9,7 @@
 #include "Kyoto/Animation/TSegIdMap.hpp"
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "rstl/auto_ptr.hpp"
-#endif
 
 #include "rstl/construction_deferred.hpp"
 

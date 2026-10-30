@@ -2,22 +2,14 @@
 #define _CAUDIOGROUPSET
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
-#else
 #include "types.h"
-#endif
 
 #include "rstl/auto_ptr.hpp"
-#if RSTL_PRIME1
 #include "rstl/optional_object.hpp"
-#endif
 
 #include "rstl/single_ptr.hpp"
-#if RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

@@ -2,16 +2,10 @@
 #define _CCUBEMODEL
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "types.h"
-
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
-#endif
 
 #include "Kyoto/Graphics/CCubeSurface.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/Graphics/CCubeMaterial.hpp"
-#endif
 
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/TToken.hpp"

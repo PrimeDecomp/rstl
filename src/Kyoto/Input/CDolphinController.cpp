@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Input/CDolphinController.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 

@@ -2,20 +2,14 @@
 #define _CANIMTREENODE
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 
 #include "Kyoto/Animation/IAnimReader.hpp"
 #include "rstl/pair.hpp"
-#if !RSTL_PRIME1
 #include "rstl/rc_ptr.hpp"
-#endif
 
 #include "rstl/reserved_vector.hpp"
-#if RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 
 class CAnimTreeNode : public IAnimReader {
 public:

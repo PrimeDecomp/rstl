@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#if RSTL_PRIME1
 #include "rstl/rc_ptr.hpp"
-#endif
 
 #include "rstl/auto_ptr.hpp"
 

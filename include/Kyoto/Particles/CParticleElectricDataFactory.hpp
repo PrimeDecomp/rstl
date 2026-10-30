@@ -2,12 +2,8 @@
 #define _CPARTICLEELECTRICDATAFACTORY
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
 class CInputStream;
 

@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CModel.hpp"
-
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
@@ -10,33 +8,27 @@
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-#include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
+#if !RSTL_PRIME1
+#include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/CFrameDelayedKiller.hpp"
-#include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
-#include "Kyoto/Graphics/CGX.hpp"
-#include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
+#if RSTL_PRIME1
 #include "dolphin/gx/GXGeometry.h"
 #include "dolphin/os/OSCache.h"
 #include "dolphin/types.h"
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
-#include "Kyoto/Graphics/CModel.hpp"
-
-#include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/TToken.hpp"
+#if RSTL_PRIME1
 #else
 #include "dolphin/gx.h"
 #include "dolphin/os.h"

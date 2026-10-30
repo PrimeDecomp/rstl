@@ -1,19 +1,13 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAnimPOIData.hpp"
-#endif
 
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/IObjectStore.hpp"
-#endif
 
 #include "Kyoto/Math/CloseEnough.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/SObjectTag.hpp"
-#endif
 
 rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words,
                                                                       CInputStream& in) {

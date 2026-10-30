@@ -2,20 +2,12 @@
 #define _CMODEL
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "types.h"
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CCubeModel.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
-#endif
 
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/TToken.hpp"

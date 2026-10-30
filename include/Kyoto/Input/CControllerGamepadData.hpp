@@ -6,9 +6,7 @@
 #include "Kyoto/Input/CControllerButton.hpp"
 #include "Kyoto/Input/InputTypes.hpp"
 
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 class CControllerGamepadData {
 public:

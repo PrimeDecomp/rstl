@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-#endif
 
 #include "Kyoto/Text/CFontInstruction.hpp"
 #include "Kyoto/Text/CFontRenderState.hpp"

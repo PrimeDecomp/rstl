@@ -5,10 +5,7 @@
 #include "Kyoto/Streams/COutputStream.hpp"
 #include "types.h"
 #include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_CONSTRUCTION_POLICIES
 #include "rstl/construct.hpp"
-#endif
-
 
 class CVector2f {
   static const CVector2f skZeroVector;

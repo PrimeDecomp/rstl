@@ -2,21 +2,15 @@
 #define _CTEXTRENDERBUFFER
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CColor.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Math/CVector2i.hpp"
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Text/CTextColor.hpp"
-#else
 #include "rstl/auto_ptr.hpp"
-#endif
 
 #include "rstl/pair.hpp"
 #include "rstl/reserved_vector.hpp"

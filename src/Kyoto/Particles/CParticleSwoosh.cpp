@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
@@ -11,15 +9,10 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementGen.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "Kyoto/Math/CAbsAngle.hpp"
 #include "dolphin/gx/GXVert.h"

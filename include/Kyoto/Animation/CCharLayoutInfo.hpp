@@ -1,33 +1,22 @@
 #ifndef _CCHARLAYOUTINFO
 #define _CCHARLAYOUTINFO
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/TSegIdMap.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CQuaternion.hpp"
-#endif
 
 #include "Kyoto/Math/CVector3f.hpp"
 
-#if !RSTL_PRIME1
 #include "rstl/map.hpp"
-#endif
 
 #include "rstl/object_owner.hpp"
-#if RSTL_PRIME1
 #include "rstl/auto_ptr.hpp"
-#include "rstl/map.hpp"
-#endif
 
 #include "rstl/string.hpp"
-#if !RSTL_PRIME1
 #include "rstl/vector.hpp"
-#endif
 
 class CCharLayoutNode {
 public:

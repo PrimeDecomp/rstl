@@ -2,18 +2,12 @@
 #define MP1_TSEGIDMAP_HPP
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "types.h"
-
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
 #include "rstl/pair.hpp"
-#endif
 
 #include "rstl/reserved_vector.hpp"
-#if RSTL_PRIME1
-#include "rstl/pair.hpp"
-#endif
 
 template < typename T >
 class TSegIdMap {

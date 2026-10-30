@@ -1,17 +1,11 @@
 #include "rstl/RstlVersions.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#else
 #include "Kyoto/Math/CVector3f.hpp"
-#endif
 
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"

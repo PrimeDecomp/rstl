@@ -2,9 +2,7 @@
 #include "Kyoto/Audio/CAudioSys.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Audio/CAudioGroupSet.hpp"
-#endif
 
 #include "dolphin/ai.h"
 #if RSTL_PRIME1
@@ -20,8 +18,8 @@
 
 #include "musyx/musyx.h"
 
-#if RSTL_PRIME1
 #include "rstl/math.hpp"
+#if RSTL_PRIME1
 #include "string.h"
 #endif
 

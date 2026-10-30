@@ -1,15 +1,11 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CResLoader.hpp"
 #include "Kyoto/CPakFile.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Streams/CLZOInputStream.hpp"
-#endif
 
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CZipInputStream.hpp"
-#endif
 
 #include "rstl/StringExtras.hpp"
 

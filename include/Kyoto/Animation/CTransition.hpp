@@ -2,12 +2,8 @@
 #define _CTRANSITION
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/IMetaTrans.hpp"
-#else
 #include "rstl/pair.hpp"
-#endif
 
 #include "rstl/rc_ptr.hpp"
 

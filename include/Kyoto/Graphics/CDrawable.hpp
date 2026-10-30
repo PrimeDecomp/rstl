@@ -1,14 +1,9 @@
 #ifndef _CDRAWABLE
 #define _CDRAWABLE
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Math/CAABox.hpp"
-#if !RSTL_PRIME1
-#include "types.h"
-#endif
 
 enum EDrawableType {
   kDT_WorldSurface,

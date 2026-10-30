@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CEffectComponent.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPOINode.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

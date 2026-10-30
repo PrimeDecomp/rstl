@@ -5,13 +5,13 @@
 #include "types.h"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/Audio/CDSPStream.hpp"
-#else
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
+#if RSTL_PRIME1
+#include "Kyoto/Audio/CDSPStream.hpp"
+#else
 #endif
 
 #include "rstl/string.hpp"

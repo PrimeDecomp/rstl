@@ -9,9 +9,7 @@
 #include "Kyoto/IObj.hpp"
 
 #include "rstl/auto_ptr.hpp"
-#if !RSTL_PRIME1
 #include "rstl/construct.hpp"
-#endif
 
 template < typename T >
 class TToken : public CToken {

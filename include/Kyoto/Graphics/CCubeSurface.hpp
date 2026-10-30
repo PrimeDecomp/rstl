@@ -5,9 +5,7 @@
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
 
-#if !RSTL_PRIME1
 #include "rstl/construct.hpp"
-#endif
 
 class CCubeModel;
 class CCubeSurface {

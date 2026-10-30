@@ -2,10 +2,10 @@
 #include "Kyoto/PVS/CPVSVisOctree.hpp"
 
 #if !RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R32J
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
+#if RSTL_VERSION >= RSTL_R32J
 #include "string.h"
 #endif
 

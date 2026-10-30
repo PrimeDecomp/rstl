@@ -1,24 +1,16 @@
 #ifndef _CGENDESCRIPTION
 #define _CGENDESCRIPTION
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/CToken.hpp"
-#if RSTL_PRIME1
-#include "types.h"
-
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-#endif
 
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 
 #include "rstl/optional_object.hpp"
-#if RSTL_PRIME1
 #include "rstl/single_ptr.hpp"
-#endif
 
 class CElectricDescription;
 class CModel;

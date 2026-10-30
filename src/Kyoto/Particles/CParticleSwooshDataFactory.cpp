@@ -2,14 +2,10 @@
 #include "Kyoto/Particles/CParticleSwooshDataFactory.hpp"
 
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/CVParamTransfer.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

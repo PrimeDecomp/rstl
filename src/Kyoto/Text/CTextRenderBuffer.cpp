@@ -3,19 +3,13 @@
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"
-#endif
 
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextColor.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
-#include "Kyoto/Streams/CMemoryInStream.hpp"
-#include "Kyoto/Streams/CMemoryStreamOut.hpp"
-#endif
 
 #include "rstl/math.hpp"
 #include "dolphin/gx/GXVert.h"

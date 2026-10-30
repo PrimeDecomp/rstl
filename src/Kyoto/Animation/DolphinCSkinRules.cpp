@@ -2,18 +2,18 @@
 #include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
+#if RSTL_PRIME1
 #else
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
-#include "Kyoto/CFactoryMgr.hpp"
 #endif
 
 #include "Kyoto/Graphics/CModel.hpp"
 // TODO: verify that this Prime/Echoes difference is real
+#include "rstl/math.hpp"
 #if RSTL_PRIME1
 #include "dolphin/os/OSCache.h"
-#include "rstl/math.hpp"
 #else
 #include "dolphin/gx.h"
 #endif

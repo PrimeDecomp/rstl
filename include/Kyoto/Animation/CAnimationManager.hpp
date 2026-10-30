@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimSysContext.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
-#endif
 
 #include "Kyoto/TToken.hpp"
 

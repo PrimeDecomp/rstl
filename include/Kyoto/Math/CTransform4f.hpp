@@ -4,13 +4,9 @@
 
 #include "types.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#else
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/construct.hpp"
-#endif
 
 class CInputStream;
 

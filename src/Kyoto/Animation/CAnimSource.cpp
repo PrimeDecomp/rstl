@@ -2,13 +2,11 @@
 #include "Kyoto/Animation/CAnimSource.hpp"
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CBoolPOINode.hpp"
-#endif
 
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
+#if !RSTL_PRIME1
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
 #endif
 
@@ -16,10 +14,8 @@
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

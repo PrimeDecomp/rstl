@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "rstl/pair.hpp"
-#endif
 
 class CInputStream;
 

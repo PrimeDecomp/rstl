@@ -2,16 +2,12 @@
 #define _CANIMPOIDATA
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "rstl/optional_object.hpp"
-#else
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-#endif
 
 #include "rstl/vector.hpp"
 

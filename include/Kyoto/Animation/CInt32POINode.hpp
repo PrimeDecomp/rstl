@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CPOINode.hpp"
-#if !RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 
 class CInt32POINode : public CPOINode {
 public:

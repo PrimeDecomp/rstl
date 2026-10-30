@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Math/CloseEnough.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CQuaternion.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

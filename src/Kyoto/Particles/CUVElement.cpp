@@ -2,13 +2,7 @@
 #include "Kyoto/Particles/CUVElement.hpp"
 
 #include "Kyoto/Graphics/CTexture.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
-#endif
-
-#if RSTL_PRIME1
-#include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "rstl/math.hpp"
 

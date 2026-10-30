@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimationManager.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
-#endif
 
 #include "Kyoto/Animation/IMetaAnim.hpp"
 

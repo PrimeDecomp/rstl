@@ -1,16 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CObjectReference.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/CResFactory.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CSimplePool.hpp"
-#else
 #include "Kyoto/IObjectStore.hpp"
-#endif
 
 CObjectReference::CObjectReference(IObjectStore& store, const rstl::auto_ptr< IObj >& obj,
                                    const SObjectTag& tag, CVParamTransfer xfer)

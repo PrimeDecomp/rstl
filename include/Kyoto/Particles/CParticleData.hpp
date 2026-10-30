@@ -4,18 +4,12 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CSegId.hpp"
-#endif
 
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "rstl/string.hpp"
-#else
 #include "rstl/construct.hpp"
-#endif
 
 class CInputStream;
 

@@ -1,14 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemorySys.hpp"
-#endif
 
 #include "Kyoto/CFrameDelayedKiller.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

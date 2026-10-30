@@ -7,15 +7,11 @@
 
 #include "Kyoto/Animation/CAdvancementDeltas.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleData.hpp"
 
-#if RSTL_PRIME1
 #include "rstl/auto_ptr.hpp"
-#endif
 
 #include "rstl/math.hpp"
 #include "rstl/optional_object.hpp"
@@ -68,24 +64,8 @@ struct SAdvancementResults {
 CHECK_SIZEOF(SAdvancementResults, 0x24)
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CHECK_SIZEOF(CAdvancementResults, 0x24)
-#else
-class CSteadyStateAnimInfo {
-  CCharAnimTime mDuration;
-  CVector3f mOffset;
-  bool mLooping;
-
-public:
-  CSteadyStateAnimInfo(bool looping, const CCharAnimTime& duration, const CVector3f& offset)
-  : mDuration(duration), mOffset(offset), mLooping(looping) {}
-
-  CCharAnimTime GetDuration() const { return mDuration; }
-  CVector3f GetOffset() const { return mOffset; }
-  const bool IsLooping() const { return mLooping; }
-};
-CHECK_SIZEOF(CSteadyStateAnimInfo, 0x18)
 #endif
 
 struct CAnimTreeEffectiveContribution {

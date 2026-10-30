@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/IAllocator.hpp"
-#endif
 
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
@@ -10,7 +8,6 @@
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #else
-#include "Kyoto/Alloc/IAllocator.hpp"
 #endif
 
 #include "Kyoto/SObjectTag.hpp"
@@ -23,17 +20,12 @@
 #include "rstl/single_ptr.hpp"
 #include "types.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #if !RSTL_PRIME1

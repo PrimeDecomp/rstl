@@ -2,33 +2,24 @@
 // G2ME01 scaffold remaining identity and code-generation questions are recorded in research.
 #include "Kyoto/Graphics/CGraphics.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION == RSTL_GM8P_00
 #include "Kyoto/Animation/CSkinnedModel.hpp"
-#endif
+#if RSTL_PRIME1
 #else
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
 
 #include "Kyoto/Math/CRelAngle.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
-#include "Kyoto/Basics/COsContext.hpp"
-#include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
-#endif
 
 #if RSTL_PRIME1
 #include "GameVersions.h"

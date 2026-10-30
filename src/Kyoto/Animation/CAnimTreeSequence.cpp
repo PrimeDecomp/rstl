@@ -4,9 +4,7 @@
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CParticlePOINode.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CSequenceHelper.hpp"
-#endif
 
 #include "Kyoto/Animation/CSoundPOINode.hpp"
 #include "Kyoto/Animation/CTreeUtils.hpp"

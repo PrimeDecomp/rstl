@@ -1,16 +1,12 @@
 #ifndef _CMAYASPLINE
 #define _CMAYASPLINE
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Math/CAbsAngle.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
 
-#if !RSTL_PRIME1
 #include "rstl/pair.hpp"
-#endif
 
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"

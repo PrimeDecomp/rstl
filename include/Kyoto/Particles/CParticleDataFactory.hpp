@@ -2,22 +2,16 @@
 #define _CPARTICLEDATAFACTORY
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
-#endif
 
 #include "Kyoto/Particles/IElement.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "Kyoto/SObjectTag.hpp"
-#if !RSTL_PRIME1
 #include "rstl/optional_object.hpp"
 #include "rstl/vector.hpp"
-#endif
 
 class CInputStream;
 

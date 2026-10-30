@@ -3,14 +3,12 @@
 #include "rstl/RstlVersions.h"
 
 #include "types.h"
-#if !RSTL_PRIME1
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"
 #include "rstl/map.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
-#endif
 
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CResLoader.hpp"

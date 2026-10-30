@@ -1,14 +1,9 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/PVS/CPVSVisSet.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/PVS/CPVSVisOctree.hpp"
-#endif
 
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/PVS/CPVSVisOctree.hpp"
-#endif
 
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "string.h"

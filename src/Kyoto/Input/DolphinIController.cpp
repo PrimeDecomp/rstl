@@ -1,15 +1,9 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "Kyoto/Input/CDolphinController.hpp"
 #include "Kyoto/Input/IController.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/Input/CDolphinController.hpp"
-#include "Kyoto/Input/IController.hpp"
-#endif
 
 const float IController::kAbsoluteMinimum = -1.f;
 const float IController::kAbsoluteMaximum = 1.f;

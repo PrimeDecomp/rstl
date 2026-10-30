@@ -3,12 +3,8 @@
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeAnimReaderContainer.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/IObjectStore.hpp"
-#else
 #include "Kyoto/CSimplePool.hpp"
-#endif
 
 #include "Kyoto/Streams/COutputStream.hpp"
 

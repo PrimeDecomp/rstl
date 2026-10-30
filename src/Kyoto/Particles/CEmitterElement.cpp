@@ -3,9 +3,7 @@
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CVector2f.hpp"
-#endif
 
 #include "Kyoto/Math/CVector3f.hpp"
 

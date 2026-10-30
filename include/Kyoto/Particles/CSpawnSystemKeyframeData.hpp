@@ -1,9 +1,7 @@
 #ifndef _CSPAWNSYSTEMKEYFRAMEDATA
 #define _CSPAWNSYSTEMKEYFRAMEDATA
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/CToken.hpp"
 

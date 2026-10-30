@@ -2,9 +2,7 @@
 #include "Kyoto/Particles/CModVectorElement.hpp"
 
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CAABox.hpp"
-#endif
 
 CMVEConstant::CMVEConstant(CRealElement* a, CRealElement* b, CRealElement* c)
 : mX(a), mY(b), mZ(c) {}

@@ -3,9 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimTreeTweenBase.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPOINode.hpp"
-#endif
 
 class CAnimTreeTransition : public CAnimTreeTweenBase {
 public:

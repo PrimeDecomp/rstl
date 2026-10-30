@@ -1,24 +1,17 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CPakFile.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/CARAMManager.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
-#if !RSTL_PRIME1
 #include "rstl/reserved_vector.hpp"
-#endif
 
 #include "stdio.h"
 

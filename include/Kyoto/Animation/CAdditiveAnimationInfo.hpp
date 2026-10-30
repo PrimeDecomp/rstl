@@ -3,9 +3,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_CONSTRUCTION_POLICIES
 #include "rstl/construct.hpp"
-#endif
 
 class CAdditiveAnimationInfo {
 public:

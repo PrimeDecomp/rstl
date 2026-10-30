@@ -7,21 +7,13 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/SObjectTag.hpp"
-#endif
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/single_ptr.hpp"
-#if RSTL_PRIME1
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
 #include "rstl/vector.hpp"
-#endif
-#endif
 
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 
 class CInputStream;
 

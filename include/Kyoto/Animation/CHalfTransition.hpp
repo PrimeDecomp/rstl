@@ -1,9 +1,7 @@
 #ifndef _CHALFTRANSITION
 #define _CHALFTRANSITION
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/IMetaTrans.hpp"
-#endif
 
 #include "rstl/rc_ptr.hpp"
 

@@ -1,16 +1,12 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Math/CQuaternion.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Streams/CInputStream.hpp"
-
 #include "rstl/math.hpp"
 #include "rstl/vector.hpp"
-
+#if !RSTL_PRIME1
 #include "math.h"
 #endif
 

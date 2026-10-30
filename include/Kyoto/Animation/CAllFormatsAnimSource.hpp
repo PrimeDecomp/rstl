@@ -1,25 +1,19 @@
 #ifndef _CALLFORMATSANIMSOURCE
 #define _CALLFORMATSANIMSOURCE
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/Animation/CAnimSource.hpp"
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
 #include "Kyoto/Animation/IAnimReader.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Animation/TSubAnimTypeToken.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/SObjectTag.hpp"
+#if !RSTL_PRIME1
+#include "Kyoto/Animation/TSubAnimTypeToken.hpp"
 #endif
 
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#include "Kyoto/SObjectTag.hpp"
-#include "Kyoto/TToken.hpp"
-#endif
 
 class CInputStream;
 

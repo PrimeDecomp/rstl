@@ -1,12 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CElectricDescription.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CColorElement.hpp"
 #include "Kyoto/Particles/CEmitterElement.hpp"
 #include "Kyoto/Particles/CIntElement.hpp"
 #include "Kyoto/Particles/CRealElement.hpp"
 #include "Kyoto/Particles/CUVElement.hpp"
-#endif
 
 CElectricDescription::CElectricDescription()
 : mLIFE(nullptr)

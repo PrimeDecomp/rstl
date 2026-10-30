@@ -1,14 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CColor.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGX.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CGraphics.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

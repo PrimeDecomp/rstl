@@ -1,19 +1,15 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CVectorElement.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/IElement.hpp"

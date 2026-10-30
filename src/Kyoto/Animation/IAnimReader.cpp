@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IAnimReader.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-#endif
 
 IAnimReader::~IAnimReader() {}
 

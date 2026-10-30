@@ -1,17 +1,10 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/CDvdFile.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/CDvdFile.hpp"
-#else
 #include "Kyoto/Basics/CInterruptGuard.hpp"
-#endif
 
 #if RSTL_PRIME1
 #include "dolphin/dvd.h"
@@ -37,22 +30,10 @@ static int sDeferredCallbacks;
 const int kDSPStreamBlockSize = 0x8F00;
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-class CInterruptGuard {
-  bool mEnabled;
-#else
+#if !RSTL_PRIME1
 CDSPStreamManager::CDSPStreamManager()
 : mDataOffset(0), mFileCur(0), mReadsPending(0), mType(1), mState(kSS_Idle) {}
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-public:
-  CInterruptGuard() : mEnabled(OSDisableInterrupts()) {}
-  ~CInterruptGuard() { OSRestoreInterrupts(mEnabled); }
-};
-#else
 SDSPStreamVoice::SDSPStreamVoice()
 : mBufferSize(0), mNumSamples(0), mType(1), mStreamId(-1), mUpperHalf(false), mFree(true) {}
 #endif

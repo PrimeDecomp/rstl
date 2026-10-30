@@ -5,12 +5,8 @@
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeSingleChild.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CSequenceHelper.hpp"
-#else
 #include "Kyoto/Animation/CSequenceFundamentals.hpp"
-#endif
 
 #include "rstl/rc_ptr.hpp"
 #include "rstl/vector.hpp"

@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Math/CPlane.hpp"
-#endif
 
 #include "Kyoto/Math/CFrustumPlanes.hpp"
 

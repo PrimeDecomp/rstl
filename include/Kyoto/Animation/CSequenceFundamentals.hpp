@@ -5,14 +5,9 @@
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
-#else
 #include "Kyoto/Animation/IAnimReader.hpp"
-
 #include "rstl/vector.hpp"
-#endif
 
 class CSequenceFundamentals {
 public:

@@ -1,9 +1,7 @@
 #ifndef _CANIMATION
 #define _CANIMATION
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/IMetaAnim.hpp"
-#endif
 
 #include "rstl/rc_ptr.hpp"
 #include "rstl/string.hpp"

@@ -3,8 +3,8 @@
 #include "rstl/RstlVersions.h"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "rstl/optional_object.hpp"
+#if RSTL_PRIME1
 #else
 #include "Kyoto/Audio/CAuxEffectManager.hpp"
 #include "Kyoto/Audio/CSfxPitchBend.hpp"
@@ -16,14 +16,10 @@
 #include "Kyoto/Audio/CSfxHandle.hpp"
 
 #include "rstl/auto_ptr.hpp"
-#if !RSTL_PRIME1
 #include "rstl/pair.hpp"
-#endif
 
 #include "rstl/reserved_vector.hpp"
-#if RSTL_PRIME1
 #include "rstl/single_ptr.hpp"
-#endif
 
 #include "musyx/musyx.h"
 

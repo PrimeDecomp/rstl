@@ -1,27 +1,19 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CAudioGroupSet.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Audio/CAudioSys.hpp"
-#else
 #include "Kyoto/CARAMManager.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/auto_ptr.hpp"
-#else
 #include "rstl/StringExtras.hpp"
 #include "rstl/string.hpp"
-
+#if RSTL_PRIME1
+#else
 #include "dolphin/os.h"
 #include "musyx/musyx.h"
 #endif

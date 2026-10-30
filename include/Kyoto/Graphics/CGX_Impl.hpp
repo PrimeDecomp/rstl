@@ -3,15 +3,13 @@
 #include "rstl/RstlVersions.h"
 
 // TODO: verify that this Prime/Echoes difference is real
+#include "Kyoto/Graphics/CGX.hpp"
 #if RSTL_PRIME1
 #include "CGX.hpp"
 #else
-#include "Kyoto/Graphics/CGX.hpp"
 #endif
 
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Graphics/CColor.hpp"
 #if RSTL_PRIME1

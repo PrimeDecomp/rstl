@@ -3,9 +3,7 @@
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

@@ -2,12 +2,8 @@
 #define _CANIMSOURCEREADER
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
-#else
 #include "Kyoto/Animation/CAnimSource.hpp"
-#endif
 
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
 #if !RSTL_PRIME1

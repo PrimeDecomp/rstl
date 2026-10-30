@@ -1,10 +1,13 @@
 #ifndef _CFACTORYFNRETURN
 #define _CFACTORYFNRETURN
+#include "rstl/RstlVersions.h"
 #include "Kyoto/TToken.hpp"
 
 class CFactoryFnReturn {
 public:
+#if RSTL_PRIME1
   CFactoryFnReturn() {}
+#endif
 
   template < typename T >
   CFactoryFnReturn(T* ptr) : obj(TToken< T >::GetIObjObjectFor(ptr).release()) {}

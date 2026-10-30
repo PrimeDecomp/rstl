@@ -1,31 +1,17 @@
 #include "rstl/RstlVersions.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-// MWCC template emission order depends on these includes.
-// clang-format off
 #include "rstl/list.hpp" // IWYU pragma: keep
 #include "Kyoto/CResFactory.hpp" // IWYU pragma: keep
-// clang-format on
-#else
-#include "Kyoto/CResFactory.hpp"
-
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Basics/CBasics.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/Streams/CLZOSupport.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
-#include "Kyoto/Basics/CStopwatch.hpp"
-#include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/Streams/CZipSupport.hpp"
 #include "rstl/math.hpp"
+#if RSTL_PRIME1
 #else
 #include "dolphin/os.h"
 #endif

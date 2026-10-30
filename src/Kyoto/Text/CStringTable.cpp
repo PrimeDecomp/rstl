@@ -2,31 +2,26 @@
 #include "Kyoto/Text/CStringTable.hpp"
 
 #include "Kyoto/CDvdRequest.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CResFactory.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #if RSTL_PRIME1
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
 #include "Kyoto/Basics/CBasics.hpp"
+#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
 #include "string.h"
 #endif
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
-#else
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
-
+#if RSTL_PRIME1
+#else
 #include "string.h"
 #endif
 

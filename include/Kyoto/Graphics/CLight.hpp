@@ -4,9 +4,7 @@
 
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "rstl/construct.hpp"
-#endif
 
 enum ELightType {
   kLT_Spot = 0,

@@ -1,13 +1,8 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/CTimeProvider.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 CTimeProvider* CTimeProvider::gCurrentTimeProvider = nullptr;
 

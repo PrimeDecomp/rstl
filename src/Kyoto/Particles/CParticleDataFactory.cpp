@@ -1,21 +1,15 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Particles/CColorElement.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementAllocationChunk.hpp"
-#endif
 
 #include "Kyoto/Particles/CEmitterElement.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"

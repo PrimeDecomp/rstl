@@ -1,25 +1,15 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CIntElement.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGlobals.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/Particles/CElementGen.hpp"
-#else
-#include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

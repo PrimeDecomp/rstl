@@ -7,8 +7,8 @@
 
 #include "rstl/auto_ptr.hpp"
 
-#if RSTL_KYOTO_ZIP_TYPES_DECLARED
 #include "Kyoto/Streams/ZipTypes.hpp"
+#if RSTL_KYOTO_ZIP_TYPES_DECLARED
 #else
 #include <zlib.h>
 #endif

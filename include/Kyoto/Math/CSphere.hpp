@@ -6,9 +6,7 @@
 
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 class CSphere {
 public:

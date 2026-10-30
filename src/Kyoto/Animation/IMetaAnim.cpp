@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IMetaAnim.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#endif
 
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"

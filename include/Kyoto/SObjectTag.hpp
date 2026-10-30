@@ -7,9 +7,7 @@
 #include "Corruption/Kyoto/CAssetId.hpp"
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_KYOTO_OBJECT_TAG_TRIVIAL
 #include "rstl/construct.hpp"
-#endif
 #include "types.h"
 
 #if !RSTL_KYOTO_ASSET_ID_CLASS

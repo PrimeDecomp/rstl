@@ -4,16 +4,10 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Input/CControllerGamepadData.hpp"
 #include "Kyoto/Input/CControllerData.hpp"
-#endif
 
 #include "Kyoto/Input/InputTypes.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/Input/CControllerData.hpp"
-#include "Kyoto/Input/CControllerGamepadData.hpp"
-#endif
 
 class COsContext;
 

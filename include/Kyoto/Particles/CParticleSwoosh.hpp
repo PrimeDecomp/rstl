@@ -1,26 +1,22 @@
 #ifndef _CPARTICLESWOOSH
 #define _CPARTICLESWOOSH
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "types.h"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CVector3f.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 // TODO: verify that this Prime/Echoes difference is real
+#include "rstl/vector.hpp"
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CParticleDatabase.hpp"
 #else
 #include "dolphin/gx/GXEnum.h"
-#include "rstl/vector.hpp"
 #endif
 
 #if RSTL_PRIME1

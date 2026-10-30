@@ -1,8 +1,7 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/CARAMToken.hpp"
 #if RSTL_PRIME1
 #include "GameVersions.h"
-
-#include "Kyoto/CARAMToken.hpp"
 #endif
 
 #include "Kyoto/CDvdFile.hpp"
@@ -10,14 +9,9 @@
 
 #include "Kyoto/CARAMManager.hpp"
 
-#if !RSTL_PRIME1
 #include "rstl/math.hpp"
-#endif
 
 #include "dolphin/os/OSCache.h"
-#if RSTL_PRIME1
-#include "rstl/math.hpp"
-#endif
 
 #include "dolphin/arq.h"
 #include "dolphin/dvd.h"

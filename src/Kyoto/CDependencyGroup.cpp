@@ -18,9 +18,7 @@
 #define RSTL_CONST_FACTORY_FN_RETURN
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_KYOTO_BUFFER_FACTORIES
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 CDependencyGroup::CDependencyGroup(CInputStream& in) { ReadFromStream(in); }
 

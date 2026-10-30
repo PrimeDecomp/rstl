@@ -4,34 +4,24 @@
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/CRandom16.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CLight.hpp"
-#endif
 
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
-#endif
 
 #include "Kyoto/Math/CRelAngle.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#else
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#endif
 
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
@@ -47,20 +37,13 @@
 #endif
 
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Particles/CWarp.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
-#else
-#include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
-#if !RSTL_PRIME1
 #include "rstl/single_ptr.hpp"
-#endif
 
 #include "alloca.h"
 #if RSTL_PRIME1

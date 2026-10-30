@@ -2,17 +2,13 @@
 #define _CPARTICLEGEN
 #include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/SObjectTag.hpp"
-#else
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Particles/CWarp.hpp"
-#endif
 
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"

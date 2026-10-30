@@ -6,9 +6,7 @@
 
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "rstl/string.hpp"
-#if RSTL_PRIME1
 #include "rstl/vector.hpp"
-#endif
 
 class CInputStream;
 

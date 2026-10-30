@@ -10,9 +10,7 @@
 #endif
 
 #include "Kyoto/Animation/CCharacterSet.hpp"
-#if RSTL_PRIME1
 #include "types.h"
-#endif
 
 #if !RSTL_PRIME1
 struct SObjectTag;

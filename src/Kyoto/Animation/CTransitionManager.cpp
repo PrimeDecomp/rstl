@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CTransitionManager.hpp"
 #include "Kyoto/Animation/CTreeUtils.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/IMetaTrans.hpp"
-#endif
 
 rstl::ncrc_ptr< CAnimTreeNode >
 CTransitionManager::GetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& a,

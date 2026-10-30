@@ -2,9 +2,7 @@
 #include "Kyoto/Particles/CParticleElectricDataFactory.hpp"
 
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/CVParamTransfer.hpp"
-#endif
 
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"

@@ -5,15 +5,12 @@
 
 #include "Kyoto/Math/CVector2f.hpp"
 #include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_CONSTRUCTION_POLICIES
 #include "rstl/construct.hpp"
-#endif
 
 #include "float.h"
 
 class CInputStream;
 class COutputStream;
-
 
 class CRelAngle;
 class CUnitVector3f;
@@ -290,9 +287,6 @@ inline CVector3f operator-(const CVector3f& vec) {
 #endif
 }
 
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#endif
-
 
 #endif // _CVECTOR3F

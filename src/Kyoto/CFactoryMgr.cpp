@@ -1,15 +1,13 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CFactoryMgr.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Streams/CLZOInputStream.hpp"
-#endif
 
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CZipInputStream.hpp"
+#if RSTL_PRIME1
 #else
 #include "dolphin/os.h"
 #endif

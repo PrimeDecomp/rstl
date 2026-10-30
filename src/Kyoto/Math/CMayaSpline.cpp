@@ -1,15 +1,11 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Math/CMayaSpline.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 #include "rstl/algorithm.hpp"
-#if RSTL_PRIME1
 #include "rstl/functional.hpp"
-#endif
 
 #include "float.h"
 #include "math.h"

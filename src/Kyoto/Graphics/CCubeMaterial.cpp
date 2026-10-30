@@ -1,25 +1,17 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
-
 #include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 #include "Kyoto/Graphics/CCubeModel.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CCubeSurface.hpp"
+#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CDisplayListReader.hpp"
 #endif
 
 #include "Kyoto/Graphics/CGX.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CGX_Impl.hpp" // IWYU pragma: keep
-#else
-#include "Kyoto/Graphics/CGX_Impl.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
@@ -31,20 +23,15 @@
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CPlane.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
-#include "Kyoto/Basics/CStopwatch.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
+#include "rstl/math.hpp"
 #if RSTL_PRIME1
 #include "Prime/MetaRender/CCubeRenderer.hpp"
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #else
 #include "Echoes/MetaRender/CCubeRenderer.hpp"
-
-#include "rstl/math.hpp"
 #endif
 
 #include "dolphin/mtx.h"
@@ -52,9 +39,7 @@
 #include "string.h"
 #endif
 
-#if RSTL_PRIME1
 #include "Kyoto/MemoryCopy.hpp"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

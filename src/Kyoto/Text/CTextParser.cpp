@@ -1,18 +1,12 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CTextParser.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/SObjectTag.hpp"
-#else
 #include "Kyoto/IObjectStore.hpp"
-#endif
 
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Text/TextCommon.hpp"
-#endif
 
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"

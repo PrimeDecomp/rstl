@@ -2,31 +2,26 @@
 #include "Kyoto/Animation/CSkinnedModel.hpp"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-#else
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
+#if RSTL_PRIME1
+#else
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #endif
 
 #include "Kyoto/Animation/CSkinRules.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CVertexMorphEffect.hpp"
-#else
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #if !RSTL_PRIME1
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 
 #if RSTL_PRIME1
@@ -35,10 +30,8 @@
 
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
-#if RSTL_PRIME1
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
-#endif
 
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;
 void* CSkinnedModel::sPointGenData;

@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimSourceReader.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CCharAnimTime.hpp"
-#endif
 
 CAnimSourceReader::CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source,
 // TODO: verify that this Prime/Echoes difference is real

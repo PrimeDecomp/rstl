@@ -4,9 +4,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/RstlVersions.h"
 #include "types.h"
-#if RSTL_KYOTO_CONSTRUCTION_POLICIES
 #include "rstl/construct.hpp"
-#endif
 
 class CVector2i {
 public:

@@ -1,13 +1,8 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CFont.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Alloc/CMemory.hpp"
-
-#ifdef ENABLE_DEBUG_TOOLS
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#endif
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

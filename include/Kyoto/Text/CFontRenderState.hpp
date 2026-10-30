@@ -6,15 +6,11 @@
 
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Text/CRasterFont.hpp"
-#endif
 
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
-#if RSTL_PRIME1
 #include "rstl/vector.hpp"
-#endif
 
 class CBlockInstruction;
 class CLineInstruction;

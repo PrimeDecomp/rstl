@@ -1,18 +1,11 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "Kyoto/CMemoryCardSys.hpp"
-#endif
 
 #include "Kyoto/CCrc32.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/CMemoryCardSys.hpp"
-#endif
 
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 #include "dolphin/os/OSCache.h"
 

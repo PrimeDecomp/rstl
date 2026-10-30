@@ -1,11 +1,11 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CSimplePool.hpp"
 // TODO: verify that this Prime/Echoes difference is real
+#include "Kyoto/CResFactory.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #if RSTL_PRIME1
 #include "Kyoto/IFactory.hpp"
 #else
-#include "Kyoto/CResFactory.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 
 CSimplePool::CSimplePool(IFactory& factory)

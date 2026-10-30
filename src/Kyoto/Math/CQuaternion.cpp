@@ -1,11 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Math/CQuaternion.hpp"
 
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
 #include "Kyoto/Basics/CCast.hpp"
-#endif
-#endif
 
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"

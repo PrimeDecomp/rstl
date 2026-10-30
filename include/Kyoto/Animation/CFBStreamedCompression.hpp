@@ -4,26 +4,19 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
-#include "string.h"
-
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/CAnimPOIData.hpp"
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
+#if RSTL_PRIME1
+#include "string.h"
 #endif
 
 #include "Kyoto/Animation/CSegId.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Math/CVector3f.hpp"
-#else
 #include "Kyoto/Animation/IAnimReader.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/pair.hpp"

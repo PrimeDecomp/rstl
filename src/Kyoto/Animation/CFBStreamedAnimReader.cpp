@@ -3,23 +3,18 @@
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#else
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
+#if RSTL_PRIME1
+#else
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
 #endif
 
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatementSet.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Basics/CCast.hpp"
-#if RSTL_PRIME1
-#include "Kyoto/Math/CMath.hpp"
-#endif
 
 #if !RSTL_PRIME1
 const uchar CFBStreamedAnimReaderTotals::kRotationValueCount = 4;

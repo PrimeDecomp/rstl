@@ -3,8 +3,8 @@
 #include "rstl/RstlVersions.h"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "types.h"
+#if RSTL_PRIME1
 #else
 #include "EchoesNamespace.h"
 #endif

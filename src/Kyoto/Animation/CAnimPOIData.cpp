@@ -1,17 +1,15 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimPOIData.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
+#include "rstl/vector.hpp"
 #if RSTL_PRIME1
 #include "dolphin/types.h"
-#include "rstl/vector.hpp"
 #endif
 
 CAnimPOIData::CAnimPOIData(CInputStream& in)

@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 
-#if RSTL_PRIME1
 #include "Kyoto/Math/CVector2i.hpp"
-#endif
 
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #if !RSTL_PRIME1
@@ -12,9 +10,7 @@
 
 #include "Kyoto/Text/CColorInstruction.hpp"
 #include "Kyoto/Text/CColorOverrideInstruction.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Text/CFontImageDef.hpp"
-#endif
 
 #include "Kyoto/Text/CFontInstruction.hpp"
 #include "Kyoto/Text/CFontRenderState.hpp"

@@ -2,9 +2,7 @@
 #define _CEMITTERELEMENT
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CTransform4f.hpp"
-#endif
 
 #include "Kyoto/Particles/IElement.hpp"
 

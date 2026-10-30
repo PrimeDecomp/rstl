@@ -1,24 +1,18 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CRealElement.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#endif
 
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
-#endif
 
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"

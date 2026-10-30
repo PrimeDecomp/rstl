@@ -1,16 +1,9 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_PRIME1
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
-#endif
 
 #include "Kyoto/Basics/CBasics.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "Kyoto/Math/CVector3f.hpp"
-#else
 #include "Kyoto/Basics/CInterruptGuard.hpp"
-#endif
 
 #include "Kyoto/Graphics/CMoviePlayer.hpp"
 

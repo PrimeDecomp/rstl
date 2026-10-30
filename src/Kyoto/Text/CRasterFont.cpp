@@ -2,31 +2,20 @@
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
 #include "Kyoto/CFactoryMgr.hpp"
-#endif
 
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CInputStream.hpp"
-#else
 #include "Kyoto/Graphics/CTexture.hpp"
-#endif
 
 #include "Kyoto/Text/CDrawStringOptions.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/Streams/CInputStream.hpp"
-#endif
 
 #include "rstl/algorithm.hpp"
 #include "rstl/string.hpp"
