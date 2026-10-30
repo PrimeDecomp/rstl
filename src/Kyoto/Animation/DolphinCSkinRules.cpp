@@ -1,0 +1,282 @@
+#include "rstl/RstlVersions.h"
+#include "Kyoto/Animation/CSkinRules.hpp"
+#include "Kyoto/Animation/CCharLayoutInfo.hpp"
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#include "Kyoto/Animation/CPoseAsTransforms.hpp"
+#else
+#include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
+#endif
+
+#include "Kyoto/Graphics/CModel.hpp"
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#include "dolphin/os/OSCache.h"
+#include "rstl/math.hpp"
+#else
+#include "dolphin/gx.h"
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+static int StreamFloatToShort(CInputStream& in) {
+  const int result = in.Get< int >();
+  if (result == -1) {
+    return in.ReadLong();
+#else
+CSkinRules::CSkinRules(CInputStream& in)
+: mBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
+  if (mVertexCount > 0) {
+    mVertexToBone = rs_new uchar[mVertexCount];
+    in.Get(mVertexToBone.get(), mVertexCount);
+#endif
+
+  }
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  uchar junk[780];
+  for (int i = 0, iVar2 = 0; i < (result * 3); i += iVar2) {
+    iVar2 = rstl::min_val(((result * 3) - i), 192);
+    in.Get(junk, iVar2 * 4);
+  }
+  return result;
+}
+
+CSkinRules::CSkinRules(CInputStream& in)
+: mVirtualBones(in)
+, mVertexCount(StreamFloatToShort(in))
+, mNormalCount(StreamFloatToShort(in)) {
+
+  CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
+#else
+  CModel::AddToTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+#endif
+
+}
+
+CSkinRules::~CSkinRules() {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  CModel::RemoveFromTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
+#else
+  CModel::RemoveFromTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+#endif
+
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms& pose,
+                                            const CCharLayoutInfo& layoutInfo) const {
+#else
+void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose,
+                                            const CCharLayoutInfo& layoutInfo,
+                                            CTransform4f* out) const {
+#endif
+
+  float pointStorage[100][3];
+  CVector3f* points = reinterpret_cast< CVector3f* >(pointStorage);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  CSegId id = pose.GetTransforms().GetFirstElementPresent();
+  while (id != CSegId::Null()) {
+    const CVector3f& origin = layoutInfo.GetReferenceStanceOffset(id);
+    const CVector3f& rotatedOrigin = pose.GetTransformMinusOffset(id) * origin;
+    points[id.val()] = pose.GetOffset(id) - rotatedOrigin;
+    id = pose.GetTransforms().GetIdAfter(id);
+#else
+  const CVector3f* offsets = layoutInfo.GetLinearReferenceStanceOffsets().data();
+  const int count = pose.GetElements().size();
+  const CPoseAsTransforms_Linear::CElementType* elements = pose.GetElements().data();
+  for (int i = 0; i < count; ++i) {
+    points[i] = elements[i].mOffset - elements[i].mRotation * offsets[i];
+#endif
+
+  }
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  for (int i = 0; i < mVirtualBones.size(); ++i) {
+    mVirtualBones[i].BuildAccumulatedTransform(pose, points);
+#else
+  const int boneCount = mBones.size();
+  for (int i = 0; i < boneCount; ++i) {
+    mBones[i].BuildAccumulatedTransform(pose, points, out[i]);
+#endif
+
+  }
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+void CSkinRules::BuildPoints(volatile void* pipe) const {
+  for (int i = 0; i < mVirtualBones.size(); ++i) {
+    int vertexCount = mVirtualBones[i].GetNumIndices();
+    ushort* buffer = nullptr;
+    for (int done = 0; done < vertexCount;) {
+      const int count = ProcessingPoints(vertexCount - done, &buffer);
+      mVirtualBones[i].BuildPoints(buffer, pipe, count);
+      done += count;
+#else
+CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
+                                   const CVParamTransfer& params) {
+  return rs_new CSkinRules(in);
+}
+
+void CSkinRules::LoadMatrixBank(int bank) const {
+  const int start = bank * 10;
+  const int end = start + 10 > mMatrixIndices.size() ? mMatrixIndices.size() : start + 10;
+  for (int i = start; i < end; ++i) {
+    const int index = mMatrixIndices[i];
+    if (index != -1) {
+      const int slot = (i - start) * 3;
+      GXLoadPosMtxIndx(index, slot);
+      GXLoadNrmMtxIndx3x3(index, slot);
+#endif
+
+    }
+  }
+}
+
+#if RSTL_PRIME1
+void CSkinRules::BuildNormals(volatile void* pipe) const {
+  for (int i = 0; i < mVirtualBones.size(); ++i) {
+    int vertexCount = mVirtualBones[i].GetNumIndices();
+    ushort* buffer = nullptr;
+    for (int done = 0; done < vertexCount;) {
+      const int count = ProcessingNormals(vertexCount - done, &buffer);
+      mVirtualBones[i].BuildNormals(buffer, pipe, count);
+      done += count;
+    }
+  }
+}
+#endif
+
+#if RSTL_PRIME1
+void CSkinRules::BuildNormalsFrom(const CVector3f* averageNormals, CVector3f* out) const {
+  int offset = 0;
+  for (int i = 0; i < mVirtualBones.size(); ++i) {
+    const CVirtualBone& bone = mVirtualBones[i];
+    int count = bone.GetNumIndices();
+    bone.BuildNormals(averageNormals + offset, out + offset, count);
+    offset += count;
+  }
+}
+
+const CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
+                                         const CVParamTransfer&) {
+  return rs_new CSkinRules(in);
+}
+
+static CSkinRules* sLockedRules = nullptr;
+static const CModel* sCurrentTransaction = nullptr;
+static int sCurrentPointCount = 0;
+static bool sTransferringFirstPage = true;
+static int sNextPointStart = 0;
+static int sNextNormalStart = 0;
+static int sCurrentPoint = 0;
+static int sCurrentNormal = 0;
+static CVector3f* sCurrentBase = nullptr;
+static int sCurrentFirst = 0;
+static int sTransactionCount = 0;
+
+void CSkinRules::InitLockedCacheState(const CModel& model) {
+  sLockedRules = this;
+  sCurrentTransaction = &model;
+  sTransferringFirstPage = true;
+  sNextPointStart = 0;
+  sNextNormalStart = 0;
+  sCurrentPoint = 0;
+  sCurrentNormal = 0;
+  sCurrentBase = nullptr;
+  sCurrentFirst = 0;
+  sTransactionCount = 0;
+  StartNextTransaction();
+}
+
+void CSkinRules::StartNextTransaction() {
+  uchar* destination = reinterpret_cast< uchar* >(LCGetBase());
+  if (!sTransferringFirstPage) {
+    destination += 0x1000;
+  }
+
+  int count;
+  const CVector3f* source;
+  if (sNextPointStart != sLockedRules->GetNumPoints()) {
+    count = rstl::min_val(336, sLockedRules->GetNumPoints() - sNextPointStart);
+    source = static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetPositions()) +
+             sNextPointStart;
+  } else {
+    const int normalCount = sLockedRules->GetNumNormals();
+    if (normalCount == sNextNormalStart) {
+      return;
+    }
+    count = rstl::min_val(336, normalCount - sNextNormalStart);
+    source = static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetNormals()) +
+             sNextNormalStart;
+  }
+
+  LCLoadData(destination, const_cast< CVector3f* >(source), (count * sizeof(CVector3f) + 31) & ~31);
+  sCurrentPointCount = count;
+  ++sTransactionCount;
+  sTransferringFirstPage = !sTransferringFirstPage;
+}
+
+static void WaitForQueue() {
+  if (!LCQueueLength()) {
+    return;
+  }
+  LCQueueWait(0);
+}
+
+int CSkinRules::ProcessingPoints(int count, ushort** buf) {
+  if (sCurrentPoint + count > sNextPointStart) {
+    if (sCurrentPoint == sNextPointStart) {
+      WaitForQueue();
+      sCurrentFirst = sNextPointStart;
+      sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
+      if (sTransferringFirstPage) {
+        sCurrentBase = reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
+      }
+
+      sNextPointStart += sCurrentPointCount;
+      StartNextTransaction();
+    }
+
+    int c = rstl::min_val(sNextPointStart - sCurrentPoint, count);
+    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
+    sCurrentPoint += c;
+    return c;
+  } else {
+    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
+    sCurrentPoint += count;
+    return count;
+  }
+}
+
+int CSkinRules::ProcessingNormals(int count, ushort** buf) {
+  if (sCurrentNormal + count > sNextNormalStart) {
+    if (sCurrentNormal == sNextNormalStart) {
+      WaitForQueue();
+      sCurrentFirst = sNextNormalStart;
+      sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
+      if (sTransferringFirstPage) {
+        sCurrentBase = reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
+      }
+
+      sNextNormalStart += sCurrentPointCount;
+      StartNextTransaction();
+    }
+
+    int c = rstl::min_val(sNextNormalStart - sCurrentNormal, count);
+    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
+    sCurrentNormal += c;
+    return c;
+  } else {
+    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
+    sCurrentNormal += count;
+    return count;
+  }
+}
+#endif

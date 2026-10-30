@@ -1,0 +1,687 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_PRIME1
+#include "Kyoto/Animation/CPoseAsTransforms.hpp"
+#endif
+
+#include "Kyoto/Animation/CVirtualBone.hpp"
+#if !RSTL_PRIME1
+#include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
+#include "Kyoto/Graphics/CGraphics.hpp"
+#endif
+
+#include "dolphin/mtx.h"
+#if RSTL_PRIME1
+#include "Kyoto/Basics/CBasics.hpp"
+
+#include "rstl/math.hpp"
+
+#include "string.h"
+#endif
+
+static rstl::reserved_vector< SSkinWeighting, 3 > StreamInSkinWeighting(CInputStream& in) {
+#if RSTL_PRIME1
+  int i = 0;
+  int weightCount = 0;
+#endif
+
+  rstl::reserved_vector< SSkinWeighting, 3 > weights;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+  weightCount = in.ReadInt32();
+#else
+  const int weightCount = in.Get< int >();
+#endif
+
+  if (weightCount > weights.capacity()) {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    for (i = 0; i < weights.capacity(); ++i) {
+#else
+    for (int i = 0; i < weights.capacity(); ++i) {
+#endif
+
+      weights.push_back(SSkinWeighting(in));
+    }
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    for (i = weights.capacity(); i < weightCount; ++i) {
+#else
+    for (int i = weights.capacity(); i < weightCount; ++i) {
+#endif
+
+      SSkinWeighting tmp(in);
+    }
+  } else {
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    for (i = 0; i < weightCount; ++i) {
+#else
+    for (int i = 0; i < weightCount; ++i) {
+#endif
+
+      weights.push_back(SSkinWeighting(in));
+    }
+  }
+
+  return weights;
+}
+
+CVirtualBone::CVirtualBone(CInputStream& in)
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+: mWeights(StreamInSkinWeighting(in))
+, mVertexCount(in.ReadLong())
+, mXf(CTransform4f::Identity())
+, mRotation(CMatrix3f::Identity()) {}
+#else
+: mWeights(StreamInSkinWeighting(in)), mVertexCount(in.ReadInt32()) {}
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+static ConstMtxPtr TransformToMtx(const CTransform4f& xf) { return xf.GetCStyleMatrix(); }
+#else
+#ifdef __MWERKS__
+void TransformFromMatrixDelta(register CTransform4f* xf, register const CMatrix3f* rot,
+                              register const CVector3f* point) {
+  asm volatile {
+    psq_l f3, CVector3f.mX(point), 0, 0;
+    psq_l f1, CMatrix3f.m02(rot), 1, 0;
+    psq_l f0, CMatrix3f.m00(rot), 0, 0;
+    ps_merge00 f1, f1, f3;
+    psq_l f2, CMatrix3f.m12(rot), 1, 0;
+    psq_st f0, CTransform4f.m00(xf), 0, 0;
+    psq_l f0, CMatrix3f.m10(rot), 0, 0;
+    ps_merge01 f2, f2, f3;
+    psq_st f1, CTransform4f.m02(xf), 0, 0;
+    psq_l f3, CVector3f.mZ(point), 1, 0;
+    psq_st f0, CTransform4f.m10(xf), 0, 0;
+    psq_l f1, CMatrix3f.m22(rot), 1, 0;
+    psq_st f2, CTransform4f.m12(xf), 0, 0;
+    psq_l f0, CMatrix3f.m20(rot), 0, 0;
+    ps_merge00 f1, f1, f3;
+    psq_st f0, CTransform4f.m20(xf), 0, 0;
+    psq_st f1, CTransform4f.m22(xf), 0, 0;
+  }
+}
+#else
+void TransformFromMatrixDelta(CTransform4f* xf, const CMatrix3f* rot, const CVector3f* point) {
+  *xf = CTransform4f(*rot, *point);
+}
+#endif
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#ifdef __MWERKS__
+void TransformFromMatrixDelta(register CTransform4f* xf, register const CMatrix3f* rot,
+                              register const CVector3f* point) {
+  asm volatile {
+    psq_l f0, 0(point), 0, 0;
+    psq_l f1, 8(rot), 1, 0;
+    psq_l f3, 20(rot), 1, 0;
+    psq_l f4, 8(point), 1, 0;
+
+    ps_merge00 f1, f1, f0;
+
+    psq_l f5, 32(rot), 1, 0;
+
+    ps_merge01 f3, f3, f0;
+
+    psq_l f0, 0(rot), 0, 0;
+    psq_l f2, 12(rot), 0, 0;
+    ps_merge00 f5, f5, f4;
+
+    psq_l f4, 24(rot), 0, 0;
+
+    psq_st f0, 0(xf), 0, 0;
+    psq_st f1, 8(xf), 0, 0;
+    psq_st f2, 16(xf), 0, 0;
+    psq_st f3, 24(xf), 0, 0;
+    psq_st f4, 32(xf), 0, 0;
+    psq_st f5, 40(xf), 0, 0;
+  }
+}
+#else
+void TransformFromMatrixDelta(CTransform4f* xf, const CMatrix3f* rot, const CVector3f* point) {
+  *xf = CTransform4f(*rot, *point);
+}
+#endif
+#else
+#ifdef __MWERKS__
+void Transform2FromMatrixData(register CTransform4f* xf, register const CMatrix3f* rot,
+                              register const CVector3f* point, register float weight0,
+                              register const CMatrix3f* rotation1, register const CVector3f* point1,
+                              register float weight1) {
+  asm volatile {
+    fmr f4, weight0;
+    psq_l f5, CVector3f.mX(point), 0, 0;
+    psq_l f1, CMatrix3f.m02(rot), 1, 0;
+    psq_l f3, CMatrix3f.m12(rot), 1, 0;
+    ps_merge00 f6, f4, f2;
+    psq_l f0, CMatrix3f.m00(rot), 0, 0;
+    ps_merge00 f1, f1, f5;
+    psq_l f2, CMatrix3f.m10(rot), 0, 0;
+    ps_merge01 f3, f3, f5;
+    psq_l f4, CMatrix3f.m20(rot), 0, 0;
+    ps_muls0 f0, f0, f6;
+    psq_l f5, CMatrix3f.m00(rotation1), 0, 0;
+    psq_l f7, CVector3f.mX(point1), 0, 0;
+    ps_muls0 f1, f1, f6;
+    psq_l f8, CMatrix3f.m02(rotation1), 1, 0;
+    ps_muls0 f2, f2, f6;
+    ps_madds1 f0, f5, f6, f0;
+    psq_l f10, CMatrix3f.m12(rotation1), 1, 0;
+    ps_merge00 f8, f8, f7;
+    psq_l f9, CMatrix3f.m10(rotation1), 0, 0;
+    psq_l f5, CVector3f.mZ(point), 1, 0;
+    ps_merge01 f10, f10, f7;
+    ps_madds1 f1, f8, f6, f1;
+    psq_st f0, CTransform4f.m00(xf), 0, 0;
+    psq_l f0, CMatrix3f.m22(rot), 1, 0;
+    ps_muls0 f3, f3, f6;
+    ps_madds1 f2, f9, f6, f2;
+    psq_l f8, CMatrix3f.m22(rotation1), 1, 0;
+    ps_merge00 f0, f0, f5;
+    psq_st f1, CTransform4f.m02(xf), 0, 0;
+    psq_l f1, CVector3f.mZ(point1), 1, 0;
+    ps_muls0 f4, f4, f6;
+    psq_l f5, CMatrix3f.m20(rotation1), 0, 0;
+    ps_madds1 f3, f10, f6, f3;
+    psq_st f2, CTransform4f.m10(xf), 0, 0;
+    ps_merge00 f8, f8, f1;
+    ps_muls0 f0, f0, f6;
+    ps_madds1 f4, f5, f6, f4;
+    psq_st f3, CTransform4f.m12(xf), 0, 0;
+    ps_madds1 f0, f8, f6, f0;
+    psq_st f4, CTransform4f.m20(xf), 0, 0;
+    psq_st f0, CTransform4f.m22(xf), 0, 0;
+  }
+}
+#else
+void Transform2FromMatrixData(CTransform4f* xf, const CMatrix3f* rot, const CVector3f* point,
+                              float weight0, const CMatrix3f* rotation1, const CVector3f* point1,
+                              float weight1) {
+  const CMatrix3f rotation(*rot, weight0, *rotation1, weight1);
+  *xf = CTransform4f(rotation, *point * weight0 + *point1 * weight1);
+}
+#endif
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#ifdef __MWERKS__
+void Transform2FromMatrixData(register CTransform4f* xf, register const CMatrix3f* rot,
+                              register const CVector3f* point, register float weight0,
+                              register const CMatrix3f* rotation1, register const CVector3f* point1,
+                              register float weight1) {
+  __asm__ {
+    fmr f4, weight0;
+    psq_l f0, CMatrix3f.m00(rot), 0, 0;
+    psq_l f5, CVector3f.mX(point), 0, 0;
+    psq_l f1, CMatrix3f.m02(rot), 1, 0;
+    ps_merge00 f7, f4, f2;
+    psq_l f3, CMatrix3f.m12(rot), 1, 0;
+    ps_merge00 f1, f1, f5;
+    psq_l f2, CMatrix3f.m10(rot), 0, 0;
+    ps_merge01 f3, f3, f5;
+    psq_l f4, CMatrix3f.m20(rot), 0, 0;
+    ps_muls0 f0, f0, f7;
+    psq_l f6, CMatrix3f.m00(rotation1), 0, 0;
+    psq_l f8, CVector3f.mX(point1), 0, 0;
+    ps_muls0 f1, f1, f7;
+    psq_l f9, CMatrix3f.m02(rotation1), 1, 0;
+    ps_muls0 f2, f2, f7;
+    ps_madds1 f0, f6, f7, f0;
+    psq_l f11, CMatrix3f.m12(rotation1), 1, 0;
+    ps_merge00 f9, f9, f8;
+    psq_l f10, CMatrix3f.m10(rotation1), 0, 0;
+    psq_l f6, CVector3f.mZ(point), 1, 0;
+    ps_merge01 f11, f11, f8;
+    psq_l f5, CMatrix3f.m22(rot), 1, 0;
+    ps_muls0 f3, f3, f7;
+    ps_madds1 f1, f9, f7, f1;
+    psq_st f0, CTransform4f.m00(xf), 0, 0;
+    ps_merge00 f5, f5, f6;
+    ps_madds1 f2, f10, f7, f2;
+    psq_l f6, CMatrix3f.m20(rotation1), 0, 0;
+    ps_muls0 f4, f4, f7;
+    psq_l f9, CMatrix3f.m22(rotation1), 1, 0;
+    ps_madds1 f3, f11, f7, f3;
+    psq_l f0, CVector3f.mZ(point1), 1, 0;
+    ps_muls0 f5, f5, f7;
+    psq_st f1, CTransform4f.m02(xf), 0, 0;
+    ps_merge00 f9, f9, f0;
+    ps_madds1 f4, f6, f7, f4;
+    psq_st f2, CTransform4f.m10(xf), 0, 0;
+    ps_madds1 f5, f9, f7, f5;
+    psq_st f3, CTransform4f.m12(xf), 0, 0;
+    psq_st f4, CTransform4f.m20(xf), 0, 0;
+    psq_st f5, CTransform4f.m22(xf), 0, 0;
+  }
+}
+#else
+void Transform2FromMatrixData(CTransform4f* xf, const CMatrix3f* rot, const CVector3f* point,
+                              float weight0, const CMatrix3f* rotation1, const CVector3f* point1,
+                              float weight1) {
+  const CMatrix3f rotation(*rot, weight0, *rotation1, weight1);
+  *xf = CTransform4f(rotation, *point * weight0 + *point1 * weight1);
+}
+#endif
+
+void CVirtualBone::BuildFinalPosMatrix(const CPoseAsTransforms& pose,
+                                       const CVector3f* points) const {
+#else
+void CVirtualBone::BuildFinalPosMatrix(const CPoseAsTransforms_Linear& pose,
+                                       const CVector3f* points, CTransform4f& out) const {
+#endif
+
+  switch (mWeights.size()) {
+  case 1: {
+    const CSegId id = mWeights[0].mId;
+    const CMatrix3f& rotation = pose.GetTransformMinusOffset(id);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    TransformFromMatrixDelta(&mXf, &rotation, &points[id.val()]);
+#else
+    TransformFromMatrixDelta(&out, &rotation, &points[id.val()]);
+#endif
+
+    break;
+  }
+  case 2: {
+    const CSegId& id0 = mWeights[0].mId;
+    const float weight0 = mWeights[0].mWeight;
+    const CSegId& id1 = mWeights[1].mId;
+    const float weight1 = mWeights[1].mWeight;
+    const CMatrix3f& rotation0 = pose.GetTransformMinusOffset(id0);
+    const CMatrix3f& rotation1 = pose.GetTransformMinusOffset(id1);
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    Transform2FromMatrixData(&mXf, &rotation0, &points[id0.val()], weight0, &rotation1,
+#else
+    Transform2FromMatrixData(&out, &rotation0, &points[id0.val()], weight0, &rotation1,
+#endif
+
+                             &points[id1.val()], weight1);
+    break;
+  }
+  case 3: {
+    const CSegId& id0 = mWeights[0].mId;
+    const float weight0 = mWeights[0].mWeight;
+    const CSegId& id1 = mWeights[1].mId;
+    const float weight1 = mWeights[1].mWeight;
+    const CSegId& id2 = mWeights[2].mId;
+    const float weight2 = mWeights[2].mWeight;
+    const CMatrix3f& rotation0 = pose.GetTransformMinusOffset(id0);
+    const CMatrix3f& rotation1 = pose.GetTransformMinusOffset(id1);
+    CMatrix3f rotation(rotation0, weight0, rotation1, weight1);
+    CVector3f offset = weight0 * points[id0.val()] + weight1 * points[id1.val()];
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    pose.AccumulateScaledTransform(id2, rotation, weight2);
+#else
+    rotation.AddScaledMatrix(pose.GetTransformMinusOffset(id2), weight2);
+#endif
+
+    offset += weight2 * points[id2.val()];
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    mXf = CTransform4f(rotation, offset);
+#else
+    out = CTransform4f(rotation, offset);
+#endif
+
+    break;
+  }
+  default:
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+    mXf = CTransform4f::Identity();
+#else
+    out = CTransform4f::Identity();
+#endif
+
+    break;
+  }
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+void CVirtualBone::BuildAccumulatedTransform(const CPoseAsTransforms& pose,
+                                             const CVector3f* points) const {
+  BuildFinalPosMatrix(pose, points);
+  mRotation = pose.GetRotation(mWeights[0].mId);
+#else
+void CVirtualBone::BuildAccumulatedTransform(const CPoseAsTransforms_Linear& pose,
+                                             const CVector3f* points, CTransform4f& out) const {
+  BuildFinalPosMatrix(pose, points, out);
+#endif
+
+}
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
+                                    size_t pointCount);
+#else
+static inline void CopyRow(float* dst, const float* src) {
+  *reinterpret_cast< double* >(dst) = *reinterpret_cast< const double* >(src);
+  dst[2] = src[2];
+}
+#endif
+
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if RSTL_VERSION >= RSTL_GM8E_02
+void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
+                                          size_t pointCount);
+#endif
+
+#ifndef __MWERKS__
+// The gathered routine loads serialized float vertices despite its historical S16 name.
+static CVector3f ReadVertex(const ushort* in, size_t index) {
+  float values[3];
+  memcpy(values, reinterpret_cast< const uchar* >(in) + index * sizeof(values), sizeof(values));
+  return CVector3f(CBasics::SwapBytes(values[0]), CBasics::SwapBytes(values[1]),
+                   CBasics::SwapBytes(values[2]));
+}
+#endif
+
+#ifdef __MWERKS__
+void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCount) const {
+  if (pointCount < 3) {
+    float* outF = const_cast< float* >(static_cast< volatile float* >(out));
+    const CVector3f* inV = reinterpret_cast< const CVector3f* >(in);
+    for (int i = 0; i < pointCount; ++i) {
+      CVector3f point = mXf * inV[i];
+      *outF = point.GetX();
+      *outF = point.GetY();
+      *outF = point.GetZ();
+    }
+  } else {
+    ROMtx mtx;
+    PSMTXReorder(TransformToMtx(mXf), mtx);
+#if RSTL_VERSION >= RSTL_GM8E_02
+    PSMTXROMultS16VecArrayGatheredSingle(mtx, in, out, pointCount);
+#else
+    PSMTXROMultS16VecArrayGathered(mtx, in, out, pointCount);
+#endif
+  }
+}
+#else
+void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCount) const {
+  volatile float* dest = static_cast< volatile float* >(out);
+  for (int i = 0; i < pointCount; ++i) {
+    const CVector3f value = mXf * ReadVertex(in, i);
+    *dest++ = value.GetX();
+    *dest++ = value.GetY();
+    *dest++ = value.GetZ();
+  }
+}
+#endif
+
+#ifdef __MWERKS__
+void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normalCount) const {
+  if (normalCount < 3) {
+    float* outF = const_cast< float* >(static_cast< volatile float* >(out));
+    const CVector3f* inV = reinterpret_cast< const CVector3f* >(in);
+    for (int i = 0; i < normalCount; ++i) {
+      CVector3f normal = mRotation * inV[i];
+      *outF = normal.GetX();
+      *outF = normal.GetY();
+      *outF = normal.GetZ();
+    }
+  } else {
+    CTransform4f xf(mRotation, CVector3f(0.f, 0.f, 0.f));
+    ROMtx mtx;
+    PSMTXReorder(TransformToMtx(xf), mtx);
+    PSMTXROMultS16VecArrayGathered(mtx, in, out, normalCount);
+  }
+}
+#else
+void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normalCount) const {
+  volatile float* dest = static_cast< volatile float* >(out);
+  for (int i = 0; i < normalCount; ++i) {
+    const CVector3f value = mRotation * ReadVertex(in, i);
+    *dest++ = value.GetX();
+    *dest++ = value.GetY();
+    *dest++ = value.GetZ();
+  }
+}
+#endif
+
+void CVirtualBone::BuildNormals(const CVector3f* in, CVector3f* out, int normalCount) const {
+  for (int i = 0; i < normalCount; ++i) {
+    out[i] = mRotation * in[i];
+#else
+void CVirtualBone::BuildSkinningMatrices(const CTransform4f& xf, SSkinningMatrices& out,
+                                         bool uniformScale) const {
+  PSMTXConcat(CGraphics::GetGXModelView().GetCStyleMatrix(), xf.GetCStyleMatrix(), out.mPosition);
+  if (uniformScale) {
+    CopyRow(out.mNormal[0], out.mPosition[0]);
+    CopyRow(out.mNormal[1], out.mPosition[1]);
+    CopyRow(out.mNormal[2], out.mPosition[2]);
+  } else {
+    Mtx inverseTranspose;
+    PSMTXInvXpose(out.mPosition, inverseTranspose);
+    CopyRow(out.mNormal[0], inverseTranspose[0]);
+    CopyRow(out.mNormal[1], inverseTranspose[1]);
+    CopyRow(out.mNormal[2], inverseTranspose[2]);
+#endif
+
+  }
+}
+
+#if RSTL_PRIME1
+// clang-format off
+#ifdef __MWERKS__
+asm void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
+                                      size_t pointCount) {
+  nofralloc
+  xor r11, r11, r11
+  addi r11, r11, 0x60
+  stwu r1, -0x40(r1)
+  stfd f14, 0x8(r1)
+  subi r7, r6, 0x1
+  stfd f15, 0x10(r1)
+  srwi r7, r7, 1
+  stfd f16, 0x18(r1)
+  stfd f17, 0x20(r1)
+  stfd f18, 0x28(r1)
+  mtctr r7
+  psq_l f0, 0x0(r3), 0, 0
+  subi r4, r4, 0x8
+  psq_l f1, 0x8(r3), 1, 0
+  psq_l f6, 0x24(r3), 0, 0
+  psq_lu f8, 0x8(r4), 0, 0
+  psq_l f7, 0x2c(r3), 1, 0
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds0 f11, f0, f8, f6
+  psq_l f2, 0xc(r3), 0, 0
+  ps_madds0 f12, f1, f8, f7
+  psq_l f3, 0x14(r3), 1, 0
+  ps_madds1 f13, f0, f9, f6
+  psq_lu f10, 0x8(r4), 0, 0
+  ps_madds1 f14, f1, f9, f7
+  psq_l f5, 0x20(r3), 1, 0
+  ps_madds1 f11, f2, f8, f11
+  ps_madds1 f12, f3, f8, f12
+  psq_l f4, 0x18(r3), 0, 0
+  ps_madds0 f13, f2, f10, f13
+  psq_lu f8, 0x8(r4), 0, 0
+  ps_madds0 f14, f3, f10, f14
+  ps_madds0 f15, f4, f9, f11
+  ps_madds0 f16, f5, f9, f12
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds1 f17, f4, f10, f13
+  ps_madds1 f18, f5, f10, f14
+  psq_lu f10, 0x8(r4), 0, 0
+loop:
+  ps_madds0 f11, f0, f8, f6
+  psq_st f15, 0x0(r5), 0, 0
+  ps_madds0 f12, f1, f8, f7
+  psq_st f16, 0x0(r5), 1, 0
+  ps_madds1 f13, f0, f9, f6
+  psq_st f17, 0x0(r5), 0, 0
+  ps_madds1 f14, f1, f9, f7
+  psq_st f18, 0x0(r5), 1, 0
+  ps_madds1 f11, f2, f8, f11
+  ps_madds1 f12, f3, f8, f12
+  psq_lu f8, 0x8(r4), 0, 0
+  ps_madds0 f13, f2, f10, f13
+  ps_madds0 f14, f3, f10, f14
+  ps_madds0 f15, f4, f9, f11
+  ps_madds0 f16, f5, f9, f12
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds1 f17, f4, f10, f13
+  ps_madds1 f18, f5, f10, f14
+  psq_lu f10, 0x8(r4), 0, 0
+  bdnz loop
+  psq_st f15, 0x0(r5), 0, 0
+  clrlwi. r7, r6, 31
+  psq_st f16, 0x0(r5), 1, 0
+  bne done
+  psq_st f17, 0x0(r5), 0, 0
+  psq_st f18, 0x0(r5), 1, 0
+done:
+  lfd f14, 0x8(r1)
+  lfd f15, 0x10(r1)
+  lfd f16, 0x18(r1)
+  lfd f17, 0x20(r1)
+  lfd f18, 0x28(r1)
+  addi r1, r1, 0x40
+  blr
+}
+#else
+void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
+                                     size_t pointCount) {
+  volatile float* dest = static_cast< volatile float* >(out);
+  for (size_t i = 0; i < pointCount; ++i) {
+    const CVector3f value = ReadVertex(in, i);
+    for (int j = 0; j < 3; ++j) {
+      *dest++ = mtx[0][j] * value.GetX() + mtx[1][j] * value.GetY() +
+                mtx[2][j] * value.GetZ() + mtx[3][j];
+    }
+  }
+}
+#endif
+#if RSTL_VERSION >= RSTL_GM8E_02
+#ifdef __MWERKS__
+// Point skinning writes each float separately, including the original FIFO pacing.
+asm void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
+                                                size_t pointCount) {
+  nofralloc
+  xor r11, r11, r11
+  addi r11, r11, 0x60
+  stwu r1, -0x48(r1)
+  stfd f14, 0x8(r1)
+  subi r7, r6, 0x1
+  stfd f15, 0x10(r1)
+  srwi r7, r7, 1
+  stfd f16, 0x18(r1)
+  stfd f17, 0x20(r1)
+  stfd f18, 0x28(r1)
+  stfd f19, 0x30(r1)
+  mtctr r7
+  psq_l f0, 0x0(r3), 0, 0
+  subi r4, r4, 0x8
+  psq_l f1, 0x8(r3), 1, 0
+  psq_l f6, 0x24(r3), 0, 0
+  psq_lu f8, 0x8(r4), 0, 0
+  psq_l f7, 0x2c(r3), 1, 0
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds0 f11, f0, f8, f6
+  psq_l f2, 0xc(r3), 0, 0
+  ps_madds0 f12, f1, f8, f7
+  psq_l f3, 0x14(r3), 1, 0
+  ps_madds1 f13, f0, f9, f6
+  psq_lu f10, 0x8(r4), 0, 0
+  ps_madds1 f14, f1, f9, f7
+  psq_l f5, 0x20(r3), 1, 0
+  ps_madds1 f11, f2, f8, f11
+  ps_madds1 f12, f3, f8, f12
+  psq_l f4, 0x18(r3), 0, 0
+  ps_madds0 f13, f2, f10, f13
+  psq_lu f8, 0x8(r4), 0, 0
+  ps_madds0 f14, f3, f10, f14
+  ps_madds0 f15, f4, f9, f11
+  ps_madds0 f16, f5, f9, f12
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds1 f17, f4, f10, f13
+  ps_madds1 f18, f5, f10, f14
+  psq_lu f10, 0x8(r4), 0, 0
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+loop:
+  ps_merge10 f19, f15, f15
+  psq_st f15, 0x0(r5), 1, 0
+  ps_madds0 f11, f0, f8, f6
+  psq_st f19, 0x0(r5), 1, 0
+  ps_madds0 f12, f1, f8, f7
+  psq_st f16, 0x0(r5), 1, 0
+  ps_merge10 f19, f17, f17
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  psq_st f17, 0x0(r5), 1, 0
+  ps_madds1 f13, f0, f9, f6
+  psq_st f19, 0x0(r5), 1, 0
+  ps_madds1 f14, f1, f9, f7
+  psq_st f18, 0x0(r5), 1, 0
+  ps_madds1 f11, f2, f8, f11
+  ps_madds1 f12, f3, f8, f12
+  psq_lu f8, 0x8(r4), 0, 0
+  ps_madds0 f13, f2, f10, f13
+  ps_madds0 f14, f3, f10, f14
+  ps_madds0 f15, f4, f9, f11
+  ps_madds0 f16, f5, f9, f12
+  psq_lu f9, 0x8(r4), 0, 0
+  ps_madds1 f17, f4, f10, f13
+  ps_madds1 f18, f5, f10, f14
+  psq_lu f10, 0x8(r4), 0, 0
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  bdnz loop
+  ps_merge10 f19, f15, f15
+  psq_st f15, 0x0(r5), 1, 0
+  psq_st f19, 0x0(r5), 1, 0
+  clrlwi. r7, r6, 31
+  psq_st f16, 0x0(r5), 1, 0
+  bne done
+  ps_merge10 f19, f17, f17
+  psq_st f17, 0x0(r5), 1, 0
+  psq_st f19, 0x0(r5), 1, 0
+  psq_st f18, 0x0(r5), 1, 0
+done:
+  lfd f14, 0x8(r1)
+  lfd f15, 0x10(r1)
+  lfd f16, 0x18(r1)
+  lfd f17, 0x20(r1)
+  lfd f18, 0x28(r1)
+  lfd f19, 0x30(r1)
+  addi r1, r1, 0x48
+  blr
+}
+#else
+void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
+                                            size_t pointCount) {
+  PSMTXROMultS16VecArrayGathered(mtx, in, out, pointCount);
+}
+#endif
+#endif
+#endif
+
+// clang-format on
