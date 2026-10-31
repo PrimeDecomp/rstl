@@ -33,7 +33,9 @@ const CColor& CColor::Green() { return sGreenColor; }
 #endif
 #else
 const CColor& CColor::Red() { return sRedColor; }
+#if RSTL_VERSION < RSTL_R32J
 const CColor& CColor::Green() { return sGreenColor; }
+#endif
 #endif
 
 const CColor& CColor::Blue() { return sBlueColor; }
