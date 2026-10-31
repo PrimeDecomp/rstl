@@ -576,20 +576,17 @@ int basic_string< _CharTp, Traits, Alloc >::internal_search(It first, It last, O
   if (otherFirst == otherLast) {
     return 0;
   }
-  const _CharTp* nextData;
   int index = 0;
   for (It it = first; it != last; ++it, ++index) {
     if (Traits::eq(*it, *otherFirst)) {
       It next = it;
       ++next;
       OtherIt search = otherFirst + 1;
-      nextData = &*next;
       while (search != otherLast && next != last) {
-        if (!Traits::eq(*nextData, *search)) {
+        if (!Traits::eq(*next, *search)) {
           break;
         }
         ++next;
-        ++nextData;
         ++search;
       }
       if (search == otherLast) {
