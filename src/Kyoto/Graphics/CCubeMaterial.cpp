@@ -30,8 +30,12 @@
 #if RSTL_PRIME1
 #include "Prime/MetaRender/CCubeRenderer.hpp"
 #include "Prime/MetroidPrime/CGameDebug.hpp"
+
+#define CUBE_RENDERER PRIME_NAMESPACE CCubeRenderer
 #else
 #include "Echoes/MetaRender/CCubeRenderer.hpp"
+
+#define CUBE_RENDERER ECHOES_NAMESPACE CCubeRenderer
 #endif
 
 #include "dolphin/mtx.h"
@@ -573,7 +577,7 @@ static void HandleAlphaMask(uint vtxDesc, uint& tevCount, uint& texCount, uint& 
   const GXTevStageID stage = static_cast< GXTevStageID >(tevCount);
   const GXTexMapID texMap = static_cast< GXTexMapID >(texCount);
   sAlphaMaskTexCoord = tcgCount;
-  const CTexture& texture = CCubeRenderer::That()->GetAlphaMaskRamp();
+  const CTexture& texture = CUBE_RENDERER::That()->GetAlphaMaskRamp();
   sAlphaMaskPostTexMtx = tcgCount * 3 + GX_PTTEXMTX0;
 
   GXTexObj texObj;
@@ -868,7 +872,7 @@ uint CCubeMaterial::HandleReflection(const GXTexMapID indTexSlot, const int indM
 
   finalTevCount = static_cast< GXTevStageID >(tevCount + out);
 
-  CCubeRenderer::That()->GetRealReflection()->Load(texMap, CTexture::kCM_Clamp);
+  CUBE_RENDERER::That()->GetRealReflection()->Load(texMap, CTexture::kCM_Clamp);
 
   GXTexCoordID texCoord;
   if (indTexSlot != GX_TEXMAP_NULL) {
@@ -1312,7 +1316,7 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
   }
 
   const uint blendFactors = SBig(*materialDataCur.words);
-  if (CCubeRenderer::That()->GetInAreaDraw()) {
+  if (CUBE_RENDERER::That()->GetInAreaDraw()) {
     CGX::SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
   } else {
 #else
@@ -1379,7 +1383,7 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const bool thermal = CCubeRenderer::That()->GetThermal();
+  const bool thermal = CUBE_RENDERER::That()->GetThermal();
   if (thermal) {
     scanner_t savedTexMapTexCoordFlags;
     savedTexMapTexCoordFlags = texMapTexCoordFlags;
@@ -1614,7 +1618,7 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
     radius = 0.5f * (bounds.GetWidth() + bounds.GetHeight());
   }
 
-  CCubeRenderer* renderer = CCubeRenderer::That();
+  CUBE_RENDERER* renderer = CUBE_RENDERER::That();
   if (renderer->GetReflectionFlag()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1806,7 +1810,7 @@ void CCubeModel::EnableShadowMaps(const CTexture* shadowTex, const CTransform4f&
                                   unsigned char chan0DisableMask,
                                   unsigned char chan1EnableLightMask) {
 #if !RSTL_PRIME1
-  if (CCubeRenderer::That()->GetMaterialMode() != 0) {
+  if (CUBE_RENDERER::That()->GetMaterialMode() != 0) {
     return;
   }
 #endif
@@ -1841,4 +1845,3 @@ void CCubeMaterial::UseNormalTevs() { sTevHandler = HandleNormalTevs; }
 
 void CCubeMaterial::UseThermalTevs() { sTevHandler = HandleThermalTevs; }
 #endif
-

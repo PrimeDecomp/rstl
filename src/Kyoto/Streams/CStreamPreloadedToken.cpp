@@ -6,8 +6,6 @@
 #if RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CDvdFile.hpp"
 #include "Corruption/Kyoto/CDvdRequest.hpp"
-#else
-#include "EchoesNamespace.h"
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -19,10 +17,6 @@
 #include "dolphin/os/OSCache.h"
 
 #include <string.h>
-
-#ifndef ECHOES_NAMESPACE
-#define ECHOES_NAMESPACE
-#endif
 
 class CStreamPreloadedData {
 public:
@@ -37,7 +31,7 @@ public:
   int mSize;
   int mRefCount;
   rstl::vector< rstl::auto_ptr< uchar > > mBuffers;
-  rstl::vector< rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > > mRequests;
+  rstl::vector< rstl::auto_ptr< CDvdRequest > > mRequests;
 };
 CHECK_SIZEOF(CStreamPreloadedData, 0x38)
 
@@ -53,7 +47,7 @@ CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
   // clang-format off
   RS_VERIFY_THROW(66, CDvdFile::FileExists( filename.c_str() ), false, "CStreamPreloadedData: Invalid file name\n");
   // clang-format on
-  ECHOES_NAMESPACE CDvdFile file(filename.data());
+  CDvdFile file(filename.data());
   mSize = file.GetFileSize();
   int offset;
   const int count = (mSize + 0x3fff) / 0x4000;
@@ -71,16 +65,15 @@ CStreamPreloadedData::CStreamPreloadedData(const rstl::string& filename)
     const uint alignedLength = (length + 31) & ~31;
     rstl::auto_ptr< uchar > buffer(
         static_cast< uchar* >(rs_aligned_new_line(alignedLength, 78)));
-    rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > request(
-        file.AsyncSeekRead(buffer.get(), alignedLength, ECHOES_NAMESPACE kSO_Begin, offset));
+    rstl::auto_ptr< CDvdRequest > request(
+        file.AsyncSeekRead(buffer.get(), alignedLength, kSO_Begin, offset));
     mBuffers.push_back_unsafe(buffer);
     mRequests.push_back_unsafe(request);
   }
 }
 
 CStreamPreloadedData::~CStreamPreloadedData() {
-  for (rstl::vector< rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > >::iterator it =
-           mRequests.begin();
+  for (rstl::vector< rstl::auto_ptr< CDvdRequest > >::iterator it = mRequests.begin();
        it != mRequests.end(); ++it) {
     if (!(*it)->IsComplete()) {
       (*it)->PostCancelRequest();
@@ -93,7 +86,7 @@ bool CStreamPreloadedData::IsReady() {
     if (!mRequests.back()->IsComplete()) {
       return false;
     }
-    mRequests = rstl::vector< rstl::auto_ptr< ECHOES_NAMESPACE CDvdRequest > >();
+    mRequests = rstl::vector< rstl::auto_ptr< CDvdRequest > >();
   }
   return true;
 }

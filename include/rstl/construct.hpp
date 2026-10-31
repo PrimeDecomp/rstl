@@ -339,10 +339,6 @@ template < typename T > struct vector_construction_policy {
       construction_policy< __VA_ARGS__, true >::construct(dest, src); \
     } \
   };
-#define ECHOES_RSTL_DECLARE_VECTOR_CONSTRUCTION(T) \
-  END_ECHOES_NAMESPACE \
-  namespace rstl { RSTL_DECLARE_VECTOR_CONSTRUCTION(ECHOES_NAMESPACE T) } \
-  START_ECHOES_NAMESPACE
 
 // Guessed policy name. Reallocation, push and whole-container copies are independent.
 template < typename T >
