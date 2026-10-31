@@ -126,7 +126,7 @@
 // `destroy(begin, end)` over iterators tests `begin != end` before looping (pointer ranges do not).
 #define RSTL_DESTROY_RANGE_GUARD (RSTL_VERSION >= RSTL_R3IJ)
 // Generic range copies advance the output parameter directly in Echoes Trilogy.
-#define RSTL_COPY_RANGE_OUTPUT_PARAM (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3ME_00)
+#define RSTL_COPY_RANGE_OUTPUT_PARAM (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // `uninitialized_copy` steps `++cur, ++tmp` (otherwise `tmp += 1, ++cur`), and
 // `uninitialized_copy_n` uses a pre-increment loop when it does not use the counted form below.
 #define RSTL_PREINCREMENT_COPY_LOOPS (RSTL_ECHOES_ERA || RSTL_VERSION >= RSTL_R3IJ)

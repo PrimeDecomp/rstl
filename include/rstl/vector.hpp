@@ -411,7 +411,14 @@ void vector< T, Alloc >::reserve(int newSize) {
 #else
   Alloc::allocate(newData, newSize);
 #endif
-  uninitialized_copy(begin(), end(), newData);
+#if RSTL_SCALAR_TRAITS
+  if (vector_reserve_construction_policy< T >::value) {
+    vector_reserve_construction_policy< T >::copy(begin(), end(), newData);
+  } else
+#endif
+  {
+    uninitialized_copy(begin(), end(), newData);
+  }
   destroy(mItems, mItems + mCount);
 #if RSTL_ALLOCATOR_INSTANCE
   mAllocator.deallocate(mItems);
