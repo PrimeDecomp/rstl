@@ -70,10 +70,13 @@ public:
   ~rc_ptr() { ReleaseData(); }
 #endif
   rc_ptr& operator=(const rc_ptr& other) {
-    if (mPtr != other.mPtr) {
+    RSTL_PRECONDITION(mRefCount != nullptr);
+    RSTL_PRECONDITION(other.mRefCount != nullptr);
+    RSTL_PRECONDITION(*other.mRefCount > 0);
+    if (GetPtr() != other.GetPtr()) {
       ReleaseData();
-      mPtr = other.mPtr;
-      mRefCount = other.mRefCount;
+      mPtr = other.GetPtr();
+      mRefCount = other.GetRefCountPtr();
       ++*mRefCount;
     }
     return *this;
