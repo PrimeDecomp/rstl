@@ -1054,3 +1054,7 @@ void CMoviePlayer::SetSfxVolume(RSTL_PRIME1_CONST uchar volume) {
   sSfxVolume = rstl::min_val(static_cast< uchar >(127), volume);
 }
 
+void CMoviePlayer::SetGlobalMovieVolume(uchar volume) {
+  sSfxVolume = rstl::min_val(static_cast< uchar >(127), volume);
+}
+

@@ -57,6 +57,7 @@ public:
   };
 
   static void SetSfxVolume(uchar);
+  static void SetGlobalMovieVolume(uchar); // Original Wii export; also used by GameCube Echoes.
   static void SetAudioEnabled(bool enabled);
   static bool GetAudioEnabled();
 
