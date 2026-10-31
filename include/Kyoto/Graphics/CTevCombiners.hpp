@@ -194,6 +194,9 @@ public:
 
   static void ResetStates();
 
+  #if defined(__MWERKS__)
+  __declspec(section ".sdata")
+  #endif
   static int sNextUniquePass;
   static const CTevPass kEnvPassthru;
   static const AlphaVar skAlphaOne;
