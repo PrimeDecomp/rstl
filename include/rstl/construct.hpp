@@ -332,17 +332,40 @@ template < typename T > struct vector_construction_policy {
   static void construct_element(T* dest, T& src) { rstl::construct(dest, src); }
 };
 
-#define RSTL_DECLARE_VECTOR_CONSTRUCTION(T) \
-  template <> struct vector_construction_policy< T > { \
+#define RSTL_DECLARE_VECTOR_CONSTRUCTION(...) \
+  template <> struct vector_construction_policy< __VA_ARGS__ > { \
     enum { value = true }; \
-    static void construct_element(T* dest, const T& src) { \
-      construction_policy< T, true >::construct(dest, src); \
+    static void construct_element(__VA_ARGS__* dest, const __VA_ARGS__& src) { \
+      construction_policy< __VA_ARGS__, true >::construct(dest, src); \
     } \
   };
 #define ECHOES_RSTL_DECLARE_VECTOR_CONSTRUCTION(T) \
   END_ECHOES_NAMESPACE \
   namespace rstl { RSTL_DECLARE_VECTOR_CONSTRUCTION(ECHOES_NAMESPACE T) } \
   START_ECHOES_NAMESPACE
+
+// Guessed policy name. Reallocation, push and whole-container copies are independent.
+template < typename T >
+struct vector_reserve_construction_policy {
+  enum { value = false };
+  template < typename It >
+  static void copy(It first, It last, T* dest) {
+    for (; first != last; ++first, ++dest) {
+      construct(dest, *first);
+    }
+  }
+};
+
+#define RSTL_DECLARE_VECTOR_RESERVE_CONSTRUCTION(...) \
+  template <> struct vector_reserve_construction_policy< __VA_ARGS__ > { \
+    enum { value = true }; \
+    template < typename It > \
+    static void copy(It first, It last, __VA_ARGS__* dest) { \
+      for (; first != last; ++first, ++dest) { \
+        construction_policy< __VA_ARGS__, true >::construct(dest, *first); \
+      } \
+    } \
+  };
 
 // Guessed policy name. Whole-container copies retain the generic construct path.
 template < typename T >
