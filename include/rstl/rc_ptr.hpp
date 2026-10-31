@@ -58,7 +58,7 @@ public:
   }
   template < typename U >
   explicit rc_ptr(const rc_ptr< U >& other)
-  : mPtr(static_cast< const T* >(other.GetPtr())), mRefCount(other.GetRefCountPtr()) {
+  : mPtr(static_cast< const T* >(other.mPtr)), mRefCount(other.mRefCount) {
     ++*mRefCount;
   }
 #if RSTL_RC_PTR_DTOR_PRECONDITION
@@ -113,7 +113,8 @@ public:
   operator bool() const { return mPtr != nullptr; }
 #endif
 
-private:
+  // Public so that conversions from rc_ptr< U > can read them; the GameCube compiler rejects
+  // template friend declarations.
   const T* mPtr;
   int* mRefCount;
 };
