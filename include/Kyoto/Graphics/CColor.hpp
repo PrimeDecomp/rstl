@@ -191,17 +191,21 @@ public:
 #if RSTL_VERSION >= RSTL_R3IJ
   static const CColor& Black() { return sBlackColor; }
   static const CColor& White() { return sWhiteColor; }
+  static const CColor& Green() { return sGreenColor; }
 #else
   static const CColor& Black();
   static const CColor& White();
+  static const CColor& Green();
 #endif
 #else
 #if RSTL_VERSION >= RSTL_R32J
   static const CColor& Black() { return sBlackColor; }
   static const CColor& White() { return sWhiteColor; }
+  static const CColor& Green() { return sGreenColor; }
 #else
   static const CColor& Black();
   static const CColor& White();
+  static const CColor& Green();
 #endif
 #endif
 
@@ -210,16 +214,13 @@ public:
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
   static const CColor& Red() { return sRedColor; }
-  static const CColor& Green() { return sGreenColor; }
   static const CColor& Purple() { return sPurpleColor; }
 #else
   static const CColor& Red();
-  static const CColor& Green();
   static const CColor& Purple();
 #endif
 #else
   static const CColor& Red();
-  static const CColor& Green();
 #endif
 
   static const CColor& Blue();
