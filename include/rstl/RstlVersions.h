@@ -518,15 +518,14 @@
 // Game selection, for the few sources that name a game's own headers or namespace (Corruption's
 // prototype is the only Corruption build).
 #define RSTL_KYOTO_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION < RSTL_R3IJ)
+// Prime declares the Kyoto resource factories in its own namespace; Echoes and Corruption declare
+// them in the Kyoto headers, outside any game namespace.
 #if RSTL_PRIME1
 #define KYOTO_START_GAME_NAMESPACE START_PRIME_NAMESPACE
 #define KYOTO_END_GAME_NAMESPACE END_PRIME_NAMESPACE
-#elif RSTL_KYOTO_CORRUPTION
+#else
 #define KYOTO_START_GAME_NAMESPACE
 #define KYOTO_END_GAME_NAMESPACE
-#else
-#define KYOTO_START_GAME_NAMESPACE START_ECHOES_NAMESPACE
-#define KYOTO_END_GAME_NAMESPACE END_ECHOES_NAMESPACE
 #endif
 // Prime on the Wii (Wii de Asobu and Trilogy) runs on the Revolution SDK: CBasics::Init also
 // calls NANDInit and CStopwatch::Wait uses fabsf. Echoes' Wii builds come from Echoes' copy,

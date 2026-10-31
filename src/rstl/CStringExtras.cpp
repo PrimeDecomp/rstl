@@ -1,9 +1,6 @@
 #include "rstl/RstlVersions.h"
 // The prototype's string helpers live in RstlExtras.cpp.
 #if !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS
-#if !RSTL_PRIME1
-#include "EchoesNamespace.h"
-#endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/math.hpp"
 
@@ -250,20 +247,10 @@ rstl::vector< rstl::string > CStringExtras::TokenizeString(const rstl::string& s
 }
 
 #if RSTL_STRING_LIST_FACTORY
-#if RSTL_PRIME1
-START_PRIME_NAMESPACE
-#else
-START_ECHOES_NAMESPACE
-
-#endif
+KYOTO_START_GAME_NAMESPACE
 CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const CVParamTransfer&) {
   return rs_new rstl::vector< rstl::string >(in);
 }
-#if RSTL_PRIME1
-END_PRIME_NAMESPACE
-#else
-
-END_ECHOES_NAMESPACE
-#endif
+KYOTO_END_GAME_NAMESPACE
 #endif
 #endif // !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS

@@ -2,8 +2,6 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 
-START_ECHOES_NAMESPACE
-
 CRelFileDebugInfo* CRelFileDebugInfo::mspHead = nullptr;
 
 CRelFileDebugInfo::CRelFileDebugInfo()
@@ -49,5 +47,3 @@ CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(uintptr_t address) {
   }
   return nullptr;
 }
-
-END_ECHOES_NAMESPACE

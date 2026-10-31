@@ -5,20 +5,10 @@
 #include "Corruption/Kyoto/CResLoader.hpp"
 #else
 #include "Kyoto/CResLoader.hpp"
-
-#include "EchoesNamespace.h"
 #endif
 
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-
-// Echoes declares these classes in its CResLoader.hpp, inside its game namespace.
-#ifndef START_ECHOES_NAMESPACE
-#define START_ECHOES_NAMESPACE
-#define END_ECHOES_NAMESPACE
-#endif
-
-START_ECHOES_NAMESPACE
 
 // CLookaheadRes is named by a Corruption diagnostic; CBufferedDvdRequest is still a guess.
 
@@ -126,5 +116,3 @@ void CBufferedDvdRequest::PostCancelRequest() {
 }
 
 int CBufferedDvdRequest::GetMediaType() const { return mMediaType; }
-
-END_ECHOES_NAMESPACE
