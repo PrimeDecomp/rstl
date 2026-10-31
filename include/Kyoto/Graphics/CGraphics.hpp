@@ -381,9 +381,17 @@ public:
 #else
                                       const void* data,
 #endif
-                                      GXTexMapID texId);
+                                      GXTexMapID texId
+#if RSTL_KYOTO_SPARE_TEXTURE_FILTER
+                                      , GXTexFilter filter = GX_NEAR
+#endif
+  );
   static void LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, GXTlut tlut,
-                                      void* data, GXTexMapID texId);
+                                      void* data, GXTexMapID texId
+#if RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER
+                                      , GXTexFilter filter = GX_NEAR
+#endif
+  );
   static void TickRenderTimings();
   static const CProjectionState& GetProjectionState();
   static void SetProjectionState(const CProjectionState& proj);

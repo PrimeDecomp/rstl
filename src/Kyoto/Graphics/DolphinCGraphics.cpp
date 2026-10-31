@@ -2309,11 +2309,18 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, voi
 void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, const void* data,
 #endif
 
-                                        GXTexMapID texId) {
+                                        GXTexMapID texId
+#if RSTL_KYOTO_SPARE_TEXTURE_FILTER
+                                        , GXTexFilter filter
+#endif
+) {
+#if !RSTL_KYOTO_SPARE_TEXTURE_FILTER
+  GXTexFilter filter = GX_NEAR;
+#endif
   GXTexObj texObj;
   GXInitTexObj(&texObj, data != nullptr ? data : mpSpareBuffer, width, height, fmt, GX_CLAMP,
                GX_CLAMP, GX_DISABLE);
-  GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
+  GXInitTexObjLOD(&texObj, filter, filter, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
   GXLoadTexObj(&texObj, texId);
   CTexture::InvalidateTexmap(texId);
   if (texId == GX_TEXMAP7) {
@@ -2322,11 +2329,18 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, con
 }
 
 void CGraphics::LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, GXTlut tlut,
-                                        void* data, GXTexMapID texId) {
+                                        void* data, GXTexMapID texId
+#if RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER
+                                        , GXTexFilter filter
+#endif
+) {
+#if !RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER
+  GXTexFilter filter = GX_NEAR;
+#endif
   GXTexObj texObj;
   GXInitTexObjCI(&texObj, data != nullptr ? data : mpSpareBuffer, width, height, fmt, GX_CLAMP,
                  GX_CLAMP, GX_DISABLE, tlut);
-  GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
+  GXInitTexObjLOD(&texObj, filter, filter, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
   GXLoadTexObj(&texObj, texId);
   CTexture::InvalidateTexmap(texId);
   if (texId == GX_TEXMAP7) {
