@@ -4,6 +4,7 @@
 #include "Kyoto/Animation/CPASAnimParm.hpp"
 
 #include "rstl/RstlVersions.h"
+#include "rstl/vector.hpp"
 #include "rstl/construct.hpp"
 
 class CInputStream;
@@ -38,6 +39,16 @@ CHECK_SIZEOF(CPASParmInfo, 0x14)
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPASParmInfo)
+
+template <> struct vector_copy_construction_policy< CPASParmInfo > {
+  enum { value = true };
+  static void copy_n(CPASParmInfo* src, int n, CPASParmInfo* dest) {
+    CPASParmInfo* cur = dest;
+    for (int remaining = n; remaining != 0; --remaining, ++src, ++cur) {
+      *cur = *src;
+    }
+  }
+};
 } // namespace rstl
 #endif
 

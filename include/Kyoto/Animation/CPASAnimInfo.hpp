@@ -4,6 +4,7 @@
 #include "Kyoto/Animation/CPASAnimParm.hpp"
 
 #include "rstl/RstlVersions.h"
+#include "rstl/vector.hpp"
 #include "rstl/reserved_vector.hpp"
 
 class CPASAnimInfo {
@@ -29,6 +30,16 @@ CHECK_SIZEOF(CPASAnimInfo, 0x28)
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CPASAnimInfo)
 RSTL_DECLARE_BITWISE_CONSTRUCTION(CPASAnimInfo)
+
+template <> struct vector_copy_construction_policy< CPASAnimInfo > {
+  enum { value = true };
+  static void copy_n(CPASAnimInfo* src, int n, CPASAnimInfo* dest) {
+    CPASAnimInfo* cur = dest;
+    for (int remaining = n; remaining != 0; --remaining, ++src, ++cur) {
+      bitwise_copy< sizeof(CPASAnimInfo) / sizeof(double) >(cur, src);
+    }
+  }
+};
 } // namespace rstl
 #endif
 

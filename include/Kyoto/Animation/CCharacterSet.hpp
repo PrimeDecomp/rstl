@@ -55,4 +55,6 @@ private:
 };
 CHECK_SIZEOF(CCharacterSet, 0x14)
 
+#include "Kyoto/Animation/CCECharacterInfo.inl"
+
 #endif // _CCHARACTERSET

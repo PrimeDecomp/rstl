@@ -39,6 +39,7 @@ public:
   };
 
   explicit CCECharacterInfo(CInputStream& in);
+  CCECharacterInfo(const CCECharacterInfo& other);
 
   CAssetId GetModelId() const { return mCmdl; }
   CAssetId GetSkinRulesId() const { return mCksr; }
@@ -49,9 +50,9 @@ public:
   bool GetAnimatedScale() const { return mAnimatedScale; }
   uint GetDefaultAnimation() const { return mDefaultAnimation; }
   const CPASDatabase& GetPASDatabase() const { return mPasDatabase; }
-  const CParticleResData& GetParticleResData() const { return mPartRes; }
+  const CParticleResData& GetParticleResData() const;
   const TEffectList& GetEffects() const { return mEffects; }
-  const rstl::vector< uint >& GetAnimationIndexList() const { return mAnimIdxs; }
+  const rstl::vector< uint >& GetAnimationIndexList() const;
   const rstl::vector< rstl::pair< rstl::string, CAABox > >& GetAnimBBoxList() const {
     return mAabbs;
   }
@@ -80,5 +81,17 @@ private:
 };
 CHECK_SIZEOF(CCECharacterInfo, 0xf8)
 NESTED_CHECK_SIZEOF(CCECharacterInfo, CParticleResData, 0x60)
+
+namespace rstl {
+template <> struct vector_copy_construction_policy< pair< uint, CAABox > > {
+  enum { value = true };
+  static void copy_n(pair< uint, CAABox >* src, int n, pair< uint, CAABox >* dest) {
+    pair< uint, CAABox >* cur = dest;
+    for (int remaining = n; remaining != 0; --remaining, ++src, ++cur) {
+      *cur = *src;
+    }
+  }
+};
+} // namespace rstl
 
 #endif // _CCECHARACTERINFO

@@ -29,6 +29,21 @@ class COutputStream;
   } while (false)
 
 namespace rstl {
+// Guessed policy name. Element cleanup may use a direct pointer loop.
+template < typename T >
+struct vector_destruction_policy {
+  enum { direct = false };
+};
+
+// Guessed policy name: whole-container copying is independent of insertion.
+template < typename T >
+struct vector_copy_construction_policy {
+  enum { value = false };
+  static void copy_n(T* src, int n, T* dest) {
+    uninitialized_copy_n(src, n, dest);
+  }
+};
+
 
 template < typename T, typename Alloc = rmemory_allocator >
 class vector
@@ -149,7 +164,11 @@ public:
     } else {
       Alloc::allocate(mItems, mCapacity);
       RS_ASSERT(mItems != nullptr, "rstl precondition");
-      uninitialized_copy_n(other.mItems, mCount, mItems);
+      if (vector_copy_construction_policy< T >::value) {
+        vector_copy_construction_policy< T >::copy_n(other.mItems, mCount, mItems);
+      } else {
+        uninitialized_copy_n(other.mItems, mCount, mItems);
+      }
     }
   }
 #endif
@@ -178,7 +197,15 @@ public:
     RS_ASSERT(mCount <= mCapacity, "rstl invariant");
     RS_ASSERT(mCapacity == 0 || mItems != nullptr, "rstl invariant");
     if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
-      destroy(begin(), end());
+      if (vector_destruction_policy< T >::direct) {
+        T* cur = mItems;
+        T* end = mItems + mCount;
+        for (; cur != end; ++cur) {
+          cur->~T();
+        }
+      } else {
+        destroy(begin(), end());
+      }
     }
     Alloc::deallocate(mItems);
   }
@@ -356,14 +383,26 @@ mCount(other.mCount)
 #else
     Alloc::allocate(mItems, mCapacity);
 #endif
-    uninitialized_copy_n(other.mItems, mCount, mItems);
+    if (vector_copy_construction_policy< T >::value) {
+      vector_copy_construction_policy< T >::copy_n(other.mItems, mCount, mItems);
+    } else {
+      uninitialized_copy_n(other.mItems, mCount, mItems);
+    }
   }
 }
 
 template < typename T, typename Alloc >
 inline vector< T, Alloc >::~vector() {
   if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
-    destroy(begin(), end());
+    if (vector_destruction_policy< T >::direct) {
+      T* cur = mItems;
+      T* end = mItems + mCount;
+      for (; cur != end; ++cur) {
+        cur->~T();
+      }
+    } else {
+      destroy(begin(), end());
+    }
   }
 #if RSTL_ALLOCATOR_INSTANCE
   mAllocator.deallocate(mItems);
