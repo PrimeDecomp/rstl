@@ -4,12 +4,9 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
-#include "Kyoto/Animation/CSkinRules.hpp"
-#endif
-
 #include "Kyoto/TToken.hpp"
 #if RSTL_PRIME1
+#include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 
 #include "rstl/auto_ptr.hpp"
@@ -30,15 +27,11 @@ class CTransform4f;
 
 class CVector3f;
 class CVertexMorphEffect; // This must be a forward declaration for GC matching
+
 #if !RSTL_PRIME1
 class CPoseAsTransforms_Linear;
 struct SSkinningMatrices;
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-typedef void (*TDrawFunc)(const float*, const float*, const void*);
-#else
 // Reconstructed workspace grouping; the field offsets are established by G2ME01.
 struct SSkinningWorkspace {
   CTransform4f* mTransforms;
@@ -69,46 +62,32 @@ CHECK_SIZEOF(CSkinnedModelState, 0x10)
 
 class CSkinnedModel {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  // Shared by both games.
+  TLockedToken< CModel >& Model() { return mModel; }
+  const TLockedToken< CModel >& GetModel() const { return mModel; }
+  const TLockedToken< CSkinRules >& GetSkinRules() const { return mSkinRules; }
+  const TLockedToken< CCharLayoutInfo >& GetLayoutInfo() const { return mLayoutInfo; }
+
+  static void ClearPointGeneratorFunc();
+
 #if RSTL_PRIME1
+  // Prime has a vtable (__vt__13CSkinnedModel), a copy constructor and an ownership
+  // parameter; Echoes has none of them.
   enum EDataOwnership {
     kDO_Unowned,
     kDO_Owned,
   };
-#else
-  typedef void (*TPointGenFunc)(const CSkinnedModel&, const SSkinningWorkspace&, void*);
-  typedef void (*TDrawFunc)(const SSkinningWorkspace&, void*);
-  // Guessed flag names.
-  enum EDrawFlags { kDF_Unsorted = 2, kDF_Sorted = 4, kDF_Flat = 8 };
-#endif
+  typedef void (*TPointGenFunc)(void*, const CVector3f*, const CVector3f*, int);
+  typedef void (*TDrawFunc)(const float*, const float*, const void*);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CSkinnedModel(const CSkinnedModel&);
   CSkinnedModel(const TLockedToken< CModel >&, const TLockedToken< CSkinRules >&,
                 const TLockedToken< CCharLayoutInfo >&, EDataOwnership);
   virtual ~CSkinnedModel();
-#else
-  CSkinnedModel(const TLockedToken< CModel >& model, const TLockedToken< CSkinRules >& skinRules,
-                const TLockedToken< CCharLayoutInfo >& layoutInfo);
-  ~CSkinnedModel();
 
-  static void ClearPointGeneratorFunc();
-#endif
-
-  TLockedToken< CModel >& Model() { return mModel; }
-  const TLockedToken< CModel >& GetModel() const { return mModel; }
-  const TLockedToken< CCharLayoutInfo >& GetLayoutInfo() const { return mLayoutInfo; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void SetLayoutInfo(const TLockedToken< CCharLayoutInfo >& layout) { mLayoutInfo = layout; }
-#else
-  void SetLayoutInfo(const TToken< CCharLayoutInfo >& layout) { mLayoutInfo = layout; }
-  const TLockedToken< CSkinRules >& GetSkinRules() const { return mSkinRules; }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  // Prime skins into float position/normal workspaces.
   void CalculateDefault();
   int GetNumPoints() const { return mSkinRules->GetNumPoints(); }
   int GetNumVirtualBones() const { return mSkinRules->GetNumVirtualBones(); }
@@ -124,7 +103,37 @@ public:
   void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
   void Draw(TDrawFunc func, void* data);
   void PostDrawFunc() const;
+  float* AllocateNewWorkspace(float** nrmOut);
+
+  static void SetPointGeneratorFunc(void*,
+                                    void (*)(void*, const CVector3f*, const CVector3f*, int));
+#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
+  static void SetSkinningBuffer(void* buffer, int size);
+#endif
+  static void AddDummySkinnedModelRef();
+  static void RemoveDummySkinnedModelRef();
+
+  void Construct();
+  void AllocateStorage();
+  static void TickAllocations();
+  static void* EnsureAllocation(int size);
+
+  static void Draw(const TDrawFunc func, const float* positions, const float* normals, void* data) {
+    func(positions, normals, data);
+  }
 #else
+  // Echoes skins from a pose into a matrix workspace (SSkinningWorkspace).
+  typedef void (*TPointGenFunc)(const CSkinnedModel&, const SSkinningWorkspace&, void*);
+  typedef void (*TDrawFunc)(const SSkinningWorkspace&, void*);
+  // Guessed flag names.
+  enum EDrawFlags { kDF_Unsorted = 2, kDF_Sorted = 4, kDF_Flat = 8 };
+
+  CSkinnedModel(const TLockedToken< CModel >& model, const TLockedToken< CSkinRules >& skinRules,
+                const TLockedToken< CCharLayoutInfo >& layoutInfo);
+  ~CSkinnedModel();
+
+  void SetLayoutInfo(const TToken< CCharLayoutInfo >& layout) { mLayoutInfo = layout; }
+
   CSkinnedModelState MakeDefaultStorage() const;
   CSkinnedModelState MakeStorage(bool transient) const; // Guessed name.
   void StoreCalculation(CSkinnedModelState& state, const CPoseAsTransforms_Linear* pose) const;
@@ -133,12 +142,6 @@ public:
   void DolphinDrawWithFlags(const CPoseAsTransforms_Linear* pose, uint drawFlags,
                             const CModelFlags& flags) const;
   void DrawFromState(const CSkinnedModelState& state, const CModelFlags& flags) const;
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float* AllocateNewWorkspace(float** nrmOut);
-#else
   // Guessed names for the workspace draw overloads and sampling helpers.
   void DolphinDrawFromWorkspace(const SSkinningWorkspace& workspace, uint drawFlags,
                                 const CModelFlags& flags) const;
@@ -146,29 +149,9 @@ public:
                                 const CModelFlags& flags, u64 mask) const;
   CVector3f GetSkinnedPosition(const SSkinningWorkspace& workspace, int vertex) const;
   CVector3f GetSkinnedNormal(const SSkinningWorkspace& workspace, int vertex) const;
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SetPointGeneratorFunc(void*,
-                                    void (*)(void*, const CVector3f*, const CVector3f*, int));
-  static void ClearPointGeneratorFunc();
-#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
-  static void SetSkinningBuffer(void* buffer, int size);
-#endif
-  static void AddDummySkinnedModelRef();
-  static void RemoveDummySkinnedModelRef();
-#else
   static void SetPointGeneratorFunc(void* context, TPointGenFunc callback);
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void Construct();
-  void AllocateStorage();
-  static void TickAllocations();
-  static void* EnsureAllocation(int size);
-#else
 private:
   // Guessed names; these have no original GameCube symbol evidence.
   void LoadMatrixBank(int& currentBank, int bank) const;
@@ -180,20 +163,9 @@ private:
                            const TFlatDraw& flat) const;
 #endif
 
-#if RSTL_PRIME1
-  typedef void (*TPointGenFunc)(void*, const CVector3f*, const CVector3f*, int);
-#endif
-
+private:
   static TPointGenFunc sPointGen;
   static void* sPointGenData;
-
-#if RSTL_PRIME1
-  static void Draw(const TDrawFunc func, const float* positions, const float* normals, void* data) {
-    func(positions, normals, data);
-  }
-
-private:
-#endif
 
   TLockedToken< CModel > mModel;
   TLockedToken< CSkinRules > mSkinRules;
@@ -205,8 +177,9 @@ private:
   bool mDisableWorkspaces;
 #endif
 };
-// TODO: verify that this Prime/Echoes difference is real
+
 #if RSTL_PRIME1
+// No Echoes symbols reference this class.
 class CSkinnedModelWithAvgNormals {
   CSkinnedModel mSkinnedModel;
   rstl::auto_ptr< float > mAvgNormals;
