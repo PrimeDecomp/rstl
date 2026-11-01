@@ -29,6 +29,15 @@ class COutputStream;
   } while (false)
 
 namespace rstl {
+// Guessed policy name: whole-container copying is independent of insertion.
+template < typename T >
+struct vector_copy_construction_policy {
+  enum { value = false };
+  static void copy_n(T* src, int n, T* dest) {
+    uninitialized_copy_n(src, n, dest);
+  }
+};
+
 
 template < typename T, typename Alloc = rmemory_allocator >
 class vector
@@ -149,7 +158,11 @@ public:
     } else {
       Alloc::allocate(mItems, mCapacity);
       RS_ASSERT(mItems != nullptr, "rstl precondition");
-      uninitialized_copy_n(other.mItems, mCount, mItems);
+      if (vector_copy_construction_policy< T >::value) {
+        vector_copy_construction_policy< T >::copy_n(other.mItems, mCount, mItems);
+      } else {
+        uninitialized_copy_n(other.mItems, mCount, mItems);
+      }
     }
   }
 #endif
@@ -356,7 +369,11 @@ mCount(other.mCount)
 #else
     Alloc::allocate(mItems, mCapacity);
 #endif
-    uninitialized_copy_n(other.mItems, mCount, mItems);
+    if (vector_copy_construction_policy< T >::value) {
+      vector_copy_construction_policy< T >::copy_n(other.mItems, mCount, mItems);
+    } else {
+      uninitialized_copy_n(other.mItems, mCount, mItems);
+    }
   }
 }
 

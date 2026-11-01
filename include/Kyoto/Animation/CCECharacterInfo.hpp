@@ -82,4 +82,16 @@ private:
 CHECK_SIZEOF(CCECharacterInfo, 0xf8)
 NESTED_CHECK_SIZEOF(CCECharacterInfo, CParticleResData, 0x60)
 
+namespace rstl {
+template <> struct vector_copy_construction_policy< pair< uint, CAABox > > {
+  enum { value = true };
+  static void copy_n(pair< uint, CAABox >* src, int n, pair< uint, CAABox >* dest) {
+    pair< uint, CAABox >* cur = dest;
+    for (int remaining = n; remaining != 0; --remaining, ++src, ++cur) {
+      *cur = *src;
+    }
+  }
+};
+} // namespace rstl
+
 #endif // _CCECHARACTERINFO
