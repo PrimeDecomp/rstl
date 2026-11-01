@@ -43,8 +43,8 @@ private:
   int mLoopStartSamp;
   int mLoopEndSamp;
   int mCurBuf;
-  rstl::auto_ptr< uchar > mDmaLeft;
-  rstl::auto_ptr< uchar > mDmaRight;
+  rstl::auto_ptr< uchar > mDmaBufferA;
+  rstl::auto_ptr< uchar > mDmaBufferB;
   rstl::vector< rstl::auto_ptr< CDvdRequest > > mDvdRequests;
   rstl::vector< rstl::auto_ptr< uchar > > mBuffers;
   g72x_state mLeftState;
