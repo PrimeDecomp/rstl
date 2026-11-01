@@ -53,8 +53,6 @@ class CFinalInput {
 #endif
 
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   static const float kAnalogAxisDigitalThreshold;
   static const float kRollDigitalThreshold;
   static const float kPitchDigitalThreshold;
@@ -132,7 +130,6 @@ public:
     kSC_NunchukZMaxBeforeMin = 10,
     kSC_NunchukZMinBeforeMax = 11,
   };
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
