@@ -1,16 +1,9 @@
 #ifndef _IMETATRANS
 #define _IMETATRANS
-#include "rstl/RstlVersions.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "types.h"
-
-class CAnimTreeNode;
-#else
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#endif
-
 #include "rstl/rc_ptr.hpp"
 
 class COutputStream;
