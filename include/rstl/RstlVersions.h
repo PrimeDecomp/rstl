@@ -514,6 +514,12 @@
 // include/Kyoto and src/Kyoto hold the engine code every game shares (allocators, basics,
 // streams). Prime's copy is selected by RSTL_PRIME1, including Prime Trilogy; Echoes' copy also
 // builds Echoes Trilogy and Wii de Asobu Echoes, and the prototype's builds G2MEAB.
+// The ordinary spare-texture loader accepts a trailing min/mag filter in the prototype
+// and Echoes Trilogy PAL. Echoes NPC/USA and every configured Prime build retain fixed GX_NEAR.
+#define RSTL_KYOTO_SPARE_TEXTURE_FILTER                                                          \
+  (RSTL_VERSION == RSTL_G2MEAB || (!RSTL_PRIME1 && RSTL_VERSION == RSTL_R3MP_00))
+// The CI overload accepts a filter only in the prototype; Echoes PAL still fixes GX_NEAR.
+#define RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER (RSTL_VERSION == RSTL_G2MEAB)
 // Basics, object tags, dependency groups.
 // Game selection, for the few sources that name a game's own headers or namespace (Corruption's
 // prototype is the only Corruption build).
