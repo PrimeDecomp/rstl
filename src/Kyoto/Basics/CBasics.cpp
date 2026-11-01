@@ -5,11 +5,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#if RSTL_KYOTO_STRINGIZE_VA_LIST
 char* CBasics::Stringize(const char* fmt, va_list args) {
   static char stringizeBuffer[512];
   vsnprintf(stringizeBuffer, sizeof(stringizeBuffer), fmt, args);
   return stringizeBuffer;
 }
+#endif
 
 char* CBasics::Stringize(const char* fmt, ...) {
   va_list args;

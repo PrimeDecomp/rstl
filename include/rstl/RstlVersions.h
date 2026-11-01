@@ -566,6 +566,8 @@
 #define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
 // GameCube Prime uses vsprintf; Echoes, Corruption's prototype and Wii Prime use vsnprintf.
 #define RSTL_KYOTO_STRINGIZE_VSNPRINTF (!RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ)
+// The va_list overload exists in the prototype and Wii binaries, but not GameCube retail.
+#define RSTL_KYOTO_STRINGIZE_VA_LIST (RSTL_VERSION >= RSTL_G2MEAB)
 // Only the Corruption prototype's native variadic Stringize delegates to its va_list overload.
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_VERSION == RSTL_G2MEAB)
 // Wii GXGetGPFifo copies the FIFO into an output object; GameCube returns a pointer.
