@@ -13,7 +13,7 @@
 
 #include "Kyoto/Audio/CAudioSys.hpp"
 #if RSTL_PRIME1
-#include "Kyoto/Audio/CStaticAudioPlayer.hpp"
+#include "Kyoto/Audio/DolphinCRSFAudio.hpp"
 #endif
 
 #include "Kyoto/Graphics/CGraphics.hpp"
@@ -1026,7 +1026,7 @@ void CMoviePlayer::VerifyCallbackStatus() {
   if (sNumReferences > 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CStaticAudioPlayer::RunDMACallback(StaticMyAudioCallback);
+    CRSFAudio::RunDMACallback(StaticMyAudioCallback);
 #else
     CAIInterruptManager::RunDMACallback(StaticMyAudioCallback);
 #endif
@@ -1034,7 +1034,7 @@ void CMoviePlayer::VerifyCallbackStatus() {
   } else {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CStaticAudioPlayer::CancelDMACallback(StaticMyAudioCallback);
+    CRSFAudio::CancelDMACallback(StaticMyAudioCallback);
 #else
     CAIInterruptManager::CancelDMACallback(StaticMyAudioCallback);
 #endif

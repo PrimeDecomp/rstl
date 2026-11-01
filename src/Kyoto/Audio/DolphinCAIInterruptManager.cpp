@@ -1,8 +1,8 @@
 #include "rstl/RstlVersions.h"
-// Prime keeps these callbacks on CStaticAudioPlayer; Echoes moved them to CAIInterruptManager.
+// Prime keeps these callbacks on CRSFAudio; Echoes moved them to CAIInterruptManager.
 #if RSTL_PRIME1
-#include "Kyoto/Audio/CStaticAudioPlayer.hpp"
-typedef CStaticAudioPlayer CAICallbackOwner;
+#include "Kyoto/Audio/DolphinCRSFAudio.hpp"
+typedef CRSFAudio CAICallbackOwner;
 #else
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
 typedef CAIInterruptManager CAICallbackOwner;
