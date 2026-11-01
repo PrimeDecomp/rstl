@@ -48,7 +48,7 @@ void* CRevolutionController::AllocateWpadMemory(u32 size) {
   return CMemory::Alloc(size, static_cast< IAllocator::EHint >(6));
 }
 
-int CRevolutionController::FreeWpadMemory(void* memory) {
+u8 CRevolutionController::FreeWpadMemory(void* memory) {
   CMemory::Free(memory);
   return 1;
 }

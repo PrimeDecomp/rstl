@@ -1486,17 +1486,17 @@ void CGraphics::EndScene() {
   VISetPreRetraceCallback(VideoPreCallback);
   VISetPostRetraceCallback(VideoPostCallback);
   GXFlush();
-#if RSTL_PRIME1
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
   GXFifoObj* fifo = GXGetGPFifo();
 #endif
 
   void* readPtr;
   void* writePtr;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
   GXGetFifoPtrs(fifo, &readPtr, &writePtr);
 #else
-#if RSTL_VERSION >= RSTL_R32J
+#if RSTL_VERSION >= RSTL_R3IJ
   GXFifoObj gpFifo;
   GXGetGPFifo(&gpFifo);
   GXGetFifoPtrs(&gpFifo, &readPtr, &writePtr);

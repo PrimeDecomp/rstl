@@ -59,7 +59,7 @@ private:
   };
 
   static void* AllocateWpadMemory(u32 size);
-  static int FreeWpadMemory(void* memory);
+  static u8 FreeWpadMemory(void* memory);
   static void WpadInfoCallback(s32 channel, s32 result);
   static void WpadConnectCallback(s32 channel, s32 result);
   static void WpadExtensionCallback(s32 channel, s32 extension);
