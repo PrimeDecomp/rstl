@@ -270,6 +270,7 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(int, const int&)
 
 #if RSTL_SCALAR_TRAITS
 RSTL_DEFINE_DIRECT_CONSTRUCT(uint, const uint&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, const ushort&)
 
 template < typename T >
 inline void construct(void* dest, T* const& src) {
@@ -283,6 +284,7 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(float, const float&)
 // Mutable range inputs use the same scalar stores without converting to const references.
 RSTL_DEFINE_DIRECT_CONSTRUCT(int, int&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(uint, uint&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, ushort&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(bool, bool&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(float, float&)
 
