@@ -168,9 +168,8 @@
 #define RSTL_RC_PTR_PRIVATE_COUNT RSTL_ECHOES_ERA
 // `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `rc_ptr_private::sNull`.
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
-// The Trilogy `rc_ptr` has the converting constructor and `Cast<U>()` of the Echoes class that
-// Echoes code calls.
-#define RSTL_RC_PTR_CONVERSION (RSTL_VERSION >= RSTL_R3ME_00)
+// The inline-count owner supports converting construction and `Cast<U>()`.
+#define RSTL_RC_PTR_CONVERSION RSTL_RC_PTR_INLINE_COUNT
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
