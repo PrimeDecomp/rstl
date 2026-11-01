@@ -270,6 +270,8 @@
 #define RSTL_OPTIONAL_DTOR_DESTROYS (RSTL_VERSION >= RSTL_GM8P_00)
 // ...and does so with a direct destructor call (`get_ptr()->~T()`) rather than through `destroy`.
 #define RSTL_OPTIONAL_DTOR_DIRECT_CALL (RSTL_VERSION >= RSTL_R32J)
+// `optional_object` has `operator=(optional_object_null)`, which only calls `clear()`.
+#define RSTL_OPTIONAL_ASSIGN_NULL (RSTL_VERSION >= RSTL_R32J)
 // `rbtree_rotate_left` and `rbtree_rotate_right` are `static` in rstl_map.cpp.
 #define RSTL_RBTREE_STATIC_ROTATIONS RSTL_PRIME1
 // The `set` copy constructor is `inline`.
