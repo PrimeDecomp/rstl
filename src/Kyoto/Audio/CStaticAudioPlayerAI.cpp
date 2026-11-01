@@ -12,18 +12,18 @@
 #include "dolphin/ai.h"
 #include "dolphin/os.h"
 
-static rstl::reserved_vector< FAudioCallback, 4 > sAICallbacks;
-static bool sDMACallbackInstalled = false;
+static rstl::reserved_vector< FAudioCallback, 4 > sCallbacks;
+ATTRIBUTE_ALIGN_DECL(8, static bool sDMACallbackInstalled) = false;
 static FAudioCallback sOldDMACallback = nullptr;
 
 void CStaticAudioPlayer::InstallAICallback() {
   bool old = CAudioSys::IsAICallbackEnabled();
   CAudioSys::EnableAICallback(true);
 
-  if (!sDMACallbackInstalled && sAICallbacks.size() != 0) {
+  if (!sDMACallbackInstalled && sCallbacks.size() != 0) {
     sOldDMACallback = AIRegisterDMACallback(AICallback);
     sDMACallbackInstalled = true;
-  } else if (sDMACallbackInstalled && sAICallbacks.size() == 0) {
+  } else if (sDMACallbackInstalled && sCallbacks.size() == 0) {
     AIRegisterDMACallback(sOldDMACallback);
     sOldDMACallback = 0;
     sDMACallbackInstalled = false;
@@ -35,17 +35,15 @@ void CStaticAudioPlayer::InstallAICallback() {
 void CStaticAudioPlayer::AICallback() {
   sOldDMACallback();
 
-  for (int i = 0; i < sAICallbacks.size(); ++i) {
-    sAICallbacks[i]();
+  for (int i = 0; i < sCallbacks.size(); ++i) {
+    sCallbacks[i]();
   }
 }
 
 void CStaticAudioPlayer::RunDMACallback(const FAudioCallback callback) {
   volatile const bool old = OSDisableInterrupts();
-  const rstl::reserved_vector< FAudioCallback, 4 >::iterator it =
-      rstl::find(sAICallbacks.begin(), sAICallbacks.end(), callback);
-  if (it == sAICallbacks.end()) {
-    sAICallbacks.push_back(callback);
+  if (rstl::find(sCallbacks.begin(), sCallbacks.end(), callback) == sCallbacks.end()) {
+    sCallbacks.push_back(callback);
   }
 
   InstallAICallback();
@@ -56,9 +54,9 @@ void CStaticAudioPlayer::CancelDMACallback(FAudioCallback callback) {
   volatile const bool old = OSDisableInterrupts();
 
   const rstl::reserved_vector< FAudioCallback, 4 >::iterator it =
-      rstl::find(sAICallbacks.begin(), sAICallbacks.end(), callback);
-  if (it != sAICallbacks.end()) {
-    sAICallbacks.erase(it);
+      rstl::find(sCallbacks.begin(), sCallbacks.end(), callback);
+  if (it != sCallbacks.end()) {
+    sCallbacks.erase(it);
   }
 
   InstallAICallback();

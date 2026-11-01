@@ -1,7 +1,7 @@
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
 
 #include "Kyoto/Audio/CAudioSys.hpp"
-#include "Kyoto/Basics/CInterruptGuard.hpp"
+#include "dolphin/os.h"
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
 
@@ -36,16 +36,17 @@ void CAIInterruptManager::AICallback() {
 }
 
 void CAIInterruptManager::RunDMACallback(const FAudioCallback callback) {
-  CInterruptGuard interrupts;
+  volatile const bool old = OSDisableInterrupts();
   if (rstl::find(sCallbacks.begin(), sCallbacks.end(), callback) == sCallbacks.end()) {
     sCallbacks.push_back(callback);
   }
 
   InstallAICallback();
+  OSRestoreInterrupts(old);
 }
 
 void CAIInterruptManager::CancelDMACallback(FAudioCallback callback) {
-  CInterruptGuard interrupts;
+  volatile const bool old = OSDisableInterrupts();
 
   const rstl::reserved_vector< FAudioCallback, 4 >::iterator it =
       rstl::find(sCallbacks.begin(), sCallbacks.end(), callback);
@@ -54,5 +55,6 @@ void CAIInterruptManager::CancelDMACallback(FAudioCallback callback) {
   }
 
   InstallAICallback();
+  OSRestoreInterrupts(old);
 }
 
