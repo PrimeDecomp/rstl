@@ -1,6 +1,8 @@
 #ifndef _CSTATICAUDIOPLAYER
 #define _CSTATICAUDIOPLAYER
 
+#include "types.h"
+
 #include "dolphin/hw_regs.h"
 
 #include "Kyoto/Audio/g721.h"
