@@ -28,8 +28,8 @@ enum { kRSFBufferSize = 0x4000 };
 
 static CRSFAudio* sPlayingAudio = nullptr;
 
-CRSFAudio::CRSFAudio(const rstl::string& filepath, const int loopStart, const int loopEnd)
-: mFilepath(filepath)
+CRSFAudio::CRSFAudio(const rstl::string& audioFile, const int loopStart, const int loopEnd)
+: mFilepath(audioFile)
 , mRsfRem(-1)
 , mCurSamp(0)
 , mLoopStartSamp(loopStart & ~1)
@@ -38,7 +38,7 @@ CRSFAudio::CRSFAudio(const rstl::string& filepath, const int loopStart, const in
 , mDmaBufferA(static_cast< uchar* >(CMemory::Alloc(640, IAllocator::kHI_RoundUpLen)))
 , mDmaBufferB(static_cast< uchar* >(CMemory::Alloc(640, IAllocator::kHI_RoundUpLen)))
 , mVolume(32768) {
-  CDvdFile dvdFile(filepath.data());
+  CDvdFile dvdFile(audioFile.data());
   mRsfRem = dvdFile.GetFileSize();
   mRsfLength = mRsfRem;
 #if !RSTL_PRIME1

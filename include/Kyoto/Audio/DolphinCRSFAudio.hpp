@@ -21,10 +21,10 @@ typedef void (*FAudioCallback)();
 #endif
 
 // Names from the Corruption prototype's asserts: DolphinCRSFAudio.cpp, IsFullyLoaded,
-// sPlayingAudio.
+// sPlayingAudio, audioFile.
 class CRSFAudio {
 public:
-  CRSFAudio(const rstl::string& filepath, const int loopStart, const int loopEnd);
+  CRSFAudio(const rstl::string& audioFile, const int loopStart, const int loopEnd);
   ~CRSFAudio();
 
   const bool IsFullyLoaded() const;
