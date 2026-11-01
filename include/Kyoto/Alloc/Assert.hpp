@@ -33,6 +33,12 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
     rs_debugger_printf(__VA_ARGS__);                                                               \
   } while (0)
 
+// Guessed name. Only the warning callback, with a format and optional arguments.
+#define RS_WARNING_PRINT(...) gpfnWarningPrintf(__VA_ARGS__)
+
+// Guessed name. Only the debugger, with a format and optional arguments.
+#define RS_DEBUGGER_PRINT(...) rs_debugger_printf(__VA_ARGS__)
+
 // Guessed name. Debugger first, with the argument also passed to the warning callback.
 #define RS_DEBUGGER_WARNING_ARG(message, arg)                                                      \
   do {                                                                                             \
@@ -98,6 +104,8 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 #define RS_DEBUGGER_WARNING(...) (void)(0)
 #define RS_WARNING_DEBUGGER_PRINT(...) (void)(0)
 #define RS_DEBUGGER_WARNING_ARG(message, arg) (void)(0)
+#define RS_WARNING_PRINT(...) (void)(0)
+#define RS_DEBUGGER_PRINT(...) (void)(0)
 #define RS_VERIFY_FAILURE(line, conditionText, exceptionText, message) (void)(0)
 #define RS_VERIFY_FAILURE_IN(file, line, conditionText, exceptionText, message) (void)(0)
 #define RS_VERIFY_THROW_DIRECT(line, condition, exception, message) (void)(0)
