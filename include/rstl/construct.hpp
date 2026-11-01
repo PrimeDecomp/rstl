@@ -466,6 +466,12 @@ RSTL_CONSTRUCT_INLINE void destroy(RSTL_DESTROY_PTR(T) in) {
 #endif
 }
 
+// Guessed policy name. Preserve the range helper while selecting its initial guard.
+template < typename It >
+struct range_destruction_policy {
+  enum { guard = true };
+};
+
 // Declared before the range overloads that call it. Where the construct functions are
 // external, leaving `inline` off this declaration makes out-of-line copies weak, so
 // translation units share one copy.
@@ -495,7 +501,7 @@ RSTL_CONSTRUCT_INLINE void destroy(It begin, It end) {
   }
   It cur = begin;
 #if RSTL_DESTROY_RANGE_GUARD
-  if (begin != end)
+  if (!range_destruction_policy< It >::guard || begin != end)
 #endif
     for (; cur != end; ++cur) {
       destroy(&*cur);
@@ -503,14 +509,12 @@ RSTL_CONSTRUCT_INLINE void destroy(It begin, It end) {
 #endif
 }
 
-// Ranges of these iterators are destroyed without the `begin != end` guard.
+// Ranges of these iterators are destroyed without the initial empty-range guard.
 #define RSTL_DECLARE_UNGUARDED_RANGE_DESTRUCTION(...)                                              \
   template <>                                                                                      \
-  inline void destroy< __VA_ARGS__ >(__VA_ARGS__ begin, __VA_ARGS__ end) {                         \
-    for (; begin != end; ++begin) {                                                                \
-      destroy(&*begin);                                                                            \
-    }                                                                                              \
-  }
+  struct range_destruction_policy< __VA_ARGS__ > {                                                  \
+    enum { guard = false };                                                                        \
+  };
 
 #if RSTL_POINTER_RANGE_OVERLOADS
 // Unlike iterator ranges, pointer ranges skip the precondition check and the guard.
