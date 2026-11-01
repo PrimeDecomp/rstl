@@ -286,7 +286,7 @@ public:
   bool operator==(const basic_string& other) const;
   bool operator!=(const basic_string& other) const;
 
-  int find(const basic_string& other, int pos = 0) const;
+  inline int find(const basic_string& other, int pos = 0) const;
   inline int find(const _CharTp* other, int pos = 0, int count = -1) const;
   inline int find(_CharTp ch, int pos = 0) const;
 #if RSTL_STRING_MATCH_LOOP_SEARCH
