@@ -6,6 +6,17 @@
 #include "dolphin/os/OSFastCast.h"
 #include "math.h"
 
+#include <SDKVersion.h>
+
+#if SDK_VERSION >= SDK_VERSION_G2ME01_00
+// The Wii SDK headers do not declare this fast-cast helper.
+static inline float __OSs16tof32(register const s16* value) {
+  register float result;
+  asm { psq_l result, 0(value), 1, OS_FASTCAST_S16 }
+  return result;
+}
+#endif
+
 CMotionSampleHistory::CMotionSampleHistory() : mWriteIndex(0), mSamples(CVector3f::Zero()) {}
 
 void CMotionSampleHistory::AddSample(const CVector3f& acceleration, const CVector3f& gravityUnits,
