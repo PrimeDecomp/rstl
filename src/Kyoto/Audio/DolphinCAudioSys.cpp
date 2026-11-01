@@ -175,12 +175,9 @@ rstl::vector< CAudioSys::CEmitterData >* CAudioSys::mpEmitterDB = nullptr;
 SND_LISTENER* CAudioSys::mpListener = nullptr;
 uint CAudioSys::mUnusedEmitterHandle = 0;
 CAudioSys::ESurroundModes CAudioSys::mSurroundMode = CAudioSys::kSM_Mono;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 int CAudioSys::mMaxAramUsage = 0;
+#if RSTL_PRIME1
 int CAudioSys::mCurrentAramUsage = 0;
-#else
-uint CAudioSys::mMaxAramUsage = 0;
 #endif
 
 const uchar CAudioSys::kMaxVolume = 0x7f;
@@ -824,14 +821,8 @@ uint CAudioSys::S3dFindLowerPriorityHandle(const uint prio) {
   return i < max ? i : -1;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-uint
-#else
-SND_SEQID
-#endif
-CAudioSys::SeqPlayEx(const ushort gid, const ushort sid, void* arrfile, SND_PLAYPARA* para,
-                     const uchar studio) {
+SND_SEQID CAudioSys::SeqPlayEx(const ushort gid, const ushort sid, void* arrfile,
+                               SND_PLAYPARA* para, const uchar studio) {
   return sndSeqPlayEx(gid, sid, arrfile, para, studio);
 }
 

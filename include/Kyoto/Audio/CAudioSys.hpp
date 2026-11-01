@@ -2,14 +2,10 @@
 #define _CAUDIOSYS
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "musyx/musyx.h"
-#endif
 
 #include "types.h"
-#if RSTL_PRIME1
 #include "dolphin/dtk.h"
-#endif
 
 #include "rstl/map.hpp"
 #include "rstl/rc_ptr.hpp"
@@ -18,11 +14,6 @@
 
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/TToken.hpp"
-
-#if !RSTL_PRIME1
-#include "dolphin/dtk.h"
-#include "musyx/musyx.h"
-#endif
 
 #if RSTL_PRIME1
 class CAudioGroupSet;
@@ -34,31 +25,21 @@ enum ETRKSampleRate {
   kTSR_One,
 };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 enum ETRKPlayState {
   kTPS_Stopped,
   kTPS_Playing,
   kTPS_Paused,
   kTPS_Busy,
+#if RSTL_PRIME1
   kTPS_Preparing,
-};
 #endif
+};
 
 enum ETRKRepeatMode {
   kTRM_NoRepeat,
   kTRM_RepeatOne,
   kTRM_RepeatAll,
 };
-
-#if !RSTL_PRIME1
-enum ETRKPlayState {
-  kTPS_Stopped,
-  kTPS_Playing,
-  kTPS_Paused,
-  kTPS_Busy,
-};
-#endif
 
 class CAudioSys {
   static const rstl::string mpDefaultInvalidString;
@@ -80,10 +61,9 @@ public:
   };
 
   struct C3DEmitterParmData {
+    // Prime inlines this constructor; Echoes has an out-of-line one (CAudioSys.cpp).
     C3DEmitterParmData(const float maxDist = 150.f, const float distComp = 0.1f,
-                       const uint flags = 1, RSTL_PRIME1_CONST uchar maxVol = 127,
-                       RSTL_PRIME1_CONST uchar minVol = 0)
-// TODO: verify that this Prime/Echoes difference is real
+                       const uint flags = 1, uchar maxVol = 127, uchar minVol = 0)
 #if RSTL_PRIME1
     : mPos(0.f, 0.f, 0.f)
     , mDir(0.f, 0.f, 0.f)
@@ -112,7 +92,6 @@ public:
 #if !RSTL_PRIME1
     uchar mStudio;
 #endif
-
   };
 
   class CTrkData {
@@ -130,20 +109,15 @@ public:
   };
 
   CAudioSys(uchar numVoices, uchar numMusic, uchar numSfx, uchar maxNumEmitters, uint aramSize);
-
   ~CAudioSys();
 
-  static void SysSetVolume(uchar volume,
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-                           ushort time,
+  static void SysSetVolume(uchar volume, ushort time, uchar group);
 #else
-                           uint time,
+  static void SysSetVolume(uchar volume, uint time, uchar group);
 #endif
-                           uchar group);
   static void SysSetSfxVolume(uchar volume, ushort time, uchar music, uchar fx);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static bool SysLoadGroupSet(CSimplePool*, uint);
   static bool SysLoadGroupSet(const CToken&, const rstl::string&, uint);
@@ -154,16 +128,27 @@ public:
   static bool SysUnloadSampleData(const rstl::string& name);
   static bool SysIsGroupSetLoaded(const rstl::string& name);
   static rstl::ncrc_ptr< CAudioGroupSet > FindGroupSet(const rstl::string& name);
+#endif
+
+  // Top-level const on these parameters changes MWCC call-site code, so each game keeps its own.
+#if RSTL_PRIME1
+  static SND_VOICEID SfxStart(const SND_FXID sfxId, const uchar vol, const uchar pan,
+                              const uchar prio);
 #else
-  static SND_VOICEID SfxStart(const ushort sfxId, uchar vol, uchar pan, const uchar prio);
+  static SND_VOICEID SfxStart(const SND_FXID sfxId, uchar vol, uchar pan, const uchar prio);
+#endif
   static void SfxStop(SND_VOICEID handle);
   static SND_VOICEID SfxCheck(SND_VOICEID handle);
+#if !RSTL_PRIME1
   static void SfxPan(SND_VOICEID handle, uchar pan);
+#endif
   static void SfxSpan(SND_VOICEID handle, uchar span);
   static void SfxVolume(SND_VOICEID handle, uchar vol);
   static void SfxPitchBend(SND_VOICEID handle, ushort pitch);
   static void SfxCtrl(SND_VOICEID handle, uchar ctrl, uchar val);
+#if !RSTL_PRIME1
   static bool SfxSetFilter(SND_VOICEID handle, uint filter, uint param);
+#endif
 
   static int TrkQueueTrack(const rstl::string& name, void (*callback)(u32), uint eventMask);
   static void TrkRemoveTrack(const rstl::string& name);
@@ -174,172 +159,94 @@ public:
   static ETRKPlayState TrkGetState();
   static void TrkSetVolume(uchar left, uchar right);
   static void TrkNextTrack();
-#endif
-
   static rstl::ncrc_ptr< CTrkData > FindTrack(const rstl::string& name);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void SetDefaultVolumeScale(short);
-  static void SetVolumeScale(short);
-  static void SetVerbose(bool verbose) { mVerbose = verbose; }
-  static void EnableProLogic2(bool enabled) { mProLogic2 = enabled; }
-  static void TrkRemoveTrack(const rstl::string& name);
-  static void TrkFlushTracks();
-  static void TrkSetState(ETRKPlayState);
-  static ETRKPlayState TrkGetState();
-  static void TrkSetVolume(uchar, uchar);
-  static void TrkSetRepeatMode(ETRKRepeatMode);
-  static void TrkNextTrack();
-  static int TrkQueueTrack(const rstl::string&, void (*)(u32), uint);
-
-  static void SetStereoMode(const bool mode);
-  static void SetSurroundMode(const ESurroundModes mode);
-#if RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
-  static ESurroundModes GetSurroundMode();
-#else
-  static ESurroundModes GetSurroundMode() { return mSurroundMode; }
-#endif
-  static void TrkSetSampleRate(ETRKSampleRate);
-
-  static short GetDefaultVolumeScale();
-  static bool GetVerbose();
-
-  static SND_VOICEID SfxStart(const SND_FXID, const uchar vol, const uchar pan, const uchar prio);
-  static void SfxStop(SND_VOICEID handle);
-  static void SfxCtrl(const SND_VOICEID handle, const uchar ctrl, const uchar val);
-  static SND_VOICEID SfxCheck(SND_VOICEID handle);
-  static void SfxVolume(SND_VOICEID handle, u8 vol);
-  static void SfxSpan(SND_VOICEID handle, uchar vol);
-  static void SfxPitchBend(SND_VOICEID handle, const ushort pitch);
-  static uint S3dFindLowerPriorityHandle(uint prio);
-  static uint S3dFindUnusedHandle();
+  static void S3dAddListener(const CVector3f& pos, const CVector3f& dir, const CVector3f& heading,
+                             const CVector3f& up, const float frontSur, const float backSur,
+                             const float soundSpeed, const uint flags, const uchar volume);
+  static bool S3dUpdateListener(const CVector3f& pos, const CVector3f& dir,
+                                const CVector3f& heading, const CVector3f& up, const uchar volume);
 #else
   static void S3dAddListener(const CVector3f& pos, const CVector3f& dir, const CVector3f& heading,
                              const CVector3f& up, float frontSur, float backSur,
                              float soundSpeed, uint flags, uchar volume);
   static bool S3dUpdateListener(const CVector3f& pos, const CVector3f& dir,
                                 const CVector3f& heading, const CVector3f& up, uchar volume);
-  static bool S3dRemoveListener();
 #endif
+  static bool S3dRemoveListener();
   static uint S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort groupId,
                                   SND_PARAMETER_INFO* paraInfo);
   static RSTL_PRIME1_CONST bool S3dUpdateEmitter(RSTL_PRIME1_CONST uint handle,
                                                  const CVector3f& pos, const CVector3f& dir,
                                                  const uchar maxVol);
   static RSTL_PRIME1_CONST bool S3dRemoveEmitter(uint handle);
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static const bool S3dCheckEmitter(uint handle);
+  static void S3dFlushAllEmitters();
+  static void S3dFlushUnusedEmitters();
+  static RSTL_PRIME1_CONST bool S3dCheckEmitter(uint handle);
   static uint S3dEmitterVoiceID(uint handle);
-
-  static void S3dAddListener(const CVector3f& pos, const CVector3f& dir, const CVector3f& heading,
-                             const CVector3f& up, const float frontSur, const float backSur,
-                             const float soundSpeed, const uint flags, const uchar volume);
-  static bool S3dRemoveListener();
-  static bool S3dUpdateListener(const CVector3f& pos, const CVector3f& dir,
-                                const CVector3f& heading, const CVector3f& up, const uchar volume);
-
+  static uint S3dFindUnusedHandle();
+  static uint S3dFindLowerPriorityHandle(uint prio);
+#if RSTL_PRIME1
+  // No retail or demo-map symbol; nothing calls it.
   static void S3dAddEmitter(SND_FXID fxid, const CVector3f& pos, const CVector3f& dir,
                             const bool b1, const bool b2, short, int);
 #endif
 
-  static void S3dFlushAllEmitters();
-  static void S3dFlushUnusedEmitters();
-#if !RSTL_PRIME1
-  static bool S3dCheckEmitter(uint handle);
-  static uint S3dEmitterVoiceID(uint handle);
-  static uint S3dFindUnusedHandle();
-  static uint S3dFindLowerPriorityHandle(uint prio);
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static uint SeqPlayEx(const ushort gid, const ushort sid, void* arrfile, SND_PLAYPARA* para,
-                        const uchar studio);
-  static void SeqStop(u32 seqId);
-  static void SeqVolume(u8, u16, u32, u8);
-#else
   static SND_SEQID SeqPlayEx(ushort gid, ushort sid, void* arrfile, SND_PLAYPARA* para,
                              uchar studio);
   static void SeqStop(SND_SEQID seqId);
   static void SeqVolume(uchar volume, ushort time, SND_SEQID seqId, uchar mode);
 
   static void SetStereoMode(bool mode);
-  static ESurroundModes GetSurroundMode();
   static void SetSurroundMode(ESurroundModes mode);
+#if RSTL_PRIME1 && RSTL_VERSION != RSTL_GM8E_02 && RSTL_VERSION != RSTL_GM8J_00
+  static ESurroundModes GetSurroundMode() { return mSurroundMode; }
+#else
+  static ESurroundModes GetSurroundMode();
+#endif
   static void SetVolumeScale(short scale);
   static void SetDefaultVolumeScale(short scale);
   static short GetDefaultVolumeScale();
   static void EnableAICallback(bool enable);
   static bool IsAICallbackEnabled();
+#if RSTL_PRIME1
+  static void SetVerbose(bool verbose) { mVerbose = verbose; }
+  static bool GetVerbose();
+  static void EnableProLogic2(bool enabled) { mProLogic2 = enabled; }
+#endif
 
   static short GetScaledVolume(int vol) { return kVolumeTable[vol]; }
-  static const ushort kVolumeTable[];
-#endif
 
   static bool mInitialized;
   static bool mIsListenerActive;
-#if RSTL_PRIME1
-  static bool mVerbose;
-  static uint mUnusedEmitterHandle;
-#endif
-
   static uchar mMaxNumEmitters;
-#if RSTL_PRIME1
-  static rstl::map< rstl::string, rstl::ncrc_ptr< CAudioGroupSet > >* mpGroupSetDB;
-  static rstl::map< uint, rstl::string >* mpGroupSetResNameDB;
-#endif
-
   static rstl::map< rstl::string, rstl::ncrc_ptr< CTrkData > >* mpDVDTrackDB;
   static rstl::vector< CEmitterData >* mpEmitterDB;
   static SND_LISTENER* mpListener;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static short GetScaledVolume(const int vol) { return kVolumeTable[vol]; }
-
-  static void EnableAICallback(bool enable);
-  static bool IsAICallbackEnabled();
-
-  /* TODO: Remaining globals */
-#else
   static uint mUnusedEmitterHandle;
   static ESurroundModes mSurroundMode;
-  static uint mMaxAramUsage;
-#endif
-
-  static void* mAICallback;
-#if RSTL_PRIME1
-  static bool mAICallbackEnabled;
-  static ESurroundModes mSurroundMode;
   static int mMaxAramUsage;
-  static int mCurrentAramUsage;
-#endif
-
+  static void* mAICallback;
+  static bool mAICallbackEnabled;
   static bool mProLogic2;
   static short mVolumeScale;
   static short mDefaultVolumeScale;
-#if !RSTL_PRIME1
-  static bool mAICallbackEnabled;
+#if RSTL_PRIME1
+  static bool mVerbose;
+  static rstl::map< rstl::string, rstl::ncrc_ptr< CAudioGroupSet > >* mpGroupSetDB;
+  static rstl::map< uint, rstl::string >* mpGroupSetResNameDB;
+  static int mCurrentAramUsage;
 #endif
 
   static const uchar kMaxVolume;
   static const uchar kEmitterMedPriority;
-#if RSTL_PRIME1
   static const ushort kVolumeTable[];
-#endif
-
 };
 
-#if RSTL_PRIME1
 CHECK_SIZEOF(CAudioSys, 0x1)
 NESTED_CHECK_SIZEOF(CAudioSys, CEmitterData, 0x54)
-#endif
-
 NESTED_CHECK_SIZEOF(CAudioSys, C3DEmitterParmData, 0x2c)
-#if RSTL_PRIME1 && RSTL_VERSION < RSTL_R3IJ
 NESTED_CHECK_SIZEOF(CAudioSys, CTrkData, 0x64)
-#endif
 
 #endif // _CAUDIOSYS
