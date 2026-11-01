@@ -29,6 +29,12 @@ class COutputStream;
   } while (false)
 
 namespace rstl {
+// Guessed policy name. Element cleanup may use a direct pointer loop.
+template < typename T >
+struct vector_destruction_policy {
+  enum { direct = false };
+};
+
 // Guessed policy name: whole-container copying is independent of insertion.
 template < typename T >
 struct vector_copy_construction_policy {
@@ -191,7 +197,15 @@ public:
     RS_ASSERT(mCount <= mCapacity, "rstl invariant");
     RS_ASSERT(mCapacity == 0 || mItems != nullptr, "rstl invariant");
     if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
-      destroy(begin(), end());
+      if (vector_destruction_policy< T >::direct) {
+        T* cur = mItems;
+        T* end = mItems + mCount;
+        for (; cur != end; ++cur) {
+          cur->~T();
+        }
+      } else {
+        destroy(begin(), end());
+      }
     }
     Alloc::deallocate(mItems);
   }
@@ -380,7 +394,15 @@ mCount(other.mCount)
 template < typename T, typename Alloc >
 inline vector< T, Alloc >::~vector() {
   if (!RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION || !is_trivially_destructible< T >::value) {
-    destroy(begin(), end());
+    if (vector_destruction_policy< T >::direct) {
+      T* cur = mItems;
+      T* end = mItems + mCount;
+      for (; cur != end; ++cur) {
+        cur->~T();
+      }
+    } else {
+      destroy(begin(), end());
+    }
   }
 #if RSTL_ALLOCATOR_INSTANCE
   mAllocator.deallocate(mItems);
