@@ -56,6 +56,12 @@ public:
     }
     return *this;
   }
+#if RSTL_OPTIONAL_ASSIGN_NULL
+  optional_object& operator=(optional_object_null) {
+    clear();
+    return *this;
+  }
+#endif
   optional_object& operator=(const T& item) {
     assign(item);
     return *this;
