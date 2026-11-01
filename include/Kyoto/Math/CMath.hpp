@@ -56,7 +56,7 @@ public:
   }
 #if RSTL_VERSION >= RSTL_R32J
   static float Clamp(const float min, const float val, const float max) {
-    return FastMin(FastMax(min, val), max);
+    return FastClamp(min, val, max);
   }
 #endif
   static inline int ClampI(int min, int val, int max) {
@@ -71,7 +71,7 @@ public:
 #else
   static float Limit(const float v, const float h) {
 #if RSTL_VERSION >= RSTL_R32J
-    return Clamp(-h, v, h);
+    return FastMin(FastMax(-h, v), h);
 #else
     return AbsF(v) > h ? h * Sign(v) : v;
 #endif
@@ -260,11 +260,19 @@ public:
   static float FastMax(float a, float b) { return FastFSel(a - b, a, b); }
 #endif
 
+#if RSTL_PRIME1
   static float FastClamp(float min, float val, float max) {
     min = FastMax(min, val);
     float diff = min - max;
     return FastFSel(diff, max, min);
   }
+#else
+  static float FastClamp(const float& min, const float& val, const float& max) {
+    float v = FastMax(min, val);
+    float diff = v - max;
+    return FastFSel(diff, max, v);
+  }
+#endif
 #if RSTL_PRIME1
   static float FastLimit(float v, float h) {
     float low = -h;
