@@ -5,8 +5,11 @@
 
 #include "rstl/RstlVersions.h"
 
+#include <stdarg.h>
+
 namespace CBasics {
 bool Init();
+char* Stringize(const char* fmt, va_list args);
 char* Stringize(const char* fmt, ...);
 // Guessed names. Cache-block (dcbz) accelerated fill/copy; G2ME01 0x8028BD3C/0x8028BE1C, next to
 // CBasics::Init in Prime Trilogy.
