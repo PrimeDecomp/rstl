@@ -118,7 +118,11 @@ private:
 
   void assign(const T& item) {
     if (!m_valid) {
-      construct< T >(m_data, item);
+      if (optional_object_value_policy< T >::value) {
+        optional_object_value_policy< T >::construct_element(m_data, item);
+      } else {
+        rstl::construct< T >(m_data, item);
+      }
       m_valid = true;
       return;
     }
