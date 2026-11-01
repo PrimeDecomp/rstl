@@ -230,6 +230,8 @@
 #define RSTL_LIST_POSTFIX_ITERATORS (RSTL_VERSION >= RSTL_G2ME)
 // The `list` sentinel `mEmpty_prev` is a plain, unaligned pointer.
 #define RSTL_LIST_PLAIN_SENTINEL (RSTL_VERSION >= RSTL_G2ME)
+// `list::sort`'s inner loop walks a plain node cursor instead of an iterator (Prime GC).
+#define RSTL_LIST_SORT_NODE_CURSOR (RSTL_VERSION < RSTL_G2ME)
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)

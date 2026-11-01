@@ -245,11 +245,19 @@ public:
       iterator min = it;
       iterator next = it;
       ++next;
+#if RSTL_LIST_SORT_NODE_CURSOR
+      for (node* cur = next.get_node(); cur != end().get_node(); cur = cur->get_next()) {
+        if (cmp(*min, *cur->get_value())) {
+          min = cur;
+        }
+      }
+#else
       for (; next != end(); ++next) {
         if (cmp(*min, *next)) {
           min = next;
         }
       }
+#endif
 
       next = it;
       ++next;
