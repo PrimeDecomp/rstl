@@ -297,6 +297,11 @@ inline void construct(void* dest, T*& src) {
 RSTL_DEFINE_DIRECT_CONSTRUCT(short, const short&)
 #endif
 
+RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, const ushort&)
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, ushort&)
+#endif
+
 #undef RSTL_DEFINE_DIRECT_CONSTRUCT
 
 // Copies of T assign through `construction_policy< T, true >` even where `construct` would
