@@ -624,8 +624,8 @@
 // CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
 // prototype; Prime, including Prime Trilogy, uses push_back).
 #define RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE (!RSTL_PRIME1)
-// Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo) declare their
-// rstl container copy policies (Echoes). Prime leaves the defaults.
+// Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
+// CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
 // Allocation.
 // The allocator reports metrics through `GetMetrics(bool resetPeriodicPeak, bool resetPeak)`:

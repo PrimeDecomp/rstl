@@ -123,16 +123,8 @@ public:
   void SetShouldDrawWorldFlag(bool shouldDraw) { mVisible = shouldDraw; }
   const rstl::vector< TCachedToken< CTexture > >* GetTexturesPtr() const { return mTextures; }
 
-#if RSTL_PRIME1
-  CCubeMaterial GetMaterialByIndex(const int idx) const;
-  rstl::vector< TCachedToken< CTexture > >& GetTextures() const { return *mTextures; };
-#else
-  CCubeMaterial GetMaterialByIndex(int index) const {
-    const uint offset = index != 0 ? CBasics::SwapBytes(mMaterialOffsets[index - 1]) : 0;
-    return CCubeMaterial(mMaterialData + offset);
-  }
+  CCubeMaterial GetMaterialByIndex(int index) const;
   const rstl::vector< TCachedToken< CTexture > >& GetTextures() const { return *mTextures; }
-#endif
   // Guessed name; the target passes a surface handle by value for material lookup.
   CCubeMaterial GetMaterial(CCubeSurface surface) const {
     return GetMaterialByIndex(surface.GetMaterialIndex());
@@ -163,6 +155,11 @@ private:
 };
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CCubeModel, 0x50)
+
+inline CCubeMaterial CCubeModel::GetMaterialByIndex(int index) const {
+  const uint offset = index != 0 ? CBasics::SwapBytes(mMaterialOffsets[index - 1]) : 0;
+  return CCubeMaterial(mMaterialData + offset);
+}
 #endif
 
 #endif // _CCUBEMODEL
