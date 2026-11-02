@@ -11,9 +11,7 @@ class CInputStream;
 
 class CPlane {
 public:
-#if !RSTL_PRIME1
   CPlane(CInputStream& in);
-#endif
 
   CPlane(const CVector3f& vec, const CUnitVector3f& normal)
   : mNormal(normal), mConstant(CVector3f::Dot(vec, normal)) {}
@@ -30,9 +28,7 @@ public:
   bool IsFacing(const CVector3f& vec) const {
     return CVector3f::Dot(mNormal, vec) >= GetConstant();
   }
-#if !RSTL_PRIME1
   CVector3f GetClosestPoint(const CVector3f& point) const;
-#endif
   float ClipLineSegment(const CVector3f& start, const CVector3f& end) const;
   // TODO: Fake?
 #if !RSTL_PRIME1
@@ -54,20 +50,16 @@ private:
 };
 CHECK_SIZEOF(CPlane, 0x10)
 
-#if RSTL_PRIME1
-inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
-: mNormal(normal), mConstant(constant) {}
-#endif
-
-#if !RSTL_PRIME1
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions on
 #endif
 inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
 : mNormal(normal), mConstant(constant) {}
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions reset
 #endif
+
+#if !RSTL_PRIME1
 
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPlane)

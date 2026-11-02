@@ -59,9 +59,7 @@ public:
   }
 
   static CQuaternion FromMatrixRows(const CVector3f&, const CVector3f&, const CVector3f&);
-#if !RSTL_PRIME1
   static CQuaternion FromMatrixColumns(const CVector3f&, const CVector3f&, const CVector3f&);
-#endif
 
   static CQuaternion FromMatrix(const CMatrix3f&);
   static CQuaternion FromMatrix(const CTransform4f&);

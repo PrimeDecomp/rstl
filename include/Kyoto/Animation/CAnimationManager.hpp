@@ -29,14 +29,10 @@ public:
                                                    const CMetaAnimTreeBuildOrders& orders) const;
 
   rstl::rc_ptr< IMetaAnim > GetMetaAnimation(uint animIdx) const;
-#if !RSTL_PRIME1
   uint GetNumMetaAnims() const; // Guessed name, stands in for a function stripped from the link.
-#endif
 
 private:
-#if RSTL_PRIME1
   void ForceOrdering();
-#endif
 
   TToken< CAnimationDatabase > mAnimDB;
   CAnimSysContext mSysCtx;

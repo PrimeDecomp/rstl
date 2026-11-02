@@ -23,6 +23,8 @@
 
 class CDvdRequest;
 
+class CBufferedDvdRequest;
+
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 class CInputStream;
@@ -105,60 +107,38 @@ public:
   CPakFile* FindResourceForLoad(RSTL_PRIME1_CONST CAssetId asset);
 
   CPakFile* FindResource(const SObjectTag& tag);
-#if RSTL_PRIME1
   bool ResourceExists(CAssetId asset);
-  bool ResourceExists(const SObjectTag& tag) const;
-#endif
 
   void ClearCache();
   void AsyncIdlePakLoading();
   bool AreAllPaksLoaded() const;
   const SObjectTag* GetResourceIdByName(const char* name) const;
   FourCC GetResourceTypeById(CAssetId asset) const;
-#if !RSTL_PRIME1
   bool ResourceExists(const SObjectTag& tag) const;
-#endif
 
   uint ResourceSize(const SObjectTag& tag) const;
-#if !RSTL_PRIME1
   uint GetResourceOffset(const SObjectTag& tag) const;
-#endif
 
   ECompressionType GetResourceCompression(const SObjectTag& tag) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void AddPakFileAsync(const rstl::string&, bool, bool);
-  void RemovePakFile(const rstl::string&);
-#else
   CDvdRequest* LoadResourceAsync(const SObjectTag& tag, char* extBuf);
   CBufferedDvdRequest* LoadResourceAsync(const SObjectTag& tag);
   CDvdRequest* LoadResourcePartAsync(const SObjectTag& tag, int offset, int length, char* extBuf);
-#endif
 
   CInputStream* LoadNewResourceSync(const SObjectTag& tag, char* extBuf);
   CInputStream* LoadResourceFromMemorySync(const SObjectTag& tag, const void* extBuf);
   void LoadMemResourceSync(const SObjectTag& tag, char** extBuf, int* len);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CInputStream* LoadNewResourcePartSync(const SObjectTag& tag, int offset, int length,
                                         char* extBuf);
-  CDvdRequest* LoadResourcePartAsync(const SObjectTag& tag, int offset, int length, char* extBuf);
-  CDvdRequest* LoadResourceAsync(const SObjectTag& tag, char* extBuf);
 
   const rstl::vector< CAssetId >* GetTagListForFile(const rstl::string& pak) const;
-#else
   void AddPakFileAsync(const rstl::string&, bool, bool);
   void RemovePakFile(const rstl::string&);
-#endif
 
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
 
   int GetPakCount() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPakFile* GetPakFile(int idx) const;
-#else
-  const CPakFile* GetPakFile(int idx) const;
+  RSTL_ECHOES_CONST CPakFile* GetPakFile(int idx) const;
+#if !RSTL_PRIME1
   CPakFile* GetPakFile(int idx);
   void KillLookahead(const CLookaheadRes* cache);
 #endif

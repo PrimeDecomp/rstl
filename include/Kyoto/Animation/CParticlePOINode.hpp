@@ -22,9 +22,7 @@ public:
   explicit CParticlePOINode(CInputStream& in);
 
   const CParticleData& GetParticleData() const { return mData; }
-#if !RSTL_PRIME1
   float GetMaximumDistance() const; // Guessed name
-#endif
 
   static CParticlePOINode CopyNodeMinusStartTime(const CParticlePOINode& node,
                                                  const CCharAnimTime& startTime);

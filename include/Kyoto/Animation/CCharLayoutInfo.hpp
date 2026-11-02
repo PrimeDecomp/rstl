@@ -20,12 +20,7 @@
 
 class CCharLayoutNode {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CCharLayoutNode(CInputStream& in);
-#else
   explicit CCharLayoutNode(CInputStream& in);
-#endif
 
   ~CCharLayoutNode() {}
 // TODO: verify that this Prime/Echoes difference is real
@@ -59,18 +54,12 @@ CHECK_SIZEOF(CCharLayoutNode, RSTL_PRIME1 ? 0x20 : 0x40)
 
 class CCharLayoutInfo {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CCharLayoutInfo(CInputStream& in);
-#else
   explicit CCharLayoutInfo(CInputStream& in);
-#endif
 
   CSegId GetSegIdFromString(const rstl::string& bone) const;
-#if !RSTL_PRIME1
   const rstl::map< rstl::string, CSegId >& GetNameMap() const { return mNameMap; }
-
   const CCharLayoutNode& GetSegmentData(const CSegId& seg) const { return (*mNodes)[seg]; }
+#if !RSTL_PRIME1
 
   int GetNumSegments() const { return mNodes->GetNumNodes(); }
 #endif
@@ -78,20 +67,18 @@ public:
   const CSegIdList& GetBodyPartSegIds() const { return mSegIdList; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const rstl::map< rstl::string, CSegId >& GetNameMap() const { return mNameMap; }
   const CVector3f& GetReferenceStanceOffset(const CSegId& id) const {
     return id != CSegId::Root() ? GetSegmentData(id).GetReferenceStanceOffset() : CVector3f::Zero();
   }
-#else
+#endif
   CSegId GetOriginalParent(const CSegId& seg) const { return GetSegmentData(seg).GetParent(); }
+#if !RSTL_PRIME1
 
   const rstl::vector< CSegId >& GetLinearParents() const { return mLinearParents; }
 
   const rstl::vector< CVector3f >& GetLinearReferenceStanceOffsets() const {
     return mLinearReferenceStanceOffsets;
   }
-#endif
-#if !RSTL_PRIME1
   const rstl::vector< CVector3f >& GetLinearParentOffsets() const { return mLinearParentOffsets; }
 
   // Guessed name
@@ -115,15 +102,9 @@ public:
                : node.GetReferenceStanceOffset() -
                      GetSegmentData(node.GetParent()).GetReferenceStanceOffset();
   }
-#if RSTL_PRIME1
-  const CCharLayoutNode& GetSegmentData(const CSegId& seg) const { return (*mNodes)[seg]; }
-  CSegId GetOriginalParent(const CSegId& seg) const { return GetSegmentData(seg).GetParent(); }
-#endif
 
 private:
-#if !RSTL_PRIME1
   void InitializeLinearData(); // Guessed name.
-#endif
 
   rstl::object_owner< TSegIdMap< CCharLayoutNode > > mNodes;
   CSegIdList mSegIdList;

@@ -472,19 +472,19 @@ int CAudioSys::TrkQueueTrack(const rstl::string& name, void (*callback)(u32),
   return 5000;
 }
 
-#if RSTL_PRIME1
-void CAudioSys::TrkRemoveTrack(const rstl::string& name) { mpDVDTrackDB->erase(name); }
-
-static void track_flusher_callback() {}
-#else
-// Unused and dead-stripped in the target. Inferred from the out-of-line free_node and node
-// destructor that sit between TrkFlushTracks and TrkQueueTrack; the name is a guess.
 void CAudioSys::TrkRemoveTrack(const rstl::string& name) {
+#if RSTL_PRIME1
+  mpDVDTrackDB->erase(name);
+#else
   rstl::map< rstl::string, rstl::ncrc_ptr< CTrkData > >::iterator it = mpDVDTrackDB->find(name);
   if (it != mpDVDTrackDB->end()) {
     mpDVDTrackDB->erase(it);
   }
+#endif
 }
+
+#if RSTL_PRIME1
+static void track_flusher_callback() {}
 #endif
 
 void CAudioSys::TrkFlushTracks() {

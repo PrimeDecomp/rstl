@@ -2608,7 +2608,6 @@ void CElementGen::RenderParticles() {
       }
     } else {
       // ORNT
-// TODO: verify that this Prime/Echoes difference is real
       RSTL_PRIME1_CONST CVector3f fwd = systemViewCopy.GetForward();
       RSTL_PRIME1_CONST CVector3f origin = systemViewCopy.GetTranslation();
 
@@ -4623,35 +4622,25 @@ void CElementGen::RenderModels() {
 
 int CElementGen::GetParticleCountAll() const { return mRecursiveParticleCount; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CElementGen::GetParticleCountAllInternal() const {
-  int ret = mActiveParticleCount;
-  for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
-    CParticleGen* child = *it;
-    if (child->Get4CharId() == 'PART') {
-      ret += static_cast< CElementGen* >(child)->GetParticleCountAll();
-    }
-  }
-  return ret;
-}
-#else
 int CElementGen::GetParticleCountAllInternal() const {
   int count = mActiveParticleCount;
-  for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin();
-       it != mActivePartChildren.end(); ++it) {
+  for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
+#if RSTL_PRIME1
+    if (child->Get4CharId() == 'PART') {
+      count += static_cast< CElementGen* >(child)->GetParticleCountAll();
+    }
+#else
     count += child->Get4CharId() == 'PART'
                  ? static_cast< CElementGen* >(child)->GetParticleCountAll()
                  : child->GetParticleCount();
+#endif
   }
   return count;
 }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
+int CElementGen::GetSystemCount() RSTL_ECHOES_CONST {
 #if RSTL_PRIME1
-int CElementGen::GetSystemCount() {
   int ret = static_cast< int >(mActiveParticleCount) > 0;
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
@@ -4662,9 +4651,7 @@ int CElementGen::GetSystemCount() {
     }
   }
   return ret;
-}
 #else
-int CElementGen::GetSystemCount() const {
   int count = static_cast< int >(mActiveParticleCount) > 0;
   for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin(),
                                                      end = mActivePartChildren.end();
@@ -4672,8 +4659,8 @@ int CElementGen::GetSystemCount() const {
     count += (*it)->GetSystemCount();
   }
   return count;
-}
 #endif
+}
 
 void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
   RSTL_ECHOES_CONST float x = pos.GetX();

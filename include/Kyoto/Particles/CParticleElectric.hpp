@@ -33,7 +33,6 @@ public:
   void SetGlobalTranslation(const CVector3f& translation) override;
   void SetGlobalScale(const CVector3f& scale) override;
   void SetLocalScale(const CVector3f& scale) override;
-// TODO: verify that this Prime/Echoes difference is real
   void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
   void SetModulationColor(const CColor& col) override;
@@ -128,10 +127,8 @@ private:
   void SetupLineGXMaterial();
   void DrawLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
                      const CColor& color);
-#if !RSTL_PRIME1
   void DrawTexturedLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts,
                              float width, const CColor& color, const SUVElementSet& uvs);
-#endif
 
   void RenderLines();
   void RenderSwooshes();

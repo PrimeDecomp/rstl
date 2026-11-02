@@ -45,16 +45,7 @@ public:
 
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CModelFlags(const ETrans trans, const float rgba)
-  : mBlendMode(trans)
-  , mMatSetIdx(0)
-  , mFlags(kF_DepthCompare | kF_DepthUpdate)
-  , mColor(1.f, 1.f, 1.f, rgba) {}
-#else
-  CModelFlags(ETrans trans, float rgba);
-#endif
+  CModelFlags(RSTL_PRIME1_CONST ETrans trans, RSTL_PRIME1_CONST float rgba);
   CModelFlags(RSTL_PRIME1_CONST ETrans trans, const CColor& color)
   : mBlendMode(trans)
   , mMatSetIdx(0)
@@ -164,24 +155,32 @@ public:
   }
 
   const uchar GetBlendMode() const { return mBlendMode; }
-// TODO: verify that this Prime/Echoes difference is real
+  RSTL_PRIME1_CONST ETrans GetTrans() const {
 #if RSTL_PRIME1
-  const ETrans GetTrans() const { return static_cast< ETrans >(mBlendModeChar); }
-  const int GetShaderSet() const { return mMatSetIdx; }
-  const int GetOtherFlags() const { return mFlags; }
-  const CColor GetColor() const { return mColor; }
+    return static_cast< ETrans >(mBlendModeChar);
 #else
-  ETrans GetTrans() const { return static_cast< ETrans >(mBlendMode); }
+    return static_cast< ETrans >(mBlendMode);
+#endif
+  }
+  RSTL_PRIME1_CONST int GetShaderSet() const {
+#if RSTL_PRIME1
+    return mMatSetIdx;
+#else
+    // The shader set is copied as an unsigned byte but read back sign-extended, in one register.
+    return *reinterpret_cast< const signed char* >(&mMatSetIdx);
+#endif
+  }
+  RSTL_PRIME1_CONST CColor GetColor() const { return mColor; }
+#if RSTL_PRIME1
+  const int GetOtherFlags() const { return mFlags; }
+#else
   // Some native paths read the blend mode as a signed byte (lbz + extsb into one register);
   // a value cast to signed char splits that into two registers instead.
   ETrans GetTransSigned() const {
     return static_cast< ETrans >(*reinterpret_cast< const signed char* >(&mBlendMode));
   }
-  // The shader set is copied as an unsigned byte but read back sign-extended, in one register.
-  int GetShaderSet() const { return *reinterpret_cast< const signed char* >(&mMatSetIdx); }
   const ushort GetOtherFlags() const { return mFlags; }
   const uchar GetMatSetIdx() const { return mMatSetIdx; } // Guessed name
-  CColor GetColor() const { return mColor; }
 #endif
 
   const CColor& GetColorRef() const { return mColor; }
@@ -251,20 +250,17 @@ private:
   CColor mColor;
 };
 CHECK_SIZEOF(CModelFlags, RSTL_PRIME1 ? 0x8 : 0xc)
-#if !RSTL_PRIME1
 
-
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions on
 #endif
-inline CModelFlags::CModelFlags(ETrans trans, float rgba)
+inline CModelFlags::CModelFlags(RSTL_PRIME1_CONST ETrans trans, RSTL_PRIME1_CONST float rgba)
 : mBlendMode(trans)
 , mMatSetIdx(0)
 , mFlags(kF_DepthCompare | kF_DepthUpdate)
 , mColor(1.f, 1.f, 1.f, rgba) {}
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions reset
-#endif
 #endif
 
 #endif // _CMODELFLAGS

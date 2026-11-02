@@ -65,11 +65,7 @@ public:
   };
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  explicit
-#endif
-  CTextRenderBuffer(EMode mode);
+  explicit CTextRenderBuffer(EMode mode);
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -80,20 +76,15 @@ public:
   CGraphicsPalette* GetNextAvailablePalette() const;
   int GetMatchingPaletteIndex(const CGraphicsPalette& palette) const;
 #endif
-#else
-  void AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode);
-  void AddCharacter(const CVector2i& offset, short chr, uint color);
 #endif
 
   void AddFontChange(const TToken< CRasterFont >& font);
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
   void AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode);
 #else
   void AddPaletteChange(const CGraphicsPalette& palette);
 #endif
-  void AddCharacter(const CVector2i&, short chr, uint color);
-#endif
+  void AddCharacter(const CVector2i& offset, short chr, uint color);
 
   void AddImage(const CVector2i& offset, const CFontImageDef& image);
 

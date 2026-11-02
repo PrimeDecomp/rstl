@@ -21,7 +21,6 @@ private:
   static bool CreateWPSM(CSwooshDescription* desc, CInputStream& in, CSimplePool* pool);
 };
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn
 FParticleSwooshDataFactory(const SObjectTag& tag, CInputStream& in,
                            const CVParamTransfer& transfer);

@@ -20,12 +20,7 @@ class CParticlePOINode;
 
 class CAnimPOIData {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAnimPOIData(CInputStream& in);
-#else
   explicit CAnimPOIData(CInputStream& in);
-#endif
 
   const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const { return mBoolNodes; }
   const rstl::vector< CInt32POINode >& GetInt32POIStream() const { return mInt32Nodes; }

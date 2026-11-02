@@ -12,12 +12,7 @@
 class CSegStatementSet {
 public:
   virtual ~CSegStatementSet() = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CSegStatementSet(void* ptr);
-#else
   explicit CSegStatementSet(void* storage);
-#endif
 
   CSegStatement& operator[](const CSegId& id) { return mSegData[id.val()]; }
   const CSegStatement& operator[](const CSegId& id) const { return mSegData[id.val()]; }
@@ -45,16 +40,13 @@ inline CSegStatementSet::~CSegStatementSet() {}
 
 class CStackSegStatementSet : public CSegStatementSet {
 public:
-#if !RSTL_PRIME1
   CStackSegStatementSet();
+#if !RSTL_PRIME1
 
   // CSegStatementSet
 #endif
 
   ~CStackSegStatementSet() override;
-#if RSTL_PRIME1
-  CStackSegStatementSet();
-#endif
 };
 CHECK_CHILD_SIZEOF(CStackSegStatementSet, CSegStatementSet, 0x0)
 

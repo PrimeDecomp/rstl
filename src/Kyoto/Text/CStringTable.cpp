@@ -15,7 +15,6 @@
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 #include "rstl/algorithm.hpp"

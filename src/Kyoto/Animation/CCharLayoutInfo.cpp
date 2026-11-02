@@ -7,7 +7,6 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/StringExtras.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, CInputStream& in,
                                                    const CVParamTransfer&) {
   return rs_new CCharLayoutInfo(in);

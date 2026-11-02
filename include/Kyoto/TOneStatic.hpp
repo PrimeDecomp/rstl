@@ -8,17 +8,8 @@
 template < typename T >
 class TOneStatic {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#ifndef __MWERKS__
-  // For clangd
-  void* operator new(const size_t sz);
-#endif
-  void* operator new(size_t sz, const char* const fileAndLine, const char* const type);
-#else
-  void* operator new(size_t sz, const char*, const char*);
+  void* operator new(size_t sz, const char* fileAndLine, const char* type);
   void* operator new(size_t sz) { return operator new(sz, "??(??)", nullptr); }
-#endif
 
   void operator delete(void* ptr);
 
@@ -28,22 +19,14 @@ private:
 };
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 uint& TOneStatic< T >::ReferenceCount() {
   static uint sReferenceCount = 0;
   return sReferenceCount;
 }
-#else
-void* TOneStatic< T >::operator new(size_t sz, const char*, const char*) {
-  ReferenceCount()++;
-  return GetAllocSpace();
-}
-#endif
+
 
 template < typename T >
 void* TOneStatic< T >::GetAllocSpace() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ALIGNAS(T) static char sAllocSpace[sizeof(T)];
 #else
@@ -54,19 +37,10 @@ void* TOneStatic< T >::GetAllocSpace() {
 }
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void* TOneStatic< T >::operator new(size_t sz, const char* const fileAndLine,
-                                    const char* const type) {
+void* TOneStatic< T >::operator new(size_t sz, const char* fileAndLine, const char* type) {
   ReferenceCount()++;
   return GetAllocSpace();
 }
-#else
-uint& TOneStatic< T >::ReferenceCount() {
-  static uint sReferenceCount = 0;
-  return sReferenceCount;
-}
-#endif
 
 template < typename T >
 void TOneStatic< T >::operator delete(void* ptr) {

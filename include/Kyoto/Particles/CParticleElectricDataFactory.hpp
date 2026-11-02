@@ -20,7 +20,6 @@ private:
   static bool CreateELSM(CElectricDescription* desc, CInputStream& in, CSimplePool* pool);
 };
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
 
                                               const CVParamTransfer& transfer);

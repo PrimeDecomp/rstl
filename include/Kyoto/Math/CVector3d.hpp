@@ -56,9 +56,7 @@ private:
 
 CVector3d operator+(const CVector3d& lhs, const CVector3d& rhs);
 CVector3d operator-(const CVector3d& lhs, const CVector3d& rhs);
-#if !RSTL_PRIME1
 CVector3d operator-(const CVector3d& other);
-#endif
 
 CVector3d operator*(double lhs, const CVector3d& rhs);
 

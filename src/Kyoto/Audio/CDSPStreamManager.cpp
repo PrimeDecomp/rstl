@@ -17,7 +17,6 @@
 
 #include "string.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CDSPStreamManager g_Streams[4] = {CDSPStreamManager(), CDSPStreamManager(), CDSPStreamManager(),
                                   CDSPStreamManager()};
@@ -81,24 +80,70 @@ CDSPStreamManager& CDSPStreamManager::operator=(const CDSPStreamManager& other) 
   new (this) CDSPStreamManager(other);
   return *this;
 }
+#endif
+
+#if !RSTL_PRIME1
+CDSPStreamManager sStreams[2];
+rstl::reserved_vector< SDSPStreamVoice, 4 > sVoices;
+static bool sDeferCallbacks;
+static int sDeferredCallbacks;
+const int kDSPStreamBlockSize = 0x8F00;
+
+CDSPStreamManager::CDSPStreamManager()
+: mDataOffset(0), mFileCur(0), mReadsPending(0), mType(1), mState(kSS_Idle) {}
+
+SDSPStreamVoice::SDSPStreamVoice()
+: mBufferSize(0), mNumSamples(0), mType(1), mStreamId(-1), mUpperHalf(false), mFree(true) {}
+#endif
 
 void CDSPStreamManager::Initialize() {
+#if RSTL_PRIME1
   CDSPStream::Initialize();
   for (int i = 0; i < 4; ++i) {
     g_Streams[i] = CDSPStreamManager();
   }
+#else
+  for (int i = 0; i < 4; ++i) {
+    sVoices.push_back(SDSPStreamVoice());
+  }
+
+  sStreams[0].mType = 0;
+  for (int i = 0; i < 2; ++i) {
+    sVoices[i].mBuffer = rstl::auto_ptr< uchar >(
+        static_cast< uchar* >(CMemory::Alloc(0x11E00, IAllocator::kHI_RoundUpLen)));
+    sVoices[i].mType = 0;
+  }
+  CMemory::OffsetFakeStatics(0x23C00);
+#endif
 }
 
 void CDSPStreamManager::Shutdown() {
+#if RSTL_PRIME1
   CDSPStream::FreeAllStreams();
   for (int i = 0; i < 4; ++i) {
     g_Streams[i] = CDSPStreamManager();
   }
+#else
+  for (int i = 0; i < 2; ++i) {
+    if (sStreams[i].mState != kSS_Idle) {
+      sStreams[i].Deallocate();
+    }
+  }
+
+  for (int i = 0; i < 4; ++i) {
+    if (sVoices[i].mType == 0) {
+      sVoices[i].mBuffer = rstl::auto_ptr< uchar >();
+    }
+  }
+  sVoices.clear();
+  CMemory::OffsetFakeStatics(-0x23C00);
+#endif
 }
 
-int CDSPStreamManager::StartStreaming(const rstl::string& fileName, int volume, int oneshot) {
+int CDSPStreamManager::StartStreaming(const rstl::string& fileName, int volume, int type) {
+#if RSTL_PRIME1
   CInterruptGuard interrupts;
-  const bool isOneshot = oneshot;
+  const bool isOneshot = type;
   const int sep = fileName.find('|', 0);
   if (sep == -1) {
     const int idx = FindUnclaimedStreamIdx();
@@ -152,8 +197,51 @@ int CDSPStreamManager::StartStreaming(const rstl::string& fileName, int volume, 
     return -1;
   }
   return tmpLeft.mHandleId;
+#else
+  CInterruptGuard guard;
+  int i;
+  for (i = 0; i < 2; ++i) {
+    CDSPStreamManager& stream = sStreams[i];
+    if (stream.mState != kSS_Idle || stream.mType != type) {
+      continue;
+    }
+
+    rstl::string path(fileName);
+    if (strncmp("mem:", fileName.data(), strlen("mem:")) == 0) {
+      path = fileName.substr(4, -1);
+      if (CDvdFile::FileExists(path.data())) {
+        stream.mPreload = CStreamPreloadedToken(path);
+        if (!stream.mPreload->IsReady()) {
+          stream.mPreload = rstl::optional_object_null();
+        }
+      }
+    }
+
+    if (DVDOpen(const_cast< char* >(path.data()), &stream.mFiles[0])) {
+      stream.mDataOffset = sizeof(SRSFHeader);
+      stream.mState = kSS_ReadingHeader;
+      stream.mFileCur = 0;
+      stream.mVolume = volume;
+      for (int j = 1; j < 10; ++j) {
+        DVDOpen(const_cast< char* >(path.data()), &stream.mFiles[j]);
+      }
+      stream.mVoices.clear();
+      stream.mReadsPending = 1;
+      if (stream.mPreload) {
+        stream.mPreload->Read(&stream.mHeader, 0, sizeof(SRSFHeader));
+        DVDCallback(0, &stream.mFiles[0]);
+      } else {
+        DVDReadAsyncPrio(&stream.mFiles[0], &stream.mHeader, sizeof(SRSFHeader), 0, DVDCallback, 1);
+      }
+      break;
+    }
+  }
+
+  return i < 2 ? i : -1;
+#endif
 }
 
+#if RSTL_PRIME1
 int CDSPStreamManager::FindUnclaimedStreamIdx() {
   for (int i = 0; i < 4; ++i) {
     if (g_Streams[i].mUnclaimed) {
@@ -205,265 +293,9 @@ int CDSPStreamManager::FindClaimedStreamIdx(int handle) {
   }
   return -1;
 }
+#endif
 
-void CDSPStreamManager::StopStreaming(int handle) {
-  CInterruptGuard interrupts;
-  int idx = FindClaimedStreamIdx(handle);
-  if (idx == -1) {
-    return;
-  }
-
-  CDSPStreamManager& stream = g_Streams[idx];
-  if (stream.mUnclaimed) {
-    return;
-  }
-
-  if (static_cast< EHeaderReadState >(stream.mHeaderReadState) == 1) {
-    stream.mHeaderReadCancelled = true;
-    return;
-  }
-
-  const char companion = stream.CompanionRight();
-  if (companion != -1) {
-    g_Streams[companion] = CDSPStreamManager();
-  }
-  CDSPStream::Silence(stream.mStreamId);
-  g_Streams[idx] = CDSPStreamManager();
-}
-
-SStreamInfo MakeDSPStreamInfo(const CDSPStreamManager& stream) {
-  SStreamInfo info;
-  info.mFileName = stream.mFileName.data();
-  info.mSampleRate = stream.mHeader.mSampleRate;
-  info.mAdpcmBytes = (stream.mHeader.mNumNibbles / 2) & 0x7FFFFFE0;
-  info.mHeaderSize = 0x60;
-  if (stream.mHeader.mLoopFlag != 0) {
-    info.mLoopFlag = true;
-    info.mLoopStartByte = (stream.mHeader.mLoopStartNibble / 2) & 0x7FFFFFE0;
-    const uint loopEnd = (stream.mHeader.mLoopEndNibble / 2) & 0x7FFFFFE0;
-    if (loopEnd > info.mAdpcmBytes) {
-      info.mLoopEndByte = info.mAdpcmBytes;
-    } else {
-      info.mLoopEndByte = loopEnd;
-    }
-  } else {
-    info.mLoopFlag = false;
-    info.mLoopStartByte = 0;
-    info.mLoopEndByte = 0;
-  }
-  memcpy(&info.mAdpcmInfo, stream.mHeader.mCoef, sizeof(info.mAdpcmInfo));
-  return info;
-}
-
-void CDSPStreamManager::UpdateVolume(int handle, int volume) {
-  CInterruptGuard interrupts;
-  int idx = FindClaimedStreamIdx(handle);
-  if (idx == -1) {
-    return;
-  }
-  g_Streams[idx].mVolume = volume;
-  if (g_Streams[idx].mStreamId != -1) {
-    CDSPStream::UpdateVolume(g_Streams[idx].mStreamId, volume);
-  }
-}
-
-bool CDSPStreamManager::IsStreamAvailable(int handle) {
-  CInterruptGuard interrupts;
-  int idx = FindClaimedStreamIdx(handle);
-  if (idx == -1) {
-    return false;
-  }
-  if (static_cast< EHeaderReadState >(g_Streams[idx].mHeaderReadState) == 1) {
-    return false;
-  }
-  if (g_Streams[idx].mStreamId == -1) {
-    return false;
-  }
-  return CDSPStream::IsStreamAvailable(g_Streams[idx].mStreamId);
-}
-
-bool CDSPStreamManager::CanStop(int handle) {
-  CInterruptGuard interrupts;
-  int idx = FindClaimedStreamIdx(handle);
-  if (idx == -1) {
-    return true;
-  }
-  if (static_cast< EHeaderReadState >(g_Streams[idx].mHeaderReadState) == 1) {
-    return false;
-  }
-  if (g_Streams[idx].mStreamId == -1) {
-    return true;
-  }
-  return !CDSPStream::IsStreamActive(g_Streams[idx].mStreamId);
-}
-
-CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
-  CInterruptGuard interrupts;
-  int idx = FindClaimedStreamIdx(handle);
-  if (idx == -1) {
-    return kCDSPSM_Oneshot;
-  }
-  switch (static_cast< int >(g_Streams[idx].mHeaderReadState)) {
-  case 0:
-    return kCDSPSM_Oneshot;
-  case 2:
-    return g_Streams[idx].mHeader.mLoopFlag ? kCDSPSM_Looping : kCDSPSM_Oneshot;
-  default:
-    return kCDSPSM_Preparing;
-  }
-}
-
-void CDSPStreamManager::HeaderReadComplete(s32 result, DVDFileInfo* fileInfo) {
-  DVDClose(fileInfo);
-
-  for (int idx = 0; idx < 4; ++idx) {
-    CDSPStreamManager* stream = &g_Streams[idx];
-    if (&stream->mDvdFile == fileInfo && !stream->mUnclaimed) {
-      CInterruptGuard interrupts;
-      if (result <= 0 || !stream->HasSupportedSampleRate()) {
-        *stream = CDSPStreamManager();
-        return;
-      }
-
-      stream->mHeaderReadState = kHRS_Read;
-      int companion = -1;
-      if (stream->mCompanionLeft != -1) {
-        companion = stream->mCompanionLeft;
-      } else if (stream->mCompanionRight != -1) {
-        companion = stream->mCompanionRight;
-      }
-
-      if (companion != -1) {
-        CDSPStreamManager& other = g_Streams[companion];
-        const EHeaderReadState compState = static_cast< EHeaderReadState >(other.mHeaderReadState);
-        if (other.mUnclaimed || compState == 0 ||
-            (idx != other.mCompanionRight && idx != other.mCompanionLeft)) {
-          *stream = CDSPStreamManager();
-          return;
-        }
-        if (compState == 1) {
-          return;
-        }
-        if (other.mCompanionRight != -1) {
-          AllocateStream(companion);
-          return;
-        }
-      }
-
-      AllocateStream(idx);
-      return;
-    }
-  }
-}
-
-void CDSPStreamManager::AllocateStream(int idx) {
-  CDSPStreamManager& stream = g_Streams[idx];
-  SStreamInfo info = MakeDSPStreamInfo(stream);
-  if (stream.mCompanionRight == -1) {
-    if (!stream.mHeaderReadCancelled) {
-      stream.mStreamId = CDSPStream::AllocateMono(info, stream.mVolume, 0x40, stream.mOneshot);
-    }
-    if (stream.mStreamId == -1) {
-      stream = CDSPStreamManager();
-    }
-  } else {
-    CDSPStreamManager& rstream = g_Streams[stream.mCompanionRight];
-    SStreamInfo rinfo = MakeDSPStreamInfo(rstream);
-    if (!stream.mHeaderReadCancelled) {
-      stream.mStreamId = CDSPStream::AllocateStereo(info, rinfo, stream.mVolume, stream.mOneshot);
-    }
-    if (stream.mStreamId == -1) {
-      stream = CDSPStreamManager();
-      rstream = CDSPStreamManager();
-    }
-  }
-}
-#else
-CDSPStreamManager sStreams[2];
-rstl::reserved_vector< SDSPStreamVoice, 4 > sVoices;
-static bool sDeferCallbacks;
-static int sDeferredCallbacks;
-const int kDSPStreamBlockSize = 0x8F00;
-
-CDSPStreamManager::CDSPStreamManager()
-: mDataOffset(0), mFileCur(0), mReadsPending(0), mType(1), mState(kSS_Idle) {}
-
-SDSPStreamVoice::SDSPStreamVoice()
-: mBufferSize(0), mNumSamples(0), mType(1), mStreamId(-1), mUpperHalf(false), mFree(true) {}
-
-void CDSPStreamManager::Initialize() {
-  for (int i = 0; i < 4; ++i) {
-    sVoices.push_back(SDSPStreamVoice());
-  }
-
-  sStreams[0].mType = 0;
-  for (int i = 0; i < 2; ++i) {
-    sVoices[i].mBuffer = rstl::auto_ptr< uchar >(
-        static_cast< uchar* >(CMemory::Alloc(0x11E00, IAllocator::kHI_RoundUpLen)));
-    sVoices[i].mType = 0;
-  }
-  CMemory::OffsetFakeStatics(0x23C00);
-}
-
-void CDSPStreamManager::Shutdown() {
-  for (int i = 0; i < 2; ++i) {
-    if (sStreams[i].mState != kSS_Idle) {
-      sStreams[i].Deallocate();
-    }
-  }
-
-  for (int i = 0; i < 4; ++i) {
-    if (sVoices[i].mType == 0) {
-      sVoices[i].mBuffer = rstl::auto_ptr< uchar >();
-    }
-  }
-  sVoices.clear();
-  CMemory::OffsetFakeStatics(-0x23C00);
-}
-
-int CDSPStreamManager::StartStreaming(const rstl::string& fileName, int volume, int type) {
-  CInterruptGuard guard;
-  int i;
-  for (i = 0; i < 2; ++i) {
-    CDSPStreamManager& stream = sStreams[i];
-    if (stream.mState != kSS_Idle || stream.mType != type) {
-      continue;
-    }
-
-    rstl::string path(fileName);
-    if (strncmp("mem:", fileName.data(), strlen("mem:")) == 0) {
-      path = fileName.substr(4, -1);
-      if (CDvdFile::FileExists(path.data())) {
-        stream.mPreload = CStreamPreloadedToken(path);
-        if (!stream.mPreload->IsReady()) {
-          stream.mPreload = rstl::optional_object_null();
-        }
-      }
-    }
-
-    if (DVDOpen(const_cast< char* >(path.data()), &stream.mFiles[0])) {
-      stream.mDataOffset = sizeof(SRSFHeader);
-      stream.mState = kSS_ReadingHeader;
-      stream.mFileCur = 0;
-      stream.mVolume = volume;
-      for (int j = 1; j < 10; ++j) {
-        DVDOpen(const_cast< char* >(path.data()), &stream.mFiles[j]);
-      }
-      stream.mVoices.clear();
-      stream.mReadsPending = 1;
-      if (stream.mPreload) {
-        stream.mPreload->Read(&stream.mHeader, 0, sizeof(SRSFHeader));
-        DVDCallback(0, &stream.mFiles[0]);
-      } else {
-        DVDReadAsyncPrio(&stream.mFiles[0], &stream.mHeader, sizeof(SRSFHeader), 0, DVDCallback, 1);
-      }
-      break;
-    }
-  }
-
-  return i < 2 ? i : -1;
-}
-
+#if !RSTL_PRIME1
 int CDSPStreamManager::ActivateVoices() {
   CInterruptGuard guard;
   for (int* it = mVoices.begin(); it != mVoices.end(); ++it) {
@@ -768,17 +600,80 @@ void CDSPStreamManager::Deallocate() {
   mPreload = rstl::optional_object_null();
   mState = kSS_Idle;
 }
+#endif
 
 void CDSPStreamManager::StopStreaming(int handle) {
+#if RSTL_PRIME1
+  CInterruptGuard interrupts;
+  int idx = FindClaimedStreamIdx(handle);
+  if (idx == -1) {
+    return;
+  }
+
+  CDSPStreamManager& stream = g_Streams[idx];
+  if (stream.mUnclaimed) {
+    return;
+  }
+
+  if (static_cast< EHeaderReadState >(stream.mHeaderReadState) == 1) {
+    stream.mHeaderReadCancelled = true;
+    return;
+  }
+
+  const char companion = stream.CompanionRight();
+  if (companion != -1) {
+    g_Streams[companion] = CDSPStreamManager();
+  }
+  CDSPStream::Silence(stream.mStreamId);
+  g_Streams[idx] = CDSPStreamManager();
+#else
   if (handle >= 0 && handle < 2) {
     CInterruptGuard guard;
     if (sStreams[handle].mState != kSS_Idle) {
       sStreams[handle].StopStream();
     }
   }
+#endif
 }
 
+#if RSTL_PRIME1
+SStreamInfo MakeDSPStreamInfo(const CDSPStreamManager& stream) {
+  SStreamInfo info;
+  info.mFileName = stream.mFileName.data();
+  info.mSampleRate = stream.mHeader.mSampleRate;
+  info.mAdpcmBytes = (stream.mHeader.mNumNibbles / 2) & 0x7FFFFFE0;
+  info.mHeaderSize = 0x60;
+  if (stream.mHeader.mLoopFlag != 0) {
+    info.mLoopFlag = true;
+    info.mLoopStartByte = (stream.mHeader.mLoopStartNibble / 2) & 0x7FFFFFE0;
+    const uint loopEnd = (stream.mHeader.mLoopEndNibble / 2) & 0x7FFFFFE0;
+    if (loopEnd > info.mAdpcmBytes) {
+      info.mLoopEndByte = info.mAdpcmBytes;
+    } else {
+      info.mLoopEndByte = loopEnd;
+    }
+  } else {
+    info.mLoopFlag = false;
+    info.mLoopStartByte = 0;
+    info.mLoopEndByte = 0;
+  }
+  memcpy(&info.mAdpcmInfo, stream.mHeader.mCoef, sizeof(info.mAdpcmInfo));
+  return info;
+}
+#endif
+
 void CDSPStreamManager::UpdateVolume(int handle, int volume) {
+#if RSTL_PRIME1
+  CInterruptGuard interrupts;
+  int idx = FindClaimedStreamIdx(handle);
+  if (idx == -1) {
+    return;
+  }
+  g_Streams[idx].mVolume = volume;
+  if (g_Streams[idx].mStreamId != -1) {
+    CDSPStream::UpdateVolume(g_Streams[idx].mStreamId, volume);
+  }
+#else
   if (handle >= 0 && handle < 2) {
     CInterruptGuard guard;
     CDSPStreamManager& stream = sStreams[handle];
@@ -789,9 +684,24 @@ void CDSPStreamManager::UpdateVolume(int handle, int volume) {
       }
     }
   }
+#endif
 }
 
 bool CDSPStreamManager::IsStreamAvailable(int handle) {
+#if RSTL_PRIME1
+  CInterruptGuard interrupts;
+  int idx = FindClaimedStreamIdx(handle);
+  if (idx == -1) {
+    return false;
+  }
+  if (static_cast< EHeaderReadState >(g_Streams[idx].mHeaderReadState) == 1) {
+    return false;
+  }
+  if (g_Streams[idx].mStreamId == -1) {
+    return false;
+  }
+  return CDSPStream::IsStreamAvailable(g_Streams[idx].mStreamId);
+#else
   if (handle < 0 && handle >= 2) {
     return true;
   }
@@ -799,17 +709,118 @@ bool CDSPStreamManager::IsStreamAvailable(int handle) {
   CDSPStreamManager& stream = sStreams[handle];
   int state = stream.mState;
   return state != kSS_ReadingHeader && state != kSS_Priming;
+#endif
 }
 
 bool CDSPStreamManager::CanStop(int handle) {
+#if RSTL_PRIME1
+  CInterruptGuard interrupts;
+  int idx = FindClaimedStreamIdx(handle);
+  if (idx == -1) {
+    return true;
+  }
+  if (static_cast< EHeaderReadState >(g_Streams[idx].mHeaderReadState) == 1) {
+    return false;
+  }
+  if (g_Streams[idx].mStreamId == -1) {
+    return true;
+  }
+  return !CDSPStream::IsStreamActive(g_Streams[idx].mStreamId);
+#else
   if (handle < 0 && handle >= 2) {
     return true;
   }
   CInterruptGuard guard;
   CDSPStreamManager& stream = sStreams[handle];
   return stream.mState == kSS_Idle;
+#endif
 }
 
+#if RSTL_PRIME1
+CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
+  CInterruptGuard interrupts;
+  int idx = FindClaimedStreamIdx(handle);
+  if (idx == -1) {
+    return kCDSPSM_Oneshot;
+  }
+  switch (static_cast< int >(g_Streams[idx].mHeaderReadState)) {
+  case 0:
+    return kCDSPSM_Oneshot;
+  case 2:
+    return g_Streams[idx].mHeader.mLoopFlag ? kCDSPSM_Looping : kCDSPSM_Oneshot;
+  default:
+    return kCDSPSM_Preparing;
+  }
+}
+
+void CDSPStreamManager::HeaderReadComplete(s32 result, DVDFileInfo* fileInfo) {
+  DVDClose(fileInfo);
+
+  for (int idx = 0; idx < 4; ++idx) {
+    CDSPStreamManager* stream = &g_Streams[idx];
+    if (&stream->mDvdFile == fileInfo && !stream->mUnclaimed) {
+      CInterruptGuard interrupts;
+      if (result <= 0 || !stream->HasSupportedSampleRate()) {
+        *stream = CDSPStreamManager();
+        return;
+      }
+
+      stream->mHeaderReadState = kHRS_Read;
+      int companion = -1;
+      if (stream->mCompanionLeft != -1) {
+        companion = stream->mCompanionLeft;
+      } else if (stream->mCompanionRight != -1) {
+        companion = stream->mCompanionRight;
+      }
+
+      if (companion != -1) {
+        CDSPStreamManager& other = g_Streams[companion];
+        const EHeaderReadState compState = static_cast< EHeaderReadState >(other.mHeaderReadState);
+        if (other.mUnclaimed || compState == 0 ||
+            (idx != other.mCompanionRight && idx != other.mCompanionLeft)) {
+          *stream = CDSPStreamManager();
+          return;
+        }
+        if (compState == 1) {
+          return;
+        }
+        if (other.mCompanionRight != -1) {
+          AllocateStream(companion);
+          return;
+        }
+      }
+
+      AllocateStream(idx);
+      return;
+    }
+  }
+}
+
+void CDSPStreamManager::AllocateStream(int idx) {
+  CDSPStreamManager& stream = g_Streams[idx];
+  SStreamInfo info = MakeDSPStreamInfo(stream);
+  if (stream.mCompanionRight == -1) {
+    if (!stream.mHeaderReadCancelled) {
+      stream.mStreamId = CDSPStream::AllocateMono(info, stream.mVolume, 0x40, stream.mOneshot);
+    }
+    if (stream.mStreamId == -1) {
+      stream = CDSPStreamManager();
+    }
+  } else {
+    CDSPStreamManager& rstream = g_Streams[stream.mCompanionRight];
+    SStreamInfo rinfo = MakeDSPStreamInfo(rstream);
+    if (!stream.mHeaderReadCancelled) {
+      stream.mStreamId = CDSPStream::AllocateStereo(info, rinfo, stream.mVolume, stream.mOneshot);
+    }
+    if (stream.mStreamId == -1) {
+      stream = CDSPStreamManager();
+      rstream = CDSPStreamManager();
+    }
+  }
+}
+#endif
+
+#if !RSTL_PRIME1
 int CDSPStreamManager::GetStreamState(int handle) {
   if (handle < 0 && handle >= 2) {
     return kS_Oneshot;

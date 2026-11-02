@@ -114,22 +114,19 @@ CColor CColor::Modulate(const CColor& a, const CColor& b) {
                 (a.GetAlphau8() * b.GetAlphau8()) / (uchar)255);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CColor CColor::Add(const CColor& arg0, const CColor& arg1) {
-  return CColor((uchar)rstl::min_val< uint >(255, arg0.GetRedu8() + arg1.GetRedu8()),
-                (uchar)rstl::min_val< uint >(255, arg0.GetGreenu8() + arg1.GetGreenu8()),
-                (uchar)rstl::min_val< uint >(255, arg0.GetBlueu8() + arg1.GetBlueu8()),
-                (uchar)rstl::min_val< uint >(255, arg0.GetAlphau8() + arg1.GetAlphau8()));
-#else
 CColor CColor::Add(const CColor& a, const CColor& b) {
+#if RSTL_PRIME1
+  return CColor((uchar)rstl::min_val< uint >(255, a.GetRedu8() + b.GetRedu8()),
+                (uchar)rstl::min_val< uint >(255, a.GetGreenu8() + b.GetGreenu8()),
+                (uchar)rstl::min_val< uint >(255, a.GetBlueu8() + b.GetBlueu8()),
+                (uchar)rstl::min_val< uint >(255, a.GetAlphau8() + b.GetAlphau8()));
+#else
   const uchar alpha = rstl::min_val< uint >(255, a.GetAlphau8() + b.GetAlphau8());
   const uchar blue = rstl::min_val< uint >(255, a.GetBlueu8() + b.GetBlueu8());
   const uchar green = rstl::min_val< uint >(255, a.GetGreenu8() + b.GetGreenu8());
   const uchar red = rstl::min_val< uint >(255, a.GetRedu8() + b.GetRedu8());
   return CColor(red, green, blue, alpha);
 #endif
-
 }
 
 // TODO: verify that this Prime/Echoes difference is real

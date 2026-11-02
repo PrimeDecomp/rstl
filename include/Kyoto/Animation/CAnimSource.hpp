@@ -34,12 +34,7 @@ class CSegStatementSet;
 class RotationAndOffsetStorage {
 public:
   struct CRotationAndOffsetVectors {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CRotationAndOffsetVectors(CInputStream& in);
-#else
     explicit CRotationAndOffsetVectors(CInputStream& in);
-#endif
 
     rstl::vector< CQuaternion > mRotations;
     rstl::vector< CVector3f > mOffsets;
@@ -100,28 +95,19 @@ public:
 
   ~CAnimSource();
 
-#if !RSTL_PRIME1
   bool HasRotation(const CSegId& seg) const;
-#endif
 
   bool HasOffset(const CSegId& seg) const;
-#if !RSTL_PRIME1
   bool HasScale(const CSegId& seg) const;
-#endif
   CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
 #if RSTL_PRIME1
-  void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-                          const CCharAnimTime& time) const;
-  const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
-  const CCharAnimTime& GetTimePerFrame() const { return mInterval; }
   bool HasPOIData() const { return !mEventData.null(); }
   const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const;
   const rstl::vector< CInt32POINode >& GetInt32POIStream() const;
   const rstl::vector< CParticlePOINode >& GetParticlePOIStream() const;
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const;
   rstl::set< rstl::pair< rstl::string, int > > GetUniqueBoolPOIs() const;
-  CSegId GetPrimaryOffsetChannel() const { return mRoot; }
 #endif
 
   CVector3f GetOverallOffset(const CCharAnimTime& time) const {
@@ -132,7 +118,6 @@ public:
     return CSteadyStateAnimInfo(false, GetAnimationDuration(), GetOverallOffset(time));
   }
   void CalcAverageVelocity();
-#if !RSTL_PRIME1
   void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                           const CCharAnimTime& time) const;
   // Guessed name.
@@ -142,7 +127,6 @@ public:
   const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
   const CCharAnimTime& GetTimePerFrame() const { return mInterval; }
   CSegId GetPrimaryOffsetChannel() const { return mRoot; }
-#endif
 
   float GetAverageVelocity() const { return mAverageVelocity; }
 #if !RSTL_PRIME1
@@ -151,12 +135,10 @@ public:
 #endif
 
 private:
-#if !RSTL_PRIME1
   // Guessed names.
   void GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
                        CSegStatement& statement) const;
   uint GetSize() const;
-#endif
 
   CCharAnimTime mDuration;
   CCharAnimTime mInterval;

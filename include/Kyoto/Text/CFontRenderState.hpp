@@ -24,16 +24,17 @@ public:
   void PopState();
   void SetColor(EColorType type, const CTextColor& color);
   void RefreshPalette();
+  TToken< CRasterFont >& GetFont() {
 #if RSTL_PRIME1
-  TToken< CRasterFont >& GetFont() { return *mState.GetFont(); }
+    return *mState.GetFont();
+#else
+    return mState.GetFont();
 #endif
+  }
 
   bool IsFinishedLoading() { return mState.IsFinishedLoading(); }
   CDrawStringOptions& GetOptions() { return mState.GetOptions(); }
   void SetFont(const TToken< CRasterFont >& font) { mState.SetFont(font); }
-#if !RSTL_PRIME1
-  TToken< CRasterFont >& GetFont() { return mState.GetFont(); }
-#endif
 
   rstl::vector< CTextColor >& GetColors() { return mState.GetColors(); }
   rstl::vector< bool >& GetOverride() { return mState.GetOverride(); }
@@ -49,28 +50,22 @@ public:
   int GetX() const { return mCurX; }
   void SetY(int y) { mCurY = y; }
   int GetY() const { return mCurY; }
-#if !RSTL_PRIME1
   void AddY(const int y) { mCurY += y; }
-#endif
 
   const CLineInstruction* GetLine() const { return mCurrentLineInst; }
-#if !RSTL_PRIME1
   void SetLine(const CLineInstruction* line) { mCurrentLineInst = line; }
-#endif
 
   bool IsFirstWordOnLine() const { return mLineInitialized; }
   void SetFirstWordOnLine(bool v) { mLineInitialized = v; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  void SetLine(const CLineInstruction* line) { mCurrentLineInst = line; }
 
   void SubX(const int x) { mCurX -= x; }
 
   void AddX(const int x) { mCurX += x; }
 
   void SubY(const int y) { mCurY -= y; }
-  void AddY(const int y) { mCurY += y; }
 #endif
 
   int GetSpacing(const int value) const {

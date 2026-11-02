@@ -11,13 +11,8 @@ class CLayoutScaleInfo;
 
 class CLayoutDescription {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CLayoutDescription(const TLockedToken< CCharLayoutInfo >& layout) : mLayoutToken(layout) {}
-#else
   explicit CLayoutDescription(const TLockedToken< CCharLayoutInfo >& layout)
   : mLayoutToken(layout) {}
-#endif
 
   class CScaledLayoutDescription {
   public:

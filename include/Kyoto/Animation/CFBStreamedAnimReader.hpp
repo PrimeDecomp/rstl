@@ -26,17 +26,14 @@ class CBitLevelLoader;
 template < typename T >
 class TAnimSourceInfo : public IAnimSourceInfo {
 public:
-#if !RSTL_PRIME1
   explicit TAnimSourceInfo(const TSubAnimTypeToken< T >& source) : mSource(source) {}
-
-  // IAnimSourceInfo
+#if !RSTL_PRIME1
   CCharAnimTime GetAnimationDuration() const override { return mSource->GetAnimationDuration(); }
   bool HasScaleData() const override { return mSource->HasScaleData(); }
 #endif
 
   ~TAnimSourceInfo() override {}
 #if RSTL_PRIME1
-  TAnimSourceInfo(const TSubAnimTypeToken< T >& source) : mSource(source) {}
   bool HasPOIData() const override { return mSource->HasPOIData(); }
   CCharAnimTime GetAnimationDuration() const override { return mSource->GetAnimationDuration(); }
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const override {
@@ -59,12 +56,7 @@ private:
 
 class CFBStreamedAnimReaderTotals {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFBStreamedAnimReaderTotals(const CFBStreamedCompression& source);
-#else
   explicit CFBStreamedAnimReaderTotals(const CFBStreamedCompression& source);
-#endif
 
   ~CFBStreamedAnimReaderTotals();
   void CalculateDown();
@@ -124,9 +116,7 @@ private:
 #endif
 
   void Allocate(uint channelCount);
-#if !RSTL_PRIME1
   uchar GetValuesPerChannel() const; // Guessed name.
-#endif
 
   uchar* mBuffer;
 #if !RSTL_PRIME1
@@ -146,11 +136,8 @@ private:
   short* mSegIds;
   float* mComputedFloats;
   uint mRotDiv;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float mTransMult;
-#else
   float mOffsetMult;
+#if !RSTL_PRIME1
   float mScaleMult;
 #endif
 
@@ -187,12 +174,9 @@ CHECK_SIZEOF(CFBFullBodyAspectsForStream, 0x20)
 
 class CFBStreamedPairOfTotals {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFBStreamedPairOfTotals(const TSubAnimTypeToken< CFBStreamedCompression >& source);
-  ~CFBStreamedPairOfTotals() {}
-#else
   explicit CFBStreamedPairOfTotals(const TSubAnimTypeToken< CFBStreamedCompression >& source);
+#if RSTL_PRIME1
+  ~CFBStreamedPairOfTotals() {}
 #endif
 
   void SetTime(CMemoryInputToBitLevelLoader& input,
@@ -235,12 +219,7 @@ CHECK_SIZEOF(CMemoryInputToBitLevelLoader, 0x4)
 template < typename T >
 class CBitLevelLoader {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CBitLevelLoader(T& input) : mInput(&input), mWord(Input(*mInput)), mBit(0) {}
-#else
   explicit CBitLevelLoader(T& input) : mInput(&input), mWord(Input(*mInput)), mBit(0) {}
-#endif
 
   uint LoadUnsigned(uint bits);
   int LoadSigned(uint bits);
@@ -346,13 +325,10 @@ inline CSegIdToIndexConverter::CSegIdToIndexConverter(const CFBStreamedAnimReade
 
 class CFBStreamedAnimReader : public CAnimSourceReaderBase {
 public:
-#if !RSTL_PRIME1
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time, const CAnimPOIData* poiData);
 
   // IAnimReader
-#endif
-
   ~CFBStreamedAnimReader() override;
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
@@ -378,11 +354,8 @@ public:
 
   virtual bool VSupportsReverseView() const;
   virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time);
-#endif
 
 private:
   void SetReadTime(const CCharAnimTime& time) const;

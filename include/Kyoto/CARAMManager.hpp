@@ -56,15 +56,10 @@ public:
 
   static void RefreshActiveDMAList();
   static void CollectGarbage();
-#if !RSTL_PRIME1
   static bool IsValidAlloc(const void* ptr);
-  static const void* GetInvalidAlloc();
-#endif
+  static RSTL_ECHOES_CONST void* GetInvalidAlloc();
 
   static void PreInitializeAlloc(uint size) { mPreInitializeAlloc += size; }
-#if RSTL_PRIME1
-  static void* GetInvalidAlloc() { return reinterpret_cast< void* >(kInvalidAlloc); }
-#endif
 
   static const uint GetInvalidDMAHandle() { return kInvalidHandle; }
   static uint GetAndIncrementUniqueID() {
@@ -94,14 +89,14 @@ private:
   static uint mChunkSize;
   static uint mNumChunks;
   static uint* mpBookKeepingMemory;
-#else
+#endif
   static uint mDMAUniqueID;
+#if !RSTL_PRIME1
   static CAramPool* mPools[2];
 #endif
 
   static uint mPreInitializeAlloc;
 #if RSTL_PRIME1
-  static uint mDMAUniqueID;
   static uint mChunksAllocated;
 #endif
 
@@ -115,5 +110,9 @@ private:
 
   static const int kInvalidHandle;
 };
+
+#if RSTL_PRIME1
+inline void* CARAMManager::GetInvalidAlloc() { return reinterpret_cast< void* >(kInvalidAlloc); }
+#endif
 
 #endif // _CARAMMANAGER

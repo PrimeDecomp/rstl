@@ -19,9 +19,8 @@
 
 // Guessed name, corroborated by Prime and the native frame-sampling consumers.
 #ifdef __MWERKS__
-// TODO: verify that this Prime/Echoes difference is real
+static float clamp_zero_to_one(register RSTL_PRIME1_CONST float v) {
 #if RSTL_PRIME1
-static float clamp_zero_to_one(register const float v) {
   register float zero = 0.f;
   register float one = 1.f;
 
@@ -34,20 +33,18 @@ static float clamp_zero_to_one(register const float v) {
   }
 
   return res;
-}
 #else
-static float clamp_zero_to_one(register float value) {
   register float out;
   register float zero = 0.f;
   register float one = 1.f;
   asm {
-    fsel out, value, value, zero
-    fsubs value, value, one
-    fsel out, value, one, out
+    fsel out, v, v, zero
+    fsubs v, v, one
+    fsel out, v, one, out
   }
   return out;
-}
 #endif
+}
 #else
 static float clamp_zero_to_one(RSTL_PRIME1_CONST float value) {
   return value >= 1.f ? 1.f : value >= 0.f ? value : 0.f;
@@ -318,7 +315,6 @@ void CAnimSource::CalcAverageVelocity() {
   mAverageVelocity = distance;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 const rstl::vector< CBoolPOINode >& CAnimSource::GetBoolPOIStream() const {
   return (*mEventData)->GetBoolPOIStream();
@@ -346,9 +342,48 @@ rstl::set< rstl::pair< rstl::string, int > > CAnimSource::GetUniqueBoolPOIs() co
   }
   return ret;
 }
+#endif
+
+#if !RSTL_PRIME1
+void CAnimSource::GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
+                                  CSegStatement& statement) const {
+  const int channel = mSegmentChannels[seg.val()];
+  const float inverseWeight = 1.f - weight;
+  if (inverseWeight < CAnimMathUtils::kInterpolationThreshold) {
+    if (HasRotation(seg)) {
+      statement.Set(mStorage.GetRotation(channel, nextFrame));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      statement.Set(mStorage.GetOffset(offsetChannel, nextFrame));
+    }
+  } else if (weight < CAnimMathUtils::kInterpolationThreshold) {
+    if (HasRotation(seg)) {
+      statement.Set(mStorage.GetRotation(channel, frame));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      statement.Set(mStorage.GetOffset(offsetChannel, frame));
+    }
+  } else {
+    if (HasRotation(seg)) {
+      const CQuaternion& a = mStorage.GetRotation(channel, frame);
+      const CQuaternion& b = mStorage.GetRotation(channel, nextFrame);
+      statement.Set(CAnimMathUtils::Slerp(a, b, weight));
+    }
+    if (HasOffset(seg)) {
+      const uint offsetChannel = mOffsetChannels[channel];
+      const CVector3f& a = mStorage.GetOffset(offsetChannel, frame);
+      const CVector3f& b = mStorage.GetOffset(offsetChannel, nextFrame);
+      statement.Set(CVector3f::Lerp(a, b, weight));
+    }
+  }
+}
+#endif
 
 void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                                      const CCharAnimTime& animTime) const {
+#if RSTL_PRIME1
   const float frameTime = animTime.GetSeconds();
   const float interval = GetTimePerFrame().GetSeconds();
 #ifdef __MWERKS__
@@ -396,46 +431,8 @@ void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& s
       set.Set(seg, CQuaternion::NoRotation());
     }
   }
-}
 #else
-void CAnimSource::GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
-                                  CSegStatement& statement) const {
-  const int channel = mSegmentChannels[seg.val()];
-  const float inverseWeight = 1.f - weight;
-  if (inverseWeight < CAnimMathUtils::kInterpolationThreshold) {
-    if (HasRotation(seg)) {
-      statement.Set(mStorage.GetRotation(channel, nextFrame));
-    }
-    if (HasOffset(seg)) {
-      const uint offsetChannel = mOffsetChannels[channel];
-      statement.Set(mStorage.GetOffset(offsetChannel, nextFrame));
-    }
-  } else if (weight < CAnimMathUtils::kInterpolationThreshold) {
-    if (HasRotation(seg)) {
-      statement.Set(mStorage.GetRotation(channel, frame));
-    }
-    if (HasOffset(seg)) {
-      const uint offsetChannel = mOffsetChannels[channel];
-      statement.Set(mStorage.GetOffset(offsetChannel, frame));
-    }
-  } else {
-    if (HasRotation(seg)) {
-      const CQuaternion& a = mStorage.GetRotation(channel, frame);
-      const CQuaternion& b = mStorage.GetRotation(channel, nextFrame);
-      statement.Set(CAnimMathUtils::Slerp(a, b, weight));
-    }
-    if (HasOffset(seg)) {
-      const uint offsetChannel = mOffsetChannels[channel];
-      const CVector3f& a = mStorage.GetOffset(offsetChannel, frame);
-      const CVector3f& b = mStorage.GetOffset(offsetChannel, nextFrame);
-      statement.Set(CVector3f::Lerp(a, b, weight));
-    }
-  }
-}
-
-void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-                                     const CCharAnimTime& time) const {
-  const float frameTime = time.GetSeconds();
+  const float frameTime = animTime.GetSeconds();
   const float interval = GetTimePerFrame().GetSeconds();
 #ifdef __MWERKS__
   const float inverseInterval = __fres(interval);
@@ -474,8 +471,10 @@ void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& s
       set[seg].Set(CQuaternion::NoRotation());
     }
   }
+#endif
 }
 
+#if !RSTL_PRIME1
 void CAnimSource::GetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
                                       const CCharAnimTime& time) const {
   const float frameTime = time.GetSeconds();

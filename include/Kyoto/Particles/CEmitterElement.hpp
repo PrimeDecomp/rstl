@@ -10,17 +10,8 @@ class CEESimpleEmitter : public CEmitterElement {
 public:
   CEESimpleEmitter(CVectorElement* pos, CVectorElement* vel);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~CEESimpleEmitter();
-  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
-#else
-  // IElement
   ~CEESimpleEmitter() override;
-
-  // CEmitterElement
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
-#endif
 
 private:
   CVectorElement* mPos;
@@ -31,17 +22,8 @@ class CVESphere : public CEmitterElement {
 public:
   CVESphere(CVectorElement* origin, CRealElement* radius, CRealElement* velocityMag);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~CVESphere();
-  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
-#else
-  // IElement
   ~CVESphere() override;
-
-  // CEmitterElement
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
-#endif
 
 private:
   CVectorElement* mSphereOrigin;
@@ -78,17 +60,8 @@ public:
                  CRealElement* angleXBias, CRealElement* angleYBias, CRealElement* angleXRange,
                  CRealElement* angleYRange);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~CVEAngleSphere();
-  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
-#else
-  // IElement
   ~CVEAngleSphere() override;
-
-  // CEmitterElement
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
-#endif
 
 private:
   CVectorElement* mSphereOrigin;

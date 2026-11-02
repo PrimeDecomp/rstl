@@ -23,23 +23,6 @@ class IAnimReader;
 class CAnimSysContext;
 
 class CPreAdvanceIndicator {
-#if !RSTL_PRIME1
-public:
-  explicit CPreAdvanceIndicator(const CCharAnimTime& time) : mIsTime(true), mTime(time) {}
-  bool IsTime() const { return mIsTime; }
-  bool IsString() const { return !mIsTime; }
-  const CCharAnimTime& GetTime() const { return mTime; }
-  uint GetNameHash() const { return mNameHash; } // Guessed name.
-
-private:
-#endif
-
-  bool mIsTime;
-  CCharAnimTime mTime;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  char mString[50];
-
 public:
   explicit CPreAdvanceIndicator(const CCharAnimTime& time) : mIsTime(true), mTime(time) {}
   explicit CPreAdvanceIndicator(const char* string);
@@ -47,11 +30,26 @@ public:
   const CCharAnimTime& GetTime() const;
   bool IsString() const;
   const char* GetString() const;
+#if !RSTL_PRIME1
+  uint GetNameHash() const { return mNameHash; } // Guessed name.
+#endif
+
+private:
+  bool mIsTime;
+  CCharAnimTime mTime;
+#if RSTL_PRIME1
+  char mString[50];
 #else
   uint mNameHash;
 #endif
 };
 CHECK_SIZEOF(CPreAdvanceIndicator, RSTL_PRIME1 ? 0x40 : 0x10)
+
+#if !RSTL_PRIME1
+inline bool CPreAdvanceIndicator::IsTime() const { return mIsTime; }
+inline bool CPreAdvanceIndicator::IsString() const { return !mIsTime; }
+inline const CCharAnimTime& CPreAdvanceIndicator::GetTime() const { return mTime; }
+#endif
 #if !RSTL_PRIME1
 
 namespace rstl {

@@ -1,7 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 // TODO: verify that this Prime/Echoes difference is real
@@ -10,7 +9,6 @@
 #endif
 
 #include "Kyoto/Graphics/CModel.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/math.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -33,23 +31,29 @@ static int StreamFloatToShort(CInputStream& in) {
   }
   return result;
 }
+#endif
 
 CSkinRules::CSkinRules(CInputStream& in)
 : mVirtualBones(in)
+#if RSTL_PRIME1
 , mVertexCount(StreamFloatToShort(in))
-, mNormalCount(StreamFloatToShort(in)) {
-  CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
-}
+, mNormalCount(StreamFloatToShort(in))
 #else
-CSkinRules::CSkinRules(CInputStream& in)
-: mVirtualBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
+, mMatrixIndices(in)
+, mVertexCount(in.ReadInt32())
+, mVertexToBone(nullptr)
+#endif
+{
+#if RSTL_PRIME1
+  CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
+#else
   if (mVertexCount > 0) {
     mVertexToBone = rs_new uchar[mVertexCount];
     in.Get(mVertexToBone.get(), mVertexCount);
   }
   CModel::AddToTotal(sizeof(CSkinRules) + mVirtualBones.size() * sizeof(CVirtualBone));
-}
 #endif
+}
 
 CSkinRules::~CSkinRules() {
 // TODO: verify that this Prime/Echoes difference is real

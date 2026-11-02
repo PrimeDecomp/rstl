@@ -11,12 +11,13 @@ class CObjectReference;
 
 class CToken {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  CToken()
 #if RSTL_PRIME1
-  CToken() : mObjRef(NULL), mLockHeld_init(0) {}
-#else
-  CToken() {}
+  : mObjRef(NULL)
+  , mLockHeld_init(0)
 #endif
+  {
+  }
 
   CToken(CObjectReference* ref);
   CToken(IObj* obj); // : x0_objRef(new CObjectReference(obj)), x4_lockHeld(false) {}
@@ -26,23 +27,14 @@ public:
   CObjOwnerDerivedFromIObjUntyped* GetObj();
   void Lock();
   void Unlock();
-#if RSTL_PRIME1
-  bool IsLocked() const { return mLockHeld; }
-#endif
+  bool IsLocked() RSTL_PRIME1_CONST { return mLockHeld; }
 
   bool IsLoaded() const { return mObjRef->IsLoaded(); }
   void RemoveRef();
   CToken& operator=(const CToken&);
   bool HasReference() const { return mObjRef != nullptr; }
   const SObjectTag& GetTag() const { return mObjRef->GetObjectTag(); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  FourCC GetReferenceType() const { return GetTag().GetType(); }
-#else
-  FourCC GetReferenceType() { return GetTag().type; }
-
-  bool IsLocked() { return mLockHeld; }
-#endif
+  FourCC GetReferenceType() RSTL_PRIME1_CONST { return GetTag().GetType(); }
 
   const CObjectReference* GetRef() const { return mObjRef; }
 

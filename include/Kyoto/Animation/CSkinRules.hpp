@@ -31,13 +31,11 @@ public:
   void LoadMatrixBank(int bank) const; // Guessed name.
 #endif
 
-#if RSTL_PRIME1
   void BuildAccumulatedTransforms(const CPoseAsTransforms& pose,
                                   const CCharLayoutInfo& layoutInfo) const;
   void BuildPoints(volatile void* pipe) const;
   void BuildNormals(volatile void* pipe) const;
   void BuildNormalsFrom(const CVector3f* averageNormals, CVector3f* out) const;
-#endif
 
   int GetNumPoints() const { return mVertexCount; }
 #if RSTL_PRIME1

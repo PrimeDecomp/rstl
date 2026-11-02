@@ -814,12 +814,7 @@ bool CMoviePlayer::GetIsMovieFinishedPlaying() const {
   return !mLoop && mCurFrame == mHeader.mNumFrames;
 }
 
-#if RSTL_PRIME1
-void CMoviePlayer::Rewind() {
-  if (!mRequest.null()) {
-    mRequest->PostCancelRequest();
-    mRequest = nullptr;
-#else
+#if !RSTL_PRIME1
 void CMoviePlayer::CancelReadRequests() {
   rstl::single_ptr< CRealDvdRequest > prefetch;
   rstl::single_ptr< CRealDvdRequest > request;
@@ -836,12 +831,16 @@ void CMoviePlayer::CancelReadRequests() {
     request->PostCancelRequest();
     request = nullptr;
   }
+}
 #endif
 
-  }
-
-#if !RSTL_PRIME1
 void CMoviePlayer::Rewind() {
+#if RSTL_PRIME1
+  if (!mRequest.null()) {
+    mRequest->PostCancelRequest();
+    mRequest = nullptr;
+  }
+#else
   CancelReadRequests();
 #endif
 

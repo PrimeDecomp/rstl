@@ -4,7 +4,6 @@
 
 #include "types.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"

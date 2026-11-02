@@ -41,9 +41,7 @@ public:
 
   void FadeOut();
   void Update(float dt);
-#if RSTL_PRIME1
   void AddToSegStatementSet(const CSegIdList&, const CCharLayoutInfo&, CSegStatementSet&) const;
-#endif
 
 private:
   CAdditiveAnimationInfo mInfo;

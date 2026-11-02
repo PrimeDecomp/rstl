@@ -24,23 +24,20 @@ struct SAdvancementResults {
   CAdvancementDeltas mDeltas;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const CCharAnimTime& GetRemainder() const { return mRemTime; }
   const CAdvancementDeltas& GetAdvancementDeltas() const { return mDeltas; }
 #endif
   SAdvancementResults() {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SAdvancementResults(const CCharAnimTime& time) : mRemTime(time) {}
+  explicit SAdvancementResults(const CCharAnimTime& time)
+  : mRemTime(time)
+#if !RSTL_PRIME1
+  , mDeltas(CVector3f::Zero(), CQuaternion::NoRotation())
 #endif
+  {
+  }
   SAdvancementResults(const CCharAnimTime& time, const CAdvancementDeltas& deltas)
   : mRemTime(time), mDeltas(deltas) {}
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
   const CCharAnimTime& GetRemainder() const { return mRemTime; }
-  explicit SAdvancementResults(const CCharAnimTime& time)
-  : mRemTime(time), mDeltas(CVector3f::Zero(), CQuaternion::NoRotation()) {}
-#endif
   static SAdvancementResults RemainderOnly(const CCharAnimTime& time) {
     return SAdvancementResults(time);
   }
@@ -130,22 +127,15 @@ public:
 
   virtual rstl::ownership_transfer< IAnimReader > VClone() const = 0;
   virtual rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VSimplified();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified();
-#endif
   virtual void VSetPhase(float phase) = 0;
   virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const;
-#if !RSTL_PRIME1
-
   rstl::ownership_transfer< IAnimReader > Clone() const { return VClone(); }
-  rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified() {
-    return VSimplified();
-  }
   SAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
   CCharAnimTime GetTimeRemaining() const { return VGetTimeRemaining(); }
   CSteadyStateAnimInfo GetSteadyStateAnimInfo() const { return VGetSteadyStateAnimInfo(); }
+#if !RSTL_PRIME1
   bool GetBoolPOIState(uint nameHash) const { return VGetBoolPOIState(nameHash); }
 #endif
 
@@ -163,15 +153,12 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 
-  rstl::ownership_transfer< IAnimReader > Clone() const { return VClone(); }
-  CCharAnimTime GetTimeRemaining() const { return VGetTimeRemaining(); }
   bool HasOffset(const CSegId& seg) const { return VHasOffset(seg); }
   CVector3f GetOffset(const CSegId& seg) const { return VGetOffset(seg); }
   CQuaternion GetRotation(const CSegId& seg) const { return VGetRotation(seg); }
   SAdvancementResults GetAdvancementResults(const CCharAnimTime& a, const CCharAnimTime& b) const {
     return VGetAdvancementResults(a, b);
   }
-  CSteadyStateAnimInfo GetSteadyStateAnimInfo() const { return VGetSteadyStateAnimInfo(); }
   void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut) const {
     VGetSegStatementSet(list, setOut);
   }
@@ -180,7 +167,6 @@ public:
     VGetSegStatementSet(list, setOut, time);
   }
   void SetPhase(float phase) { VSetPhase(phase); }
-  SAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
   bool GetBoolPOIState(const char* name) const { return VGetBoolPOIState(name); }
   s32 GetInt32POIState(const char* name) const { return VGetInt32POIState(name); }
   CParticleData::EParentedMode GetParticlePOIState(const char* name) const {
@@ -190,5 +176,11 @@ public:
 };
 DECLARE_FULL_SIZE_FOR(IAnimReader, 0x4)
 CHECK_SIZEOF(IAnimReader, IAnimReader_FULL_SIZE)
+
+#if !RSTL_PRIME1
+inline rstl::optional_object< rstl::ownership_transfer< IAnimReader > > IAnimReader::Simplified() {
+  return VSimplified();
+}
+#endif
 
 #endif // _IANIMREADER

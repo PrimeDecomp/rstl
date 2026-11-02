@@ -27,7 +27,6 @@ public:
 
   static float EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart, float start,
                          float end, float slope);
-#if !RSTL_PRIME1
   static float PhongBlob(float t, float exponent);
   static bool SolveQuadratic(float a, float b, float c, float& plus, float& minus);
   // Reconstructed solver names; coefficients are ordered from constant to leading term.
@@ -35,7 +34,6 @@ public:
   static uint SolveQuartic(const float* coefficients, float* roots);
   static int SolveCubicDouble(double c0, double c1, double c2, double c3, double epsilon,
                               double* roots);
-#endif
 
   static float FastFmod(float x, float y) {
     int v = static_cast< int >(x * (1.f / y));
@@ -65,18 +63,15 @@ public:
 #endif
 
   static float SqrtF(float v);
-// TODO: verify that this Prime/Echoes difference is real
+  static float Limit(RSTL_ECHOES_CONST float v, RSTL_ECHOES_CONST float h) {
 #if RSTL_PRIME1
-  static float Limit(float v, float h) { return fabs(v) > h ? h * Sign(v) : v; }
-#else
-  static float Limit(const float v, const float h) {
-#if RSTL_VERSION >= RSTL_R32J
+    return fabs(v) > h ? h * Sign(v) : v;
+#elif RSTL_VERSION >= RSTL_R32J
     return FastMin(FastMax(-h, v), h);
 #else
     return AbsF(v) > h ? h * Sign(v) : v;
 #endif
   }
-#endif
 
   static float Sign(float v) { return FastFSel(v, 1.f, -1.f); }
 #ifdef __MWERKS__
@@ -93,16 +88,17 @@ public:
   static float AbsF(float v) { return fabs(v); }
   static double AbsD(double v) { return fabs(v); }
   static int AbsI(int v) { return abs(v); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static float WrapPi(float rad) {
-    rad = FastFmod(rad, M_2PIF);
-#else
+#if !RSTL_PRIME1
   // Guessed name
   static bool IsFinite(float v) {
     const int c = fpclassify(v);
     return c == FP_ZERO || c == FP_NORMAL || c == FP_SUBNORMAL;
   }
+#endif
+#if RSTL_PRIME1
+  static float WrapPi(float rad) {
+    rad = FastFmod(rad, M_2PIF);
+#else
   static float WrapPi(float x) {
     float rad = FastFmod(x, M_2PIF);
 #endif

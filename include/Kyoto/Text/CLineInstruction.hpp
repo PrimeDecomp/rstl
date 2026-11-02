@@ -28,45 +28,27 @@ public:
                    EVerticalJustification verticalJustification, const bool imageBaseline);
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int GetWordCount() const { return mWordCount; }
-#else
-  // CInstruction
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
-  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
+  void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
+  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
   bool IsLineInstruction() const override { return true; }
+#endif
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00
+  ~CLineInstruction() {}
+#endif
 
   void InvokeTTB(CFontRenderState& state) const;
   void TestLargestFont(int width, int height, int baseline);
   void TestLargestImage(int width, int height, int baseline);
-#endif
 
   int GetHeight() const;
   int GetBaseline() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-  void InvokeTTB(CFontRenderState& state) const;
-  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-#if RSTL_VERSION >= RSTL_GM8P_00
-  bool IsLineInstruction() const override { return true; }
-#endif
-#if RSTL_VERSION >= RSTL_R3ME_00
-  ~CLineInstruction() {}
-#endif
-
-  void TestLargestFont(const int width, const int height, const int baseLine);
-  void TestLargestImage(const int width, const int height, const int baseline);
-
-  int GetX() const { return mCurX; }
-  int GetWidth() const { return mCurX; }
-  int GetY() const { return mCurY; }
-#else
   int GetWordCount() const { return mWordCount; }
+#if RSTL_PRIME1
+  int GetX() const { return mCurX; }
+#endif
   int GetWidth() const { return mCurX; }
   int GetY() const { return mCurY; }
-#endif
 
   void IncWords() { ++mWordCount; }
   void DecWords() { --mWordCount; }

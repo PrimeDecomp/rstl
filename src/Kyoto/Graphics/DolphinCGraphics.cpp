@@ -1006,8 +1006,8 @@ void CGraphics::SetViewPointMatrix(const CTransform4f& xf) {
   SetViewMatrix();
 }
 
-#if RSTL_PRIME1
 void CGraphics::SetIdentityViewPointMatrix() {
+#if RSTL_PRIME1
   mViewMatrix = CTransform4f::Identity();
   MTXIdentity(mGXViewPointMatrix);
   mGXViewPointMatrix[2][2] = 0.f;
@@ -1016,10 +1016,10 @@ void CGraphics::SetIdentityViewPointMatrix() {
   mGXViewPointMatrix[2][1] = -1.f;
   mViewPoint = CVector3f::Zero();
   SetViewMatrix();
-}
 #else
-void CGraphics::SetIdentityViewPointMatrix() { SetViewPointMatrix(CTransform4f::Identity()); }
+  SetViewPointMatrix(CTransform4f::Identity());
 #endif
+}
 
 void CGraphics::SetModelMatrix(const CTransform4f& xf) {
   if (&xf == &CTransform4f::Identity()) {
@@ -1607,22 +1607,18 @@ void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int srcX, int srcY
   CGX::End();
   SetCullMode(cullMode);
 }
-
-void CGraphics::EndRender2D(bool lightsWereOn) {
-  if (lightsWereOn) {
-#else
-void CGraphics::EndRender2D(bool restoreLights) {
-  if (restoreLights) {
 #endif
 
+void CGraphics::EndRender2D(bool restoreLights) {
+  if (restoreLights) {
     SetLightState(mLightsWereOn);
   }
   FlushProjection();
   mIsGXModelMatrixIdentity = false;
   SetModelMatrix(mModelMatrix);
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int texX, int texY, int texW,
                            int texH, int w, int h, const CColor& col) {
   const float width = tex.GetWidth();
@@ -1650,9 +1646,8 @@ void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int texX, int texY
   GXColor1u32(col.GetColor_u32());
   GXTexCoord2f32(s1, t0);
   CGX::End();
-#endif
-
 }
+#endif
 
 void CGraphics::DrawPrimitive(ERglPrimitive primitive, const float* pos, const CVector3f& normal,
                               const CColor& col, int numVerts) {

@@ -9,7 +9,6 @@ class CPASAnimParmData {
   rstl::reserved_vector< CPASAnimParm, 8 > mParms;
 
 public:
-// TODO: verify that this Prime/Echoes difference is real
   CPASAnimParmData(RSTL_PRIME1_CONST pas::EAnimationState stateId,
 
                    const CPASAnimParm& parm1 = CPASAnimParm::NoParameter(),

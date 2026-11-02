@@ -8,8 +8,6 @@
 
 class CAnimTreeTimeScale : public CAnimTreeSingleChild {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node, float scale,
                      const rstl::string& name)
   : CAnimTreeSingleChild(node, name)
@@ -17,19 +15,12 @@ public:
   , mCurAccelTime(0.f)
   , mTargetAccelTime(CCharAnimTime::Infinity())
   , mInitialTime(CCharAnimTime::ZeroFlat()) {}
-
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node,
                      const rstl::ownership_transfer< IVaryingAnimationTimeScale >& timeScale,
-                     const CCharAnimTime& time, const rstl::string& name)
-  : CAnimTreeSingleChild(node, name)
-  , mTimeScale(timeScale)
-  , mCurAccelTime(0.f)
-  , mTargetAccelTime(time)
-  , mInitialTime(node->GetSteadyStateAnimInfo().GetDuration() - node->GetTimeRemaining()) {}
+                     const CCharAnimTime& time, const rstl::string& name);
 
   // IAnimReader
   // VAdvanceView is declared first so it, not the destructor, is the key function.
-#endif
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   ~CAnimTreeTimeScale() override;
@@ -64,27 +55,10 @@ public:
   CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const override;
   rstl::rc_ptr< CAnimTreeNode > VGetBestUnblendedChild() const override;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node, float timeScale,
-                     const rstl::string& name)
-  : CAnimTreeSingleChild(node, name)
-  , mTimeScale(rs_new CConstantAnimationTimeScale(timeScale))
-  , mCurAccelTime(0.f)
-  , mTargetAccelTime(CCharAnimTime::Infinity())
-  , mInitialTime(CCharAnimTime::ZeroFlat()) {}
-  CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node,
-                     const rstl::ownership_transfer< IVaryingAnimationTimeScale >& timeScale,
-                     const CCharAnimTime& time, const rstl::string& name);
-#else
   CCharAnimTime GetRealLifeTime(const CCharAnimTime& time) const;
-#endif
 
   static rstl::string CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& node, float scaleA,
                                           const CCharAnimTime& time, float scaleB);
-#if RSTL_PRIME1
-  CCharAnimTime GetRealLifeTime(const CCharAnimTime& time) const;
-#endif
 
 private:
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node,
@@ -103,5 +77,17 @@ private:
   CCharAnimTime mInitialTime;
 };
 CHECK_CHILD_SIZEOF(CAnimTreeTimeScale, CAnimTreeSingleChild, 0x20)
+
+#if !RSTL_PRIME1
+inline CAnimTreeTimeScale::CAnimTreeTimeScale(
+    const rstl::ncrc_ptr< CAnimTreeNode >& node,
+    const rstl::ownership_transfer< IVaryingAnimationTimeScale >& timeScale,
+    const CCharAnimTime& time, const rstl::string& name)
+: CAnimTreeSingleChild(node, name)
+, mTimeScale(timeScale)
+, mCurAccelTime(0.f)
+, mTargetAccelTime(time)
+, mInitialTime(node->GetSteadyStateAnimInfo().GetDuration() - node->GetTimeRemaining()) {}
+#endif
 
 #endif // _CANIMTREETIMESCALE

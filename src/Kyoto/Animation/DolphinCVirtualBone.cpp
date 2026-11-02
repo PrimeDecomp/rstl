@@ -236,7 +236,6 @@ void Transform2FromMatrixData(CTransform4f* xf, const CMatrix3f* rot, const CVec
 }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 void CVirtualBone::BuildFinalPosMatrix(
 #if RSTL_PRIME1
     const CPoseAsTransforms& pose,

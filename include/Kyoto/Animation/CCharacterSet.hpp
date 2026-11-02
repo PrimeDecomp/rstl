@@ -23,12 +23,7 @@ class CInputStream;
 
 class CCharacterSet {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CCharacterSet(CInputStream& in);
-#else
   explicit CCharacterSet(CInputStream& in);
-#endif
 
   const rstl::vector< rstl::pair< int,
 #if RSTL_PRIME1

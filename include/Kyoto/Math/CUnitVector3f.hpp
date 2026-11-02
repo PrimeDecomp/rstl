@@ -42,16 +42,6 @@ public:
 #endif
 };
 
-#if RSTL_PRIME1
-inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z, const ENormalize)
-: CVector3f(x, y, z) {
-  Normalize();
-}
-
-inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z,
-                                    const EDontNormalize)
-: CVector3f(x, y, z) {}
-#endif
 CHECK_CHILD_SIZEOF(CUnitVector3f, CVector3f, 0x0)
 
 inline const CUnitVector3f& CVector3f::Up() { return sUpVector; }
@@ -61,8 +51,7 @@ inline const CUnitVector3f& CVector3f::Right() { return sRightVector; }
 inline const CUnitVector3f& CVector3f::Forward() { return sForwardVector; }
 inline const CUnitVector3f& CVector3f::Back() { return sBackVector; }
 
-#if !RSTL_PRIME1
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions on
 #endif
 inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z, const ENormalize)
@@ -73,9 +62,8 @@ inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z,
 inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z,
                                     const EDontNormalize)
 : CVector3f(x, y, z) {}
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions reset
-#endif
 #endif
 
 #endif // _CUNITVECTOR3F

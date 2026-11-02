@@ -67,21 +67,9 @@ public:
     CVector3f mOffset;
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
   void Insert(const CSegId& id, const CQuaternion& rot);
-  void Insert(const CSegId& id, const CVector3f& off);
-#else
-  void Insert(const CSegId& id, const CQuaternion& rot) { mTreeMap[id].SetRotation(rot); }
-  void Insert(const CSegId& id, const CVector3f& off) { mTreeMap[id].SetOffset(off); }
-#endif
-  CQuaternion GetSegRotation(const CSegId& id) const { return mTreeMap[id].GetRotation(); }
-#else
-  void Insert(const CSegId& id, const CQuaternion& rot);
-  void Insert(const CSegId& id, const CVector3f& offset) { mTreeMap[id].SetOffset(offset); }
+  void Insert(const CSegId& id, const CVector3f& offset);
   CQuaternion GetSegRotation(const CSegId& id) const;
-#endif
 
   const TLockedToken< CCharLayoutInfo >& CharLayoutInfo() const {
     return mLayoutDesc.ScaledLayout();
@@ -89,14 +77,12 @@ public:
 
 private:
   void BuildIntoHeirarchy(const CCharLayoutInfo& layout, const CSegId& seg, const CSegId& root);
-#if RSTL_PRIME1
   void RecursivelyBuildNoScale(const CSegId& seg, const CTreeNode& node, CPoseAsTransforms& pose,
                                const CQuaternion& rotation, const CMatrix3f& matrix,
                                const CVector3f& offset) const;
   void RecursivelyBuild(const CSegId& seg, const CTreeNode& node, CPoseAsTransforms& pose,
                         const CQuaternion& rotation, const CMatrix3f& matrix,
                         const CVector3f& offset) const;
-#endif
 
   CLayoutDescription mLayoutDesc;
   rstl::construction_deferred< CSegId > mRootId;
@@ -106,6 +92,24 @@ private:
 #endif
 };
 CHECK_SIZEOF(CHierarchyPoseBuilder, RSTL_PRIME1 ? 0x110 : 0x118)
+
+#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
+inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CQuaternion& rot) {
+  mTreeMap[id].SetRotation(rot);
+}
+#endif
+
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_GM8P_00
+inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CVector3f& offset) {
+  mTreeMap[id].SetOffset(offset);
+}
+#endif
+
+#if RSTL_PRIME1
+inline CQuaternion CHierarchyPoseBuilder::GetSegRotation(const CSegId& id) const {
+  return mTreeMap[id].GetRotation();
+}
+#endif
 
 NESTED_CHECK_SIZEOF(CHierarchyPoseBuilder, CTreeNode, 0x20)
 

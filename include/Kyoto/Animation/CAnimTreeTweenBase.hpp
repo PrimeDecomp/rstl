@@ -5,9 +5,7 @@
 #include "Kyoto/Animation/CAnimTreeDoubleChild.hpp"
 
 class CAnimTreeTweenBase : public CAnimTreeDoubleChild {
-#if RSTL_PRIME1
   static s32 sAdvancementDepth;
-#endif
 
 public:
   static const int kBlendRoot_Offset;
@@ -80,7 +78,6 @@ protected:
 #else
   s32 mCullSelector : 2;
 #endif
-#if !RSTL_PRIME1
 
 private:
   // Guessed names: common implementations of the timed and current-pose virtuals.
@@ -88,8 +85,6 @@ private:
                     rstl::optional_object< CCharAnimTime > time) const;
   void BlendSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
                             rstl::optional_object< CCharAnimTime > time) const;
-  static s32 sAdvancementDepth;
-#endif
 };
 CHECK_CHILD_SIZEOF(CAnimTreeTweenBase, CAnimTreeDoubleChild, 0x8)
 

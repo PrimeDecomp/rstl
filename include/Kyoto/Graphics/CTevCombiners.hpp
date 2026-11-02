@@ -6,9 +6,7 @@
 
 #include "dolphin/gx/GXEnum.h"
 
-#if !RSTL_PRIME1
 class CColor;
-#endif
 
 class CTevCombiners {
 public:
@@ -188,9 +186,7 @@ public:
   static void DeletePass(int);
   static void SetupPass(int, const CTevPass& pass);
   static bool SetPassCombiners(int stage, const CTevPass& pass);
-#if !RSTL_PRIME1
   static void SetTevRegisterColor(int index, const CColor& color); // Guessed name
-#endif
 
   static void ResetStates();
 

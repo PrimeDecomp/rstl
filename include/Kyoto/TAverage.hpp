@@ -36,13 +36,14 @@ class TAverage
 {
 public:
   TAverage() {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  TAverage(int capacity, const T& value = T());
-#else
+#if !RSTL_PRIME1
   explicit TAverage(int capacity) { mValues.reserve(capacity); }
-  TAverage(int capacity, const T& value);
 #endif
+  TAverage(int capacity, const T& value
+#if RSTL_PRIME1
+                         = T()
+#endif
+  );
 
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const {

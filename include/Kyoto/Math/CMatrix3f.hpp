@@ -26,9 +26,7 @@ public:
   , m21(_m21)
   , m22(_m22) {}
   CMatrix3f(const CVector3f& _m0, const CVector3f& _m1, const CVector3f& _m2);
-#if !RSTL_PRIME1
   CMatrix3f(const CMatrix3f& other, float scale);
-#endif
 
   CMatrix3f(const CMatrix3f& left, float leftScale, const CMatrix3f& right, float rightScale);
   CMatrix3f(CInputStream& in);
@@ -39,10 +37,8 @@ public:
    , m1(xf.GetRow(kDY))
    , m2(xf.GetRow(kDZ)) {}*/
 
-#if !RSTL_PRIME1
   static CMatrix3f FromColumns(const CVector3f& col0, const CVector3f& col1, const CVector3f& col2);
   static CMatrix3f RotateX(const CRelAngle& angle);
-#endif
 
   static CMatrix3f RotateY(const CRelAngle& angle);
   static CMatrix3f RotateZ(const CRelAngle& angle);
@@ -56,9 +52,7 @@ public:
   float Determinant() const;
   CMatrix3f Inverse() const;
   CMatrix3f GetTranspose() const { return CMatrix3f(m00, m10, m20, m01, m11, m21, m02, m12, m22); }
-#if RSTL_PRIME1
   CVector3f TransposeMultiply(const CVector3f& vec) const;
-#endif
 
   void AddScaledMatrix(const CMatrix3f& mat, float scale);
 

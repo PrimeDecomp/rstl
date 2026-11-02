@@ -62,11 +62,8 @@ CFBStreamedAnimReaderTotals::CFBStreamedAnimReaderTotals(const CFBStreamedCompre
 , mSegIds(nullptr)
 , mComputedFloats(nullptr)
 , mRotDiv(source.MainHeader().GetRotationValueForOne())
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mTransMult(source.MainHeader().GetOffsetResolution())
-#else
 , mOffsetMult(source.MainHeader().GetOffsetResolution())
+#if !RSTL_PRIME1
 , mScaleMult(source.MainHeader().GetScaleResolution())
 #endif
 , mCurKey(0)
@@ -251,20 +248,11 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
 #if !RSTL_PRIME1
     }
 #endif
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (mHasOffset[i]) {
-    computed[4] = values[4] * mTransMult;
-    computed[5] = values[5] * mTransMult;
-    computed[6] = values[6] * mTransMult;
-  }
-#else
     if (mHasOffset[i]) {
       computed[4] = values[4] * mOffsetMult;
       computed[5] = values[5] * mOffsetMult;
       computed[6] = values[6] * mOffsetMult;
     }
-#endif
     values += 8;
     computed += 8;
 // TODO: verify that this Prime/Echoes difference is real
@@ -734,14 +722,13 @@ void CFBFullBodyAspectsForStream::SetTime(const CTimeRemainderAndFraction& time)
   mT = rstl::min_val(mT, 1.f);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
                                                    const CSegId& seg) const {
   const unsigned long index = mSegIdToIndex.SegIdToIndex(seg.val());
   if (index == ~0u) {
     statement.Set(CQuaternion::NoRotation());
   } else {
+#if RSTL_PRIME1
     statement.Set(CAnimMathUtils::Slerp(mTotals.Prior().GetQuat(index),
                                         mTotals.Next().GetQuat(index), mTotals.GetT()));
     if (mTotals.Next().HasOffset(index)) {
@@ -749,10 +736,27 @@ inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
       const CVector3f next = mTotals.Next().GetVector(index);
       statement.Set(CVector3f::Lerp(prior, next, mTotals.GetT()));
     }
+#else
+    if (mTotals.Next().HasRotation(index)) {
+      statement.Set(CAnimMathUtils::Slerp(mTotals.Prior().GetQuat(index),
+                                          mTotals.Next().GetQuat(index), mTotals.GetT()));
+    } else {
+      statement.Set(CQuaternion::NoRotation());
+    }
+    if (mTotals.Next().HasOffset(index)) {
+      const CVector3f& prior = mTotals.Prior().GetVector(index);
+      const CVector3f& next = mTotals.Next().GetVector(index);
+      statement.Set(CVector3f::Lerp(prior, next, mTotals.GetT()));
+    }
+    if (mTotals.Next().HasScale(index)) {
+      const CVector3f& prior = mTotals.Prior().GetScale(index);
+      const CVector3f& next = mTotals.Next().GetScale(index);
+      statement.SetScale(CVector3f::Lerp(prior, next, mTotals.GetT()));
+    }
+#endif
   }
 }
 
-#endif
 SAdvancementResults
 CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
                                               const CCharAnimTime& startOffset) const {
@@ -834,33 +838,7 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
   return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
-inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
-                                                   const CSegId& seg) const {
-  const unsigned long index = mSegIdToIndex.SegIdToIndex(seg.val());
-  if (index == ~0u) {
-    statement.Set(CQuaternion::NoRotation());
-  } else {
-    if (mTotals.Next().HasRotation(index)) {
-      statement.Set(CAnimMathUtils::Slerp(mTotals.Prior().GetQuat(index),
-                                          mTotals.Next().GetQuat(index), mTotals.GetT()));
-    } else {
-      statement.Set(CQuaternion::NoRotation());
-    }
-    if (mTotals.Next().HasOffset(index)) {
-      const CVector3f& prior = mTotals.Prior().GetVector(index);
-      const CVector3f& next = mTotals.Next().GetVector(index);
-      statement.Set(CVector3f::Lerp(prior, next, mTotals.GetT()));
-    }
-    if (mTotals.Next().HasScale(index)) {
-      const CVector3f& prior = mTotals.Prior().GetScale(index);
-      const CVector3f& next = mTotals.Next().GetScale(index);
-      statement.SetScale(CVector3f::Lerp(prior, next, mTotals.GetT()));
-    }
-  }
-}
-
 void CFBStreamedAnimReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                  CJointData_LinearStorage& data,
                                                  const CCharAnimTime& time) const {

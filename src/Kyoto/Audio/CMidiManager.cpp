@@ -138,7 +138,6 @@ CMidiManager::CMidiData::CMidiData(CInputStream& in)
   in.Get(mData.get(), len);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FMidiDataFactory(const SObjectTag& tag, CInputStream& in,
                                                     const CVParamTransfer&) {
   return rs_new CMidiManager::CMidiData(in);

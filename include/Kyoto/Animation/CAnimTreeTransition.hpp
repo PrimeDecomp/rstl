@@ -7,7 +7,6 @@
 
 class CAnimTreeTransition : public CAnimTreeTweenBase {
 public:
-#if !RSTL_PRIME1
   CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
                       const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
                       const bool runA, RSTL_PRIME1_CONST int flags, const rstl::string& name);
@@ -16,6 +15,7 @@ public:
                       const CCharAnimTime& timeInTrans, RSTL_PRIME1_CONST bool runA,
                       RSTL_PRIME1_CONST bool loopA, RSTL_PRIME1_CONST int flags,
                       const rstl::string& name, RSTL_PRIME1_CONST bool initialized);
+#if !RSTL_PRIME1
 
   // IAnimReader
 #endif
@@ -34,16 +34,6 @@ public:
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VReverseSimplified() override;
   float VGetBlendingWeight() const override;
 
-#if RSTL_PRIME1
-  CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
-                      const bool runA, RSTL_PRIME1_CONST int flags, const rstl::string& name);
-  CAnimTreeTransition(const bool characterSpaceBlend, const rstl::ncrc_ptr< CAnimTreeNode >& a,
-                      const rstl::ncrc_ptr< CAnimTreeNode >& b, const CCharAnimTime& duration,
-                      const CCharAnimTime& timeInTrans, RSTL_PRIME1_CONST bool runA,
-                      RSTL_PRIME1_CONST bool loopA, RSTL_PRIME1_CONST int flags,
-                      const rstl::string& name, RSTL_PRIME1_CONST bool initialized);
-#endif
 
   static rstl::string CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                           const rstl::ncrc_ptr< CAnimTreeNode >& b,
@@ -53,10 +43,8 @@ private:
   rstl::pair< CCharAnimTime, CAdvancementDeltas >
 
   AdvanceViewForTransitionalPeriod(const CCharAnimTime& time);
-#if !RSTL_PRIME1
   // Guessed name.
   static uint GetLoopPOIHash();
-#endif
 
   CCharAnimTime mTransDur;
   CCharAnimTime mTimeInTrans;

@@ -20,14 +20,9 @@ public:
 #endif
 
   int CharWidth(char) const;
-#if !RSTL_PRIME1
   int GetFontSize() const { return mFontSize; }
-#endif
 
   void DrawString(const char* str, long x, long y, const CColor& col) const;
-#if RSTL_PRIME1
-  int GetFontSize() const { return mFontSize; }
-#endif
 
 private:
 #if RSTL_PRIME1

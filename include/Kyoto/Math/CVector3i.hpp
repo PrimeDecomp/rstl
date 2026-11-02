@@ -39,9 +39,7 @@ private:
 #endif
 };
 
-#if !RSTL_PRIME1
 bool operator==(const CVector3i& lhs, const CVector3i& rhs);
-#endif
 
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {
