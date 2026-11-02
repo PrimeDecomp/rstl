@@ -49,11 +49,7 @@ struct SObjectTag {
     return type < other.type;
   }
 
-#if RSTL_KYOTO_CONST_SCALAR_RETURNS
-  const FourCC GetType() const { return type; }
-#else
-  FourCC GetType() const { return type; }
-#endif
+  RSTL_PRIME1_CONST FourCC GetType() const { return type; }
   const CAssetId& GetId() const { return id; }
 
   static const char* Type2Text(FourCC type);

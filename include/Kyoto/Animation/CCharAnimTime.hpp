@@ -39,12 +39,7 @@ public:
   bool GreaterThanZero() const;
   bool EqualsZero() const;
   void PutTo(COutputStream& out) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CCharAnimTime Infinity() { return CCharAnimTime(kT_Infinity, 1.0f); }
-#else
   static CCharAnimTime Infinity();
-#endif
   static CCharAnimTime ZeroPlus() { return CCharAnimTime(kT_ZeroIncreasing, 0.f); }
 #if RSTL_PRIME1
   static CCharAnimTime ZeroFlat() { return CCharAnimTime(kT_ZeroSteady, 0.f); }
@@ -72,7 +67,6 @@ public:
     return kT_ZeroIncreasing;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimTime ZeroSignScale(float other) const {
     if (other > 0.f) {
@@ -105,9 +99,8 @@ inline CCharAnimTime CCharAnimTime::ZeroSignScale(float other) const {
 }
 
 inline CCharAnimTime CCharAnimTime::ZeroFlat() { return CCharAnimTime(kT_ZeroSteady, 0.f); }
-
-inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.f); }
 #endif
+inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.f); }
 
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {

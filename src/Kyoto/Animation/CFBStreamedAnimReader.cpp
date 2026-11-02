@@ -53,7 +53,7 @@ CFBStreamedAnimReaderTotals::CFBStreamedAnimReaderTotals(const CFBStreamedCompre
 , mCumulativeInts(nullptr)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mHasTrans(nullptr)
+, mHasOffset(nullptr)
 #else
 , mHasRotation(nullptr)
 , mHasOffset(nullptr)
@@ -100,21 +100,23 @@ uchar CFBStreamedAnimReaderTotals::GetValuesPerChannel() const {
 #endif
 
 void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const uint shortsSize = channelCount * 16 + (4 - (channelCount * 16) % 4);
   const uint flagsSize = channelCount + (4 - channelCount % 4);
-  const uint idsSize = channelCount * 2 + (4 - (channelCount * 2) % 4);
-  const uint floatsSize = channelCount * 32 + (4 - (channelCount * 32) % 4);
-  const uint size = shortsSize + flagsSize + idsSize + floatsSize;
-  mBuffer = rs_new uchar[size + (4 - size % 4)];
 #else
   const uint shortsSize =
       channelCount * 2 * mValuesPerChannel + (4 - (channelCount * 2 * mValuesPerChannel) % 4);
   const uint rotationFlagsSize = channelCount + (4 - channelCount % 4);
   const uint offsetFlagsSize = channelCount + (4 - channelCount % 4);
   const uint scaleFlagsSize = channelCount + (4 - channelCount % 4);
+#endif
+
   const uint idsSize = channelCount * 2 + (4 - (channelCount * 2) % 4);
+#if RSTL_PRIME1
+  const uint floatsSize = channelCount * 32 + (4 - (channelCount * 32) % 4);
+  const uint size = shortsSize + flagsSize + idsSize + floatsSize;
+  mBuffer = rs_new uchar[size + (4 - size % 4)];
+#else
   const uint floatsSize =
       channelCount * 4 * mValuesPerChannel + (4 - (channelCount * 4 * mValuesPerChannel) % 4);
   const uint size =
@@ -127,14 +129,14 @@ void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
   uint offset = 0;
   mCumulativeInts = reinterpret_cast< short* >(mBuffer + offset);
   offset += shortsSize;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mHasTrans = reinterpret_cast< bool* >(mBuffer + offset);
-  offset += flagsSize;
-#else
+#if !RSTL_PRIME1
   mHasRotation = reinterpret_cast< bool* >(mBuffer + offset);
   offset += rotationFlagsSize;
+#endif
   mHasOffset = reinterpret_cast< bool* >(mBuffer + offset);
+#if RSTL_PRIME1
+  offset += flagsSize;
+#else
   offset += offsetFlagsSize;
   mHasScale = reinterpret_cast< bool* >(mBuffer + offset);
   offset += scaleFlagsSize;
@@ -196,11 +198,9 @@ void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& s
       *values++ = offset.GetInitialValue(i);
     }
     ++values;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mHasTrans[channel] = offset.GetWidth() != 0;
-#else
     mHasOffset[channel] = offset.GetWidth() != 0;
+
+#if !RSTL_PRIME1
     if (mHasScaleData) {
       const CFBStreamedPerChannelHeader::ScaleHeader& scale = header.GetScaleBitStorage();
       for (uint i = 0; i < 3; ++i) {
@@ -253,11 +253,11 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
 #endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (mHasTrans[i]) {
-      computed[4] = values[4] * mTransMult;
-      computed[5] = values[5] * mTransMult;
-      computed[6] = values[6] * mTransMult;
-    }
+  if (mHasOffset[i]) {
+    computed[4] = values[4] * mTransMult;
+    computed[5] = values[5] * mTransMult;
+    computed[6] = values[6] * mTransMult;
+  }
 #else
     if (mHasOffset[i]) {
       computed[4] = values[4] * mOffsetMult;
@@ -311,18 +311,23 @@ void CFBStreamedPairOfTotals::SetTime(CMemoryInputToBitLevelLoader& input,
       source.GetPerChannelHeaderList(source.TimeHeader(source.MainHeader()));
 #endif
   if (Prior().GetFrameNumber() > prevIndex) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     input = CMemoryInputToBitLevelLoader(source->GetBytes(channels));
-    loader = CBitLevelLoader< CMemoryInputToBitLevelLoader >(input);
-    Prior().SetToReadStart(*source);
-    mCurKey = 0;
-    Prior().IncrementInto(loader, *source, Next());
 #else
     input = CMemoryInputToBitLevelLoader(source.GetBytes(channels));
+#endif
+
     loader = CBitLevelLoader< CMemoryInputToBitLevelLoader >(input);
+#if RSTL_PRIME1
+    Prior().SetToReadStart(*source);
+#else
     Prior().SetToReadStart(source);
+#endif
+
     mCurKey = 0;
+#if RSTL_PRIME1
+    Prior().IncrementInto(loader, *source, Next());
+#else
     Prior().IncrementInto(loader, source, Next());
 #endif
     ++mCurKey;
@@ -379,11 +384,11 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
     if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-        mHasTrans[channel]
-#else
         mHasOffset[channel]
+#else
+          mHasOffset[channel]
 #endif
-        ) {
+    ) {
       const CFBStreamedPerChannelHeader::OffsetHeader& offset = it->GetOffsetBitStorage();
       output[4] = input[4] + loader.LoadSigned(offset.GetBitCount(0));
       output[5] = input[5] + loader.LoadSigned(offset.GetBitCount(1));

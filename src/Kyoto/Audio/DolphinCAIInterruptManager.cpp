@@ -1,12 +1,5 @@
 #include "rstl/RstlVersions.h"
-// Prime keeps these callbacks on CRSFAudio; Echoes moved them to CAIInterruptManager.
-#if RSTL_PRIME1
-#include "Kyoto/Audio/DolphinCRSFAudio.hpp"
-typedef CRSFAudio CAICallbackOwner;
-#else
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
-typedef CAIInterruptManager CAICallbackOwner;
-#endif
 
 #include "Kyoto/Audio/CAudioSys.hpp"
 #include "dolphin/os.h"
@@ -19,7 +12,7 @@ static rstl::reserved_vector< FAudioCallback, 4 > sCallbacks;
 ATTRIBUTE_ALIGN_DECL(8, static bool sDMACallbackInstalled) = false;
 static FAudioCallback sOldDMACallback = nullptr;
 
-void CAICallbackOwner::InstallAICallback() {
+void CAIInterruptManager::InstallAICallback() {
   bool old = CAudioSys::IsAICallbackEnabled();
   CAudioSys::EnableAICallback(true);
 
@@ -35,7 +28,7 @@ void CAICallbackOwner::InstallAICallback() {
   CAudioSys::EnableAICallback(old);
 }
 
-void CAICallbackOwner::AICallback() {
+void CAIInterruptManager::AICallback() {
   sOldDMACallback();
 
   for (int i = 0; i < sCallbacks.size(); ++i) {
@@ -43,7 +36,7 @@ void CAICallbackOwner::AICallback() {
   }
 }
 
-void CAICallbackOwner::RunDMACallback(const FAudioCallback callback) {
+void CAIInterruptManager::RunDMACallback(const FAudioCallback callback) {
   volatile const bool old = OSDisableInterrupts();
   if (rstl::find(sCallbacks.begin(), sCallbacks.end(), callback) == sCallbacks.end()) {
     sCallbacks.push_back(callback);
@@ -53,7 +46,7 @@ void CAICallbackOwner::RunDMACallback(const FAudioCallback callback) {
   OSRestoreInterrupts(old);
 }
 
-void CAICallbackOwner::CancelDMACallback(FAudioCallback callback) {
+void CAIInterruptManager::CancelDMACallback(FAudioCallback callback) {
   volatile const bool old = OSDisableInterrupts();
 
   const rstl::reserved_vector< FAudioCallback, 4 >::iterator it =

@@ -4,7 +4,6 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
@@ -37,7 +36,6 @@ bool CTexture::sMangleMips = false;
 
 #define ROUND_UP_4(v) (((v) + 3) & ~3)
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static const CTexture* sLoadedTextures[GX_MAX_TEXMAP];
 #else
@@ -60,7 +58,6 @@ CTexture::CTexture(ETexelFormat fmt, const short w, const short h, int mips)
 , mIsPowerOfTwo(false)
 , mNoSwap(true)
 , mCounted(false)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mCanLoadObj(false)
 #else
@@ -78,7 +75,6 @@ CTexture::CTexture(ETexelFormat fmt, const short w, const short h, int mips)
 , mNativeFormat(GX_TF_RGB565)
 , mNativeCIFormat(GX_TF_C8)
 , mClampMode(kCM_Repeat)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mFrameAllocated(sCurrentFrameCount)
 #endif
@@ -102,7 +98,6 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
 , mIsPowerOfTwo(false)
 , mNoSwap(true)
 , mCounted(false)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mCanLoadObj(false)
 #else
@@ -120,7 +115,6 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
 , mNativeFormat(GX_TF_RGB565)
 , mNativeCIFormat(GX_TF_C8)
 , mClampMode(kCM_Repeat)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mFrameAllocated(sCurrentFrameCount)
 #endif
@@ -129,12 +123,7 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
   mTexelFormat = ETexelFormat(in.Get< uint >());
   mWidth = in.ReadUint16();
   mHeight = in.ReadUint16();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mNumMips = in.ReadLong();
-#else
   mNumMips = in.ReadInt32();
-#endif
 
   if (IsCITextureFormat(mTexelFormat)) {
     mGraphicsPalette = rs_new CGraphicsPalette(in);
@@ -218,7 +207,6 @@ void CTexture::InitTextureObjects() {
 }
 
 void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (sLoadedTextures[tex] != this || mCanLoadObj) {
 #else
@@ -232,7 +220,6 @@ void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
 
     if (!mGraphicsPalette.null()) {
       mGraphicsPalette->Load();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mCanLoadPalette = false;
 #else
@@ -244,7 +231,6 @@ void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
 
     }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mCanLoadObj = false;
 
@@ -263,7 +249,6 @@ void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
 
       }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       GXInitTexObjWrapMode(&mTexObj, (GXTexWrapMode)mClampMode, (GXTexWrapMode)mClampMode);
 #else
@@ -289,14 +274,8 @@ void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
   char* ptr = static_cast< char* >(mARAMToken.GetMRAMSafe());
 
   GXTexObj obj = mTexObj;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int width = GetWidth();
-  int height = GetHeight();
-#else
   int width = mWidth;
   int height = mHeight;
-#endif
 
   int offset = 0;
   GXTexWrapMode wrap = static_cast< GXTexWrapMode >(clamp);
@@ -320,12 +299,7 @@ void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
   }
 
   GXLoadTexObj(&obj, tex);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sLoadedTextures[tex] = nullptr;
-#else
   sLoadedTextures[tex] = 0;
-#endif
 
   mFrameAllocated = sCurrentFrameCount;
 }
@@ -379,13 +353,7 @@ bool CTexture::TryReloadBitmapData(CResFactory& factory) const {
   return false;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CTexture::fn_8030F088() const {
-#else
 int CTexture::GetBitmapDataStatus() const {
-#endif
-
   if (!mBitmapReloader.null()) {
     if (mBitmapReloader->GetStatus() == 0) {
       return 2;
@@ -410,14 +378,8 @@ int CTexture::GetBitmapDataStatus() const {
   }
 }
 
-CTexture::CDumpedBitmapDataReloader::CDumpedBitmapDataReloader(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    uint textureId,
-#else
-    CAssetId textureId,
-#endif
-    uint bitmapSize, bool loadToARAM)
+CTexture::CDumpedBitmapDataReloader::CDumpedBitmapDataReloader(CAssetId textureId, uint bitmapSize,
+                                                               bool loadToARAM)
 : mState(0)
 , mTextureId(textureId)
 , mResourceSize(0)
@@ -431,12 +393,7 @@ void CTexture::CDumpedBitmapDataReloader::BeginReloadBitmapData(CResFactory& fac
   SObjectTag tag('TXTR', mTextureId);
   mResourceSize = factory.ResourceSize(tag);
   mData = static_cast< uchar* >(CMemory::Alloc(mResourceSize, IAllocator::kHI_RoundUpLen));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mRequest = factory.GetResLoader().LoadResourceAsync(tag, (char*)mData.get());
-#else
   mRequest = factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mData.get()));
-#endif
 
   mState = 1;
 }
@@ -447,17 +404,11 @@ void* CTexture::CDumpedBitmapDataReloader::TryBuildReloadedBitmapData(CResFactor
     mRequest = nullptr;
 
     SObjectTag tag('TXTR', mTextureId);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::single_ptr< CInputStream > buf = factory.LoadResourceFromMemorySync(tag, mData.get());
-#else
     rstl::single_ptr< CInputStream > buf =
         factory.GetResLoader().LoadResourceFromMemorySync(tag, mData.get());
-#endif
 
     CInputStream& in = *buf;
     ETexelFormat format = ETexelFormat(in.ReadInt32());
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int w = in.ReadInt16();
     int h = in.ReadInt16();
@@ -542,7 +493,6 @@ bool CTexture::LoadToARAM() const {
 
     if (mARAMToken.GetStatus() != CARAMToken::kS_One) {
       UncountMemory();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mCanLoadObj = true;
 #else
@@ -658,12 +608,7 @@ const void* CTexture::GetConstBitMapData(const int mip) const {
     offset += (GetBitsPerPixel() >> 3) * ((GetWidth() >> i) * (GetHeight() >> i));
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return (const uchar*)mARAMToken.GetMRAMSafe() + offset;
-#else
   return static_cast< const uchar* >(mARAMToken.GetMRAMSafe()) + offset;
-#endif
 
 }
 
@@ -691,14 +636,8 @@ void CTexture::MangleMipmap(int mip) {
                      ((color >> 8) & 0x00F0) |   // G
                      ((color >> 12) & 0x0F00);   // R
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int width = GetWidth();
-  int height = GetHeight();
-#else
   int width = mWidth;
   int height = mHeight;
-#endif
 
   int offset = 0;
   for (int i = 0; i < mip; i++) {
@@ -770,12 +709,7 @@ void CTexture::UncountMemory() const {
   sTotalAllocatedMemory -= mMemoryAllocated;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CTexture::InvalidateTexmap(GXTexMapID texmap) { sLoadedTextures[texmap] = nullptr; }
-#else
 void CTexture::InvalidateTexmap(GXTexMapID texmap) { sLoadedTextures[texmap] = 0; }
-#endif
 
 void CTexture::ScheduleDeletion() {
   if (mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned) {

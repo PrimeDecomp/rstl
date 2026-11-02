@@ -16,12 +16,6 @@
 
 class CDvdRequest;
 
-#if RSTL_PRIME1
-typedef void (*FAudioCallback)();
-#endif
-
-// Names from the Corruption prototype's asserts: DolphinCRSFAudio.cpp, IsFullyLoaded,
-// sPlayingAudio, audioFile.
 class CRSFAudio {
 public:
   CRSFAudio(const rstl::string& audioFile, const int loopStart, const int loopEnd);
@@ -32,28 +26,14 @@ public:
   void StopMixOut();
 
   static void MixCallback();
-#if RSTL_PRIME1
-  // Echoes moved these into CAIInterruptManager.
-  static void RunDMACallback(FAudioCallback);
-  static void CancelDMACallback(FAudioCallback);
-  static void InstallAICallback();
-  static void AICallback();
-#else
   // Guessed names for the balanced Wii audio-suppression API.
   static void PushMute();
   static void PopMute();
-#endif
   void DoMix();
 
-#if RSTL_PRIME1
-  void Decode(const ushort* out, ushort* in, int numSamples);
-  void DecodeMonoAndMix(ushort* out, ushort* in, int numSamples, int startSample, int sampleEnd,
-                        int sampleStart, int vol, g72x_state& state);
-#else
   void Decode(ushort* out, const ushort* in, int numSamples);
-  void DecodeMonoAndMix(ushort* out, const ushort* in, const int numSamples, int startSample,
+  void DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, int startSample,
                         int sampleEnd, int sampleStart, int vol, g72x_state& state);
-#endif
   void SetVolume(uchar vol);
 
 private:

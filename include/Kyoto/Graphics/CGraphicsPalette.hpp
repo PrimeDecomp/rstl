@@ -4,15 +4,9 @@
 
 #include "types.h"
 
-#if !RSTL_PRIME1
 #include "dolphin/gx.h"
-#endif
 
 #include "rstl/single_ptr.hpp"
-#if RSTL_PRIME1
-#include "dolphin/gx/GXEnum.h"
-#include "dolphin/gx/GXStruct.h"
-#endif
 
 class CInputStream;
 
@@ -28,16 +22,11 @@ public:
   CGraphicsPalette(CInputStream& in);
   ~CGraphicsPalette();
 
-#if RSTL_PRIME1
-  inline GXTlutFmt GetTlutFmt() const { return static_cast< GXTlutFmt >(mFmt); }
-#endif
-
+  GXTlutFmt GetTlutFmt() const { return static_cast< GXTlutFmt >(mFmt); }
   ushort* GetPaletteData() { return mEntries.get(); }
   const ushort* GetPaletteData() const { return mEntries.get(); }
-#if !RSTL_PRIME1
   EPaletteFormat GetFormat() const { return mFmt; }
   uint GetEntryCount() const { return mEntryCount; }
-#endif
 
   void Load() const;
   void* Lock() {
@@ -45,10 +34,6 @@ public:
     return mEntries.get();
   }
   void UnLock();
-
-#if RSTL_PRIME1
-public:
-#endif
 
   static uint sCurrentFrameCount;
 
@@ -60,13 +45,6 @@ private:
   GXTlutObj mTlutObj;
   bool mLocked;
 };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-static inline GXTlutFmt format_to_format(EPaletteFormat fmt) {
-  return static_cast< GXTlutFmt >(fmt);
-}
-#else
 CHECK_SIZEOF(CGraphicsPalette, 0x20)
-#endif
 
 #endif // _CGRAPHICSPALETTE

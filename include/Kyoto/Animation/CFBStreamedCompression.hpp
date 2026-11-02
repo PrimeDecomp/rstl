@@ -136,17 +136,20 @@ private:
 template < uint Components, uint ConstantComponent, uint SignComponent >
 class CFBBitCompressedDataChannelHeader {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  explicit CFBBitCompressedDataChannelHeader(CInputStream& in);
 #if RSTL_PRIME1
-  CFBBitCompressedDataChannelHeader(CInputStream& in);
-
   static void Write(uchar* out, short value) { TLoadedVal< short >::Write(out, value); }
   const TLoadedVal< ushort >& Width() const { return mWidth; }
-  uint GetWidth() const { return *Width(); }
-  static uint Height() { return Components; }
+#endif
+  uint GetWidth() const {
+#if RSTL_PRIME1
+    return *Width();
 #else
-  explicit CFBBitCompressedDataChannelHeader(CInputStream& in);
-  uint GetWidth() const { return *mWidth; }
+    return *mWidth;
+#endif
+  }
+#if RSTL_PRIME1
+  static uint Height() { return Components; }
 #endif
 
   short GetInitialValue(uint component) const;
@@ -300,12 +303,13 @@ public:
     new (const_cast< ScaleHeader* >(&GetScaleBitStorage())) ScaleHeader(in);
 #endif
   }
-// TODO: verify that this Prime/Echoes difference is real
+  CSegId GetSegId() const {
 #if RSTL_PRIME1
-  CSegId GetSegId() const { return CSegId(*mSegId); }
+    return CSegId(*mSegId);
 #else
-  CSegId GetSegId() const { return mSegId; }
+    return mSegId;
 #endif
+  }
 
   const RotationHeader& GetRotationBitStorage() const {
     return *reinterpret_cast< const RotationHeader* >(this + 1);
@@ -349,12 +353,13 @@ CHECK_SIZEOF(CFBStreamedPerChannelHeader, RSTL_PRIME1 ? 0x4 : 0x1)
 
 class TLoadedContainerBase {
 protected:
-// TODO: verify that this Prime/Echoes difference is real
+  static void LoadSize(uint& size, CInputStream& in) {
 #if RSTL_PRIME1
-  static void LoadSize(uint& size, CInputStream& in) { size = in.Get< uint >(); }
+    size = in.Get< uint >();
 #else
-  static void LoadSize(uint& size, CInputStream& in) { size = in.ReadInt32(); }
+    size = in.ReadInt32();
 #endif
+  }
 };
 
 template < typename Size, typename T >

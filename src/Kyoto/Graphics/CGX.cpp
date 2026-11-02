@@ -10,7 +10,6 @@
 
 #include "limits.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "GameVersions.h"
 #else
@@ -23,18 +22,19 @@ extern GXData* __GXData;
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_CGX_STATE_POINTER
 CGX::SGXState CGX::sGXState;
 #else
 static CGX::SGXState sGXState; // Guessed scope: TU-local state behind gpGXState.
 CGX::SGXState* CGX::gpGXState = &sGXState;
+#endif
+
+#if !RSTL_PRIME1
 static const uint sAlwaysAlphaCompare = CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 0) |
                                         CGX::MaskAndShiftLeft(GX_AOP_OR, 7, 11) |
                                         CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 14);
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
 // Doesn't need to be so big
@@ -46,36 +46,33 @@ static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #define CGX_INLINE
 #define CGX_CPP
 #else
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
-  GXSetFog(static_cast< GXFogType >(gpGXState->mFogType), gpGXState->mFogParams.mFogStartZ,
-           gpGXState->mFogParams.mFogEndZ, gpGXState->mFogParams.mFogNearZ,
-           gpGXState->mFogParams.mFogFarZ,
-           (gpGXState->mBlendMode & (7 << 5)) == (GX_BL_ONE << 5)
-               ? black
-               : gpGXState->mFogParams.mFogColor);
+  GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
+           CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
+           CGX_STATE.mFogParams.mFogFarZ,
+           (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
+                                                                 : CGX_STATE.mFogParams.mFogColor);
 }
 #endif
 
 #if !RSTL_PRIME1
 void CGX::SetNumChans(uchar num) {
-  gpGXState->mNumChans = num;
-  gpGXState->mFlags.numDirty = num != gpGXState->mPrevNumChans;
+  CGX_STATE.mNumChans = num;
+  CGX_STATE.mFlags.numDirty = num != CGX_STATE.mPrevNumChans;
 }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Kyoto/Graphics/CGX_Impl.hpp" // IWYU pragma: keep
 #else
 void CGX::SetNumTexGens(uchar num) {
-  if (num != gpGXState->mNumTexGens) {
-    gpGXState->mNumTexGens = num;
+  if (num != CGX_STATE.mNumTexGens) {
+    CGX_STATE.mNumTexGens = num;
     GXSetNumTexGens(num);
   }
 }
@@ -83,28 +80,28 @@ void CGX::SetNumTexGens(uchar num) {
 
 #if !RSTL_PRIME1
 void CGX::SetChanAmbColor(EChannelId channel, const GXColor& color) {
-  if (!CompareGXColors(color, gpGXState->mChanAmbColors[channel])) {
-    CopyGXColor(gpGXState->mChanAmbColors[channel], color);
+  if (!CompareGXColors(color, CGX_STATE.mChanAmbColors[channel])) {
+    CopyGXColor(CGX_STATE.mChanAmbColors[channel], color);
     GXSetChanAmbColor(static_cast< GXChannelID >(GX_COLOR0A0 + channel), color);
   }
 }
 
 GXColor CGX::GetChanAmbColor(EChannelId channel) {
-  const GXColor color = gpGXState->mChanAmbColors[channel];
+  const GXColor color = CGX_STATE.mChanAmbColors[channel];
   return color;
 }
 
 void CGX::SetChanMatColor(EChannelId channel, const GXColor& color) {
-  if (!CompareGXColors(color, gpGXState->mChanMatColors[channel])) {
-    CopyGXColor(gpGXState->mChanMatColors[channel], color);
+  if (!CompareGXColors(color, CGX_STATE.mChanMatColors[channel])) {
+    CopyGXColor(CGX_STATE.mChanMatColors[channel], color);
     GXSetChanMatColor(static_cast< GXChannelID >(GX_COLOR0A0 + channel), color);
   }
 }
 
 void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc ambSrc, GXColorSrc matSrc,
                       GXLightID lights, GXDiffuseFn diffFn, GXAttnFn attnFn) {
-  ushort& state = gpGXState->mChanCtrls[channel];
-  ushort prevFlags = gpGXState->mPrevChanCtrls[channel];
+  ushort& state = CGX_STATE.mChanCtrls[channel];
+  ushort prevFlags = CGX_STATE.mPrevChanCtrls[channel];
   if (lights == GX_LIGHT_NULL) {
     enable = GX_FALSE;
   }
@@ -112,32 +109,32 @@ void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc ambSrc, GXCo
                MaskAndShiftLeft(matSrc, 1, 2) | MaskAndShiftLeft(lights, 0xFF, 3) |
                MaskAndShiftLeft(diffFn, 3, 11) | MaskAndShiftLeft(attnFn, 3, 13);
   state = flags;
-  gpGXState->mChanFlags =
-      ((flags != prevFlags) << (channel + 1)) | (gpGXState->mChanFlags & ~(1 << (channel + 1)));
+  CGX_STATE.mChanFlags =
+      ((flags != prevFlags) << (channel + 1)) | (CGX_STATE.mChanFlags & ~(1 << (channel + 1)));
 }
 
 void CGX::SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl) {
-  ushort& state = gpGXState->mChanCtrls[channel];
-  ushort prevFlags = gpGXState->mPrevChanCtrls[channel];
+  ushort& state = CGX_STATE.mChanCtrls[channel];
+  ushort prevFlags = CGX_STATE.mPrevChanCtrls[channel];
   uint flags = ctrl & ~1;
   if (lights != GX_LIGHT_NULL) {
     flags = ctrl | MaskAndShiftLeft(lights, 0xFF, 3);
   }
   state = flags;
-  gpGXState->mChanFlags =
-      ((flags != prevFlags) << (channel + 1)) | (gpGXState->mChanFlags & ~(1 << (channel + 1)));
+  CGX_STATE.mChanFlags =
+      ((flags != prevFlags) << (channel + 1)) | (CGX_STATE.mChanFlags & ~(1 << (channel + 1)));
 }
 
 void CGX::SetNumTevStages(uchar num) {
-  if (gpGXState->mNumTevStages != num) {
-    gpGXState->mNumTevStages = num;
+  if (CGX_STATE.mNumTevStages != num) {
+    CGX_STATE.mNumTevStages = num;
     GXSetNumTevStages(num);
   }
 }
 
 void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
-  if (!CompareGXColors(gpGXState->mKColors[id], color)) {
-    CopyGXColor(gpGXState->mKColors[id], color);
+  if (!CompareGXColors(CGX_STATE.mKColors[id], color)) {
+    CopyGXColor(CGX_STATE.mKColors[id], color);
     GXSetTevKColor(id, color);
   }
 }
@@ -146,7 +143,7 @@ void CGX::SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b, 
                         GXTevColorArg d) {
   uint flags = MaskAndShiftLeft(a, 0x1F, 0) | MaskAndShiftLeft(b, 0x1F, 5) |
                MaskAndShiftLeft(c, 0x1F, 10) | MaskAndShiftLeft(d, 0x1F, 15);
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mColorInArgs) {
     state.mColorInArgs = flags;
     GXSetTevColorIn(stageId, a, b, c, d);
@@ -154,7 +151,7 @@ void CGX::SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b, 
 }
 
 void CGX::SetTevColorIn_Compressed(GXTevStageID stageId, uint flags) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mColorInArgs) {
     state.mColorInArgs = flags;
     GXSetTevColorIn(stageId, static_cast< GXTevColorArg >(ShiftRightAndMask(flags, 0x1F, 0)),
@@ -168,7 +165,7 @@ void CGX::SetTevAlphaIn(GXTevStageID stageId, GXTevAlphaArg a, GXTevAlphaArg b, 
                         GXTevAlphaArg d) {
   uint flags = MaskAndShiftLeft(a, 0x1F, 0) | MaskAndShiftLeft(b, 0x1F, 5) |
                MaskAndShiftLeft(c, 0x1F, 10) | MaskAndShiftLeft(d, 0x1F, 15);
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mAlphaInArgs) {
     state.mAlphaInArgs = flags;
     GXSetTevAlphaIn(stageId, a, b, c, d);
@@ -176,7 +173,7 @@ void CGX::SetTevAlphaIn(GXTevStageID stageId, GXTevAlphaArg a, GXTevAlphaArg b, 
 }
 
 void CGX::SetTevAlphaIn_Compressed(GXTevStageID stageId, uint flags) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mAlphaInArgs) {
     state.mAlphaInArgs = flags;
     GXSetTevAlphaIn(stageId, static_cast< GXTevAlphaArg >(ShiftRightAndMask(flags, 0x1F, 0)),
@@ -191,7 +188,7 @@ void CGX::SetTevColorOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias, GXTevS
   uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
                MaskAndShiftLeft(scale, 3, 6) | MaskAndShiftLeft(clamp, 1, 8) |
                MaskAndShiftLeft(outReg, 3, 9);
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mColorOps) {
     state.mColorOps = flags;
     GXSetTevColorOp(stageId, op, bias, scale, clamp, outReg);
@@ -199,7 +196,7 @@ void CGX::SetTevColorOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias, GXTevS
 }
 
 void CGX::SetTevColorOp_Compressed(GXTevStageID stageId, uint flags) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mColorOps) {
     state.mColorOps = flags;
     GXSetTevColorOp(stageId, static_cast< GXTevOp >(ShiftRightAndMask(flags, 0xF, 0)),
@@ -215,7 +212,7 @@ void CGX::SetTevAlphaOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias, GXTevS
   uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
                MaskAndShiftLeft(scale, 3, 6) | MaskAndShiftLeft(clamp, 1, 8) |
                MaskAndShiftLeft(outReg, 3, 9);
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mAlphaOps) {
     state.mAlphaOps = flags;
     GXSetTevAlphaOp(stageId, op, bias, scale, clamp, outReg);
@@ -223,7 +220,7 @@ void CGX::SetTevAlphaOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias, GXTevS
 }
 
 void CGX::SetTevAlphaOp_Compressed(GXTevStageID stageId, uint flags) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mAlphaOps) {
     state.mAlphaOps = flags;
     GXSetTevAlphaOp(stageId, static_cast< GXTevOp >(ShiftRightAndMask(flags, 0xF, 0)),
@@ -235,7 +232,7 @@ void CGX::SetTevAlphaOp_Compressed(GXTevStageID stageId, uint flags) {
 }
 
 void CGX::SetTevKColorSel(GXTevStageID stageId, GXTevKColorSel sel) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (sel != state.mKColorSel) {
     state.mKColorSel = sel;
     GXSetTevKColorSel(stageId, sel);
@@ -243,7 +240,7 @@ void CGX::SetTevKColorSel(GXTevStageID stageId, GXTevKColorSel sel) {
 }
 
 void CGX::SetTevKAlphaSel(GXTevStageID stageId, GXTevKAlphaSel sel) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (sel != state.mKAlphaSel) {
     state.mKAlphaSel = sel;
     GXSetTevKAlphaSel(stageId, sel);
@@ -252,7 +249,7 @@ void CGX::SetTevKAlphaSel(GXTevStageID stageId, GXTevKAlphaSel sel) {
 
 void CGX::SetTevOrder(GXTevStageID stageId, GXTexCoordID texCoord, GXTexMapID texMap,
                       GXChannelID color) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   uint flags = MaskAndShiftLeft(texCoord, 0xFF, 0) | MaskAndShiftLeft(texMap, 0xFF, 8) |
                MaskAndShiftLeft(color, 0xFF, 16);
   if (state.mTevOrderFlags != flags) {
@@ -264,18 +261,18 @@ void CGX::SetTevOrder(GXTevStageID stageId, GXTexCoordID texCoord, GXTexMapID te
 void CGX::SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlendFactor dstFac, GXLogicOp op) {
   uint flags = MaskAndShiftLeft(mode, 3, 0) | MaskAndShiftLeft(srcFac, 7, 2) |
                MaskAndShiftLeft(dstFac, 7, 5) | MaskAndShiftLeft(op, 0xF, 8);
-  if (flags != gpGXState->mBlendMode) {
+  if (flags != CGX_STATE.mBlendMode) {
     update_fog(flags);
-    gpGXState->mBlendMode = flags;
+    CGX_STATE.mBlendMode = flags;
     GXSetBlendMode(mode, srcFac, dstFac, op);
   }
 }
 
-void CGX::SetZMode(const GXBool compareEnable, GXCompare func, const GXBool updateEnable) {
+void CGX::SetZMode(const bool compareEnable, GXCompare func, const bool updateEnable) {
   uchar flags = MaskAndShiftLeft(compareEnable, 0xFF, 0) | MaskAndShiftLeft(updateEnable, 0xFF, 1) |
                 MaskAndShiftLeft(func, 0xFF, 2);
-  if (flags != gpGXState->mZmode) {
-    gpGXState->mZmode = flags;
+  if (flags != CGX_STATE.mZmode) {
+    CGX_STATE.mZmode = flags;
     GXSetZMode(compareEnable, func, updateEnable);
   }
 }
@@ -284,7 +281,7 @@ void CGX::SetTevIndirect(GXTevStageID stageId, GXIndTexStageID indStage, GXIndTe
                          GXIndTexBiasSel biasSel, GXIndTexMtxID mtxSel, GXIndTexWrap wrapS,
                          GXIndTexWrap wrapT, GXBool addPrev, GXBool indLod,
                          GXIndTexAlphaSel alphaSel) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   uint flags = MaskAndShiftLeft(indStage, 3, 0) | MaskAndShiftLeft(fmt, 3, 2) |
                MaskAndShiftLeft(biasSel, 7, 4) | MaskAndShiftLeft(mtxSel, 15, 7) |
                MaskAndShiftLeft(wrapS, 7, 11) | MaskAndShiftLeft(wrapT, 7, 14) |
@@ -298,7 +295,7 @@ void CGX::SetTevIndirect(GXTevStageID stageId, GXIndTexStageID indStage, GXIndTe
 }
 
 void CGX::SetTevDirect(GXTevStageID stageId) {
-  STevState& state = gpGXState->mTevStates[stageId];
+  STevState& state = CGX_STATE.mTevStates[stageId];
   if (state.mIndFlags != 0) {
     state.mIndFlags = 0;
     GXSetTevDirect(stageId);
@@ -307,7 +304,7 @@ void CGX::SetTevDirect(GXTevStageID stageId) {
 
 void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src, GXTexMtx mtx,
                          GXBool normalize, GXPTTexMtx postMtx) {
-  STexState& state = gpGXState->mTexStates[dstCoord];
+  STexState& state = CGX_STATE.mTexStates[dstCoord];
   uint vm = (mtx - GX_TEXMTX0) / 3;
   uint vp = postMtx - GX_PTTEXMTX0;
 #if NONMATCHING
@@ -324,7 +321,7 @@ void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src
 }
 
 void CGX::SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags) {
-  STexState& state = gpGXState->mTexStates[dstCoord];
+  STexState& state = CGX_STATE.mTexStates[dstCoord];
   if (state.mCoordGen != flags) {
     GXTexMtx mtx = static_cast< GXTexMtx >(GX_TEXMTX0 + ShiftRightAndMask(flags, 0x1F, 9));
     GXPTTexMtx postMtx =
@@ -337,8 +334,8 @@ void CGX::SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags) {
 }
 
 void CGX::SetNumIndStages(uchar num) {
-  if (gpGXState->mNumIndStages != num) {
-    gpGXState->mNumIndStages = num;
+  if (CGX_STATE.mNumIndStages != num) {
+    CGX_STATE.mNumIndStages = num;
     GXSetNumIndStages(num);
   }
 }
@@ -349,16 +346,16 @@ void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
   }
   if (attr >= GX_VA_POS && attr < GX_POS_MTX_ARRAY) {
     uint idx = attr - GX_VA_POS;
-    if (gpGXState->mArrayPtrs[idx] == data) {
+    if (CGX_STATE.mArrayPtrs[idx] == data) {
       return;
     }
-    gpGXState->mArrayPtrs[idx] = data;
+    CGX_STATE.mArrayPtrs[idx] = data;
   }
   GXSetArray(attr, data, stride);
 }
 
 void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
-  if (gpGXState->mChanFlags != 0) {
+  if (CGX_STATE.mChanFlags != 0) {
     FlushState();
   }
   GXBegin(prim, fmt, numVtx);
@@ -368,19 +365,19 @@ void CGX::End() { GXEnd(); }
 
 void CGX::SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
                  const GXColor& color) {
-  gpGXState->mFogType = type;
-  gpGXState->mFogParams.mFogStartZ = startZ;
-  gpGXState->mFogParams.mFogEndZ = endZ;
-  gpGXState->mFogParams.mFogNearZ = nearZ;
-  gpGXState->mFogParams.mFogFarZ = farZ;
-  CopyGXColor(gpGXState->mFogParams.mFogColor, color);
+  CGX_STATE.mFogType = type;
+  CGX_STATE.mFogParams.mFogStartZ = startZ;
+  CGX_STATE.mFogParams.mFogEndZ = endZ;
+  CGX_STATE.mFogParams.mFogNearZ = nearZ;
+  CGX_STATE.mFogParams.mFogFarZ = farZ;
+  CopyGXColor(CGX_STATE.mFogParams.mFogColor, color);
   apply_fog();
 }
 
 void CGX::SetLineWidth(uchar width, GXTexOffset offset) {
   ushort flags = width | offset << 8;
-  if (flags != gpGXState->mLineWidthAndOffset) {
-    gpGXState->mLineWidthAndOffset = flags;
+  if (flags != CGX_STATE.mLineWidthAndOffset) {
+    CGX_STATE.mLineWidthAndOffset = flags;
     GXSetLineWidth(width, offset);
   }
 }
@@ -410,7 +407,6 @@ CGX::SGXState::SGXState()
 , mLineWidthAndOffset(USHRT_MAX)
 , mBlendMode(USHRT_MAX)
 , mAlphaCompare(UINT_MAX)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mDstAlphaEnabled(false)
 , mDstAlpha(0)
@@ -432,34 +428,17 @@ CGX::SGXState::SGXState()
 }
 
 void CGX::ResetGXStates() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mDescList = 0;
-#else
-  gpGXState->mDescList = 0;
-#endif
+  CGX_STATE.mDescList = 0;
 
   GXClearVtxDesc();
   for (int i = 0; i < 12; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    sGXState.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
-#else
-    gpGXState->mArrayPtrs[i] = reinterpret_cast< const void* >(1);
-#endif
-
+    CGX_STATE.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
   }
   for (int i = 0; i < 8; i++) {
     CTexture::InvalidateTexmap(static_cast< GXTexMapID >(i));
   }
   for (int i = 0; i < 4; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    GXSetTevKColor(static_cast< GXTevKColorID >(i), sGXState.mKColors[i]);
-#else
-    GXSetTevKColor(static_cast< GXTevKColorID >(i), gpGXState->mKColors[i]);
-#endif
-
+    GXSetTevKColor(static_cast< GXTevKColorID >(i), CGX_STATE.mKColors[i]);
   }
   GXSetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
   GXSetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
@@ -477,7 +456,6 @@ void CGX::ResetGXStates() {
     GXSetTexCoordScaleManually(static_cast< GXTexCoordID >(i), false, 0, 0);
   }
   GXSetZTexture(GX_ZT_DISABLE, GX_TF_Z8, 0);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8J_00
   GXSetMisc(GX_MT_XF_FLUSH, 8);
@@ -492,16 +470,10 @@ void CGX::ResetGXStates() {
 }
 
 void CGX::ResetGXStatesFull() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  new (&sGXState) SGXState();
-#else
-  new (gpGXState) SGXState();
-#endif
+  new (&CGX_STATE) SGXState();
   ResetGXStates();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static inline void __SetChanCtrlCompressed(GXChannelID channel, uint flags) {
   GXBool enable = CGX::ShiftRightAndMask(flags, 1, 0);
@@ -526,49 +498,27 @@ void CGX::FlushChanCtrl(GXChannelID chan, ushort flags) {
 }
 
 void CGX::FlushState() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (sGXState.mChanFlags & 1) {
-    GXSetNumChans(sGXState.mNumChans);
-    sGXState.mPrevNumChans = sGXState.mNumChans;
-#else
-  if (gpGXState->mChanFlags & 1) {
-    GXSetNumChans(gpGXState->mNumChans);
-    gpGXState->mPrevNumChans = gpGXState->mNumChans;
-#endif
-
+  if (CGX_STATE.mChanFlags & 1) {
+    GXSetNumChans(CGX_STATE.mNumChans);
+    CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
-// TODO: verify that this Prime/Echoes difference is real
+  if (CGX_STATE.mChanFlags & 2) {
 #if RSTL_PRIME1
-  if (sGXState.mChanFlags & 2) {
-    __SetChanCtrlCompressed(GX_COLOR0, sGXState.mChanCtrls[0]);
-    sGXState.mPrevChanCtrls[0] = sGXState.mChanCtrls[0];
+    __SetChanCtrlCompressed(GX_COLOR0, CGX_STATE.mChanCtrls[0]);
 #else
-  if (gpGXState->mChanFlags & 2) {
-    FlushChanCtrl(GX_COLOR0, gpGXState->mChanCtrls[0]);
-    gpGXState->mPrevChanCtrls[0] = gpGXState->mChanCtrls[0];
+    FlushChanCtrl(GX_COLOR0, CGX_STATE.mChanCtrls[0]);
 #endif
-
+    CGX_STATE.mPrevChanCtrls[0] = CGX_STATE.mChanCtrls[0];
   }
-// TODO: verify that this Prime/Echoes difference is real
+  if (CGX_STATE.mChanFlags & 4) {
 #if RSTL_PRIME1
-  if (sGXState.mChanFlags & 4) {
-    __SetChanCtrlCompressed(GX_COLOR1, sGXState.mChanCtrls[1]);
-    sGXState.mPrevChanCtrls[1] = sGXState.mChanCtrls[1];
+    __SetChanCtrlCompressed(GX_COLOR1, CGX_STATE.mChanCtrls[1]);
 #else
-  if (gpGXState->mChanFlags & 4) {
-    FlushChanCtrl(GX_COLOR1, gpGXState->mChanCtrls[1]);
-    gpGXState->mPrevChanCtrls[1] = gpGXState->mChanCtrls[1];
+    FlushChanCtrl(GX_COLOR1, CGX_STATE.mChanCtrls[1]);
 #endif
-
+    CGX_STATE.mPrevChanCtrls[1] = CGX_STATE.mChanCtrls[1];
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mChanFlags = 0;
-#else
-  gpGXState->mChanFlags = 0;
-#endif
-
+  CGX_STATE.mChanFlags = 0;
 }
 
 void CGX::SetIndTexMtxSTPointFive(GXIndTexMtxID id, s8 scaleExp) {
@@ -580,24 +530,18 @@ void CGX::SetIndTexMtxSTPointFive(GXIndTexMtxID id, s8 scaleExp) {
 }
 
 void CGX::SetVtxDescv_Compressed(uint flags) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (flags == sGXState.mDescList) {
-#else
-  if (flags == gpGXState->mDescList) {
-#endif
+  if (flags == CGX_STATE.mDescList) {
 
     return;
   }
   GXVtxDescList* list = sVtxDescList;
   for (uint idx = 0; idx < 11; ++idx) {
     uint shift = idx * 2;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if ((flags & 3 << shift) == (sGXState.mDescList & 3 << shift)) {
+    if ((flags & 3 << shift) == (CGX_STATE.mDescList & 3 << shift)) {
 #else
     const uint mask = 3 << shift;
-    if ((flags & mask) == (gpGXState->mDescList & mask)) {
+    if ((flags & mask) == (CGX_STATE.mDescList & mask)) {
 #endif
 
       continue;
@@ -607,11 +551,11 @@ void CGX::SetVtxDescv_Compressed(uint flags) {
     ++list;
   }
 #if !RSTL_PRIME1
-  if ((flags & 0xff000000) != (gpGXState->mDescList & 0xff000000)) {
+  if ((flags & 0xff000000) != (CGX_STATE.mDescList & 0xff000000)) {
     for (uint idx = 0; idx < 8; ++idx) {
       uint shift = idx + 24;
       const uint mask = 1 << shift;
-      if ((flags & mask) == (gpGXState->mDescList & mask)) {
+      if ((flags & mask) == (CGX_STATE.mDescList & mask)) {
         continue;
       }
       list->attr = static_cast< GXAttr >(GX_VA_PNMTXIDX + idx);
@@ -624,23 +568,16 @@ void CGX::SetVtxDescv_Compressed(uint flags) {
   list->attr = GX_VA_NULL;
   list->type = GX_NONE;
   GXSetVtxDescv(sVtxDescList);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mDescList = flags;
-#else
-  gpGXState->mDescList = flags;
-#endif
-
+  CGX_STATE.mDescList = flags;
 }
 
 void CGX::SetVtxDesc(GXAttr attr, GXAttrType type) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint lshift = (attr - GX_VA_POS) * 2;
   uint rshift = 3 << lshift;
   uint flags = type << lshift;
-  if (flags != (sGXState.mDescList & rshift)) {
-    sGXState.mDescList = flags | (sGXState.mDescList & ~rshift);
+  if (flags != (CGX_STATE.mDescList & rshift)) {
+    CGX_STATE.mDescList = flags | (CGX_STATE.mDescList & ~rshift);
 #else
   uint mask;
   uint flags;
@@ -653,8 +590,8 @@ void CGX::SetVtxDesc(GXAttr attr, GXAttrType type) {
     mask = 3 << shift;
     flags = type << shift;
   }
-  if (flags != (gpGXState->mDescList & mask)) {
-    gpGXState->mDescList = flags | (gpGXState->mDescList & ~mask);
+  if (flags != (CGX_STATE.mDescList & mask)) {
+    CGX_STATE.mDescList = flags | (CGX_STATE.mDescList & ~mask);
 #endif
 
     GXSetVtxDesc(attr, type);
@@ -689,12 +626,7 @@ void CGX::SetVtxDescv(const GXVtxDescList* list) {
 
 void CGX::SetStandardDirectTev_Compressed(GXTevStageID stageId, uint colorArgs, uint alphaArgs,
                                           uint colorOps, uint alphaOps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  STevState& state = sGXState.mTevStates[stageId];
-#else
-  STevState& state = gpGXState->mTevStates[stageId];
-#endif
+  STevState& state = CGX_STATE.mTevStates[stageId];
 
   if (state.mIndFlags != 0) {
     state.mIndFlags = 0;
@@ -728,12 +660,7 @@ void CGX::SetStandardDirectTev_Compressed(GXTevStageID stageId, uint colorArgs, 
 }
 
 void CGX::SetStandardTevColorAlphaOp(GXTevStageID stageId) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  STevState& state = sGXState.mTevStates[stageId];
-#else
-  STevState& state = gpGXState->mTevStates[stageId];
-#endif
+  STevState& state = CGX_STATE.mTevStates[stageId];
 
   if (state.mColorOps != 0x100 || state.mAlphaOps != 0x100) {
     state.mAlphaOps = 0x100;
@@ -746,61 +673,30 @@ void CGX::SetStandardTevColorAlphaOp(GXTevStageID stageId) {
 void CGX::GetFog(GXFogType* fogType, float* fogStartZ, float* fogEndZ, float* fogNearZ,
                  float* fogFarZ, GXColor* fogColor) {
   if (fogType != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogType = static_cast< GXFogType >(sGXState.mFogType);
-#else
-    *fogType = static_cast< GXFogType >(gpGXState->mFogType);
-#endif
-
+    *fogType = static_cast< GXFogType >(CGX_STATE.mFogType);
   }
   if (fogStartZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogStartZ = sGXState.mFogParams.mFogStartZ;
-#else
-    *fogStartZ = gpGXState->mFogParams.mFogStartZ;
-#endif
-
+    *fogStartZ = CGX_STATE.mFogParams.mFogStartZ;
   }
   if (fogEndZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogEndZ = sGXState.mFogParams.mFogEndZ;
-#else
-    *fogEndZ = gpGXState->mFogParams.mFogEndZ;
-#endif
-
+    *fogEndZ = CGX_STATE.mFogParams.mFogEndZ;
   }
   if (fogNearZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogNearZ = sGXState.mFogParams.mFogNearZ;
-#else
-    *fogNearZ = gpGXState->mFogParams.mFogNearZ;
-#endif
-
+    *fogNearZ = CGX_STATE.mFogParams.mFogNearZ;
   }
   if (fogFarZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogFarZ = sGXState.mFogParams.mFogFarZ;
-#else
-    *fogFarZ = gpGXState->mFogParams.mFogFarZ;
-#endif
-
+    *fogFarZ = CGX_STATE.mFogParams.mFogFarZ;
   }
   if (fogColor != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    CopyGXColor(*fogColor, sGXState.mFogParams.mFogColor);
+    CopyGXColor(*fogColor, CGX_STATE.mFogParams.mFogColor);
 #else
-    CopyGXColor(*fogColor, gpGXState->mFogParams.mFogColor);
+    CopyGXColor(*fogColor, CGX_STATE.mFogParams.mFogColor);
   }
 }
 
 void CGX::CallDisplayList(const void* ptr, size_t size) {
-  if (gpGXState->mChanFlags != 0) {
+  if (CGX_STATE.mChanFlags != 0) {
     FlushState();
   }
   GXCallDisplayList(ptr, size);
@@ -808,22 +704,22 @@ void CGX::CallDisplayList(const void* ptr, size_t size) {
 
 void CGX::SetDstAlpha(bool enable, const uchar alpha) {
   if (!enable) {
-    if (gpGXState->mDstAlphaEnabled) {
-      gpGXState->mDstAlphaEnabled = false;
+    if (CGX_STATE.mDstAlphaEnabled) {
+      CGX_STATE.mDstAlphaEnabled = false;
       GXSetDstAlpha(false, 0);
     }
-  } else if (!gpGXState->mDstAlphaEnabled || gpGXState->mDstAlpha != alpha) {
-    gpGXState->mDstAlphaEnabled = true;
-    gpGXState->mDstAlpha = alpha;
+  } else if (!CGX_STATE.mDstAlphaEnabled || CGX_STATE.mDstAlpha != alpha) {
+    CGX_STATE.mDstAlphaEnabled = true;
+    CGX_STATE.mDstAlpha = alpha;
     GXSetDstAlpha(enable, alpha);
   }
 }
 
 void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1, uchar ref1) {
   if (comp0 == GX_ALWAYS) {
-    if (gpGXState->mAlphaCompare != sAlwaysAlphaCompare) {
+    if (CGX_STATE.mAlphaCompare != sAlwaysAlphaCompare) {
       GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
-      gpGXState->mAlphaCompare = sAlwaysAlphaCompare;
+      CGX_STATE.mAlphaCompare = sAlwaysAlphaCompare;
       GXSetZCompLoc(true);
     }
     return;
@@ -831,18 +727,18 @@ void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare c
   uint flags = MaskAndShiftLeft(comp0, 7, 0) | MaskAndShiftLeft(ref0, 0xFF, 3) |
                MaskAndShiftLeft(op, 7, 11) | MaskAndShiftLeft(comp1, 7, 14) |
                MaskAndShiftLeft(ref1, 0xFF, 17);
-  if (gpGXState->mAlphaCompare != flags) {
-    if (gpGXState->mAlphaCompare == sAlwaysAlphaCompare) {
+  if (CGX_STATE.mAlphaCompare != flags) {
+    if (CGX_STATE.mAlphaCompare == sAlwaysAlphaCompare) {
       GXSetZCompLoc(false);
     }
-    gpGXState->mAlphaCompare = flags;
+    CGX_STATE.mAlphaCompare = flags;
     GXSetAlphaCompare(comp0, ref0, op, comp1, ref1);
   }
 }
 
-uchar CGX::GetNumTexGens() { return gpGXState->mNumTexGens; }
+uchar CGX::GetNumTexGens() { return CGX_STATE.mNumTexGens; }
 
-uchar CGX::GetNumTevStages() { return gpGXState->mNumTevStages; }
+uchar CGX::GetNumTevStages() { return CGX_STATE.mNumTevStages; }
 
 #ifndef TARGET_PC
 static inline void write_bp_cmd(u32 cmd) {
@@ -853,10 +749,10 @@ static inline void write_bp_cmd(u32 cmd) {
 #endif
 
 void CGX::update_fog(uint flags) {
-  if (gpGXState->mFogType == 0) {
+  if (CGX_STATE.mFogType == 0) {
     return;
   }
-  if ((gpGXState->mBlendMode & 0xE0) == (flags & 0xE0)) {
+  if ((CGX_STATE.mBlendMode & 0xE0) == (flags & 0xE0)) {
     return;
   }
   if ((flags & 0xE0) == 0x20) {
@@ -868,10 +764,10 @@ void CGX::update_fog(uint flags) {
 #endif
   } else {
 #ifdef TARGET_PC
-    GXSetFogColor(gpGXState->mFogParams.mFogColor);
+    GXSetFogColor(CGX_STATE.mFogParams.mFogColor);
 #else
-    write_bp_cmd((gpGXState->mFogParams.mFogColor.b) | (gpGXState->mFogParams.mFogColor.g << 8) |
-                 (gpGXState->mFogParams.mFogColor.r << 16) | 0xf2000000);
+    write_bp_cmd((CGX_STATE.mFogParams.mFogColor.b) | (CGX_STATE.mFogParams.mFogColor.g << 8) |
+                 (CGX_STATE.mFogParams.mFogColor.r << 16) | 0xf2000000);
 #endif
 #endif
 

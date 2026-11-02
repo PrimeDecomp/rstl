@@ -303,7 +303,7 @@ CDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag, char* extBuf) 
 #if !RSTL_PRIME1
 CBufferedDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag) {
   CPakFile* curPak = FindResourceForLoad(tag);
-  const CPakFile::CResInfo* info = mCachedResInfo;
+  const CPakFile::SResInfo* info = mCachedResInfo;
   GroupCacheList::iterator it =
       FindGroupCache(&curPak->DvdFile(), info->GetOffset(), info->GetSize());
   if (it == mGroupCaches.end()) {
@@ -538,13 +538,7 @@ rstl::vector< rstl::pair< rstl::string, SObjectTag > > CResLoader::GetResourceId
   return ret;
 }
 int CResLoader::GetPakCount() const { return mAramList.size() + mPakLoadedList.size(); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CPakFile*
-#else
-const CPakFile*
-#endif
-CResLoader::GetPakFile(const int idx) const {
+RSTL_ECHOES_CONST CPakFile* CResLoader::GetPakFile(const int idx) const {
   int numAramPaks = mAramList.size();
   if (idx < numAramPaks) {
 // TODO: verify that this Prime/Echoes difference is real

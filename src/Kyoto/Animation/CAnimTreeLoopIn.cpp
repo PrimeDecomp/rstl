@@ -42,13 +42,8 @@ CAnimTreeLoopIn::CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 
 CAnimTreeLoopIn::CAnimTreeLoopIn(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                  const rstl::ncrc_ptr< CAnimTreeNode >& b,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                 bool didLoopIn,
-#else
-                                 const bool didLoopIn,
-#endif
-                                 const CAnimSysContext& animCtx, const rstl::string& name,
+                                 RSTL_ECHOES_CONST bool didLoopIn, const CAnimSysContext& animCtx,
+                                 const rstl::string& name,
                                  const CSequenceFundamentals& fundamentals,
                                  const CCharAnimTime& time)
 : CAnimTreeSingleChild(a, name)

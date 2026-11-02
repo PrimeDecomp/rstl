@@ -74,10 +74,7 @@ public:
   uint GetFrameNumber() const { return mCurKey; }
   uint NumEntries() const { return mBoneChanCount; }
   uint GetSegId(uint index) const { return mSegIds[index]; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool HasOffset(uint index) const { return mHasTrans[index]; }
-#else
+#if !RSTL_PRIME1
   const bool* GetRotationFlags() const { return mHasRotation; } // Guessed name.
 
   const bool* GetOffsetFlags() const { return mHasOffset; } // Guessed name.
@@ -85,7 +82,9 @@ public:
   const bool* GetScaleFlags() const { return mHasScale; } // Guessed name.
 
   bool HasRotation(uint index) const { return mHasRotation[index]; }
+#endif
   bool HasOffset(uint index) const { return mHasOffset[index]; }
+#if !RSTL_PRIME1
   bool HasScale(uint index) const { return mHasScale[index]; }
   const bool HasOffsetData() const { return mHasOffsetData; }
   const bool HasScaleData() const { return mHasScaleData; }
@@ -135,12 +134,12 @@ private:
 #endif
 
   short* mCumulativeInts;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool* mHasTrans;
-#else
+#if !RSTL_PRIME1
   bool* mHasRotation;
+#endif
   bool* mHasOffset;
+
+#if !RSTL_PRIME1
   bool* mHasScale;
 #endif
 
@@ -321,19 +320,8 @@ CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoa
 
 class CSegIdToIndexConverter {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CSegIdToIndexConverter(const CFBStreamedAnimReaderTotals& totals) {
-    for (uint i = 0; i < 100; ++i) {
-      mIndices[i] = ~0u;
-    }
-    uint count = totals.NumEntries();
-    for (uint i = 0; i < count; ++i) {
-      mIndices[totals.GetSegId(i)] = i;
-    }
-  }
-#else
   explicit CSegIdToIndexConverter(const CFBStreamedAnimReaderTotals& totals);
+#if !RSTL_PRIME1
   ~CSegIdToIndexConverter();
 #endif
 
@@ -343,6 +331,18 @@ private:
   uint mIndices[100];
 };
 CHECK_SIZEOF(CSegIdToIndexConverter, 0x190)
+
+#if RSTL_PRIME1
+inline CSegIdToIndexConverter::CSegIdToIndexConverter(const CFBStreamedAnimReaderTotals& totals) {
+  for (uint i = 0; i < 100; ++i) {
+    mIndices[i] = ~0u;
+  }
+  uint count = totals.NumEntries();
+  for (uint i = 0; i < count; ++i) {
+    mIndices[totals.GetSegId(i)] = i;
+  }
+}
+#endif
 
 class CFBStreamedAnimReader : public CAnimSourceReaderBase {
 public:

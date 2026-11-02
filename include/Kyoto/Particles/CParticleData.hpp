@@ -54,12 +54,13 @@ public:
 #endif
 
   float GetScale() const { return mScale; }
-// TODO: verify that this Prime/Echoes difference is real
+  EParentedMode GetParentedMode() const {
 #if RSTL_PRIME1
-  EParentedMode GetParentedMode() const { return static_cast< EParentedMode >(mParentMode); }
+    return static_cast< EParentedMode >(mParentMode);
 #else
-  EParentedMode GetParentedMode() const { return mParentMode; }
+    return mParentMode;
 #endif
+  }
 
 private:
   int mDuration;

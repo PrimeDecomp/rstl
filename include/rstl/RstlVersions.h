@@ -48,6 +48,9 @@
 // The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
 // `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
+// CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
+// Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
+#define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
@@ -559,6 +562,15 @@
 #else
 #define RSTL_PRIME1_CONST
 #endif
+// Echoes-only `const` member functions and Prime-only `inline` declarations where MWCC codegen
+// depends on them (CModel::SShader::UnlockTextures, CGX::apply_fog).
+#if RSTL_PRIME1
+#define RSTL_ECHOES_CONST
+#define RSTL_PRIME1_INLINE inline
+#else
+#define RSTL_ECHOES_CONST const
+#define RSTL_PRIME1_INLINE
+#endif
 // CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
 // The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
 #define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1
@@ -617,8 +629,8 @@
 // CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
 // prototype; Prime, including Prime Trilogy, uses push_back).
 #define RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE (!RSTL_PRIME1)
-// Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo) declare their
-// rstl container copy policies (Echoes). Prime leaves the defaults.
+// Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
+// CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
 // Allocation.
 // The allocator reports metrics through `GetMetrics(bool resetPeriodicPeak, bool resetPeak)`:

@@ -37,12 +37,7 @@ class CTexture {
 public:
   class CDumpedBitmapDataReloader {
     int mState;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    uint mTextureId;
-#else
     CAssetId mTextureId;
-#endif
 
     int mResourceSize;
     uint mBitmapSize;
@@ -51,14 +46,7 @@ public:
     rstl::single_ptr< uchar > mData;
 
   public:
-    CDumpedBitmapDataReloader(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        uint textureId,
-#else
-        CAssetId textureId,
-#endif
-        uint bitmapSize, bool loadToARAM);
+    CDumpedBitmapDataReloader(CAssetId textureId, uint bitmapSize, bool loadToARAM);
 
     void BeginReloadBitmapData(CResFactory& factory);
     void* TryBuildReloadedBitmapData(CResFactory& factory);
@@ -107,20 +95,10 @@ public:
   void SetFlag1(bool b) { mLocked = b; }
   void MangleMipmap(int mip);
   const char GetBitsPerPixel() const { return mBitsPerPixel; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void UnloadBitmapData(uint textureId) const;
-#else
   void UnloadBitmapData(CAssetId textureId) const;
-#endif
 
   bool TryReloadBitmapData(CResFactory& factory) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int fn_8030F088() const;
-#else
   int GetBitmapDataStatus() const; // Guessed name.
-#endif
 
   bool LoadToMRAM() const;
   bool LoadToARAM() const;
@@ -137,19 +115,15 @@ public:
     return fmt == kTF_C4 ? true : fmt == kTF_C8 ? true : fmt == kTF_C14X2 ? true : false;
   }
 
-#if RSTL_PRIME1
   static void SetMangleMipmaps(bool v) { sMangleMips = v; }
   static const bool GetMangleMipmaps() { return sMangleMips; }
-#endif
 
   static int sCurrentFrameCount;
   static int sTotalAllocatedMemory;
   static bool sMangleMips;
 
 private:
-#if !RSTL_PRIME1
   void InvalidateTexmaps() const; // Guessed name: clears cache entries for this texture.
-#endif
 
   ETexelFormat mTexelFormat;
   short mWidth;
@@ -176,8 +150,6 @@ private:
   mutable uint mFrameAllocated;
 };
 CHECK_SIZEOF(CTexture, 0x68)
-#if !RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CTexture, CDumpedBitmapDataReloader, 0x1c)
-#endif
 
 #endif // _CTEXTURE

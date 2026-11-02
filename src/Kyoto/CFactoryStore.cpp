@@ -13,12 +13,7 @@ public:
   CToken GetObj(const char* name, const CVParamTransfer& xfer) override { return CToken(); }
   bool HasObject(const SObjectTag& tag) const override { return false; }
   bool ObjectIsLive(const SObjectTag& tag) const override { return false; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  IFactory& GetFactory() const override { return mFactory; }
-#else
-  IFactory& GetFactory() override { return mFactory; }
-#endif
+  IFactory& GetFactory() RSTL_PRIME1_CONST override { return mFactory; }
   void Flush() override {}
   void ObjectUnreferenced(const SObjectTag& tag) override {}
 

@@ -29,12 +29,7 @@ public:
     // Prime-derived record layout; internal field names remain cross-game hypotheses.
     SSwooshData(const CVector3f& translation = CVector3f::Zero(),
                 const CVector3f& offset = CVector3f::Zero(), float irot = 0.f, float rotm = 0.f,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                int startFrame = 0, bool active = false,
-#else
-                int startFrame = 0, const bool active = false,
-#endif
+                int startFrame = 0, RSTL_ECHOES_CONST bool active = false,
 
                 const CTransform4f& orient = CTransform4f::Identity(),
                 const CVector3f& velocity = CVector3f::Zero(), float leftRadius = 0.f,

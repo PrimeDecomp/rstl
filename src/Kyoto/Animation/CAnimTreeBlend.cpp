@@ -26,20 +26,10 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
   CCharAnimTime durationB = infoB.GetDuration();
   CVector3f offset;
   if (durationA < durationB) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    float scale = durationB / durationA;
-#else
-    const float scale = durationB / durationA;
-#endif
+    RSTL_ECHOES_CONST float scale = durationB / durationA;
     offset = offsetA * scale * mBlendWeight + offsetB * (1.f - mBlendWeight);
   } else if (durationB < durationA) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    float scale = durationA / durationB;
-#else
-    const float scale = durationA / durationB;
-#endif
+    RSTL_ECHOES_CONST float scale = durationA / durationB;
     offset = offsetA * mBlendWeight + offsetB * scale * (1.f - mBlendWeight);
   } else {
     offset = offsetA + offsetB;

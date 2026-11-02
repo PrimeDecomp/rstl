@@ -20,17 +20,18 @@ public:
 
   TSegIdMap(CInputStream& in);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  T& operator[](const CSegId& id) {
-    int index = mIndirectionMap[id.val()].second;
-    return AccessElement(static_cast< uchar >(index));
-  }
-#else
+#if !RSTL_PRIME1
   ~TSegIdMap();
 
-  T& operator[](const CSegId& id) { return mNodes[mIndirectionMap[id.val()].second.val()]; }
 #endif
+  T& operator[](const CSegId& id) {
+#if RSTL_PRIME1
+    int index = mIndirectionMap[id.val()].second;
+    return AccessElement(static_cast< uchar >(index));
+#else
+    return mNodes[mIndirectionMap[id.val()].second.val()];
+#endif
+  }
 
   const T& operator[](const CSegId& id) const {
 // TODO: verify that this Prime/Echoes difference is real

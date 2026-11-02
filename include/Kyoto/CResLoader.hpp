@@ -86,12 +86,7 @@ CHECK_SIZEOF(CLookaheadRes, 0x24)
 class CResLoader {
 public:
   typedef rstl::list< rstl::auto_ptr< CPakFile > > PakList;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   typedef CPakFile::SResInfo ResInfo;
-#else
-  typedef CPakFile::CResInfo ResInfo;
-#endif
 #if !RSTL_PRIME1
   typedef rstl::list< CLookaheadRes > GroupCacheList;
 #endif

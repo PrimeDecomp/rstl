@@ -250,12 +250,7 @@ CTransform4f CTransform4f::Scale(const CVector3f& scale) {
   );
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CTransform4f CTransform4f::Translate(float x, float y, float z) {
-#else
-CTransform4f CTransform4f::Translate(const float x, const float y, const float z) {
-#endif
+CTransform4f CTransform4f::Translate(RSTL_ECHOES_CONST float x, RSTL_ECHOES_CONST float y, RSTL_ECHOES_CONST float z) {
   return CTransform4f(1.f, 0.f, 0.f, x, //
                       0.f, 1.f, 0.f, y, //
                       0.f, 0.f, 1.f, z  //

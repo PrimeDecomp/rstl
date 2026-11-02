@@ -6,7 +6,6 @@
 
 class CMetaTransSnap : public IMetaTrans {
 public:
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   EMetaTransType GetType() const override { return kMTT_Snap; }
 #else

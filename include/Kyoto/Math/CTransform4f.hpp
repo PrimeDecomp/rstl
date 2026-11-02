@@ -237,12 +237,8 @@ public:
                                const CVector3f&);
   static CTransform4f FromColumns(const CVector3f&, const CVector3f&, const CVector3f&,
                                   const CVector3f&);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CTransform4f Translate(float x, float y, float z);
-#else
-  static CTransform4f Translate(const float x, const float y, const float z);
-#endif
+  static CTransform4f Translate(RSTL_ECHOES_CONST float x, RSTL_ECHOES_CONST float y,
+                                RSTL_ECHOES_CONST float z);
 
   static CTransform4f Translate(const CVector3f& vec);
 

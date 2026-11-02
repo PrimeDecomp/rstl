@@ -326,13 +326,11 @@ public:
 
   class CSfxChannel {
   public:
-// TODO: verify that this Prime/Echoes difference is real
+    CSfxChannel();
 #if RSTL_PRIME1
-    CSfxChannel() : x44_(false) {}
     CSfxListener mListener;
     bool x44_;
 #else
-    CSfxChannel();
     rstl::reserved_vector< SListener, 4 > mListeners;
 #endif
     rstl::reserved_vector< CBaseSfxWrapper*, 72 > mSounds;
@@ -569,6 +567,10 @@ private:
 };
 
 inline CSfxManager::CBaseSfxWrapper::~CBaseSfxWrapper() {}
+
+#if RSTL_PRIME1
+inline CSfxManager::CSfxChannel::CSfxChannel() : x44_(false) {}
+#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

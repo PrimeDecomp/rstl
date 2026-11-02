@@ -20,18 +20,8 @@ public:
   CUnitVector3f(CInputStream& in) : CVector3f(in) { Normalize(); }
 #endif
   CUnitVector3f(const float x, const float y, const float z) : CVector3f(x, y, z) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CUnitVector3f(const float x, const float y, const float z, const ENormalize)
-  : CVector3f(x, y, z) {
-    Normalize();
-  }
-  CUnitVector3f(const float x, const float y, const float z, const EDontNormalize)
-  : CVector3f(x, y, z) {}
-#else
   CUnitVector3f(const float x, const float y, const float z, const ENormalize);
   CUnitVector3f(const float x, const float y, const float z, const EDontNormalize);
-#endif
 
   CUnitVector3f(const CVector3f& vec, const ENormalize) : CVector3f(vec) { Normalize(); }
 
@@ -51,6 +41,17 @@ public:
   }
 #endif
 };
+
+#if RSTL_PRIME1
+inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z, const ENormalize)
+: CVector3f(x, y, z) {
+  Normalize();
+}
+
+inline CUnitVector3f::CUnitVector3f(const float x, const float y, const float z,
+                                    const EDontNormalize)
+: CVector3f(x, y, z) {}
+#endif
 CHECK_CHILD_SIZEOF(CUnitVector3f, CVector3f, 0x0)
 
 inline const CUnitVector3f& CVector3f::Up() { return sUpVector; }

@@ -74,12 +74,7 @@ private:
 
     CFunctionDescription FunctionMirroredAround(const float& value) const {
 #if RSTL_VERSION >= RSTL_GM8P_00
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      float twiceValue = 2.f * value;
-#else
-      const float twiceValue = 2.f * value;
-#endif
+      RSTL_ECHOES_CONST float twiceValue = 2.f * value;
       return CFunctionDescription(-mSlope, mYIntercept - mSlope * twiceValue, twiceValue - mT2,
                                   twiceValue - mT1);
 #else

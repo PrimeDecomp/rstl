@@ -1,12 +1,7 @@
 #include "Kyoto/Audio/DolphinCRSFAudio.hpp"
 #include "rstl/RstlVersions.h"
-// Prime keeps the AI DMA callbacks on CRSFAudio; Echoes moved them to CAIInterruptManager.
-#if RSTL_PRIME1
-typedef CRSFAudio CAICallbackOwner;
-#else
+
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
-typedef CAIInterruptManager CAICallbackOwner;
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Audio/CAudioSys.hpp"
@@ -90,12 +85,12 @@ void CRSFAudio::StartMixOut() {
   g72x_init_state(&mLeftState);
   g72x_init_state(&mRightState);
   sPlayingAudio = this;
-  CAICallbackOwner::RunDMACallback(MixCallback);
+  CAIInterruptManager::RunDMACallback(MixCallback);
 }
 
 void CRSFAudio::StopMixOut() {
   if (sPlayingAudio == this) {
-    CAICallbackOwner::CancelDMACallback(MixCallback);
+    CAIInterruptManager::CancelDMACallback(MixCallback);
     sPlayingAudio = nullptr;
   }
 }
@@ -114,7 +109,7 @@ void CRSFAudio::DoMix() {
     DCInvalidateRange(const_cast< ushort* >(aiStart), 0x280);
   }
 
-  Decode(reinterpret_cast< ushort* >(buf), const_cast< ushort* >(aiStart), 160);
+  Decode(reinterpret_cast< ushort* >(buf), aiStart, 160);
   DCFlushRange(reinterpret_cast< void* >(buf), 0x280);
   OSRestoreInterrupts(cookie);
 }
@@ -125,21 +120,15 @@ static void MixToMono(ushort* data, int numSamples); // Guessed name
 void MixStereoToMono(short* buf, int numSamples);
 #endif
 
-// Prime declares the output buffer const and the input mutable; Echoes swapped that.
-#if RSTL_PRIME1
-void CRSFAudio::Decode(const ushort* out, ushort* in, const int numSamples) {
-#else
-void CRSFAudio::Decode(ushort* out, const ushort* in, int numSamples) {
-#endif
+void CRSFAudio::Decode(ushort* out, const ushort* in, const int numSamples) {
   int curSamp = mCurSamp / 2;
   int loopEndSamp = mLoopEndSamp / 2;
   int loopStartSamp = mLoopStartSamp / 2;
-  DecodeMonoAndMix(const_cast< ushort* >(out), in, numSamples, curSamp, loopEndSamp, loopStartSamp,
-                   mVolume, mLeftState);
+  DecodeMonoAndMix(out, in, numSamples, curSamp, loopEndSamp, loopStartSamp, mVolume, mLeftState);
 
   int halfLen = mRsfLength / 2;
-  DecodeMonoAndMix(const_cast< ushort* >(out + 1), in + 1, numSamples, curSamp + halfLen,
-                   loopEndSamp + halfLen, loopStartSamp + halfLen, mVolume, mRightState);
+  DecodeMonoAndMix(out + 1, in + 1, numSamples, curSamp + halfLen, loopEndSamp + halfLen,
+                   loopStartSamp + halfLen, mVolume, mRightState);
 
 #if !RSTL_PRIME1
   if (CAudioSys::GetSurroundMode() == CAudioSys::kSM_Mono) {
@@ -147,7 +136,7 @@ void CRSFAudio::Decode(ushort* out, const ushort* in, int numSamples) {
   }
 #elif RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
   if (CAudioSys::GetSurroundMode() == CAudioSys::kSM_Mono) {
-    MixStereoToMono(reinterpret_cast< short* >(const_cast< ushort* >(out)), numSamples);
+    MixStereoToMono(reinterpret_cast< short* >(out), numSamples);
   }
 #endif
 
@@ -200,13 +189,8 @@ void MixStereoToMono(short* buf, int numSamples) {
 }
 #endif
 
-#if RSTL_PRIME1
-void CRSFAudio::DecodeMonoAndMix(ushort* out, ushort* in, int numSamples, int startSample,
-                                 int sampleEnd, const int sampleStart, int vol, g72x_state& state) {
-#else
 void CRSFAudio::DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, int startSample,
                                  int sampleEnd, const int sampleStart, int vol, g72x_state& state) {
-#endif
   int remBytes = numSamples / 2;
   long curSample = startSample;
   const ushort* inCursor = in;

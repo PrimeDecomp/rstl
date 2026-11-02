@@ -1,8 +1,6 @@
 #ifndef _CAIINTERRUPTMANAGER
 #define _CAIINTERRUPTMANAGER
 
-#include "EchoesNamespace.h"
-
 typedef void (*FAudioCallback)();
 
 // Guessed name: follows the asserted Corruption source-file identity.
