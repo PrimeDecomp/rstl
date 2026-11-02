@@ -156,8 +156,9 @@ public:
 #else
   // Guessed name; the counterpart of DepthBackwards used when drawing the sky ripple.
   CModelFlags DepthForwards() const {
-    return CModelFlags(*this, (GetOtherFlags() & ~(kF_DepthGreater | kF_DepthNonInclusive)) |
-                                  kF_Unknown100 | kF_Unknown200);
+    return CModelFlags((GetOtherFlags() & ~(kF_DepthGreater | kF_DepthNonInclusive)) |
+                           kF_Unknown100 | kF_Unknown200,
+                       *this);
 #endif
 
   }
