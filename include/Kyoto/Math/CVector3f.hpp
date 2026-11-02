@@ -74,14 +74,14 @@ public:
   const float& operator[](EDimY) const { return mY; }
   const float& operator[](EDimZ) const { return mZ; }
 
-// TODO: verify that this Prime/Echoes difference is real
+  float& operator[](RSTL_PRIME1_CONST int i) {
 #if RSTL_PRIME1
-  float& operator[](const int i) { return reinterpret_cast< float* >(this)[i]; }
-  const float operator[](const int i) const { return (&mX)[i]; }
+    return reinterpret_cast< float* >(this)[i];
 #else
-  float& operator[](int i) { return (&mX)[i]; }
-  float operator[](int i) const { return (&mX)[i]; }
+    return (&mX)[i];
 #endif
+  }
+  RSTL_PRIME1_CONST float operator[](RSTL_PRIME1_CONST int i) const { return (&mX)[i]; }
   const float* GetArrayPtr() const { return &mX; } // Guessed name
   bool IsNonZero() const { return mX != 0.f || mY != 0.f || mZ != 0.f; }
 

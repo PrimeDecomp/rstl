@@ -70,13 +70,9 @@ inline CRelAngle operator*(const CRelAngle& a, float b) {
   out *= b;
   return out;
 }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 inline float sine(const CRelAngle& angle) { return sin(angle.AsRadians()); }
 inline float cosine(const CRelAngle& angle) { return cos(angle.AsRadians()); }
-#else
-static inline float sine(const CRelAngle& angle) { return sin(angle.AsRadians()); }
-static inline float cosine(const CRelAngle& angle) { return cos(angle.AsRadians()); }
+#if !RSTL_PRIME1
 
 // Guessed name; native Wii portal clipping calls tan on an angle reference.
 static inline float tangent(const CRelAngle& angle) { return tan(angle.AsRadians()); }

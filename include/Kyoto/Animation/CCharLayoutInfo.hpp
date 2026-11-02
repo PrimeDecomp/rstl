@@ -20,12 +20,7 @@
 
 class CCharLayoutNode {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CCharLayoutNode(CInputStream& in);
-#else
   explicit CCharLayoutNode(CInputStream& in);
-#endif
 
   ~CCharLayoutNode() {}
 // TODO: verify that this Prime/Echoes difference is real
@@ -59,12 +54,7 @@ CHECK_SIZEOF(CCharLayoutNode, RSTL_PRIME1 ? 0x20 : 0x40)
 
 class CCharLayoutInfo {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CCharLayoutInfo(CInputStream& in);
-#else
   explicit CCharLayoutInfo(CInputStream& in);
-#endif
 
   CSegId GetSegIdFromString(const rstl::string& bone) const;
   const rstl::map< rstl::string, CSegId >& GetNameMap() const { return mNameMap; }

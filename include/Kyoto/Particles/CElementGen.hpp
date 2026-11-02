@@ -169,42 +169,27 @@ public:
   virtual void SetGlobalTranslation(const CVector3f& translation) override;
   virtual void SetGlobalScale(const CVector3f& scale) override;
   virtual void SetLocalScale(const CVector3f& scale) override;
-// TODO: verify that this Prime/Echoes difference is real
   virtual void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
   virtual void SetModulationColor(const CColor& col) override;
   virtual void SetGeneratorRate(float rate) override;
 #if !RSTL_PRIME1
   virtual const CVector3f& GetTranslation() const override { return mTranslation; }
-  virtual const CVector3f& GetGlobalTranslation() const override { return mGlobalTranslation; }
 #endif
-
+  virtual const CVector3f& GetGlobalTranslation() const override;
   virtual const CTransform4f& GetOrientation() const override { return mOrientation; }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   virtual const CVector3f& GetTranslation() const override { return mTranslation; }
-  virtual const CTransform4f& GetGlobalOrientation() const override;
-  virtual const CVector3f& GetGlobalTranslation() const override;
-#else
-  virtual const CTransform4f& GetGlobalOrientation() const override { return mGlobalOrientation; }
 #endif
+  virtual const CTransform4f& GetGlobalOrientation() const override;
 
   virtual const CVector3f& GetGlobalScale() const override { return mGlobalScale; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  virtual float GetGeneratorRate() const override;
   virtual bool GetParticleEmission() const override;
-#else
-  virtual bool GetParticleEmission() const override { return mParticleEmission; }
-#endif
 
   virtual const CColor& GetModulationColor() const override;
-#if !RSTL_PRIME1
-  float GetGeneratorRate() const override;
-  int GetEmitterTime() const override { return mCurFrame; }
-
-  int GetSystemCount() const override;
-#endif
+  virtual float GetGeneratorRate() const override;
+  int GetEmitterTime() const;
+  int GetSystemCount() RSTL_ECHOES_CONST;
 
   virtual bool IsSystemDeletable() const override;
   virtual rstl::optional_object< CAABox > GetBounds() const override;
@@ -212,16 +197,11 @@ public:
   virtual bool SystemHasLight() const override;
   virtual CLight GetLight() const override;
   virtual void DestroyParticles() override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   virtual uint Get4CharId() const override;
+#if RSTL_PRIME1
   void SetZTest(bool enabled) { mZTest = enabled; }
   rstl::vector< CParticle >& Particles() { return mParticles; }
   const rstl::vector< CParticle >& GetParticles() const { return mParticles; }
-  int GetEmitterTime() const;
-  int GetSystemCount();
-#else
-  virtual uint Get4CharId() const override { return 'PART'; }
 #endif
 
   void EndLifetime();
@@ -277,17 +257,12 @@ public:
 #endif
   );
   void RenderParticles();
-#if RSTL_PRIME1
-  void RenderBasicParticlesRotNoTS(const CTransform4f& xf);
-  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf);
-  void RenderBasicParticlesRotTS(const CTransform4f& xf);
-  void RenderBasicParticlesNoRotTS(const CTransform4f& xf);
-#else
+  void RenderBasicParticlesNoRotTS(const CTransform4f& xf) RSTL_ECHOES_CONST;
+  void RenderBasicParticlesRotTS(const CTransform4f& xf) RSTL_ECHOES_CONST;
+  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) RSTL_ECHOES_CONST;
+  void RenderBasicParticlesRotNoTS(const CTransform4f& xf) RSTL_ECHOES_CONST;
+#if !RSTL_PRIME1
   // Guessed names, extending Prime's basic-render variants with modulation color.
-  void RenderBasicParticlesNoRotTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) const;
-  void RenderBasicParticlesRotNoTS(const CTransform4f& xf) const;
   void RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const;
   void RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const;
   void RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const;
@@ -469,6 +444,14 @@ public:
 
 };
 CHECK_SIZEOF(CElementGen, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
+
+#if !RSTL_PRIME1
+inline const CVector3f& CElementGen::GetGlobalTranslation() const { return mGlobalTranslation; }
+inline const CTransform4f& CElementGen::GetGlobalOrientation() const { return mGlobalOrientation; }
+inline bool CElementGen::GetParticleEmission() const { return mParticleEmission; }
+inline int CElementGen::GetEmitterTime() const { return mCurFrame; }
+inline uint CElementGen::Get4CharId() const { return 'PART'; }
+#endif
 #if RSTL_PRIME1
 
 #ifdef __MWERKS__

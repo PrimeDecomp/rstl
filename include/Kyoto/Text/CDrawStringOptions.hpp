@@ -12,14 +12,11 @@ public:
 
   void SetTextDirection(ETextDirection dir) { mDirection = dir; }
   ETextDirection GetTextDirection() const { return mDirection; }
-#if !RSTL_PRIME1
   uint GetPaletteEntry(int idx) const { return mColors[idx]; }
-#endif
 
   void SetPaletteEntry(int idx, uint color) { mColors[idx] = color; }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  uint GetPaletteEntry(int idx) const { return mColors[idx]; }
   int GetExtraCharacterSpacing() const {
 #if RSTL_VERSION >= RSTL_GM8P_00
     return mExtraCharacterSpacing;

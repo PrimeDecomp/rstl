@@ -35,17 +35,13 @@ bool operator==(const CQuaternion& a, const CQuaternion& b);
 
 bool close_enough(const CVector2f& a, const CVector2f& b, float epsilon = vector2_epsilon());
 bool close_enough(const CVector3f& a, const CVector3f& b, float epsilon = vector3_epsilon());
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-inline bool close_enough(float a, float b, float epsilon = Real32::Epsilon()) {
-#if RSTL_VERSION >= RSTL_R3IJ
+inline bool close_enough(float a, RSTL_ECHOES_CONST float b, float epsilon = Real32::Epsilon()) {
+#if !RSTL_PRIME1
+  return CMath::AbsF(a - b) < epsilon;
+#elif RSTL_VERSION >= RSTL_R3IJ
   return fabsf(a - b) < epsilon;
 #else
   return fabs(a - b) < epsilon;
-#endif
-#else
-inline bool close_enough(float a, const float b, float epsilon = Real32::Epsilon()) {
-  return CMath::AbsF(a - b) < epsilon;
 #endif
 }
 inline bool close_enough(double a, double b, double epsilon = Double::Epsilon()) {

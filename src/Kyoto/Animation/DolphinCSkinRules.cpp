@@ -1,7 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 // TODO: verify that this Prime/Echoes difference is real
@@ -10,7 +9,6 @@
 #endif
 
 #include "Kyoto/Graphics/CModel.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/math.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

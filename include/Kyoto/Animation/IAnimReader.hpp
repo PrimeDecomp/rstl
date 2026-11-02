@@ -27,19 +27,17 @@ struct SAdvancementResults {
   const CAdvancementDeltas& GetAdvancementDeltas() const { return mDeltas; }
 #endif
   SAdvancementResults() {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SAdvancementResults(const CCharAnimTime& time) : mRemTime(time) {}
+  explicit SAdvancementResults(const CCharAnimTime& time)
+  : mRemTime(time)
+#if !RSTL_PRIME1
+  , mDeltas(CVector3f::Zero(), CQuaternion::NoRotation())
 #endif
+  {
+  }
   SAdvancementResults(const CCharAnimTime& time, const CAdvancementDeltas& deltas)
   : mRemTime(time), mDeltas(deltas) {}
 
-// TODO: verify that this Prime/Echoes difference is real
   const CCharAnimTime& GetRemainder() const { return mRemTime; }
-#if !RSTL_PRIME1
-  explicit SAdvancementResults(const CCharAnimTime& time)
-  : mRemTime(time), mDeltas(CVector3f::Zero(), CQuaternion::NoRotation()) {}
-#endif
   static SAdvancementResults RemainderOnly(const CCharAnimTime& time) {
     return SAdvancementResults(time);
   }

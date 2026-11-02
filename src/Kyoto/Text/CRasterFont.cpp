@@ -324,7 +324,6 @@ const CGlyph* CRasterFont::InternalGetGlyph(const wchar_t chr) const {
   return &it->second;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, CInputStream& in,
                                                       const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real

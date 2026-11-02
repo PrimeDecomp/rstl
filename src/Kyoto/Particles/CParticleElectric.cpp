@@ -1186,7 +1186,6 @@ CLight CParticleElectric::GetLight() const {
   return CLight::BuildLocalAmbient(GetGlobalTranslation(), CColor::Orange());
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 void CParticleElectric::SetParticleEmission(RSTL_PRIME1_CONST bool emission) {
   mEmitting = emission;
 }

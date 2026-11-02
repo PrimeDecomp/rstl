@@ -50,20 +50,16 @@ private:
 };
 CHECK_SIZEOF(CPlane, 0x10)
 
-#if RSTL_PRIME1
-inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
-: mNormal(normal), mConstant(constant) {}
-#endif
-
-#if !RSTL_PRIME1
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions on
 #endif
 inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
 : mNormal(normal), mConstant(constant) {}
-#ifdef __MWERKS__
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 #pragma cpp_extensions reset
 #endif
+
+#if !RSTL_PRIME1
 
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPlane)

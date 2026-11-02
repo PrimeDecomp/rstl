@@ -178,7 +178,6 @@ bool CRumbleVoice::OwnsSustained(short handle) const {
 }
 
 /* TODO: Fake matched, find real solution */
-// TODO: verify that this Prime/Echoes difference is real
 short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
   ++mLastId;
   if (mLastId == 0)

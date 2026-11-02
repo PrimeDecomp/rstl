@@ -37,26 +37,34 @@ inline IFactory::~IFactory() {}
 
 class CResFactory : public IFactory {
 public:
-#if !RSTL_PRIME1
   struct SLoadingData {
     SObjectTag mTag;
     rstl::auto_ptr< CDvdRequest > mDvdReq;
     IObj** mTarget;
     rstl::auto_ptr< uchar > mBuffer;
+#if !RSTL_PRIME1
     uint mCompressedPos;
+#endif
     rstl::auto_ptr< uchar > mDecompBuffer;
+#if RSTL_PRIME1
+    rstl::auto_ptr< z_stream_s > mZip;
+#else
     uint mDecompressedPos;
+#endif
     int mSize;
     CResLoader::ECompressionType mCompression;
     CVParamTransfer mParams;
 
     SLoadingData(const SObjectTag& tag, CDvdRequest* request, IObj** target,
-                 const rstl::auto_ptr< uchar >& buffer, int size,
-                 CResLoader::ECompressionType compression, const CVParamTransfer& params);
+#if RSTL_PRIME1
+                 void* buffer,
+#else
+                 const rstl::auto_ptr< uchar >& buffer,
+#endif
+                 int size, CResLoader::ECompressionType compression, const CVParamTransfer& params);
     ~SLoadingData();
     bool PumpDecompression(uint time);
   };
-#endif
 
   CResFactory();
 
@@ -71,29 +79,9 @@ public:
     return mResLoader.GetResourceIdByName(name);
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  struct SLoadingData {
-    SObjectTag mTag;
-    rstl::auto_ptr< CDvdRequest > mDvdReq;
-    IObj** mTarget;
-    rstl::auto_ptr< uchar > mBuffer;
-    rstl::auto_ptr< uchar > mDecompBuffer;
-    rstl::auto_ptr< z_stream_s > mZip;
-    int mSize;
-    CResLoader::ECompressionType mCompression;
-    CVParamTransfer mParams;
-
-    SLoadingData(const SObjectTag& tag, CDvdRequest* request, IObj** target, void* buffer, int size,
-                 CResLoader::ECompressionType compression, const CVParamTransfer& params);
-    ~SLoadingData();
-    bool PumpDecompression(uint time);
-  };
-
-  uint ResourceSize(const SObjectTag& tag) { return mResLoader.ResourceSize(tag); }
-#else
-  uint ResourceSize(const SObjectTag& tag) const { return mResLoader.ResourceSize(tag); }
-#endif
+  uint ResourceSize(const SObjectTag& tag) RSTL_ECHOES_CONST {
+    return mResLoader.ResourceSize(tag);
+  }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

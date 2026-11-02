@@ -25,12 +25,10 @@ public:
 
   // CInstruction
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
-// TODO: verify that this Prime/Echoes difference is real
   void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
 
   void SetupPositionLTR(CFontRenderState& state) const;
   void TestLargestFont(int monoW, int monoH, int baseline);
-// TODO: verify that this Prime/Echoes difference is real
 
   int GetOutputX() const { return mOffsetX; }
   int GetOutputY() const { return mOffsetY; }

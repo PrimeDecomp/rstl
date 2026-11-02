@@ -56,12 +56,7 @@ private:
 
 class CFBStreamedAnimReaderTotals {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFBStreamedAnimReaderTotals(const CFBStreamedCompression& source);
-#else
   explicit CFBStreamedAnimReaderTotals(const CFBStreamedCompression& source);
-#endif
 
   ~CFBStreamedAnimReaderTotals();
   void CalculateDown();
@@ -179,12 +174,9 @@ CHECK_SIZEOF(CFBFullBodyAspectsForStream, 0x20)
 
 class CFBStreamedPairOfTotals {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFBStreamedPairOfTotals(const TSubAnimTypeToken< CFBStreamedCompression >& source);
-  ~CFBStreamedPairOfTotals() {}
-#else
   explicit CFBStreamedPairOfTotals(const TSubAnimTypeToken< CFBStreamedCompression >& source);
+#if RSTL_PRIME1
+  ~CFBStreamedPairOfTotals() {}
 #endif
 
   void SetTime(CMemoryInputToBitLevelLoader& input,
@@ -227,12 +219,7 @@ CHECK_SIZEOF(CMemoryInputToBitLevelLoader, 0x4)
 template < typename T >
 class CBitLevelLoader {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CBitLevelLoader(T& input) : mInput(&input), mWord(Input(*mInput)), mBit(0) {}
-#else
   explicit CBitLevelLoader(T& input) : mInput(&input), mWord(Input(*mInput)), mBit(0) {}
-#endif
 
   uint LoadUnsigned(uint bits);
   int LoadSigned(uint bits);

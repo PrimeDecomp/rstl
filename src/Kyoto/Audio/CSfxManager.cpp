@@ -8,7 +8,6 @@
 #include "Kyoto/TToken.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "Kyoto/Audio/CAudioSys.hpp"
 #include "Kyoto/Audio/CSfxHandle.hpp"
 #include "Kyoto/Basics/CCast.hpp"
@@ -21,7 +20,6 @@
 
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 #include "types.h"

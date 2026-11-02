@@ -68,13 +68,7 @@ public:
     CVector3f mVelocity;
   };
   CParticleSwoosh(TToken< CSwooshDescription > desc, int leng);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~CParticleSwoosh();
-#else
-  // CParticleGen
   ~CParticleSwoosh() override;
-#endif
 
   const bool Update(double dt) override;
   void Render() override;

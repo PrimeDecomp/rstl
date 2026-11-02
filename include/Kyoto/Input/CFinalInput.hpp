@@ -8,14 +8,9 @@
 
 class COsContext;
 
-#if RSTL_PRIME1
 class CFinalInputInfo;
-#endif
-
 class CControllerGamepadData;
-#if !RSTL_PRIME1
 class CControllerData;
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -131,18 +126,19 @@ public:
     kSC_NunchukZMinBeforeMax = 11,
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
   CFinalInput();
+  CFinalInput(const CFinalInputInfo& info, float leftDiv, float rightDiv);
   // Guessed Wii snapshot type name and input-type meaning.
   CFinalInput(int channel, float dt, const CControllerData& data, uint inputType);
-  CFinalInput(int channel, float dt, const CControllerGamepadData& data, float leftDif,
-              float rightDiv);
+  CFinalInput(RSTL_PRIME1_CONST int channel, RSTL_PRIME1_CONST float dt,
+              const CControllerGamepadData& data, RSTL_PRIME1_CONST float leftDiv,
+              RSTL_PRIME1_CONST float rightDiv);
   CFinalInput(int channel, float dt, const COsContext& context);
+#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
   CFinalInput(const CFinalInput& other)
   : mDt(other.mDt)
   , mControllerIdx(other.mControllerIdx)
-#if RSTL_VERSION >= RSTL_R32J
+#if !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
   , mInputType(other.mInputType)
   , mControllerData(other.mControllerData)
 #else
@@ -152,78 +148,37 @@ public:
   , mAnaRightY(other.mAnaRightY)
   , mAnaLeftTrigger(other.mAnaLeftTrigger)
   , mAnaRightTrigger(other.mAnaRightTrigger)
+#if RSTL_PRIME1
+  , mEnableAnaLeftXP(other.mEnableAnaLeftXP)
+  , mEnableAnaLeftYP(other.mEnableAnaLeftYP)
+  , mEnableAnaRightXP(other.mEnableAnaRightXP)
+  , mEnableAnaRightYP(other.mEnableAnaRightYP)
+#endif
   , mAnaLeftTriggerP(other.mAnaLeftTriggerP)
   , mAnaRightTriggerP(other.mAnaRightTriggerP)
   , btns1(other.btns1)
   , btns2(other.btns2)
   , btns3(other.btns3)
+#if !RSTL_PRIME1
   , btns4(other.btns4)
+#endif
 #endif
   {
   }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFinalInput();
-  CFinalInput(const CFinalInputInfo& info, float leftDiv, float rightDiv);
-#else
   void InitializeAnalog(float leftDiv, float rightDiv);
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CFinalInput(int channel, float dt, const CControllerData& data, uint inputType);
-  CFinalInput(const int channel, const float dt, const CControllerGamepadData& data,
-              const float leftDiv, const float rightDiv);
-  CFinalInput(int channel, float dt, const COsContext& context);
-#else
   CFinalInput ScaleAnalogueSticks(float leftDiv, float rightDiv) const;
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ
-  CFinalInput(const CFinalInput& other)
-  : mDt(other.mDt)
-  , mControllerIdx(other.mControllerIdx)
-  , mAnaLeftX(other.mAnaLeftX)
-  , mAnaLeftY(other.mAnaLeftY)
-  , mAnaRightX(other.mAnaRightX)
-  , mAnaRightY(other.mAnaRightY)
-  , mAnaLeftTrigger(other.mAnaLeftTrigger)
-  , mAnaRightTrigger(other.mAnaRightTrigger)
-  , mEnableAnaLeftXP(other.mEnableAnaLeftXP)
-  , mEnableAnaLeftYP(other.mEnableAnaLeftYP)
-  , mEnableAnaRightXP(other.mEnableAnaRightXP)
-  , mEnableAnaRightYP(other.mEnableAnaRightYP)
-  , mAnaLeftTriggerP(other.mAnaLeftTriggerP)
-  , mAnaRightTriggerP(other.mAnaRightTriggerP)
-  , btns1(other.btns1)
-  , btns2(other.btns2)
-  , btns3(other.btns3) {}
-#endif
-#else
-  float DeltaTime() const { return mDt; }
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static CFinalInput NoInput(int channel, float dt);
-#else
-  void SetDeltaTime(float dt) { mDt = dt; }
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   float Time() const { return mDt; }
   void SetTime(float dt) { mDt = dt; }
-#else
+  float DeltaTime() const { return mDt; }
+  void SetDeltaTime(float dt) { mDt = dt; }
   float GetAnalogLeftX() const;
   float GetAnalogLeftY() const;
   float GetAnalogRightX() const;
   float GetAnalogRightY() const;
-#endif
 
   int ControllerNumber() const { return mControllerIdx; }
 
@@ -320,10 +275,6 @@ public:
   bool PStart() const;
 
 #else
-  void InitializeAnalog(float leftDiv, float rightDiv);
-
-  CFinalInput ScaleAnalogueSticks(float leftDiv, float rightDiv) const;
-
   float ALAUp() const { return mAnaLeftY > 0.f ? mAnaLeftY : 0.f; }
   float ALADown() const { return mAnaLeftY < 0.f ? -mAnaLeftY : 0.f; }
   float ALALeft() const { return mAnaLeftX < 0.f ? -mAnaLeftX : 0.f; }

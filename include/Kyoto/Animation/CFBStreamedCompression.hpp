@@ -30,9 +30,8 @@ class IObjectStore;
 
 class CStandardMultiFormatHeader {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  explicit CStandardMultiFormatHeader(CInputStream& in)
 #if RSTL_PRIME1
-  CStandardMultiFormatHeader(CInputStream& in)
   : x0_(in.Get< uint >())
   , mMaxTime(in.Get< float >())
   , mStandardInterval(in.Get< float >())
@@ -41,9 +40,8 @@ public:
   , mRotationValueForOne(in.Get< uint >())
   , mOffsetResolution(in.Get< float >())
   , mBoneChannelCount(in.Get< uint >())
-  , x20_(in.Get< uint >()) {}
+  , x20_(in.Get< uint >())
 #else
-  explicit CStandardMultiFormatHeader(CInputStream& in)
   : mVersionNumber(in.ReadInt8())
   , mMaxTime(in.ReadFloat())
   , mStandardInterval(in.ReadFloat())
@@ -53,8 +51,10 @@ public:
   , mOffsetResolution(in.ReadFloat())
   , mScaleResolution(in.ReadFloat())
   , mBoneChannelCount(in.ReadInt32())
-  , x24_(in.ReadInt32()) {}
+  , x24_(in.ReadInt32())
 #endif
+  {
+  }
 
   const void* AfterEnd() const { return this + 1; }
   CCharAnimTime GetMaxTime() const { return CCharAnimTime(mMaxTime); }

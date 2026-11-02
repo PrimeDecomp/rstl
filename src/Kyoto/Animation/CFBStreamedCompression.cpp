@@ -76,7 +76,6 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
   uint rootIndex = 0;
   for (CFBStreamedPerChannelHeaderList::const_iterator channel(firstChannel, channels.size());
        channel != channels.end(); ++channel) {
-// TODO: verify that this Prime/Echoes difference is real
     if (channel->GetSegId() ==
 #if RSTL_PRIME1
         CSegId::Root()

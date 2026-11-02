@@ -34,12 +34,7 @@ class CSegStatementSet;
 class RotationAndOffsetStorage {
 public:
   struct CRotationAndOffsetVectors {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CRotationAndOffsetVectors(CInputStream& in);
-#else
     explicit CRotationAndOffsetVectors(CInputStream& in);
-#endif
 
     rstl::vector< CQuaternion > mRotations;
     rstl::vector< CVector3f > mOffsets;

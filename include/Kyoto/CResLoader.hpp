@@ -120,7 +120,6 @@ public:
   uint GetResourceOffset(const SObjectTag& tag) const;
 
   ECompressionType GetResourceCompression(const SObjectTag& tag) const;
-// TODO: verify that this Prime/Echoes difference is real
   CDvdRequest* LoadResourceAsync(const SObjectTag& tag, char* extBuf);
   CBufferedDvdRequest* LoadResourceAsync(const SObjectTag& tag);
   CDvdRequest* LoadResourcePartAsync(const SObjectTag& tag, int offset, int length, char* extBuf);
@@ -138,11 +137,8 @@ public:
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
 
   int GetPakCount() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPakFile* GetPakFile(int idx) const;
-#else
-  const CPakFile* GetPakFile(int idx) const;
+  RSTL_ECHOES_CONST CPakFile* GetPakFile(int idx) const;
+#if !RSTL_PRIME1
   CPakFile* GetPakFile(int idx);
   void KillLookahead(const CLookaheadRes* cache);
 #endif

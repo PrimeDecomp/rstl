@@ -7,7 +7,6 @@
 
 class CImageInstruction : public CInstruction {
 public:
-// TODO: verify that this Prime/Echoes difference is real
   explicit CImageInstruction(const CFontImageDef& image) : mImage(image) {}
 
   // CInstruction
@@ -15,7 +14,6 @@ public:
   void GetAssets(rstl::vector< CToken >& assetsOut) const override;
 
   uint GetAssetCount() const override { return mImage.GetImages().size(); }
-// TODO: verify that this Prime/Echoes difference is real
 
 private:
   CFontImageDef mImage;

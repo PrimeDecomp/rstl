@@ -25,16 +25,12 @@ class CAnimSysContext;
 class CPreAdvanceIndicator {
 public:
   explicit CPreAdvanceIndicator(const CCharAnimTime& time) : mIsTime(true), mTime(time) {}
-#if RSTL_PRIME1
   explicit CPreAdvanceIndicator(const char* string);
   bool IsTime() const;
   const CCharAnimTime& GetTime() const;
   bool IsString() const;
   const char* GetString() const;
-#else
-  bool IsTime() const { return mIsTime; }
-  bool IsString() const { return !mIsTime; }
-  const CCharAnimTime& GetTime() const { return mTime; }
+#if !RSTL_PRIME1
   uint GetNameHash() const { return mNameHash; } // Guessed name.
 #endif
 
@@ -48,6 +44,12 @@ private:
 #endif
 };
 CHECK_SIZEOF(CPreAdvanceIndicator, RSTL_PRIME1 ? 0x40 : 0x10)
+
+#if !RSTL_PRIME1
+inline bool CPreAdvanceIndicator::IsTime() const { return mIsTime; }
+inline bool CPreAdvanceIndicator::IsString() const { return !mIsTime; }
+inline const CCharAnimTime& CPreAdvanceIndicator::GetTime() const { return mTime; }
+#endif
 #if !RSTL_PRIME1
 
 namespace rstl {

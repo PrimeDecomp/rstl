@@ -115,18 +115,44 @@ class TLockedToken
 {
 public:
   TLockedToken() {}
-// TODO: verify that this Prime/Echoes difference is real
+  TLockedToken(T* item)
 #if RSTL_PRIME1
-  TLockedToken(T* item) : TToken< T >(item), mItem(item) { CToken::Lock(); }
-  TLockedToken(const CToken& token) : TToken< T >(token), mItem(TToken< T >::GetT()) {}
-  TLockedToken(const TLockedToken< T >& token) : TToken< T >(token), mItem(*token) {
-    CToken::Lock();
-  }
+  : TToken< T >(item)
 #else
-  TLockedToken(T* item) : mToken(item), mItem(item) { mToken.Lock(); }
-  TLockedToken(const CToken& token) : mToken(token), mItem(*mToken) {}
-  TLockedToken(const TLockedToken< T >& token) : mToken(token), mItem(*token) { mToken.Lock(); }
+  : mToken(item)
+#endif
+  , mItem(item) {
+#if RSTL_PRIME1
+    CToken::Lock();
+#else
+    mToken.Lock();
+#endif
+  }
+  TLockedToken(const CToken& token)
+#if RSTL_PRIME1
+  : TToken< T >(token)
+  , mItem(TToken< T >::GetT())
+#else
+  : mToken(token)
+  , mItem(*mToken)
+#endif
+  {
+  }
+  TLockedToken(const TLockedToken< T >& token)
+#if RSTL_PRIME1
+  : TToken< T >(token)
+#else
+  : mToken(token)
+#endif
+  , mItem(*token) {
+#if RSTL_PRIME1
+    CToken::Lock();
+#else
+    mToken.Lock();
+#endif
+  }
 
+#if !RSTL_PRIME1
   TLockedToken& operator=(const TLockedToken< T >& token) {
     mToken = token.mToken;
     mItem = token.mItem;

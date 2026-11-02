@@ -19,12 +19,7 @@ class CVParamTransfer;
 
 class CAnimCharacterSet {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CAnimCharacterSet(CInputStream& in);
-#else
   explicit CAnimCharacterSet(CInputStream& in);
-#endif
 
   const CCharacterSet& GetCharacterSet() const { return mCharacterSet; }
 // TODO: verify that this Prime/Echoes difference is real

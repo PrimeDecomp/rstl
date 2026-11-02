@@ -2,7 +2,6 @@
 
 uint CCharAnimMemoryMetrics::sTotalSize = 0;
 
-// TODO: verify that this Prime/Echoes difference is real
 void CCharAnimMemoryMetrics::AddToTotalSize(RSTL_PRIME1_CONST uint size, EAnimSubSystem subSystem) {
   sTotalSize += size;
 }

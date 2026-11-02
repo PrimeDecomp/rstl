@@ -54,7 +54,6 @@ private:
 };
 CHECK_SIZEOF(CAbsAngle, 0x4)
 
-// TODO: verify that this Prime/Echoes difference is real
 // __mi__FRC9CAbsAngleRC9CAbsAngle
 inline CRelAngle operator-(const CAbsAngle& lhs, const CAbsAngle& rhs) {
   return CRelAngle::FromRadians(lhs.AsRadians() - rhs.AsRadians());

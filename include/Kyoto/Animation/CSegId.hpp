@@ -13,43 +13,47 @@ public:
 #endif
 
   CSegId(int id) : mId(id) {}
-#if !RSTL_PRIME1
   CSegId(uint id) : mId(id) {}
-#endif
-
   CSegId(const char& id) : mId(id) {}
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CSegId(uint id) : mId(id) {}
   CSegId(CInputStream& in) : mId(in.Get< uint >()) {}
 #else
   CSegId(CInputStream& in);
+#endif
 
-  static CSegId Null() { return CSegId(99); }
+  const uchar val() const { return mId; }
 
-  static CSegId Character() { return CSegId(97); }
+  static CSegId Null() {
+#if RSTL_PRIME1
+    return CSegId(0);
+#else
+    return CSegId(99);
+#endif
+  }
+  static CSegId Invalid() {
+#if RSTL_PRIME1
+    return CSegId(-1);
+#else
+    return CSegId(255);
+#endif
+  }
+#if RSTL_PRIME1
+  static CSegId Root() { return CSegId(3); }
+#endif
+  static CSegId Character() {
+#if RSTL_PRIME1
+    return CSegId(2);
+#else
+    return CSegId(97);
+#endif
+  }
 
-  static CSegId Invalid() { return CSegId(255); }
-
-#if RSTL_VERSION >= RSTL_R32J
+#if !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
   bool operator==(CSegId other) const { return mId == other.mId; }
 #else
   bool operator==(const CSegId& other) const { return mId == other.mId; }
 #endif
-
   bool operator!=(const CSegId& other) const { return mId != other.mId; }
-#endif
-
-  const uchar val() const { return mId; }
-#if RSTL_PRIME1
-  static CSegId Null() { return CSegId(0); }
-  static CSegId Invalid() { return CSegId(-1); }
-  static CSegId Root() { return CSegId(3); }
-  static CSegId Character() { return CSegId(2); }
-
-  bool operator==(const CSegId& rhs) const { return mId == rhs.mId; }
-  bool operator!=(const CSegId& rhs) const { return mId != rhs.mId; }
-#endif
 
 private:
   uchar mId;

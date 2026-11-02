@@ -8,7 +8,6 @@
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
 RSTL_PRIME1_CONST CFactoryFnReturn
 FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
                              const CVParamTransfer& transfer) {

@@ -36,15 +36,12 @@ public:
   float GetLineSpacing() const { return mLineSpacing; }
 
   int GetLineExtraSpacing() const { return mExtraLineSpacing; }
-// TODO: verify that this Prime/Echoes difference is real
   void SetWordWrapping(RSTL_PRIME1_CONST bool wrap) { mEnableWordWrap = wrap; }
 
   bool IsWordWrapping() const { return mEnableWordWrap; }
   void SetJustification(EJustification just) { mJust = just; }
-// TODO: verify that this Prime/Echoes difference is real
 
   EJustification GetJustification() const { return mJust; }
-// TODO: verify that this Prime/Echoes difference is real
   void SetVerticalJustification(EVerticalJustification just) { mVjust = just; }
 
   EVerticalJustification GetVerticalJustification() const { return mVjust; }

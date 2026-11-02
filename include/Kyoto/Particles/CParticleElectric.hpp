@@ -33,7 +33,6 @@ public:
   void SetGlobalTranslation(const CVector3f& translation) override;
   void SetGlobalScale(const CVector3f& scale) override;
   void SetLocalScale(const CVector3f& scale) override;
-// TODO: verify that this Prime/Echoes difference is real
   void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
   void SetModulationColor(const CColor& col) override;

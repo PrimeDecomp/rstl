@@ -18,7 +18,6 @@ class IObjectStore;
 
 class CFontInfo {
 public:
-// TODO: verify that this Prime/Echoes difference is real
   CFontInfo(bool a, bool b, int c, int fontSize, const char* RSTL_PRIME1_CONST name)
   : x0_(a), x1_(b), x4_(c), mFontSize(fontSize) {
     strcpy(mName, name);
@@ -162,40 +161,23 @@ public:
   CRasterFont(CInputStream& in, IObjectStore* store);
 
   EFontMode GetMode() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-  int GetMonoWidth() const { return mMonoWidth; }
-  int GetMonoHeight() const { return mMonoHeight; }
-#else
   int GetMonoWidth() const;
+#if RSTL_PRIME1
   int GetMonoHeight() const;
 #endif
-  int GetCarriageAdvance();
-
-#if RSTL_VERSION >= RSTL_GM8P_00
-  const CGlyph* GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }
-#else
-  const CGlyph* GetGlyph(wchar_t c) const;
-#endif
-  bool HasGlyph(wchar_t c) const { return GetGlyph(c) != nullptr; }
-#else
-  int GetMonoWidth() const { return mMonoWidth; }
-  int GetCarriageAdvance() const;
-  int GetBaseLine() const { return mBaseline; }
-#endif
+  int GetCarriageAdvance() RSTL_ECHOES_CONST;
+  int GetBaseLine() const;
 
   void GetSize(const CDrawStringOptions&, int&, int&, const wchar_t*, int) const;
   void SetTexture(const TToken< CTexture >& texture);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   inline TToken< CTexture > GetTexture() { return *mTexture; }
 #else
   const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
-  bool IsFinishedLoading();
-  const CGlyph* GetGlyph(wchar_t chr) const { return InternalGetGlyph(chr); }
-  bool HasGlyph(wchar_t chr) const { return GetGlyph(chr) != nullptr; }
 #endif
+  bool IsFinishedLoading();
+  const CGlyph* GetGlyph(wchar_t c) const;
+  bool HasGlyph(wchar_t c) const { return GetGlyph(c) != nullptr; }
 
   void DrawString(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
                   CTextRenderBuffer* buffer, const wchar_t* str, int length) const;
@@ -207,14 +189,7 @@ public:
 
   void SetupRenderState();
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-  int GetBaseLine() const { return mBaseline; }
-  int GetLineMargin() { return mLineMargin; }
-#else
-  int GetBaseLine() const;
   int GetLineMargin();
-#endif
-  bool IsFinishedLoading();
 #endif
 
 private:
@@ -229,11 +204,20 @@ private:
   int mBaseline;
   int mLineMargin;
 
-// TODO: verify that this Prime/Echoes difference is real
   static int KernLookup(const rstl::vector< CKernPair >& kerning, int start,
                         RSTL_PRIME1_CONST int chr);
   const CGlyph* InternalGetGlyph(wchar_t chr) const;
 };
 CHECK_SIZEOF(CRasterFont, 0x94)
+
+#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
+inline int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
+inline int CRasterFont::GetBaseLine() const { return mBaseline; }
+inline const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }
+#endif
+#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8P_00
+inline int CRasterFont::GetMonoHeight() const { return mMonoHeight; }
+inline int CRasterFont::GetLineMargin() { return mLineMargin; }
+#endif
 
 #endif // _CRASTERFONT
