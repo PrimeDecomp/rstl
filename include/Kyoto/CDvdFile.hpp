@@ -24,9 +24,6 @@ class CDvdFile {
 public:
   CDvdFile(const char* name);
   ~CDvdFile();
-#if !RSTL_PRIME1
-  const rstl::string& GetFilename() const { return mFilename; }
-#endif
 
   uint Length() { return mSize; }
   void HandleDVDInterrupt();
@@ -36,9 +33,6 @@ public:
   void PushARAMFileLoad();
   void PopARAMFileLoad();
   bool IsARAMFileLoaded();
-#if !RSTL_PRIME1
-  bool IsARAMFile() const { return mARAMAllocated; }
-#endif
 
   void StartARAMFileLoad();
   void StallForARAMFile();
@@ -49,23 +43,14 @@ public:
   void CalcFileOffset(int offset, ESeekOrigin origin);
   void UpdateFilePos(int pos);
   const int GetFileSize() const { return mSize; }
-#if RSTL_PRIME1
   bool IsARAMFile() const { return mARAMAllocated; }
-#endif
 
   static bool FileExists(const char*);
   static void DVDARAMXferCallback(s32, DVDFileInfo*);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void ARAMARAMXferCallback(uintptr_t addr);
-#else
   static void ARAMARAMXferCallback(u32 addr);
-#endif
 
   static void internalCallback(s32, DVDFileInfo*);
-#if RSTL_PRIME1
   const rstl::string& GetFilename() const { return mFilename; }
-#endif
 
 private:
   int mFileEntry;
@@ -77,15 +62,11 @@ private:
   int mSize;
   rstl::string mFilename;
 };
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CDvdFile, 0x28)
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
 // Guessed name. Set whenever a DVD read is issued or completes; retail code never reads it.
 extern bool gDvdActivity;
-#endif
 
 #endif // _CDVDFILE
