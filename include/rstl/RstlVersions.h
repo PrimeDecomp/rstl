@@ -110,9 +110,9 @@
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
 #define RSTL_TRIVIAL_SCALARS RSTL_ECHOES_ERA
-// `int` and `bool` are trivially destructible without the assignment traits above, and so is a
-// `pair` of trivially destructible types.
-#define RSTL_TRIVIAL_INT_BOOL_DESTRUCTION RSTL_TRILOGY_ECHOES
+// Non-Prime int/bool destruction traits are already supplied by the legacy scalar block.
+// Declare them separately when that block is absent; pairs inherit their elements' traits.
+#define RSTL_TRIVIAL_INT_BOOL_DESTRUCTION (!RSTL_PRIME1 && !RSTL_TRIVIAL_SCALARS)
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
 #define RSTL_DESTROY_CONST_PARAM (!RSTL_ECHOES_ERA)
 // The direct `destroy(T*)` carries the (empty) null precondition, which Prime 1 from GM8P_00 on and
@@ -168,9 +168,8 @@
 #define RSTL_RC_PTR_PRIVATE_COUNT RSTL_ECHOES_ERA
 // `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `rc_ptr_private::sNull`.
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
-// The Trilogy `rc_ptr` has the converting constructor and `Cast<U>()` of the Echoes class that
-// Echoes code calls.
-#define RSTL_RC_PTR_CONVERSION (RSTL_VERSION >= RSTL_R3ME_00)
+// The inline-count owner supports converting construction and `Cast<U>()`.
+#define RSTL_RC_PTR_CONVERSION RSTL_RC_PTR_INLINE_COUNT
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
@@ -221,7 +220,7 @@
 // `insert_into` indexes the leading elements with a `long`.
 #define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME)
 // The `vector::erase` move loop declares its destination iterator before the source one.
-#define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R32J)
 // The `list` copy constructor guards the partial copy with a `destroy_helper`.
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_G2ME)
 // `list::destroy` calls `clear()` instead of erasing the range.
@@ -292,7 +291,7 @@
 // `basic_string::mNull` is a non-const static.
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
-#define RSTL_STRING_INLINE_CHAR_COMPARE (RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_STRING_INLINE_CHAR_COMPARE 1
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)
@@ -391,9 +390,6 @@
 // `internal_search` walks a `match` and a `search` iterator in step (a third implementation).
 // Only this implementation supports the reverse iterators used by `rfind`.
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_VERSION == RSTL_G2MEAB)
-// `compare(const _CharTp*, int)` measures with a separate `rhsEnd` pointer (otherwise it advances
-// `rhs` itself and keeps `rhsStart`).
-#define RSTL_STRING_COMPARE_END_POINTER (RSTL_STRING_OUT_OF_CLASS && RSTL_VERSION != RSTL_G2MEAB)
 // The string typedefs, specializations and `operator+` overloads come in the prototype's own
 // order.
 #define RSTL_STRING_PROTO_TAIL (RSTL_VERSION == RSTL_G2MEAB)
