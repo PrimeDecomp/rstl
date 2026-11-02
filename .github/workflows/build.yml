@@ -107,6 +107,10 @@ jobs:
           echo "Game: $(git rev-parse HEAD)"
           echo "RSTL: $(git -C extern/rstl rev-parse HEAD)"
 
+      # Copy the original files to the workspace
+      - name: Prepare original files
+        run: cp -av /orig/${{ matrix.version }}/ orig/
+        
       # Restore cached files. --portable-build-ninja keeps paths in build.ninja and the
       # Ninja logs relative, so the cache can be shared between runners and workspaces.
       - name: Restore build cache
