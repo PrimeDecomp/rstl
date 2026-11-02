@@ -201,12 +201,13 @@ int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
 int CRasterFont::GetMonoHeight() const { return mMonoHeight; }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
+int CRasterFont::GetCarriageAdvance() RSTL_ECHOES_CONST {
 #if RSTL_PRIME1
-int CRasterFont::GetCarriageAdvance() { return GetMonoHeight() + GetLineMargin(); }
+  return GetMonoHeight() + GetLineMargin();
 #else
-int CRasterFont::GetCarriageAdvance() const { return mMonoHeight + mLineMargin; }
+  return mMonoHeight + mLineMargin;
 #endif
+}
 
 #if RSTL_VERSION < RSTL_GM8P_00
 const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }

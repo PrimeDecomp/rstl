@@ -22,12 +22,9 @@
 
 #include "musyx/musyx.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryFnReturn.hpp"
-#else
+
 struct SObjectTag;
-#endif
 
 class CVector3f;
 class CToken;
@@ -539,11 +536,10 @@ inline CSfxManager::CBaseSfxWrapper::~CBaseSfxWrapper() {}
 inline CSfxManager::CSfxChannel::CSfxChannel() : x44_(false) {}
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FAudioTranslationTableFactory(const SObjectTag& obj, CInputStream& in,
-                                                     const CVParamTransfer& xfer);
-#else
+RSTL_PRIME1_CONST CFactoryFnReturn FAudioTranslationTableFactory(const SObjectTag& obj,
+                                                                 CInputStream& in,
+                                                                 const CVParamTransfer& xfer);
+#if !RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CSfxManager, CBaseSfxWrapper, 0x1c)
 NESTED_CHECK_SIZEOF(CSfxManager, CSfxWrapper, 0x2c)
 NESTED_CHECK_SIZEOF(CSfxManager, CSfxEmitterWrapper, 0x64)

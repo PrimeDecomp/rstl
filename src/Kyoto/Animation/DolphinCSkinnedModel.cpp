@@ -34,7 +34,6 @@
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;
 void* CSkinnedModel::sPointGenData;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 struct SSkinnedAllocation {
   SSkinnedAllocation(void* ptr, int w1, ushort w2) : mPtr(ptr), mUnk1(w1), mUnk2(w2) {}
@@ -140,8 +139,173 @@ CSkinnedModel::CSkinnedModel(const CSkinnedModel& other)
 , mDisableWorkspaces(false) {
   Construct();
 }
-CSkinnedModel::~CSkinnedModel() { Skinning::DelSkinnedRef(); }
+#endif
 
+#if !RSTL_PRIME1
+namespace {
+// Descriptive name for the scoped release of a temporary GX matrix allocation.
+class CMatrixPoolGuard {
+public:
+  explicit CMatrixPoolGuard(bool active) : mActive(active) {}
+
+  ~CMatrixPoolGuard() {
+    if (mActive) {
+      GPUMemory::ReleaseAllocation();
+    }
+  }
+
+private:
+  bool mActive;
+};
+
+// Guessed names for the target's surface-drawing functors.
+struct SDrawSurfaceFlat {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawSurface {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawFlat {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawMasked {
+  explicit SDrawMasked(u64 mask) : mMask(mask) {}
+
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+
+  u64 mMask;
+};
+
+struct SDrawFlatMasked {
+  explicit SDrawFlatMasked(u64 mask) : mMask(mask) {}
+
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+
+  u64 mMask;
+};
+} // namespace
+
+template < class TDraw, class TFlatDraw >
+void CSkinnedModel::DolphinDrawInternal(const SSkinningWorkspace& workspace, uint drawFlags,
+                                        const CModelFlags& flags, const TDraw& draw,
+                                        const TFlatDraw& flat) const {
+  CTransform4f saved(CGraphics::GetModelMatrix());
+  int currentBank = -1;
+  mModel->PreDrawModel(flags);
+  const CCubeModel* model = mModel->GetModelInstance();
+  if (model == nullptr || !model->TryLockTextures()) {
+    return;
+  }
+
+  CCubeSurface surfaces[] = {model->GetNormalSurfaces(), model->GetAlphaSurfaces()};
+  model->SetArraysCurrent();
+  CMatrixPoolGuard guard(workspace.mMatrices == nullptr);
+  SSkinningMatrices* matrices = workspace.mMatrices;
+  if (matrices == nullptr) {
+    matrices = static_cast< SSkinningMatrices* >(
+        GPUMemory::EnsureAllocation(mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices)));
+    BuildSkinningMatrices(workspace.mTransforms, matrices, workspace.mUniformScale);
+  }
+  CGX::SetArray(GX_POS_MTX_ARRAY, matrices, sizeof(SSkinningMatrices));
+  CGX::SetArray(GX_NRM_MTX_ARRAY, matrices->mNormal, sizeof(SSkinningMatrices));
+
+  for (int i = 0; i < sizeof(surfaces) / sizeof(surfaces[0]); ++i) {
+    if (!(drawFlags & kDF_Unsorted) && i == 0) {
+      continue;
+    }
+    if (!(drawFlags & kDF_Sorted) && i == 1) {
+      continue;
+    }
+    if (drawFlags & kDF_Flat) {
+      for (CCubeSurface surface = surfaces[i]; surface.IsValid();
+           surface = surface.GetNextSurface()) {
+        LoadMatrixBank(currentBank, surface.GetMatrixBank());
+        flat(*model, surface, flags);
+      }
+    } else {
+      for (CCubeSurface surface = surfaces[i]; surface.IsValid();
+           surface = surface.GetNextSurface()) {
+        LoadMatrixBank(currentBank, surface.GetMatrixBank());
+        draw(*model, surface, flags);
+      }
+    }
+  }
+
+  GXSetCurrentMtx(GX_PNMTX0);
+  const int extraCoord = CCubeMaterial::GetExtraTexCoord();
+  if (extraCoord != GX_TEXCOORD_NULL) {
+    CGX::SetTexCoordGen(static_cast< GXTexCoordID >(extraCoord), GX_TG_MTX3x4, GX_TG_POS,
+                        static_cast< GXTexMtx >(0), GX_FALSE,
+                        static_cast< GXPTTexMtx >(CCubeMaterial::GetExtraPostTexMtx()));
+    CCubeMaterial::ResetExtraTexCoord();
+  }
+  CGraphics::SetModelMatrix(saved);
+}
+
+CSkinnedModelState::CSkinnedModelState(int boneCount, bool transient) {
+  mWorkspace.mTransforms =
+      transient ? nullptr
+                : static_cast< CTransform4f* >(CMemory::Alloc(boneCount * sizeof(CTransform4f)));
+  mWorkspace.mMatrices = nullptr;
+  mWorkspace.mBoneCount = boneCount;
+  mWorkspace.mOwned = true;
+  mWorkspace.mTransient = transient;
+  mWorkspace.mUniformScale = false;
+  if (mWorkspace.mTransient) {
+    const uint transformSize = (boneCount * sizeof(CTransform4f) + 31) & ~31;
+    const uint matrixSize = (boneCount * sizeof(SSkinningMatrices) + 31) & ~31;
+    void* data = GPUMemory::EnsureAllocation(transformSize + matrixSize);
+    mWorkspace.mTransforms = static_cast< CTransform4f* >(data);
+    mWorkspace.mMatrices =
+        reinterpret_cast< SSkinningMatrices* >(static_cast< uchar* >(data) + transformSize);
+  }
+}
+
+CSkinnedModelState::CSkinnedModelState(const CSkinnedModelState& other) {
+  mWorkspace.mTransforms = other.mWorkspace.mTransforms;
+  mWorkspace.mMatrices = other.mWorkspace.mMatrices;
+  mWorkspace.mBoneCount = other.mWorkspace.mBoneCount;
+  mWorkspace.mOwned = other.mWorkspace.mOwned;
+  mWorkspace.mTransient = other.mWorkspace.mTransient;
+  mWorkspace.mUniformScale = other.mWorkspace.mUniformScale;
+  other.mWorkspace.mOwned = false;
+}
+
+CSkinnedModelState::~CSkinnedModelState() {
+  if (mWorkspace.mOwned) {
+    if (mWorkspace.mTransient) {
+      DCFlushRange(mWorkspace.mTransforms,
+                   (mWorkspace.mBoneCount * sizeof(CTransform4f) + 31) & ~31);
+      GPUMemory::ReleaseAllocation();
+    } else {
+      CMemory::Free(mWorkspace.mTransforms);
+    }
+  }
+}
+
+CSkinnedModel::CSkinnedModel(const TLockedToken< CModel >& model,
+                             const TLockedToken< CSkinRules >& skinRules,
+                             const TLockedToken< CCharLayoutInfo >& layoutInfo)
+: mModel(model), mSkinRules(skinRules), mLayoutInfo(layoutInfo) {}
+#endif
+
+CSkinnedModel::~CSkinnedModel() {
+#if RSTL_PRIME1
+  Skinning::DelSkinnedRef();
+#else
+
+#endif
+}
+
+#if RSTL_PRIME1
 void CSkinnedModel::Construct() {
   Skinning::AddSkinnedRef();
   if (!mOwned) {
@@ -357,185 +521,9 @@ void CSkinnedModel::SetPointGeneratorFunc(void* data, void (*func)(void*, const 
   sPointGen = func;
   sPointGenData = data;
 }
-
-void CSkinnedModel::ClearPointGeneratorFunc() { sPointGen = nullptr; }
-
-float* CSkinnedModel::AllocateNewWorkspace(float** nrmOut) {
-  const CSkinRules* skinRules = *mSkinRules;
-  int normalCount = skinRules->GetNumNormals();
-  int vertexCount = skinRules->GetNumPoints();
-  int alignedNormSize = (normalCount * 12 + 31) & ~31;
-  int alignedVertSize = (vertexCount * 12 + 31) & ~31;
-  int vertSize = vertexCount * 12;
-  float* ptr = static_cast< float* >(
-      CMemory::Alloc(((vertSize + 31) & ~31) + alignedNormSize, IAllocator::kHI_RoundUpLen));
-  if (nrmOut != nullptr) {
-#if NONMATCHING
-    // Wrong variable used originally
-    *nrmOut = reinterpret_cast< float* >(reinterpret_cast< char* >(ptr) + alignedVertSize);
-#else
-    *nrmOut = reinterpret_cast< float* >(reinterpret_cast< char* >(ptr) + alignedNormSize);
 #endif
-  }
-  return ptr;
-}
-#else
-namespace {
-// Descriptive name for the scoped release of a temporary GX matrix allocation.
-class CMatrixPoolGuard {
-public:
-  explicit CMatrixPoolGuard(bool active) : mActive(active) {}
 
-  ~CMatrixPoolGuard() {
-    if (mActive) {
-      GPUMemory::ReleaseAllocation();
-    }
-  }
-
-private:
-  bool mActive;
-};
-
-// Guessed names for the target's surface-drawing functors.
-struct SDrawSurfaceFlat {
-  void operator()(const CCubeModel& model, const CCubeSurface& surface,
-                  const CModelFlags& flags) const;
-};
-
-struct SDrawSurface {
-  void operator()(const CCubeModel& model, const CCubeSurface& surface,
-                  const CModelFlags& flags) const;
-};
-
-struct SDrawFlat {
-  void operator()(const CCubeModel& model, const CCubeSurface& surface,
-                  const CModelFlags& flags) const;
-};
-
-struct SDrawMasked {
-  explicit SDrawMasked(u64 mask) : mMask(mask) {}
-
-  void operator()(const CCubeModel& model, const CCubeSurface& surface,
-                  const CModelFlags& flags) const;
-
-  u64 mMask;
-};
-
-struct SDrawFlatMasked {
-  explicit SDrawFlatMasked(u64 mask) : mMask(mask) {}
-
-  void operator()(const CCubeModel& model, const CCubeSurface& surface,
-                  const CModelFlags& flags) const;
-
-  u64 mMask;
-};
-} // namespace
-
-template < class TDraw, class TFlatDraw >
-void CSkinnedModel::DolphinDrawInternal(const SSkinningWorkspace& workspace, uint drawFlags,
-                                        const CModelFlags& flags, const TDraw& draw,
-                                        const TFlatDraw& flat) const {
-  CTransform4f saved(CGraphics::GetModelMatrix());
-  int currentBank = -1;
-  mModel->PreDrawModel(flags);
-  const CCubeModel* model = mModel->GetModelInstance();
-  if (model == nullptr || !model->TryLockTextures()) {
-    return;
-  }
-
-  CCubeSurface surfaces[] = {model->GetNormalSurfaces(), model->GetAlphaSurfaces()};
-  model->SetArraysCurrent();
-  CMatrixPoolGuard guard(workspace.mMatrices == nullptr);
-  SSkinningMatrices* matrices = workspace.mMatrices;
-  if (matrices == nullptr) {
-    matrices = static_cast< SSkinningMatrices* >(
-        GPUMemory::EnsureAllocation(mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices)));
-    BuildSkinningMatrices(workspace.mTransforms, matrices, workspace.mUniformScale);
-  }
-  CGX::SetArray(GX_POS_MTX_ARRAY, matrices, sizeof(SSkinningMatrices));
-  CGX::SetArray(GX_NRM_MTX_ARRAY, matrices->mNormal, sizeof(SSkinningMatrices));
-
-  for (int i = 0; i < sizeof(surfaces) / sizeof(surfaces[0]); ++i) {
-    if (!(drawFlags & kDF_Unsorted) && i == 0) {
-      continue;
-    }
-    if (!(drawFlags & kDF_Sorted) && i == 1) {
-      continue;
-    }
-    if (drawFlags & kDF_Flat) {
-      for (CCubeSurface surface = surfaces[i]; surface.IsValid();
-           surface = surface.GetNextSurface()) {
-        LoadMatrixBank(currentBank, surface.GetMatrixBank());
-        flat(*model, surface, flags);
-      }
-    } else {
-      for (CCubeSurface surface = surfaces[i]; surface.IsValid();
-           surface = surface.GetNextSurface()) {
-        LoadMatrixBank(currentBank, surface.GetMatrixBank());
-        draw(*model, surface, flags);
-      }
-    }
-  }
-
-  GXSetCurrentMtx(GX_PNMTX0);
-  const int extraCoord = CCubeMaterial::GetExtraTexCoord();
-  if (extraCoord != GX_TEXCOORD_NULL) {
-    CGX::SetTexCoordGen(static_cast< GXTexCoordID >(extraCoord), GX_TG_MTX3x4, GX_TG_POS,
-                        static_cast< GXTexMtx >(0), GX_FALSE,
-                        static_cast< GXPTTexMtx >(CCubeMaterial::GetExtraPostTexMtx()));
-    CCubeMaterial::ResetExtraTexCoord();
-  }
-  CGraphics::SetModelMatrix(saved);
-}
-
-CSkinnedModelState::CSkinnedModelState(int boneCount, bool transient) {
-  mWorkspace.mTransforms =
-      transient ? nullptr
-                : static_cast< CTransform4f* >(CMemory::Alloc(boneCount * sizeof(CTransform4f)));
-  mWorkspace.mMatrices = nullptr;
-  mWorkspace.mBoneCount = boneCount;
-  mWorkspace.mOwned = true;
-  mWorkspace.mTransient = transient;
-  mWorkspace.mUniformScale = false;
-  if (mWorkspace.mTransient) {
-    const uint transformSize = (boneCount * sizeof(CTransform4f) + 31) & ~31;
-    const uint matrixSize = (boneCount * sizeof(SSkinningMatrices) + 31) & ~31;
-    void* data = GPUMemory::EnsureAllocation(transformSize + matrixSize);
-    mWorkspace.mTransforms = static_cast< CTransform4f* >(data);
-    mWorkspace.mMatrices =
-        reinterpret_cast< SSkinningMatrices* >(static_cast< uchar* >(data) + transformSize);
-  }
-}
-
-CSkinnedModelState::CSkinnedModelState(const CSkinnedModelState& other) {
-  mWorkspace.mTransforms = other.mWorkspace.mTransforms;
-  mWorkspace.mMatrices = other.mWorkspace.mMatrices;
-  mWorkspace.mBoneCount = other.mWorkspace.mBoneCount;
-  mWorkspace.mOwned = other.mWorkspace.mOwned;
-  mWorkspace.mTransient = other.mWorkspace.mTransient;
-  mWorkspace.mUniformScale = other.mWorkspace.mUniformScale;
-  other.mWorkspace.mOwned = false;
-}
-
-CSkinnedModelState::~CSkinnedModelState() {
-  if (mWorkspace.mOwned) {
-    if (mWorkspace.mTransient) {
-      DCFlushRange(mWorkspace.mTransforms,
-                   (mWorkspace.mBoneCount * sizeof(CTransform4f) + 31) & ~31);
-      GPUMemory::ReleaseAllocation();
-    } else {
-      CMemory::Free(mWorkspace.mTransforms);
-    }
-  }
-}
-
-CSkinnedModel::CSkinnedModel(const TLockedToken< CModel >& model,
-                             const TLockedToken< CSkinRules >& skinRules,
-                             const TLockedToken< CCharLayoutInfo >& layoutInfo)
-: mModel(model), mSkinRules(skinRules), mLayoutInfo(layoutInfo) {}
-
-CSkinnedModel::~CSkinnedModel() {}
-
+#if !RSTL_PRIME1
 CSkinnedModelState CSkinnedModel::MakeStorage(bool transient) const {
   return CSkinnedModelState(mSkinRules->GetNumVirtualBones(), transient);
 }
@@ -626,9 +614,33 @@ void CSkinnedModel::SetPointGeneratorFunc(void* context, TPointGenFunc callback)
   sPointGen = callback;
   sPointGenData = context;
 }
+#endif
 
 void CSkinnedModel::ClearPointGeneratorFunc() { sPointGen = nullptr; }
 
+#if RSTL_PRIME1
+float* CSkinnedModel::AllocateNewWorkspace(float** nrmOut) {
+  const CSkinRules* skinRules = *mSkinRules;
+  int normalCount = skinRules->GetNumNormals();
+  int vertexCount = skinRules->GetNumPoints();
+  int alignedNormSize = (normalCount * 12 + 31) & ~31;
+  int alignedVertSize = (vertexCount * 12 + 31) & ~31;
+  int vertSize = vertexCount * 12;
+  float* ptr = static_cast< float* >(
+      CMemory::Alloc(((vertSize + 31) & ~31) + alignedNormSize, IAllocator::kHI_RoundUpLen));
+  if (nrmOut != nullptr) {
+#if NONMATCHING
+    // Wrong variable used originally
+    *nrmOut = reinterpret_cast< float* >(reinterpret_cast< char* >(ptr) + alignedVertSize);
+#else
+    *nrmOut = reinterpret_cast< float* >(reinterpret_cast< char* >(ptr) + alignedNormSize);
+#endif
+  }
+  return ptr;
+}
+#endif
+
+#if !RSTL_PRIME1
 CVector3f CSkinnedModel::GetSkinnedPosition(const SSkinningWorkspace& workspace, int vertex) const {
   const CTransform4f* transforms = workspace.mTransforms;
   const int bone = mSkinRules->GetVertexToBoneMap()[vertex];
@@ -679,5 +691,4 @@ inline void SDrawFlatMasked::operator()(const CCubeModel& model, const CCubeSurf
   }
 }
 } // namespace
-
 #endif
