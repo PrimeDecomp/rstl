@@ -342,10 +342,10 @@ public:
     return end();
   }
 
-#if RSTL_RESERVED_VECTOR_FILL_TYPE
   // Guessed name. For scalar storage that the caller fills before reading.
   void resize_uninitialized(int count) { mCount = count; }
 
+#if RSTL_RESERVED_VECTOR_FILL_TYPE
   void resize(int count, typename type_traits< T >::reserved_vector_fill_type item = T()) {
     if (mCount == count) {
       return;

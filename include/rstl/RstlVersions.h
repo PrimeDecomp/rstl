@@ -412,7 +412,7 @@
 #define RSTL_STRING_EXTRAS_PROTO_API (RSTL_VERSION == RSTL_G2MEAB)
 // Vector, list and related containers.
 // `reserved_vector_fill_type` exists, and `resize` takes it (shrinking with pointer-range
-// `destroy`), followed by `resize_uninitialized`.
+// `destroy`).
 #define RSTL_RESERVED_VECTOR_FILL_TYPE (RSTL_VERSION == RSTL_G2MEAB)
 
 // `vector` / `reserved_vector` fills, `resize` and `assign` take builtin values and pointers by
