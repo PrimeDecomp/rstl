@@ -432,34 +432,17 @@ CGX::SGXState::SGXState()
 }
 
 void CGX::ResetGXStates() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mDescList = 0;
-#else
-  gpGXState->mDescList = 0;
-#endif
+  CGX_STATE.mDescList = 0;
 
   GXClearVtxDesc();
   for (int i = 0; i < 12; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    sGXState.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
-#else
-    gpGXState->mArrayPtrs[i] = reinterpret_cast< const void* >(1);
-#endif
-
+    CGX_STATE.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
   }
   for (int i = 0; i < 8; i++) {
     CTexture::InvalidateTexmap(static_cast< GXTexMapID >(i));
   }
   for (int i = 0; i < 4; i++) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    GXSetTevKColor(static_cast< GXTevKColorID >(i), sGXState.mKColors[i]);
-#else
-    GXSetTevKColor(static_cast< GXTevKColorID >(i), gpGXState->mKColors[i]);
-#endif
-
+    GXSetTevKColor(static_cast< GXTevKColorID >(i), CGX_STATE.mKColors[i]);
   }
   GXSetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
   GXSetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
@@ -526,17 +509,9 @@ void CGX::FlushChanCtrl(GXChannelID chan, ushort flags) {
 }
 
 void CGX::FlushState() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (sGXState.mChanFlags & 1) {
-    GXSetNumChans(sGXState.mNumChans);
-    sGXState.mPrevNumChans = sGXState.mNumChans;
-#else
-  if (gpGXState->mChanFlags & 1) {
-    GXSetNumChans(gpGXState->mNumChans);
-    gpGXState->mPrevNumChans = gpGXState->mNumChans;
-#endif
-
+  if (CGX_STATE.mChanFlags & 1) {
+    GXSetNumChans(CGX_STATE.mNumChans);
+    CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -562,13 +537,7 @@ void CGX::FlushState() {
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mChanFlags = 0;
-#else
-  gpGXState->mChanFlags = 0;
-#endif
-
+  CGX_STATE.mChanFlags = 0;
 }
 
 void CGX::SetIndTexMtxSTPointFive(GXIndTexMtxID id, s8 scaleExp) {
@@ -580,12 +549,7 @@ void CGX::SetIndTexMtxSTPointFive(GXIndTexMtxID id, s8 scaleExp) {
 }
 
 void CGX::SetVtxDescv_Compressed(uint flags) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (flags == sGXState.mDescList) {
-#else
-  if (flags == gpGXState->mDescList) {
-#endif
+  if (flags == CGX_STATE.mDescList) {
 
     return;
   }
@@ -624,13 +588,7 @@ void CGX::SetVtxDescv_Compressed(uint flags) {
   list->attr = GX_VA_NULL;
   list->type = GX_NONE;
   GXSetVtxDescv(sVtxDescList);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  sGXState.mDescList = flags;
-#else
-  gpGXState->mDescList = flags;
-#endif
-
+  CGX_STATE.mDescList = flags;
 }
 
 void CGX::SetVtxDesc(GXAttr attr, GXAttrType type) {
@@ -689,12 +647,7 @@ void CGX::SetVtxDescv(const GXVtxDescList* list) {
 
 void CGX::SetStandardDirectTev_Compressed(GXTevStageID stageId, uint colorArgs, uint alphaArgs,
                                           uint colorOps, uint alphaOps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  STevState& state = sGXState.mTevStates[stageId];
-#else
-  STevState& state = gpGXState->mTevStates[stageId];
-#endif
+  STevState& state = CGX_STATE.mTevStates[stageId];
 
   if (state.mIndFlags != 0) {
     state.mIndFlags = 0;
@@ -728,12 +681,7 @@ void CGX::SetStandardDirectTev_Compressed(GXTevStageID stageId, uint colorArgs, 
 }
 
 void CGX::SetStandardTevColorAlphaOp(GXTevStageID stageId) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  STevState& state = sGXState.mTevStates[stageId];
-#else
-  STevState& state = gpGXState->mTevStates[stageId];
-#endif
+  STevState& state = CGX_STATE.mTevStates[stageId];
 
   if (state.mColorOps != 0x100 || state.mAlphaOps != 0x100) {
     state.mAlphaOps = 0x100;
@@ -746,49 +694,19 @@ void CGX::SetStandardTevColorAlphaOp(GXTevStageID stageId) {
 void CGX::GetFog(GXFogType* fogType, float* fogStartZ, float* fogEndZ, float* fogNearZ,
                  float* fogFarZ, GXColor* fogColor) {
   if (fogType != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogType = static_cast< GXFogType >(sGXState.mFogType);
-#else
-    *fogType = static_cast< GXFogType >(gpGXState->mFogType);
-#endif
-
+    *fogType = static_cast< GXFogType >(CGX_STATE.mFogType);
   }
   if (fogStartZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogStartZ = sGXState.mFogParams.mFogStartZ;
-#else
-    *fogStartZ = gpGXState->mFogParams.mFogStartZ;
-#endif
-
+    *fogStartZ = CGX_STATE.mFogParams.mFogStartZ;
   }
   if (fogEndZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogEndZ = sGXState.mFogParams.mFogEndZ;
-#else
-    *fogEndZ = gpGXState->mFogParams.mFogEndZ;
-#endif
-
+    *fogEndZ = CGX_STATE.mFogParams.mFogEndZ;
   }
   if (fogNearZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogNearZ = sGXState.mFogParams.mFogNearZ;
-#else
-    *fogNearZ = gpGXState->mFogParams.mFogNearZ;
-#endif
-
+    *fogNearZ = CGX_STATE.mFogParams.mFogNearZ;
   }
   if (fogFarZ != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    *fogFarZ = sGXState.mFogParams.mFogFarZ;
-#else
-    *fogFarZ = gpGXState->mFogParams.mFogFarZ;
-#endif
-
+    *fogFarZ = CGX_STATE.mFogParams.mFogFarZ;
   }
   if (fogColor != nullptr) {
 // TODO: verify that this Prime/Echoes difference is real

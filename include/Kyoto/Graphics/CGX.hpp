@@ -4,27 +4,21 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
 #include "limits.h"
-#endif
 
 #include "stddef.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "dolphin/gx/GXBump.h"
-#include "dolphin/gx/GXEnum.h"
-#include "dolphin/gx/GXPixel.h"
-#include "dolphin/gx/GXStruct.h"
-#include "dolphin/gx/GXTransform.h"
-#include "dolphin/gx/GXVert.h"
-#else
 #include "dolphin/gx.h"
-#endif
 
 #include "dolphin/mtx.h"
 
 class CColor;
+
+#if RSTL_PRIME1
+#define CGX_STATE (CGX::sGXState)
+#else
+#define CGX_STATE (*CGX::gpGXState)
+#endif
 
 class CGX {
 public:
@@ -125,16 +119,12 @@ public:
   };
 
   static void SetNumChans(uchar num);
-#if !RSTL_PRIME1
   static void FlushState();
-#endif
 
   static void SetNumTexGens(uchar num);
   static void SetNumTevStages(uchar num);
-#if !RSTL_PRIME1
   static uchar GetNumTevStages();
   static uchar GetNumTexGens();
-#endif
 
   static void SetNumIndStages(uchar num);
   static void SetChanAmbColor(EChannelId channel, const GXColor& color);
@@ -217,26 +207,20 @@ public:
   static void End();
   static void ResetGXStates();
   static void ResetGXStatesFull(); // name?
-#if !RSTL_PRIME1
   static void SetDstAlpha(bool enable, uchar alpha);
-#endif
 
   static inline void LoadTexMtxImm(const float mtx[][4], unsigned long id, GXTexMtxType type) {
     GXLoadTexMtxImm(const_cast< MtxPtr >(mtx), id, type);
   }
-#if !RSTL_PRIME1
   static inline void LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
     GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
   }
-#endif
 
   static GXColor GetChanAmbColor(EChannelId channel);
-#if !RSTL_PRIME1
-  static const GXColor& GetTevKColor(GXTevKColorID id) { return gpGXState->mKColors[id]; }
+  static const GXColor& GetTevKColor(GXTevKColorID id) { return CGX_STATE.mKColors[id]; }
   static const STevState& GetTevState(GXTevStageID stageId) {
-    return gpGXState->mTevStates[stageId];
+    return CGX_STATE.mTevStates[stageId];
   }
-#endif
 
   static void GetFog(GXFogType* fogType, float* fogStartZ, float* fogEndZ, float* fogNearZ,
                      float* fogFarZ, GXColor* fogColor);
@@ -256,10 +240,6 @@ public:
 
   static inline uint ShiftRightAndMask(uint v, uint m, uint s) { return (v >> s) & m; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void FlushState();
-#else
   static inline void SetColorUpdate(const bool update) { GXSetColorUpdate(update); }
 
   static inline void SetAlphaUpdate(const bool update) { GXSetAlphaUpdate(update); }
@@ -267,12 +247,9 @@ public:
   static inline void SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
     GXSetTevSwapMode(stage, rasSel, texSel);
   }
-#endif
 
 private:
-#if !RSTL_PRIME1
   static void FlushChanCtrl(GXChannelID chan, ushort flags);
-#endif
 
   static void update_fog(uint flags);
 // TODO: verify that this Prime/Echoes difference is real
@@ -282,7 +259,6 @@ private:
   static void apply_fog();
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static SGXState sGXState;
 #else
