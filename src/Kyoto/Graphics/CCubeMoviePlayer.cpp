@@ -7,9 +7,7 @@
 
 #include "Kyoto/Graphics/CMoviePlayer.hpp"
 
-#if !RSTL_PRIME1
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
-#endif
 
 #include "Kyoto/Audio/CAudioSys.hpp"
 #if RSTL_PRIME1
@@ -956,18 +954,10 @@ void CMoviePlayer::MixAudio(short* out, const short* in, unsigned long samples) 
 
 void CMoviePlayer::VerifyCallbackStatus() {
   if (sNumReferences > 0) {
-#if RSTL_PRIME1
-    CRSFAudio::RunDMACallback(StaticMyAudioCallback);
-#else
     CAIInterruptManager::RunDMACallback(StaticMyAudioCallback);
-#endif
 
   } else {
-#if RSTL_PRIME1
-    CRSFAudio::CancelDMACallback(StaticMyAudioCallback);
-#else
     CAIInterruptManager::CancelDMACallback(StaticMyAudioCallback);
-#endif
 
   }
 }
