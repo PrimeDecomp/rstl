@@ -22,8 +22,8 @@ public:
   ~CRSFAudio();
 
   const bool IsFullyLoaded() const;
-  void StartMixOut();
-  void StopMixOut();
+  void Play();
+  void Stop();
 
   static void MixCallback();
   // Guessed names for the balanced Wii audio-suppression API.
