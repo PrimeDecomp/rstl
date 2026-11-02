@@ -570,7 +570,15 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
     mItems = nullptr;
   } else {
     reserve(other.size());
-    uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+#if RSTL_SCALAR_TRAITS
+    if (vector_assignment_construction_policy< T >::value) {
+      vector_assignment_construction_policy< T >::copy(other.mItems, other.mItems + other.mCount,
+                                                        data());
+    } else
+#endif
+    {
+      uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+    }
     mCount = other.mCount;
   }
   return *this;

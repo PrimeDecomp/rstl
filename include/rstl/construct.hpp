@@ -200,6 +200,7 @@ RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(float)
 #if RSTL_TRIVIAL_INT_BOOL_DESTRUCTION
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(int)
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(bool)
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(ushort)
 #endif
 
 #if RSTL_TRIVIAL_SCALARS
@@ -364,6 +365,16 @@ struct vector_reserve_construction_policy {
       } \
     } \
   };
+
+// Guessed policy name. Assignment can select a vector-specific element copy.
+template < typename T >
+struct vector_assignment_construction_policy : vector_reserve_construction_policy< T > {
+  enum { value = false };
+};
+
+#define RSTL_DECLARE_VECTOR_ASSIGNMENT_CONSTRUCTION(...) \
+  template <> struct vector_assignment_construction_policy< __VA_ARGS__ > \
+      : vector_reserve_construction_policy< __VA_ARGS__ > {};
 
 // Guessed policy name. Whole-container copies retain the generic construct path.
 template < typename T >

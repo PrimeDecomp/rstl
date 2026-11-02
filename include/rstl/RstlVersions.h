@@ -100,7 +100,7 @@
 // traits earlier through RSTL_SCALAR_TYPE_TRAITS; disabling this does not make pointers
 // non-trivial.
 #define RSTL_TRIVIAL_POINTERS                                                                      \
-  ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R3ME_00)
+  ((RSTL_ECHOES_ERA && RSTL_VERSION != RSTL_G2MEAB) || RSTL_VERSION >= RSTL_R32J)
 // UInt destruction is also trivial in NPC Echoes; keep pointer policies independent.
 #define RSTL_TRIVIAL_UINT_DESTRUCTION (RSTL_TRIVIAL_POINTERS || RSTL_VERSION >= RSTL_R32J)
 // Echoes skips float element cleanup, including NPC and Trilogy. Older Prime
@@ -113,7 +113,7 @@
 // pointers. Elsewhere only the types above skip destructor loops; everything else is copied with
 // a placement new.
 #define RSTL_TRIVIAL_SCALARS RSTL_ECHOES_ERA
-// Non-Prime int/bool destruction traits are already supplied by the legacy scalar block.
+// Non-Prime int/bool/ushort destruction traits are already supplied by the legacy scalar block.
 // Declare them separately when that block is absent; pairs inherit their elements' traits.
 #define RSTL_TRIVIAL_INT_BOOL_DESTRUCTION (!RSTL_PRIME1 && !RSTL_TRIVIAL_SCALARS)
 // The direct `destroy(T*)` takes a `T* const` (Echoes' takes a plain pointer).
