@@ -23,9 +23,7 @@ public:
   CPASAnimParm GetAnimParmData(int, unsigned int) const;
   // Guessed name; reconstructed from Prime's stripped editing method.
   void AddAnimParmData(int animId, const rstl::reserved_vector< CPASAnimParm, 8 >& parms);
-#if !RSTL_PRIME1
   const CPASAnimInfo* GetAnimInfoByIndex(int index) const; // Guessed name.
-#endif
 
   rstl::pair< float, int > FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >& parms,
                                              CRandom16& random, int ignoreAnim) const;

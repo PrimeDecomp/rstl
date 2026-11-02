@@ -38,9 +38,7 @@ public:
   };
 
   static void Update(float dt);
-#if RSTL_PRIME1
   static void AddDebugMessages();
-#endif
 
   static void StopAll();
   static void FadeBackIn(float time);
@@ -59,9 +57,7 @@ public:
   static void PlaySoftwareAudio(ESoftwareChannel chan, const rstl::string& fileName, float fadeIn,
                                 float fadeOut, int volume, bool music);
   static void StopSoftwareAudio(ESoftwareChannel chan, const rstl::string& fileName);
-#if !RSTL_PRIME1
   static rstl::string GetSoftwareAudioFileName(ESoftwareChannel chan);
-#endif
 
   static void SetDefaultAudio(const rstl::string& fileName, float fadeIn, float fadeOut,
                               unsigned char volume);
@@ -78,9 +74,7 @@ private:
   static void InternalSetVolume(float vol);
   static void UpdateSoftwareChannels(float dt);
   static void UpdateSoftwareChannel(ESoftwareChannel chan, float dt);
-#if !RSTL_PRIME1
   static bool IsSoftwareChannelFree(ESoftwareChannel chan);
-#endif
 
   static void StopStreaming(int idx);
   static int GetTargetDSPVolume(int fileVol, bool music);

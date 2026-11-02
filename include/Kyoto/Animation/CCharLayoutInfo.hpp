@@ -114,9 +114,7 @@ public:
   }
 
 private:
-#if !RSTL_PRIME1
   void InitializeLinearData(); // Guessed name.
-#endif
 
   rstl::object_owner< TSegIdMap< CCharLayoutNode > > mNodes;
   CSegIdList mSegIdList;

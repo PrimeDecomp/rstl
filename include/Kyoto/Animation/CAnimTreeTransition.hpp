@@ -43,10 +43,8 @@ private:
   rstl::pair< CCharAnimTime, CAdvancementDeltas >
 
   AdvanceViewForTransitionalPeriod(const CCharAnimTime& time);
-#if !RSTL_PRIME1
   // Guessed name.
   static uint GetLoopPOIHash();
-#endif
 
   CCharAnimTime mTransDur;
   CCharAnimTime mTimeInTrans;

@@ -67,10 +67,8 @@ public:
 #endif
 
   CTri GetTri(EBoxFaceId face, int windOffset) const;
-#if !RSTL_PRIME1
   // Guessed name for the G2ME01 four-corner face method.
   CQuad GetQuad(EBoxFaceId face) const;
-#endif
 
   CVector3f ClosestPointAlongVector(const CVector3f& vec) const;
   CVector3f FurthestPointAlongVector(const CVector3f& vec) const;

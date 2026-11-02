@@ -305,24 +305,18 @@ public:
 #else
   static ECardResult GetResultCode(int);
   static ECardResult MountCard(EMemoryCardPort port);
-#if RSTL_PRIME1
   static ECardResult MountCardSync(EMemoryCardPort port);
-#endif
   static ECardResult CheckCard(EMemoryCardPort port);
   static ECardResult GetStatus(EMemoryCardPort port, int fileNo, CardStat& statOut);
   static ECardResult SetStatus(EMemoryCardPort port, int fileNo, const CardStat& stat);
-#if RSTL_PRIME1
   static ECardResult DeleteFile(EMemoryCardPort port, const rstl::string& name);
-#endif
   static ECardResult FastDeleteFile(EMemoryCardPort port, int fileNo);
   static ECardResult FormatCard(EMemoryCardPort port);
 
   static ProbeResults IsMemoryCardInserted(EMemoryCardPort);
   static ECardResult GetSerialNo(EMemoryCardPort port, long long& serialOut);
   static ECardResult UnmountCard(EMemoryCardPort);
-#if RSTL_PRIME1
   static ECardResult Rename(EMemoryCardPort, const rstl::string&, const rstl::string&);
-#endif
   static ECardResult GetNumFreeBytes(EMemoryCardPort port, uint& freeBytes, uint& freeFiles);
   static TCardWorkArea& WorkAreaVector(EMemoryCardPort port);
   static char* AllocCardWorkArea(EMemoryCardPort port);

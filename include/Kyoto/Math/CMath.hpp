@@ -27,7 +27,6 @@ public:
 
   static float EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart, float start,
                          float end, float slope);
-#if !RSTL_PRIME1
   static float PhongBlob(float t, float exponent);
   static bool SolveQuadratic(float a, float b, float c, float& plus, float& minus);
   // Reconstructed solver names; coefficients are ordered from constant to leading term.
@@ -35,7 +34,6 @@ public:
   static uint SolveQuartic(const float* coefficients, float* roots);
   static int SolveCubicDouble(double c0, double c1, double c2, double c3, double epsilon,
                               double* roots);
-#endif
 
   static float FastFmod(float x, float y) {
     int v = static_cast< int >(x * (1.f / y));

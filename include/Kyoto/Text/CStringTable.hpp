@@ -38,17 +38,13 @@ public:
   void Load(CInputStream& in);
 
   static void SetLanguage(int language);
-#if RSTL_PRIME1
   void Reload(CAssetId id, CResFactory& factory);
   void TryFinishReload();
   bool IsReloading() const;
-#endif
 
   const wchar_t* GetString(int idx) const;
-#if !RSTL_PRIME1
   const wchar_t* GetStringByName(const char* name) const;
   int GetStringIndexByName(const char* name) const;
-#endif
 
   int GetStringCount() const { return mStringCount; }
 

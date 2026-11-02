@@ -29,17 +29,13 @@
 struct SObjectTag;
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 class CVector3f;
-#else
 class CToken;
 class CSimplePool;
 class CSfxPitchBend;
 struct SFlangerAuxParameters;
 struct SBitcrusherAuxParameters;
 struct SPhaserAuxParameters;
-#endif
 
 class CSfxManager {
 public:
@@ -376,9 +372,7 @@ public:
                           float f3, uint w1, const uchar maxVolume);
 #endif
 
-#if !RSTL_PRIME1
   static void Initialize(); // Guessed name
-#endif
 
   static void Shutdown();
   static void StopAndRemoveAllEmitters();
@@ -416,24 +410,16 @@ public:
 #endif
 
   static void SfxVolume(CSfxHandle handle, uchar volume);
-#if !RSTL_PRIME1
   static void SfxPan(CSfxHandle handle, uchar pan);
-#endif
   static void SfxSpan(CSfxHandle handle, uchar span);
   static void PitchBend(CSfxHandle handle, int pitch);
-#if !RSTL_PRIME1
   static void AddPitchBend(const CSfxPitchBend& pitchBend); // Guessed name
-#endif
   static void SetDuration(CSfxHandle handle, float duration);
   static bool IsPlaying(CSfxHandle handle);
-#if !RSTL_PRIME1
   static bool IsQueued(CSfxHandle handle);
   static void SetMuted(bool muted);
-#endif
   static void SetChannel(ESfxChannels channel);
-#if !RSTL_PRIME1
   static ESfxChannels GetChannel();
-#endif
   static void KillAll(ESfxChannels channel);
   static void TurnOnChannel(ESfxChannels channel);
   static void TurnOffChannel(ESfxChannels channel);

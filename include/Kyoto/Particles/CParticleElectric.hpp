@@ -128,10 +128,8 @@ private:
   void SetupLineGXMaterial();
   void DrawLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
                      const CColor& color);
-#if !RSTL_PRIME1
   void DrawTexturedLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts,
                              float width, const CColor& color, const SUVElementSet& uvs);
-#endif
 
   void RenderLines();
   void RenderSwooshes();

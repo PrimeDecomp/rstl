@@ -30,9 +30,7 @@ public:
   bool IsFacing(const CVector3f& vec) const {
     return CVector3f::Dot(mNormal, vec) >= GetConstant();
   }
-#if !RSTL_PRIME1
   CVector3f GetClosestPoint(const CVector3f& point) const;
-#endif
   float ClipLineSegment(const CVector3f& start, const CVector3f& end) const;
   // TODO: Fake?
 #if !RSTL_PRIME1

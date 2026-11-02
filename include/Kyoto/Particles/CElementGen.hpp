@@ -299,10 +299,8 @@ public:
   void AccumulateBounds(const CVector3f& position, float size);
   void BuildParticleSystemBounds();
 
-#if RSTL_PRIME1
   int GetNumActiveChildParticles() const;
   CParticleGen* GetActiveChildParticle(int index) const;
-#endif
 
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
   int GetMaxParticles() const { return mMAXP; }
@@ -311,19 +309,15 @@ public:
   float GetTimeDeltaScale() const { return mTimeDeltaScale; } // Guessed name
 #endif
   bool IsIndirectTextured() const;
-#if RSTL_PRIME1
   void SetExternalVar(int index, float val);
-#endif
 
   float GetExternalVar(int index) const;
-#if !RSTL_PRIME1
   void SetExternalParam(uint index, float value);
   float GetGenerationRate();
   int GetNumSpawnedParticleSystems() const;
   CParticleGen* SpawnedParticleSystem(int index);
   CAdvancedValues* ParticleAdditionalData(uint index);
   const CAdvancedValues* GetParticleAdditionalData(uint index) const;
-#endif
 
   static void Initialize();
   static void ShutDown();

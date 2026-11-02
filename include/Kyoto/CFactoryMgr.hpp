@@ -57,12 +57,10 @@ private:
 };
 CHECK_SIZEOF(CFactoryMgr, 0x28)
 
-#if !RSTL_PRIME1
-CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-                                     const CVParamTransfer& xfer);
+RSTL_PRIME1_CONST CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
+                                                       const CVParamTransfer& xfer);
 
-CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
-                                         const CVParamTransfer& xfer);
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
+                                                           const CVParamTransfer& xfer);
 
 #endif // _CFACTORYMGR

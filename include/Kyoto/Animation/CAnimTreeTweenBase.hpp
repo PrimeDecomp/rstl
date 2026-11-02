@@ -78,7 +78,6 @@ protected:
 #else
   s32 mCullSelector : 2;
 #endif
-#if !RSTL_PRIME1
 
 private:
   // Guessed names: common implementations of the timed and current-pose virtuals.
@@ -86,7 +85,6 @@ private:
                     rstl::optional_object< CCharAnimTime > time) const;
   void BlendSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
                             rstl::optional_object< CCharAnimTime > time) const;
-#endif
 };
 CHECK_CHILD_SIZEOF(CAnimTreeTweenBase, CAnimTreeDoubleChild, 0x8)
 

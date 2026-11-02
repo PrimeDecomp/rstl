@@ -170,10 +170,8 @@ public:
   void RotateLocalY(const CRelAngle& angle);
   void RotateLocalZ(const CRelAngle& angle);
   static CTransform4f RotateX(const CRelAngle&);
-#if !RSTL_PRIME1
   // Guessed name
   static CTransform4f Shear(float xy, float xz, float yx, float yz, float zx, float zy);
-#endif
 
   static CTransform4f RotateY(const CRelAngle&);
   static CTransform4f RotateZ(const CRelAngle&);

@@ -12,12 +12,10 @@
 #include "Kyoto/Animation/CCharacterSet.hpp"
 #include "types.h"
 
-#if !RSTL_PRIME1
 struct SObjectTag;
 
 class CFactoryFnReturn;
 class CVParamTransfer;
-#endif
 
 class CAnimCharacterSet {
 public:
@@ -47,10 +45,8 @@ private:
 #endif
 };
 CHECK_SIZEOF(CAnimCharacterSet, RSTL_PRIME1 ? 0x78 : 0x7c)
-#if !RSTL_PRIME1
 
-CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
-                                   const CVParamTransfer& xfer);
-#endif
+RSTL_PRIME1_CONST CFactoryFnReturn FAnimCharacterSet(const SObjectTag& tag, CInputStream& in,
+                                                     const CVParamTransfer& xfer);
 
 #endif // _CANIMCHARACTERSET

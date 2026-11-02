@@ -121,9 +121,7 @@ private:
 #endif
 
   void Allocate(uint channelCount);
-#if !RSTL_PRIME1
   uchar GetValuesPerChannel() const; // Guessed name.
-#endif
 
   uchar* mBuffer;
 #if !RSTL_PRIME1

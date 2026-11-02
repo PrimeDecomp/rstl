@@ -40,9 +40,7 @@ public:
   static float GetReal(CInputStream& in);
   static int GetInt(CInputStream& in);
   static bool GetBool(CInputStream& in);
-#if !RSTL_PRIME1
   static int GetBitflag(CInputStream& in);
-#endif
 
   static FourCC GetClassID(CInputStream& in);
   static rstl::optional_object< TToken< CModel > > GetModel(CInputStream& in, CSimplePool* pool);

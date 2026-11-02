@@ -117,9 +117,7 @@ public:
   bool ResourceExists(const SObjectTag& tag) const;
 
   uint ResourceSize(const SObjectTag& tag) const;
-#if !RSTL_PRIME1
   uint GetResourceOffset(const SObjectTag& tag) const;
-#endif
 
   ECompressionType GetResourceCompression(const SObjectTag& tag) const;
 // TODO: verify that this Prime/Echoes difference is real
@@ -132,13 +130,10 @@ public:
   CInputStream* LoadNewResourceSync(const SObjectTag& tag, char* extBuf);
   CInputStream* LoadResourceFromMemorySync(const SObjectTag& tag, const void* extBuf);
   void LoadMemResourceSync(const SObjectTag& tag, char** extBuf, int* len);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CInputStream* LoadNewResourcePartSync(const SObjectTag& tag, int offset, int length,
                                         char* extBuf);
 
   const rstl::vector< CAssetId >* GetTagListForFile(const rstl::string& pak) const;
-#endif
   void AddPakFileAsync(const rstl::string&, bool, bool);
   void RemovePakFile(const rstl::string&);
 

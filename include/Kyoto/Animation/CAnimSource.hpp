@@ -100,14 +100,10 @@ public:
 
   ~CAnimSource();
 
-#if !RSTL_PRIME1
   bool HasRotation(const CSegId& seg) const;
-#endif
 
   bool HasOffset(const CSegId& seg) const;
-#if !RSTL_PRIME1
   bool HasScale(const CSegId& seg) const;
-#endif
   CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
 #if RSTL_PRIME1
@@ -129,11 +125,9 @@ public:
   void CalcAverageVelocity();
   void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                           const CCharAnimTime& time) const;
-#if !RSTL_PRIME1
   // Guessed name.
   void GetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
                            const CCharAnimTime& time) const;
-#endif
 
   const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
   const CCharAnimTime& GetTimePerFrame() const { return mInterval; }
@@ -146,12 +140,10 @@ public:
 #endif
 
 private:
-#if !RSTL_PRIME1
   // Guessed names.
   void GetSegStatement(const CSegId& seg, uint frame, uint nextFrame, float weight,
                        CSegStatement& statement) const;
   uint GetSize() const;
-#endif
 
   CCharAnimTime mDuration;
   CCharAnimTime mInterval;

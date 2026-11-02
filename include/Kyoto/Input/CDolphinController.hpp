@@ -43,14 +43,10 @@ private:
   void ReadDevices();
   void ProcessInputData();
   void ProcessAxis(int controller, EJoyAxis axis);
-#if !RSTL_PRIME1
   void ClearAxis(int controller, EJoyAxis axis);
-#endif
 
   void ProcessButtons(int controller);
-#if !RSTL_PRIME1
   void ClearButtons(int controller);
-#endif
 
   void ProcessDigitalButton(int value, CControllerButton& button, ushort mapping);
   void ProcessAnalogButton(float value, CControllerAxis& axis);

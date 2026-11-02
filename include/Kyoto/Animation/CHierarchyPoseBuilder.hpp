@@ -89,14 +89,12 @@ public:
 
 private:
   void BuildIntoHeirarchy(const CCharLayoutInfo& layout, const CSegId& seg, const CSegId& root);
-#if RSTL_PRIME1
   void RecursivelyBuildNoScale(const CSegId& seg, const CTreeNode& node, CPoseAsTransforms& pose,
                                const CQuaternion& rotation, const CMatrix3f& matrix,
                                const CVector3f& offset) const;
   void RecursivelyBuild(const CSegId& seg, const CTreeNode& node, CPoseAsTransforms& pose,
                         const CQuaternion& rotation, const CMatrix3f& matrix,
                         const CVector3f& offset) const;
-#endif
 
   CLayoutDescription mLayoutDesc;
   rstl::construction_deferred< CSegId > mRootId;

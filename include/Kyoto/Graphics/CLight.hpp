@@ -44,9 +44,7 @@ public:
   const CVector3f& GetDirection() const { return mDir; }
   void SetColor(const CColor& col);
   void SetAttenuation(float constant, float linear, float quadratic);
-#if !RSTL_PRIME1
   void SetSpotCutoff(float cutoff); // Guessed name.
-#endif
 
   float GetSpotCutoff() const { return mSpotCutoff; }
   float GetAttenuationConstant() const { return mDistC; }
@@ -88,9 +86,7 @@ public:
   static CLight BuildCustom(const CVector3f& pos, const CVector3f& dir, const CColor& color,
                             float distC, float distL, float distQ, float angleC, float angleL,
                             float angleQ);
-#if !RSTL_PRIME1
   static CLight BuildHard(const CVector3f& pos, const CColor& color, float radius);
-#endif
 
   static CLight BuildLocalAmbient(const CVector3f& pos, const CColor& color);
 
