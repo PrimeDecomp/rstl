@@ -110,6 +110,7 @@ public:
   bool InsidePlane(const CPlane& plane) const;
   CVector3f ClampToBox(const CVector3f& vec) const;
   CAABox GetTransformedAABox(const CTransform4f& xf) const;
+  CAABox PaddedBy(float padding) const;
 
   inline CVector3f GetHalfExtent() const {
     // Name is a guess
