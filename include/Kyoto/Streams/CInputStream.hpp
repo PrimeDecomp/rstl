@@ -187,6 +187,11 @@ public:
   void Read(T& value) {
     value = T(*this);
   }
+  void Read(float& value) { value = ReadFloat(); }
+  void Read(int& value) { value = ReadInt32(); }
+  void Read(uint& value) { value = ReadInt32(); }
+  void Read(short& value) { value = ReadInt16(); }
+  void Read(bool& value) { value = ReadBool(); }
 
 #if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
   int ReadInt32() {
