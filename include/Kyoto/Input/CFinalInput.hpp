@@ -7,6 +7,7 @@
 #include "Kyoto/Input/CControllerData.hpp"
 
 class COsContext;
+class CVector2f;
 
 #if RSTL_PRIME1
 class CFinalInputInfo;
@@ -57,6 +58,21 @@ public:
   static const float kRollDigitalThreshold;
   static const float kPitchDigitalThreshold;
   static const float kPointerDigitalThreshold;
+
+  bool CheckValidControl(int control) const;
+  float GetAnalog(int control) const;
+  float GetMotionAnalog(int control) const;
+  float GetSwingAnalog(int control) const;
+  bool GetDigital(int control) const;
+  bool GetMotionDigital(int control) const;
+  bool GetSwingDigital(int control) const;
+  bool GetPressed(int control) const;
+  bool GetMotionPressed(int control) const;
+  bool GetSwingPressed(int control) const;
+  bool GetReleased(int control) const;
+  bool GetMotionReleased(int control) const;
+  bool GetSwingReleased(int control) const;
+  CVector2f GetPointerPosition() const;
 
   // Control names are inferred from the Trilogy mapping and motion-mask ordering.
   enum EPhysicalControl {
@@ -234,20 +250,6 @@ public:
   const CControllerData& GetControllerData() const { return mControllerData; }
 
   bool GetKnownDeviceIsPresent() const;
-  bool CheckValidControl(int control) const;
-  float GetAnalog(int control) const;
-  float GetMotionAnalog(int control) const;
-  float GetSwingAnalog(int control) const;
-  bool GetDigital(int control) const;
-  bool GetMotionDigital(int control) const;
-  bool GetSwingDigital(int control) const;
-  bool GetPressed(int control) const;
-  bool GetMotionPressed(int control) const;
-  bool GetSwingPressed(int control) const;
-  bool GetReleased(int control) const;
-  bool GetMotionReleased(int control) const;
-  bool GetSwingReleased(int control) const;
-  CVector2f GetPointerPosition() const;
 
   // For allowing the old code to compile
   float ALAUp() const;
@@ -418,10 +420,6 @@ public:
 
 #endif
 #else
-  float GetAnalog(int input) const;
-  bool GetDigital(int input) const;
-  bool GetPressed(int input) const;
-
   float ALAUp() const;
 
   float ALADown() const;
