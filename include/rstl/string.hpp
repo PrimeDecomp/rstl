@@ -701,38 +701,12 @@ int basic_string< _CharTp, Traits, Alloc >::rfind(_CharTp ch, int pos) const {
 
 #endif
 
-#if !RSTL_STRING_OUT_OF_CLASS || RSTL_STRING_INLINE_CHAR_COMPARE
 template < typename _CharTp, typename Traits, typename Alloc >
 inline int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
   const _CharTp* rhsEnd = compute_length(rhs, count).first;
   return internal_compare(begin(), end(), rhs, rhsEnd);
 }
 
-#elif RSTL_STRING_COMPARE_END_POINTER
-template < typename _CharTp, typename Traits, typename Alloc >
-int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
-  int rhsCharCount = 0;
-  const _CharTp* rhsEnd = rhs;
-  while ((count == -1 || rhsCharCount < count) && *rhsEnd != '\0') {
-    ++rhsEnd;
-    ++rhsCharCount;
-  }
-  return internal_compare(begin(), end(), rhs, rhsEnd);
-}
-
-#else
-template < typename _CharTp, typename Traits, typename Alloc >
-int basic_string< _CharTp, Traits, Alloc >::compare(const _CharTp* rhs, int count) const {
-  int rhsCharCount = 0;
-  const _CharTp* rhsStart = rhs;
-  while ((count == -1 || rhsCharCount < count) && *rhs != '\0') {
-    ++rhs;
-    ++rhsCharCount;
-  }
-  return internal_compare(begin(), end(), rhsStart, rhs);
-}
-
-#endif
 template < typename _CharTp, typename Traits, typename Alloc >
 template < typename It >
 inline int basic_string< _CharTp, Traits, Alloc >::internal_compare(const_iterator first,
@@ -890,11 +864,7 @@ typedef basic_string< char, case_insensitive_char_traits< char > > istring;
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
-#if RSTL_STRING_INLINE_CHAR_COMPARE
 inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
-#else
-bool operator==(const string& lhs, const char* rhs);
-#endif
 
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
