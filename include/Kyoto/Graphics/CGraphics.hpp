@@ -19,16 +19,8 @@
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/reserved_vector.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "dolphin/gx/GXFifo.h"
-#include "dolphin/gx/GXStruct.h"
-#include "dolphin/gx/GXTexture.h"
-#include "dolphin/mtx/GeoTypes.h"
-#else
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
-#endif
 
 class COsContext;
 
@@ -244,41 +236,22 @@ public:
     float mFar;
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   class CClippedScreenRect {
-#else
-  // Guessed name; clipped screen bounds and texture coordinates for four corners.
-  class CClippedScreenQuad {
-#endif
-
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     CClippedScreenRect() : mValid(false) {}
-    CClippedScreenRect(const int x, const int y, const int width, const int height, const int texWidth, const float minU, const float maxU,
-                       const float minV, const float maxV)
-#else
-    CClippedScreenQuad() : mValid(false) {}
-    CClippedScreenQuad(int x, int y, int width, int texWidth, int height,
-                       rstl::reserved_vector< CVector2f, 4 > texCoords)
-#endif
-
+    CClippedScreenRect(const int x, const int y, const int width, const int height,
+                       const int texWidth, const float minU, const float maxU, const float minV,
+                       const float maxV)
     : mValid(true)
     , mX(x)
     , mY(y)
     , mWidth(width)
     , mHeight(height)
     , mTexWidth(texWidth)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     , mMinU(minU)
     , mMaxU(maxU)
     , mMinV(minV)
     , mMaxV(maxV) {}
-#else
-    , mTexCoords(texCoords) {}
-#endif
 
     bool IsValid() const { return mValid; }
     RSTL_PRIME1_CONST int GetX() const { return mX; }
@@ -286,15 +259,10 @@ public:
     RSTL_PRIME1_CONST int GetWidth() const { return mWidth; }
     RSTL_PRIME1_CONST int GetHeight() const { return mHeight; }
     RSTL_PRIME1_CONST int GetTexWidth() const { return mTexWidth; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     float GetMinU() const { return mMinU; }
     float GetMaxU() const { return mMaxU; }
     float GetMinV() const { return mMinV; }
     float GetMaxV() const { return mMaxV; }
-#else
-    const CVector2f& GetTexCoord(int index) const { return mTexCoords[index]; }
-#endif
 
   private:
     bool mValid;
@@ -303,16 +271,42 @@ public:
     int mWidth;
     int mHeight;
     int mTexWidth;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     float mMinU;
     float mMaxU;
     float mMinV;
     float mMaxV;
-#else
-    rstl::reserved_vector< CVector2f, 4 > mTexCoords;
-#endif
+  };
 
+  // Guessed name; clipped screen bounds and texture coordinates for four corners.
+  class CClippedScreenQuad {
+  public:
+    CClippedScreenQuad() : mValid(false) {}
+    CClippedScreenQuad(int x, int y, int width, int texWidth, int height,
+                       rstl::reserved_vector< CVector2f, 4 > texCoords)
+    : mValid(true)
+    , mX(x)
+    , mY(y)
+    , mWidth(width)
+    , mHeight(height)
+    , mTexWidth(texWidth)
+    , mTexCoords(texCoords) {}
+
+    bool IsValid() const { return mValid; }
+    RSTL_PRIME1_CONST int GetX() const { return mX; }
+    RSTL_PRIME1_CONST int GetY() const { return mY; }
+    RSTL_PRIME1_CONST int GetWidth() const { return mWidth; }
+    RSTL_PRIME1_CONST int GetHeight() const { return mHeight; }
+    RSTL_PRIME1_CONST int GetTexWidth() const { return mTexWidth; }
+    const CVector2f& GetTexCoord(int index) const { return mTexCoords[index]; }
+
+  private:
+    bool mValid;
+    int mX;
+    int mY;
+    int mWidth;
+    int mHeight;
+    int mTexWidth;
+    rstl::reserved_vector< CVector2f, 4 > mTexCoords;
   };
 
   static bool Startup(const COsContext& osContext, uint fifoSize, void* fifoBase);
@@ -331,9 +325,6 @@ public:
   static void EnableLight(ERglLight light);
   static void LoadLight(ERglLight light, const CLight& info);
   static void SetLightState(uchar lights);
-#if RSTL_PRIME1
-  static uint GetLightMask() { return mLightActive; }
-#endif
 
   static void SetViewMatrix();
   static void SetScissor(int left, int bottom, int width, int height);
@@ -356,7 +347,6 @@ public:
   static CMatrix4f CalculatePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
   static void ResetGfxStates();
   static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                                       void* data,
 #else
@@ -376,32 +366,18 @@ public:
   static void TickRenderTimings();
   static const CProjectionState& GetProjectionState();
   static void SetProjectionState(const CProjectionState& proj);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromVS(
-#else
+  static CClippedScreenRect ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2,
+                                                 ETexelFormat fmt);
+  static CClippedScreenRect ClipScreenRectFromMS(const CVector3f& p1, const CVector3f& p2,
+                                                 ETexelFormat fmt);
   // Guessed name; projects all four model-space corners independently.
-  static CClippedScreenQuad ClipScreenQuadFromMS(
-#endif
-      const CVector3f& p1, const CVector3f& p2,
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-      const CVector3f& p3, const CVector3f& p4,
-#endif
-      ETexelFormat fmt);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromMS(
-#else
+  static CClippedScreenQuad ClipScreenQuadFromMS(const CVector3f& p1, const CVector3f& p2,
+                                                 const CVector3f& p3, const CVector3f& p4,
+                                                 ETexelFormat fmt);
   // Guessed name; the view-space counterpart of ClipScreenQuadFromMS.
-  static CClippedScreenQuad ClipScreenQuadFromVS(
-#endif
-      const CVector3f& p1, const CVector3f& p2,
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-      const CVector3f& p3, const CVector3f& p4,
-#endif
-      ETexelFormat fmt);
+  static CClippedScreenQuad ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2,
+                                                 const CVector3f& p3, const CVector3f& p4,
+                                                 ETexelFormat fmt);
   static CVector2i ProjectPoint(const CVector3f& point);
 
   static const GXRenderModeObj& GetRenderMode() { return mRenderModeObj; }
@@ -482,7 +458,9 @@ public:
   static const Mtx& GetCameraMtx() { return mCameraMtx; }
 
   static const CTransform4f& GetModelMatrix() { return mModelMatrix; }
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+  static uint GetLightMask() { return mLightActive; }
+#else
   static uchar GetLightMask() { return mLightActive; }
 #endif
 
@@ -647,8 +625,6 @@ private:
   static float mBrightness;
 };
 
-#if !RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CGraphics, CClippedScreenQuad, 0x3c)
-#endif
 
 #endif // _CGRAPHICS
