@@ -1279,9 +1279,7 @@ void CGraphics::SetClearColor(const CColor& color) {
   GXSetCopyClear(mClearColor.GetGXColor(), mClearDepthValue);
 }
 
-#if !RSTL_PRIME1
 CColor CGraphics::GetClearColor() { return mClearColor; }
-#endif
 
 void CGraphics::ClearBackAndDepthBuffers() {
   GXInvalidateTexAll();
@@ -2038,7 +2036,6 @@ void CGraphics::SetTevStates(uchar flags) {
                    diffFn, attnFn);
 }
 
-#if !RSTL_PRIME1
 void CGraphics::FullRenderWithVertexDelay() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
   switch (vtxDescr.mStreamFlags) {
@@ -2105,7 +2102,6 @@ void CGraphics::FullRenderWithVertexDelay() {
   }
   CGX::End();
 }
-#endif
 
 void CGraphics::FullRender() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);

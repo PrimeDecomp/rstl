@@ -426,7 +426,6 @@ public:
   static void StreamVertex(float x, float y, float z);
   static void StreamVertex(const CVector3f& vtx);
   static void StreamVertex(const float* vtx);
-#if !RSTL_PRIME1
   // Guessed name. Delay each streamed vertex by eight instructions.
   static void DelayStreamVertex() {
     #ifdef __MWERKS__
@@ -442,7 +441,6 @@ public:
     }
     #endif
   }
-#endif
 
   static void StreamNormal(const float* nrm);
   static void StreamEnd();

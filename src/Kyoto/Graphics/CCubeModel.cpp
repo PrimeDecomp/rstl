@@ -25,13 +25,10 @@ static uint sSkippedMaterialFlags = 0x8200;
 static bool sDrawingWireframe = false;
 bool CCubeModel::sUsingPackedLightmaps = false;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 inline uint GetMaterialOffset(const uchar* materialData, const int idx) {
   materialData += (idx * 4);
   return CBasics::SwapBytes(*reinterpret_cast< const uint* >(materialData - 4));
 }
-#endif
 
 CCubeModel::CCubeModel(
 // TODO: verify that this Prime/Echoes difference is real
@@ -162,13 +159,11 @@ void CCubeModel::SetArraysCurrent() const {
   SetStaticArraysCurrent();
 }
 
-#if RSTL_PRIME1
 void CCubeModel::SetSkinningArraysCurrent(const float* positions, const float* normals) const {
   CGraphics::sRenderState.SetVtxState(positions, normals,
                                       static_cast< const uint* >(mInstance.GetColorPointer()));
   SetStaticArraysCurrent();
 }
-#endif
 
 void CCubeModel::SetUsingPackedLightmaps(const bool use) const {
   sUsingPackedLightmaps = use;
