@@ -29,10 +29,7 @@ public:
   uint GetEntryCount() const { return mEntryCount; }
 
   void Load() const;
-  void* Lock() {
-    mLocked = true;
-    return mEntries.get();
-  }
+  void* Lock();
   void UnLock();
 
   static uint sCurrentFrameCount;
@@ -46,5 +43,12 @@ private:
   bool mLocked;
 };
 CHECK_SIZEOF(CGraphicsPalette, 0x20)
+
+#if !defined(TARGET_PC)
+inline void* CGraphicsPalette::Lock() {
+  mLocked = true;
+  return mEntries.get();
+}
+#endif // !defined(TARGET_PC)
 
 #endif // _CGRAPHICSPALETTE

@@ -1,35 +1,36 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinnedModel.hpp"
 
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
-#endif
-
 #include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Animation/CVertexMorphEffect.hpp"
+#include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
-
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "dolphin/base/PPCArch.h"
-#else
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-#endif
+#include "Kyoto/Platform.h"
 
+#include "dolphin/base/PPCArch.h"
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
+#include "rstl/RstlVersions.h"
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
+
+#if IS_TARGET_PC
+#define GET_POSITION_VIEW(ptr) GetPositionView(ptr)
+#define GET_NORMAL_VIEW(ptr) GetNormalView(ptr)
+#else
+#define GET_POSITION_VIEW(ptr) (ptr)
+#define GET_NORMAL_VIEW(ptr) (ptr)
+#endif
 
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;
 void* CSkinnedModel::sPointGenData;
@@ -77,33 +78,34 @@ void Skinning::SetSkinningBuffer(void* buffer, int size) {
 #endif
 
 void Skinning::AddSkinnedRef() {
-  if (!sSkinningInitialized) {
-    GXSetDrawSync(0xFFFF);
-    while (GXReadDrawSync() != 0xFFFF) {
+  if (!IS_TARGET_PC) {
+    if (!sSkinningInitialized) {
+      GXSetDrawSync(0xFFFF);
+      while (GXReadDrawSync() != 0xFFFF) {
+      }
+      skCurrentToken = 1;
+      sSkinningInitialized = true;
     }
-    skCurrentToken = 1;
-    sSkinningInitialized = true;
-  }
-
 #if RSTL_VERSION >= RSTL_GM8P_00
-  if (sNumSkinnedObjects++ == 0) {
+    if (sNumSkinnedObjects++ == 0) {
 #if RSTL_VERSION == RSTL_GM8J_00
-    sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
+      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
 #else
-    sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sStaticSkinningDataSize);
+      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sStaticSkinningDataSize);
 #endif
-  }
+    }
 #else
-  if (sNumSkinnedObjects == 0) {
-    sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
+    if (sNumSkinnedObjects == 0) {
+      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
+    }
+#endif
   }
   ++sNumSkinnedObjects;
-#endif
 }
 
 void Skinning::DelSkinnedRef() {
   --sNumSkinnedObjects;
-  if (sNumSkinnedObjects == 0) {
+  if (!IS_TARGET_PC && sNumSkinnedObjects == 0) {
     sSkinningBuffer.clear();
     sAllocations.clear();
   }
@@ -328,7 +330,8 @@ void CSkinnedModel::Draw(const CModelFlags& flags) const {
   } else if (mVertWorkspace.null()) {
     mModel->Draw(flags);
   } else {
-    mModel->Draw(mVertWorkspace.get(), mNormalWorkspace.get(), flags);
+    mModel->Draw(GET_POSITION_VIEW(mVertWorkspace.get()), GET_NORMAL_VIEW(mNormalWorkspace.get()),
+                 flags);
     PostDrawFunc();
   }
 }
@@ -337,12 +340,14 @@ void CSkinnedModel::Draw(const TDrawFunc func, void* data) {
   if (mDisableWorkspaces) {
     CTransform4f saved(CGraphics::GetModelMatrix());
     CGraphics::SetModelMatrix(saved * mSkinRules->GetVirtualBones()[0].GetTransform());
-    Draw(func, mModel->GetPositions(), mModel->GetNormals(), data);
+    Draw(func, IF_TARGET_PC_OR(TModelPositions(), mModel->GetPositions()),
+         IF_TARGET_PC_OR(TModelNormals(), mModel->GetNormals()), data);
     CGraphics::SetModelMatrix(saved);
   } else if (mVertWorkspace.null()) {
-    Draw(func, mModel->GetPositions(), mModel->GetNormals(), data);
+    Draw(func, IF_TARGET_PC_OR(TModelPositions(), mModel->GetPositions()),
+         IF_TARGET_PC_OR(TModelNormals(), mModel->GetNormals()), data);
   } else {
-    func(mVertWorkspace.get(), mNormalWorkspace.get(), data);
+    func(GET_POSITION_VIEW(mVertWorkspace.get()), GET_NORMAL_VIEW(mNormalWorkspace.get()), data);
     uint vertSize = (mSkinRules->GetNumPoints() * 12 + 31) & ~31u;
     DCFlushRangeNoSync(mVertWorkspace.get(), vertSize);
     uint normSize = (mSkinRules->GetNumNormals() * 12 + 31) & ~31u;
@@ -354,7 +359,7 @@ void CSkinnedModel::Draw(const TDrawFunc func, void* data) {
 
 void CSkinnedModel::Draw(const float* positions, const float* normals,
                          const CModelFlags& flags) const {
-  mModel->Draw(positions, normals, flags);
+  mModel->Draw(GET_POSITION_VIEW(positions), GET_NORMAL_VIEW(normals), flags);
   PostDrawFunc();
 }
 
@@ -383,23 +388,34 @@ void CSkinnedModel::Calculate(const CPoseAsTransforms& pose,
   alignedVertSize = ((vertSize + 31) & ~31u);
   totalSize = alignedVertSize + alignedNormSize;
 
-  DCFlushRange(verts, totalSize);
-  BOOL interruptState = OSDisableInterrupts();
-  volatile void* pipe = GXRedirectWriteGatherPipe(verts);
+  if (IS_TARGET_PC) {
+    mSkinRules->InitLockedCacheState(**mModel);
+    mSkinRules->BuildAccumulatedTransforms(pose, **mLayoutInfo);
+    mSkinRules->BuildPoints(verts);
+    float* normals =
+        workVerts != nullptr
+            ? reinterpret_cast< float* >(reinterpret_cast< uchar* >(verts) + alignedVertSize)
+            : mNormalWorkspace.get();
+    mSkinRules->BuildNormals(normals);
+  } else {
+    DCFlushRange(verts, totalSize);
+    BOOL interruptState = OSDisableInterrupts();
+    volatile void* pipe = GXRedirectWriteGatherPipe(verts);
 
-  mSkinRules->InitLockedCacheState(**mModel);
-  mSkinRules->BuildAccumulatedTransforms(pose, **mLayoutInfo);
-  mSkinRules->BuildPoints(pipe);
+    mSkinRules->InitLockedCacheState(**mModel);
+    mSkinRules->BuildAccumulatedTransforms(pose, **mLayoutInfo);
+    mSkinRules->BuildPoints(pipe);
 
-  int numWords = mSkinRules->GetNumPoints() * 3;
-  int padWords = ((numWords + 7) & ~7) - numWords;
-  for (int i = 0; i < padWords; i++) {
-    *reinterpret_cast< volatile u32* >(pipe) = 0;
+    int numWords = mSkinRules->GetNumPoints() * 3;
+    int padWords = ((numWords + 7) & ~7) - numWords;
+    for (int i = 0; i < padWords; i++) {
+      *reinterpret_cast< volatile u32* >(pipe) = 0;
+    }
+
+    mSkinRules->BuildNormals(pipe);
+    GXRestoreWriteGatherPipe();
+    OSRestoreInterrupts(interruptState);
   }
-
-  mSkinRules->BuildNormals(pipe);
-  GXRestoreWriteGatherPipe();
-  OSRestoreInterrupts(interruptState);
 
   if (morphEffect.valid()) {
     (*morphEffect)
@@ -411,7 +427,9 @@ void CSkinnedModel::Calculate(const CPoseAsTransforms& pose,
 
   if (sPointGen != nullptr) {
     const CVector3f* positions = reinterpret_cast< const CVector3f* >(verts);
-    sPointGen(sPointGenData, positions, positions + mSkinRules->GetNumPoints(),
+    sPointGen(sPointGenData, positions,
+              IF_TARGET_PC_OR(reinterpret_cast< const CVector3f* >(normals),
+                              positions + mSkinRules->GetNumPoints()),
               mSkinRules->GetNumPoints());
     DCInvalidateRange(verts, totalSize);
   }
@@ -423,92 +441,116 @@ void CSkinnedModel::CalculateDefault() {
 }
 
 void CSkinnedModel::TickAllocations() {
-  int syncVal = GXReadDrawSync();
-  if (syncVal > static_cast< int >(Skinning::skCurrentToken)) {
-    syncVal -= 0x10000;
-  }
-  while (Skinning::sAllocations.size() != 0) {
-    SSkinnedAllocation& front = Skinning::sAllocations.front();
-    int tokenVal = static_cast< int >(front.mUnk2);
-    if (tokenVal > static_cast< int >(Skinning::skCurrentToken)) {
-      tokenVal -= 0x10000;
+  if (!IS_TARGET_PC) {
+    int syncVal = GXReadDrawSync();
+    if (syncVal > static_cast< int >(Skinning::skCurrentToken)) {
+      syncVal -= 0x10000;
     }
-    if (syncVal < tokenVal)
-      break;
-    Skinning::sSkinningBuffer->Free(front.mPtr, front.mUnk1);
-    Skinning::sAllocations.pop_front();
+    while (Skinning::sAllocations.size() != 0) {
+      SSkinnedAllocation& front = Skinning::sAllocations.front();
+      int tokenVal = static_cast< int >(front.mUnk2);
+      if (tokenVal > static_cast< int >(Skinning::skCurrentToken)) {
+        tokenVal -= 0x10000;
+      }
+      if (syncVal < tokenVal)
+        break;
+      Skinning::sSkinningBuffer->Free(front.mPtr, front.mUnk1);
+      Skinning::sAllocations.pop_front();
+    }
   }
 }
 
 void* CSkinnedModel::EnsureAllocation(int size) {
-  size = (size + 31) & ~31;
-  void* ptr = Skinning::sSkinningBuffer->Alloc(size);
-  if (ptr == nullptr && !Skinning::sbDumpedSpinLockMessage) {
-    Skinning::sSkinningBuffer->GetAllocatedAmount();
-    Skinning::sbDumpedSpinLockMessage = true;
-  }
-  s32 startTick = OSGetTick();
-  while (ptr == nullptr) {
-    TickAllocations();
-    ptr = Skinning::sSkinningBuffer->Alloc(size);
-    if (ptr == nullptr) {
-      s32 currentTick = OSGetTick();
-      if (OSTicksToMilliseconds(static_cast< uint >(currentTick - startTick)) > 60) {
+  if (IS_TARGET_PC) {
+    return rs_new uchar[size];
+  } else {
+    size = (size + 31) & ~31;
+    void* ptr = Skinning::sSkinningBuffer->Alloc(size);
+    if (ptr == nullptr && !Skinning::sbDumpedSpinLockMessage) {
+      Skinning::sSkinningBuffer->GetAllocatedAmount();
+      Skinning::sbDumpedSpinLockMessage = true;
+    }
+    s32 startTick = OSGetTick();
+    while (ptr == nullptr) {
+      TickAllocations();
+      ptr = Skinning::sSkinningBuffer->Alloc(size);
+      if (ptr == nullptr) {
+        s32 currentTick = OSGetTick();
+        if (OSTicksToMilliseconds(static_cast< uint >(currentTick - startTick)) > 60) {
 #if RSTL_VERSION == RSTL_GM8J_00
-        ushort token = GXReadDrawSync();
-        for (AUTO(it, Skinning::sAllocations.begin()); it != Skinning::sAllocations.end(); ++it) {
-        }
-        Skinning::skCurrentToken = token;
-        startTick = currentTick;
-        GXSetDrawSync(token);
-        int numSkinned = Skinning::sNumSkinnedObjects;
-        for (int i = 0; i < numSkinned; ++i) {
-          Skinning::DelSkinnedRef();
-        }
-        for (int i = 0; i < numSkinned; ++i) {
-          Skinning::AddSkinnedRef();
-        }
+          ushort token = GXReadDrawSync();
+          for (AUTO(it, Skinning::sAllocations.begin()); it != Skinning::sAllocations.end(); ++it) {
+          }
+          Skinning::skCurrentToken = token;
+          startTick = currentTick;
+          GXSetDrawSync(token);
+          int numSkinned = Skinning::sNumSkinnedObjects;
+          for (int i = 0; i < numSkinned; ++i) {
+            Skinning::DelSkinnedRef();
+          }
+          for (int i = 0; i < numSkinned; ++i) {
+            Skinning::AddSkinnedRef();
+          }
 #else
-        GXReadDrawSync();
-        for (AUTO(it, Skinning::sAllocations.begin()); it != Skinning::sAllocations.end(); ++it) {
-        }
-        startTick = currentTick;
-        GXSetDrawSync(Skinning::skCurrentToken);
-        ++Skinning::skCurrentToken;
+          GXReadDrawSync();
+          for (AUTO(it, Skinning::sAllocations.begin()); it != Skinning::sAllocations.end(); ++it) {
+          }
+          startTick = currentTick;
+          GXSetDrawSync(Skinning::skCurrentToken);
+          ++Skinning::skCurrentToken;
 #endif
+        }
       }
     }
-  }
-  Skinning::sAllocations.push_back(SSkinnedAllocation(ptr, size, Skinning::skCurrentToken));
-  return ptr;
+    Skinning::sAllocations.push_back(SSkinnedAllocation(ptr, size, Skinning::skCurrentToken));
+    return ptr;
+}
 }
 
 void CSkinnedModel::AllocateStorage() {
-  if (mOwned && (mVertWorkspace.null() || mNormalWorkspace.null())) {
-    int vertexCount = mSkinRules->GetNumPoints();
-    int normalCount = mSkinRules->GetNumNormals();
-    TickAllocations();
-    int normSize = (normalCount * 12 + 31) & ~31;
-    int vertSize = (vertexCount * 12 + 31) & ~31;
-    int totalSize = vertSize + normSize + 32;
-    void* ptr = EnsureAllocation(totalSize);
-    if (ptr == Skinning::sStaticSkinningData) {
-      GXInvalidateVtxCache();
+  if (IS_TARGET_PC) {
+    if (mVertWorkspace.null()) {
+      mVertWorkspace = rs_new float[mSkinRules->GetNumPoints() * 3];
     }
-    mVertWorkspace = rstl::auto_ptr< float >(static_cast< float* >(ptr));
-    mNormalWorkspace =
-        rstl::auto_ptr< float >(reinterpret_cast< float* >(static_cast< char* >(ptr) + vertSize));
-    mVertWorkspace.release();
-    mNormalWorkspace.release();
+    if (mNormalWorkspace.null()) {
+      mNormalWorkspace = rs_new float[mSkinRules->GetNumNormals() * 3];
+    }
+  } else {
+    if (mOwned && (mVertWorkspace.null() || mNormalWorkspace.null())) {
+      int vertexCount = mSkinRules->GetNumPoints();
+      int normalCount = mSkinRules->GetNumNormals();
+      TickAllocations();
+      int normSize = (normalCount * 12 + 31) & ~31;
+      int vertSize = (vertexCount * 12 + 31) & ~31;
+      int totalSize = vertSize + normSize + 32;
+      void* ptr = EnsureAllocation(totalSize);
+      if (ptr == Skinning::sStaticSkinningData) {
+        GXInvalidateVtxCache();
+      }
+      mVertWorkspace = rstl::auto_ptr< float >(static_cast< float* >(ptr));
+      mNormalWorkspace =
+          rstl::auto_ptr< float >(reinterpret_cast< float* >(static_cast< char* >(ptr) + vertSize));
+      mVertWorkspace.release();
+      mNormalWorkspace.release();
+    }
   }
 }
 
 void CSkinnedModel::PostDrawFunc() const {
   if (mOwned && !mVertWorkspace.null()) {
-    mVertWorkspace = rstl::auto_ptr< float >();
-    mNormalWorkspace = rstl::auto_ptr< float >();
-    GXSetDrawSync(Skinning::skCurrentToken);
-    ++Skinning::skCurrentToken;
+    if (IS_TARGET_PC) {
+      CFrameDelayedKiller::ScheduleDeletion(CFrameDelayedKiller::kWhichFrame_NextFrame,
+                                            mVertWorkspace.release());
+      CFrameDelayedKiller::ScheduleDeletion(CFrameDelayedKiller::kWhichFrame_NextFrame,
+                                            mNormalWorkspace.release());
+      mVertWorkspace = rstl::auto_ptr< float >();
+      mNormalWorkspace = rstl::auto_ptr< float >();
+    } else {
+      mVertWorkspace = rstl::auto_ptr< float >();
+      mNormalWorkspace = rstl::auto_ptr< float >();
+      GXSetDrawSync(Skinning::skCurrentToken);
+      ++Skinning::skCurrentToken;
+    }
   }
 }
 

@@ -84,11 +84,7 @@ public:
   int GetNumberOfMipMaps() const { return mNumMips; }
   uint GetMemoryAllocated() const { return mMemoryAllocated; }
   bool GetNoSwap() const { return mNoSwap; }
-  void* Lock() {
-    mLocked = true;
-    return GetBitMapData(0);
-  }
-
+  void* Lock();
   void MakeSwappable() const;
   void CountMemory() const;
   void UncountMemory() const;
@@ -151,5 +147,12 @@ private:
 };
 CHECK_SIZEOF(CTexture, 0x68)
 NESTED_CHECK_SIZEOF(CTexture, CDumpedBitmapDataReloader, 0x1c)
+
+#if !defined(TARGET_PC)
+inline void* CTexture::Lock() {
+  mLocked = true;
+  return GetBitMapData(0);
+}
+#endif
 
 #endif // _CTEXTURE

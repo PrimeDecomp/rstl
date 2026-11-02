@@ -47,6 +47,7 @@ CModel::SShader* CModel::sTwoFrameList = nullptr;
 static uint sFrameCounter = 0;
 #if !RSTL_PRIME1
 namespace {
+
 // GX matrix arrays must be 32-byte aligned.
 struct SSkinMatrices {
   ATTRIBUTE_ALIGN_DECL(32, CTransform4f mModelView);
@@ -66,6 +67,7 @@ public:
 private:
   bool mActive;
 };
+
 } // namespace
 #endif
 
@@ -299,29 +301,28 @@ void CModel::SShader::MoveToThisFrameList() {
   if (sThisFrameList != nullptr) {
     mNext = sThisFrameList;
     mNext->mPrev = const_cast< CModel* >(this);
+  }
 #else
   SShader* head = sThisFrameList;
   if (head != nullptr) {
     mNext = head;
     head->mPrev = this;
-#endif
-
   }
+#endif
 
 #if RSTL_PRIME1
   sThisFrameList = const_cast< CModel* >(this);
 #else
   sThisFrameList = this;
 #endif
-
 }
 
 #if RSTL_PRIME1
-void CModel::RemoveFromList() const {
+void CModel::RemoveFromList() const
 #else
-void CModel::SShader::RemoveFromList() {
+void CModel::SShader::RemoveFromList()
 #endif
-
+{
   if (mPrev != nullptr) {
     mPrev->mNext = mNext;
   } else if (this == sThisFrameList) {
@@ -346,9 +347,9 @@ void CModel::SShader::UnlockTextures() RSTL_ECHOES_CONST {
     const_cast< TCachedToken< CTexture >& >(*it).Unlock();
 
   }
-#if !RSTL_PRIME1
 }
 
+#if !RSTL_PRIME1
 CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& store)
 : mData(data.release())
 , mDataLen(length)
@@ -536,9 +537,9 @@ bool CModel::IsLoaded(int shader) const {
     }
   }
   return true;
-#endif
-
 }
+
+#endif
 
 void CModel::FrameDone() {
   ++sFrameCounter;

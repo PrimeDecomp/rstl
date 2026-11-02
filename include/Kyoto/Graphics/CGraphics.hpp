@@ -195,7 +195,9 @@ public:
 
     void Flush();
     void ResetFlushAll();
+#if !defined(TARGET_PC)
     int SetVtxState(const float* pos, const float* nrm, const uint* clr);
+#endif // !defined(TARGET_PC)
 
     // In map this takes two args, but x4 is unused?
     void Set(int v0) { x0_ = v0; }
@@ -309,6 +311,7 @@ public:
     rstl::reserved_vector< CVector2f, 4 > mTexCoords;
   };
 
+  static bool Startup(const COsContext& osContext); // PC-specific startup
   static bool Startup(const COsContext& osContext, uint fifoSize, void* fifoBase);
   static bool Startup(const COsContext& osContext, bool progressive);
   static void InitGraphicsFifo(GXFifoObj* obj, void* base, uint fifoSize);
