@@ -722,7 +722,11 @@ void CFBFullBodyAspectsForStream::SetTime(const CTimeRemainderAndFraction& time)
   mT = rstl::min_val(mT, 1.f);
 }
 
-inline void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
+// Prime's Wii advancement routine inlines this helper; Echoes keeps the call.
+#if RSTL_PRIME1
+inline
+#endif
+void CFBStreamedAnimReader::GetSegStatement(CSegStatement& statement,
                                                    const CSegId& seg) const {
   const unsigned long index = mSegIdToIndex.SegIdToIndex(seg.val());
   if (index == ~0u) {
