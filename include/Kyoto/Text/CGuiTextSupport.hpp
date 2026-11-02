@@ -38,6 +38,7 @@ public:
   void SetFontColor(const CColor& color);
   void SetOutlineColor(const CColor& color);
   void SetGeometryColor(const CColor& color);
+  const CColor& GetGeometryColor() const { return mGeometryColor; }
   void SetControlTXTRMap(const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap);
   void SetWordWrap(bool wordWrap);
   void SetImageBaseline(bool baseline);
