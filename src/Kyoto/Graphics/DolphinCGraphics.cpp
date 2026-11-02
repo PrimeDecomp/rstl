@@ -11,7 +11,6 @@
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Animation/CSkinnedModel.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
@@ -38,7 +37,6 @@ static bool sGXAborted;
 
 bool CGraphicsSys::mGraphicsInitialized;
 static CStopwatch sFPSTimer;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool sIs50Hz = RSTL_VERSION == RSTL_GM8P_00;
 #if RSTL_VERSION == RSTL_GM8P_00
@@ -333,7 +331,6 @@ ERglEnum CGraphics::mDepthFunc = kE_LEqual;
 ERglPrimitive CGraphics::mCurrentPrimitive = kP_Points;
 float CGraphics::mDepthFar = 1.f;
 u32 CGraphics::mClearDepthValue = GX_MAX_Z24;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8E_02
 float CGraphics::mPixelAspectRatio = 1.f;
@@ -367,7 +364,6 @@ void CGraphics::InitGraphicsFifo(GXFifoObj* obj, void* fifo, uint fifoSize) {
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::ConfigureVideoMode(bool initial, bool rgb60) {
@@ -510,7 +506,6 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
 
   CGX::ResetGXStates();
   InitGraphicsVariables();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   ConfigureFrameBuffer();
@@ -529,7 +524,6 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
                          (9 + 2 * i) << 15, GX_TEXCACHE_32K);
   }
   mGXDefaultTexRegionCallback = GXSetTexRegionCallback(TexRegionCallback);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   mSpareBufferSize = sSpareFrameBufferSize;
@@ -662,7 +656,6 @@ void CGraphics::ConfigureVideo(bool initial, uchar progressive) {
 #endif
 
 GXTexRegion* CGraphics::TexRegionCallback(const GXTexObj* obj, GXTexMapID id) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static int nextTexRgn = 0;
   static int nextTexRgnCI = 0;
@@ -678,7 +671,6 @@ GXTexRegion* CGraphics::TexRegionCallback(const GXTexObj* obj, GXTexMapID id) {
 #endif
 
     return &mTexRegions[0];
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   } else {
     GXTexFmt fmt = GXGetTexObjFmt(obj);
@@ -689,7 +681,6 @@ GXTexRegion* CGraphics::TexRegionCallback(const GXTexObj* obj, GXTexMapID id) {
 #endif
 
     if (fmt != GX_TF_C4 && fmt != GX_TF_C8 && fmt != GX_TF_C14X2) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (nextTexRgn == 0) {
         ++nextTexRgn;
@@ -701,7 +692,6 @@ GXTexRegion* CGraphics::TexRegionCallback(const GXTexObj* obj, GXTexMapID id) {
 #endif
 
       }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       return &mTexRegions[nextTexRgn++ & 7];
     } else {
@@ -741,7 +731,6 @@ void CGraphics::InitGraphicsVariables() {
 
 void CGraphics::Shutdown() {
   GXSetTexRegionCallback(mGXDefaultTexRegionCallback);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   CFrameDelayedKiller::StallAndFlushAllAllocations();
@@ -778,7 +767,6 @@ void CGraphics::InitGraphicsDefaults() {
   SetDefaultVtxAttrFmt();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::ConfigureFrameBuffer() {
@@ -800,13 +788,7 @@ void CGraphics::ConfigureFrameBuffer() {
   GXSetScissor(0, 0, mRenderModeObj.fbWidth, mRenderModeObj.efbHeight);
   GXSetDispCopySrc(0, 0, mRenderModeObj.fbWidth, mRenderModeObj.efbHeight);
   GXSetDispCopyDst(mRenderModeObj.fbWidth, mRenderModeObj.efbHeight);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  GXSetDispCopyYScale(static_cast< float >(mRenderModeObj.xfbHeight) /
-                      static_cast< float >(mRenderModeObj.efbHeight));
-#else
   GXSetDispCopyYScale(static_cast< float >(mRenderModeObj.xfbHeight) / mRenderModeObj.efbHeight);
-#endif
 
   GXSetCopyFilter(mRenderModeObj.aa, mRenderModeObj.sample_pattern, GX_ENABLE,
                   mRenderModeObj.vfilter);
@@ -840,7 +822,6 @@ void CGraphics::EnableLight(ERglLight light) {
 }
 
 static inline GXLightID get_hw_light_index(ERglLight light) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // one instruction, no branches
@@ -879,12 +860,7 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
   CVector3f pos = info.GetPosition();
   CVector3f dir = info.GetDirection();
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  switch (type) {
-#else
   switch (info.GetType()) {
-#endif
 
   case kLT_Spot: {
     MTXMultVec(mCameraMtx, reinterpret_cast< VecPtr >(&pos), reinterpret_cast< VecPtr >(&pos));
@@ -914,7 +890,6 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     break;
   }
   case kLT_Custom:
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   case kLT_Hard:
 #endif
@@ -984,7 +959,6 @@ void CGraphics::SetViewMatrix() {
   if (mIsGXModelMatrixIdentity) {
     MTXCopy(mCameraMtx, mGxModelView);
   } else {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     MTXConcat(mCameraMtx, mGXModelMatrix, mGxModelView);
 #else
@@ -993,7 +967,6 @@ void CGraphics::SetViewMatrix() {
 
   }
   GXLoadPosMtxImm(mGxModelView, GX_PNMTX0);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   Mtx nrmMtx;
   MTXInvXpose(mGxModelView, nrmMtx);
@@ -1021,7 +994,6 @@ void CGraphics::SetViewPointMatrix(const CTransform4f& xf) {
   mGXViewPointMatrix[2][1] = -xf.Get11();
   mGXViewPointMatrix[2][2] = -xf.Get21();
   mGXViewPointMatrix[2][3] = 0.f;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mViewPoint = xf.GetTranslation();
 #else
@@ -1034,7 +1006,6 @@ void CGraphics::SetViewPointMatrix(const CTransform4f& xf) {
   SetViewMatrix();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CGraphics::SetIdentityViewPointMatrix() {
   mViewMatrix = CTransform4f::Identity();
@@ -1052,7 +1023,6 @@ void CGraphics::SetIdentityViewPointMatrix() { SetViewPointMatrix(CTransform4f::
 
 void CGraphics::SetModelMatrix(const CTransform4f& xf) {
   if (&xf == &CTransform4f::Identity()) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (!mIsGXModelMatrixIdentity) {
       mModelMatrix = xf;
@@ -1118,7 +1088,6 @@ void CGraphics::SetPerspective(float fovy, float aspect, float znear, float zfar
 }
 
 CMatrix4f CGraphics::GetPerspectiveProjectionMatrix() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // construct in place
@@ -1176,7 +1145,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 #endif
 
   float bottom = -top;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // construct in place
@@ -1190,7 +1158,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 #endif
 
       // clang-format off
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     (2.f * znear) / (right - left),
 #else
@@ -1202,7 +1169,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
     0.f,
     0.f,
     -(top + bottom) / (top - bottom),
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     (2.f * znear) / (top - bottom),
 #else
@@ -1211,7 +1177,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 
     0.f,
     0.f,
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     (zfar + znear) / (zfar - znear),
 #else
@@ -1219,7 +1184,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 #endif
 
     0.f,
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     -(2.f * zfar * znear) / (zfar - znear),
 #else
@@ -1279,9 +1243,7 @@ void CGraphics::SetClearColor(const CColor& color) {
   GXSetCopyClear(mClearColor.GetGXColor(), mClearDepthValue);
 }
 
-#if !RSTL_PRIME1
 CColor CGraphics::GetClearColor() { return mClearColor; }
-#endif
 
 void CGraphics::ClearBackAndDepthBuffers() {
   GXInvalidateTexAll();
@@ -1314,18 +1276,12 @@ void CGraphics::SwapBuffers() {
 void CGraphics::VideoPreCallback(u32 retraceCount) {
   if (mNumBreakpointsWaiting != 0 && mFlippingState == 1) {
     if (mFirstFrame) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      VISetBlack(GX_FALSE);
-#else
       VISetBlack(FALSE);
-#endif
 
       mFirstFrame = false;
     }
     VISetNextFrameBuffer(mpCurrenFrameBuf);
     VIFlush();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     void* frameBuf = mpCurrenFrameBuf == mpFrameBuf1 ? mpFrameBuf2 : mpFrameBuf1;
 #else
@@ -1333,7 +1289,6 @@ void CGraphics::VideoPreCallback(u32 retraceCount) {
 #endif
 
     mFlippingState = 2;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mpCurrenFrameBuf = frameBuf;
 #else
@@ -1387,7 +1342,6 @@ void CGraphics::EndScene() {
 #endif
 
   volatile int& numBreakPt = const_cast< volatile int& >(mNumBreakpointsWaiting);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   while (numBreakPt > 0) {
 #else
@@ -1454,7 +1408,6 @@ void CGraphics::EndScene() {
 #endif
 
   void*& frameBuf = mpCurrenFrameBuf;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float brightness = CMath::Clamp(0.f, mBrightness, 2.f);
   static const u8 copyFilter[7] = {0x00, 0x00, 0x15, 0x16, 0x15, 0x00, 0x00};
@@ -1472,7 +1425,6 @@ void CGraphics::EndScene() {
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   GXSetCopyFilter(mRenderModeObj.aa, mRenderModeObj.sample_pattern, true, vfilter);
 #else
@@ -1526,7 +1478,6 @@ void CGraphics::SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op,
                        static_cast< uchar >(ref1));
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static const GXVtxDescList skPosColorTexDirect[] = {
     {GX_VA_POS, GX_DIRECT},
@@ -1574,7 +1525,6 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
   }
   ERglCullMode cullMode = mCullMode;
   SetCullMode(kCM_None);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   tex.Load(GX_TEXMAP0, CTexture::kCM_Repeat);
 #else
@@ -1630,7 +1580,6 @@ bool CGraphics::BeginRender2D(const CTexture& tex) {
   return mLightsWereOn != 0;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int srcX, int srcY,
                            int srcW, int srcH, int w, int h, const CColor& col) {
@@ -1718,7 +1667,6 @@ void CGraphics::DrawPrimitive(ERglPrimitive primitive, const float* pos, const C
 
 #define STREAM_PRIM_BUFFER_SIZE 240
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #define VTX_BUFFER_ADDR static_cast< uchar* >(LCGetBase())
 #if NONMATCHING
@@ -1747,7 +1695,6 @@ static const uchar kHasColor = 2;
 static const uchar kHasTexture = 4;
 
 void CGraphics::StreamBegin(ERglPrimitive primitive) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   vtxBuffer = reinterpret_cast< VecPtr >(VTX_BUFFER_ADDR);
   nrmBuffer = reinterpret_cast< VecPtr >(NRM_BUFFER_ADDR);
@@ -1979,7 +1926,6 @@ void CGraphics::FlushStream() {
   *next = end;
   CGX::SetVtxDescv(descriptors);
   SetTevStates(vtxDescr.mStreamFlags);
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   if (sUseStreamVertexDelay) {
     FullRenderWithVertexDelay();
@@ -2038,7 +1984,6 @@ void CGraphics::SetTevStates(uchar flags) {
                    diffFn, attnFn);
 }
 
-#if !RSTL_PRIME1
 void CGraphics::FullRenderWithVertexDelay() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
   switch (vtxDescr.mStreamFlags) {
@@ -2105,7 +2050,6 @@ void CGraphics::FullRenderWithVertexDelay() {
   }
   CGX::End();
 }
-#endif
 
 void CGraphics::FullRender() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
@@ -2210,7 +2154,6 @@ void CGraphics::SetDepthRange(float near, float far) {
 }
 
 static inline GXTevStageID get_texture_unit(const ERglTevStage stage) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   return static_cast< GXTevStageID >(stage);
@@ -2294,7 +2237,6 @@ void CGraphics::SetDefaultVtxAttrFmt() {
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, void* data,
 #else
@@ -2336,7 +2278,6 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, G
   GXLoadTexObj(&texObj, texId);
   CTexture::InvalidateTexmap(texId);
   if (texId == GX_TEXMAP7) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     GXInvalidateTexRegion(&mTexRegions[0]);
 #else
@@ -2387,7 +2328,6 @@ void CGraphics::SetProjectionState(const CProjectionState& proj) {
   FlushProjection();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CGraphics::CClippedScreenRect
 CGraphics::ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2, ETexelFormat fmt) {
@@ -2403,7 +2343,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (p1.GetY() < GetProjectionState().GetNear() || p2.GetY() < GetProjectionState().GetNear()) {
     return CClippedScreenRect();
@@ -2418,7 +2357,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector2i p1p = ProjectPoint(p1);
   CVector2i p2p = ProjectPoint(p2);
@@ -2459,7 +2397,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   int left = minX & ~1;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (left >= mViewport.mLeft + mViewport.mWidth) {
     return CClippedScreenRect();
@@ -2469,7 +2406,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int right = minX + maxX + 2 & ~1;
   if (right <= mViewport.mLeft) {
@@ -2481,7 +2417,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   left = rstl::max_val(left, mViewport.mLeft) & ~1;
   right = rstl::min_val(right, mViewport.mLeft + mViewport.mWidth) + 1 & ~1;
@@ -2491,7 +2426,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   int top = minY & ~1;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (top >= mViewport.mTop + mViewport.mHeight) {
     return CClippedScreenRect();
@@ -2501,7 +2435,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int bottom = minY + maxY + 2 & ~1;
   if (bottom <= mViewport.mTop) {
@@ -2513,7 +2446,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   top = rstl::max_val(top, mViewport.mTop) & ~1;
   bottom = rstl::min_val(bottom, mViewport.mTop + mViewport.mHeight) + 1 & ~1;
@@ -2539,7 +2471,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
     texAlign = 2;
     break;
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int texWidth = texAlign + (right - left) - 1 & ~(texAlign - 1);
   float minU = CCast::LtoF(minX - left) / CCast::LtoF(texWidth);
@@ -2560,7 +2491,6 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CGraphics::CClippedScreenRect
 CGraphics::ClipScreenRectFromMS(const CVector3f& p1, const CVector3f& p2, ETexelFormat fmt) {
@@ -2602,7 +2532,6 @@ CVector2i CGraphics::ProjectPoint(const CVector3f& point) {
   return CVector2i(CCast::FtoL(vec.GetX()), CCast::FtoL(vec.GetY()));
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::SetProgressiveMode(bool rgb60) {
@@ -2782,7 +2711,6 @@ void CGraphics::SetScreenPosition(int stretch, int xOffset, int yOffset) {
 
 void CGraphics::SetIsBeginSceneClearFb(bool b) { mIsBeginSceneClearFb = b; }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool rgb60) {

@@ -62,7 +62,6 @@ CHECK_SIZEOF(CSkinnedModelState, 0x10)
 
 class CSkinnedModel {
 public:
-  // Shared by both games.
   TLockedToken< CModel >& Model() { return mModel; }
   const TLockedToken< CModel >& GetModel() const { return mModel; }
   const TLockedToken< CSkinRules >& GetSkinRules() const { return mSkinRules; }
@@ -71,8 +70,6 @@ public:
   static void ClearPointGeneratorFunc();
 
 #if RSTL_PRIME1
-  // Prime has a vtable (__vt__13CSkinnedModel), a copy constructor and an ownership
-  // parameter; Echoes has none of them.
   enum EDataOwnership {
     kDO_Unowned,
     kDO_Owned,
@@ -87,7 +84,6 @@ public:
 
   void SetLayoutInfo(const TLockedToken< CCharLayoutInfo >& layout) { mLayoutInfo = layout; }
 
-  // Prime skins into float position/normal workspaces.
   void CalculateDefault();
   int GetNumPoints() const { return mSkinRules->GetNumPoints(); }
   int GetNumVirtualBones() const { return mSkinRules->GetNumVirtualBones(); }
@@ -122,7 +118,6 @@ public:
     func(positions, normals, data);
   }
 #else
-  // Echoes skins from a pose into a matrix workspace (SSkinningWorkspace).
   typedef void (*TPointGenFunc)(const CSkinnedModel&, const SSkinningWorkspace&, void*);
   typedef void (*TDrawFunc)(const SSkinningWorkspace&, void*);
   // Guessed flag names.
@@ -179,7 +174,6 @@ private:
 };
 
 #if RSTL_PRIME1
-// No Echoes symbols reference this class.
 class CSkinnedModelWithAvgNormals {
   CSkinnedModel mSkinnedModel;
   rstl::auto_ptr< float > mAvgNormals;

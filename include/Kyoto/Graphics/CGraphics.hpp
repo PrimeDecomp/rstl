@@ -19,16 +19,8 @@
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/reserved_vector.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "dolphin/gx/GXFifo.h"
-#include "dolphin/gx/GXStruct.h"
-#include "dolphin/gx/GXTexture.h"
-#include "dolphin/mtx/GeoTypes.h"
-#else
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
-#endif
 
 class COsContext;
 
@@ -194,9 +186,7 @@ typedef struct {
 } Vec2, *Vec2Ptr;
 
 class CGraphics {
-#if RSTL_PRIME1
   friend class CCubeRenderer;
-#endif
 
 public:
   class CRenderState {
@@ -246,41 +236,22 @@ public:
     float mFar;
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   class CClippedScreenRect {
-#else
-  // Guessed name; clipped screen bounds and texture coordinates for four corners.
-  class CClippedScreenQuad {
-#endif
-
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     CClippedScreenRect() : mValid(false) {}
-    CClippedScreenRect(const int x, const int y, const int width, const int height, const int texWidth, const float minU, const float maxU,
-                       const float minV, const float maxV)
-#else
-    CClippedScreenQuad() : mValid(false) {}
-    CClippedScreenQuad(int x, int y, int width, int texWidth, int height,
-                       rstl::reserved_vector< CVector2f, 4 > texCoords)
-#endif
-
+    CClippedScreenRect(const int x, const int y, const int width, const int height,
+                       const int texWidth, const float minU, const float maxU, const float minV,
+                       const float maxV)
     : mValid(true)
     , mX(x)
     , mY(y)
     , mWidth(width)
     , mHeight(height)
     , mTexWidth(texWidth)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     , mMinU(minU)
     , mMaxU(maxU)
     , mMinV(minV)
     , mMaxV(maxV) {}
-#else
-    , mTexCoords(texCoords) {}
-#endif
 
     bool IsValid() const { return mValid; }
     RSTL_PRIME1_CONST int GetX() const { return mX; }
@@ -288,15 +259,10 @@ public:
     RSTL_PRIME1_CONST int GetWidth() const { return mWidth; }
     RSTL_PRIME1_CONST int GetHeight() const { return mHeight; }
     RSTL_PRIME1_CONST int GetTexWidth() const { return mTexWidth; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     float GetMinU() const { return mMinU; }
     float GetMaxU() const { return mMaxU; }
     float GetMinV() const { return mMinV; }
     float GetMaxV() const { return mMaxV; }
-#else
-    const CVector2f& GetTexCoord(int index) const { return mTexCoords[index]; }
-#endif
 
   private:
     bool mValid;
@@ -305,52 +271,60 @@ public:
     int mWidth;
     int mHeight;
     int mTexWidth;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     float mMinU;
     float mMaxU;
     float mMinV;
     float mMaxV;
-#else
-    rstl::reserved_vector< CVector2f, 4 > mTexCoords;
-#endif
-
   };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  // Guessed name; clipped screen bounds and texture coordinates for four corners.
+  class CClippedScreenQuad {
+  public:
+    CClippedScreenQuad() : mValid(false) {}
+    CClippedScreenQuad(int x, int y, int width, int texWidth, int height,
+                       rstl::reserved_vector< CVector2f, 4 > texCoords)
+    : mValid(true)
+    , mX(x)
+    , mY(y)
+    , mWidth(width)
+    , mHeight(height)
+    , mTexWidth(texWidth)
+    , mTexCoords(texCoords) {}
+
+    bool IsValid() const { return mValid; }
+    RSTL_PRIME1_CONST int GetX() const { return mX; }
+    RSTL_PRIME1_CONST int GetY() const { return mY; }
+    RSTL_PRIME1_CONST int GetWidth() const { return mWidth; }
+    RSTL_PRIME1_CONST int GetHeight() const { return mHeight; }
+    RSTL_PRIME1_CONST int GetTexWidth() const { return mTexWidth; }
+    const CVector2f& GetTexCoord(int index) const { return mTexCoords[index]; }
+
+  private:
+    bool mValid;
+    int mX;
+    int mY;
+    int mWidth;
+    int mHeight;
+    int mTexWidth;
+    rstl::reserved_vector< CVector2f, 4 > mTexCoords;
+  };
+
   static bool Startup(const COsContext& osContext, uint fifoSize, void* fifoBase);
-  static bool Startup(const COsContext& osContext, bool rgb60);
-#else
   static bool Startup(const COsContext& osContext, bool progressive);
   static void InitGraphicsFifo(GXFifoObj* obj, void* base, uint fifoSize);
-#endif
 
   static GXTexRegion* TexRegionCallback(const GXTexObj* obj, GXTexMapID id);
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8J_00
-  static void InitGraphicsFifo(GXFifoObj* obj, void* base, uint fifoSize);
-#endif
-#endif
-
   static void InitGraphicsVariables();
   static void Shutdown();
   static void InitGraphicsDefaults();
-#if RSTL_PRIME1
   static void ConfigureFrameBuffer(const COsContext& osContext);
-#endif
 
   static void ConfigureFrameBuffer();
-#if RSTL_PRIME1
   static void ConfigureVideoMode(bool initial, bool rgb60); // Guessed name. PAL arena/video setup.
-#endif
 
   static void EnableLight(ERglLight light);
   static void LoadLight(ERglLight light, const CLight& info);
   static void SetLightState(uchar lights);
-#if RSTL_PRIME1
-  static uint GetLightMask() { return mLightActive; }
-#endif
 
   static void SetViewMatrix();
   static void SetScissor(int left, int bottom, int width, int height);
@@ -363,10 +337,8 @@ public:
   static void SetPerspective(float fovy, float aspect, float znear, float zfar);
   static void SetCopyClear(const CColor& color, float depth);
   static void SetClearColor(const CColor& color);
-#if !RSTL_PRIME1
   static CColor GetClearColor();         // Guessed name.
   static int GetViewportTop(int bottom); // Guessed name.
-#endif
 
   static void SetDepthRange(float near, float far);
   static void FlushProjection();
@@ -375,7 +347,6 @@ public:
   static CMatrix4f CalculatePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
   static void ResetGfxStates();
   static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                                       void* data,
 #else
@@ -395,37 +366,21 @@ public:
   static void TickRenderTimings();
   static const CProjectionState& GetProjectionState();
   static void SetProjectionState(const CProjectionState& proj);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromVS(
-#else
+  static CClippedScreenRect ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2,
+                                                 ETexelFormat fmt);
+  static CClippedScreenRect ClipScreenRectFromMS(const CVector3f& p1, const CVector3f& p2,
+                                                 ETexelFormat fmt);
   // Guessed name; projects all four model-space corners independently.
-  static CClippedScreenQuad ClipScreenQuadFromMS(
-#endif
-      const CVector3f& p1, const CVector3f& p2,
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-      const CVector3f& p3, const CVector3f& p4,
-#endif
-      ETexelFormat fmt);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CClippedScreenRect ClipScreenRectFromMS(
-#else
+  static CClippedScreenQuad ClipScreenQuadFromMS(const CVector3f& p1, const CVector3f& p2,
+                                                 const CVector3f& p3, const CVector3f& p4,
+                                                 ETexelFormat fmt);
   // Guessed name; the view-space counterpart of ClipScreenQuadFromMS.
-  static CClippedScreenQuad ClipScreenQuadFromVS(
-#endif
-      const CVector3f& p1, const CVector3f& p2,
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-      const CVector3f& p3, const CVector3f& p4,
-#endif
-      ETexelFormat fmt);
+  static CClippedScreenQuad ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2,
+                                                 const CVector3f& p3, const CVector3f& p4,
+                                                 ETexelFormat fmt);
   static CVector2i ProjectPoint(const CVector3f& point);
 
-#if RSTL_PRIME1
   static const GXRenderModeObj& GetRenderMode() { return mRenderModeObj; }
-#endif
 
   static float GetDepthNear() { return mDepthNear; }
   static float GetDepthFar() { return mDepthFar; }
@@ -436,9 +391,7 @@ public:
   static void EndScene();
   static void SwapBuffers();
   static void SetTevOp(ERglTevStage stage, const CTevCombiners::CTevPass& pass);
-#if !RSTL_PRIME1
   static void SetTevRegisterColor(int index, const CColor& color); // Guessed name
-#endif
 
   static void StreamBegin(ERglPrimitive primitive);
   static void StreamColor(uint color);
@@ -449,7 +402,6 @@ public:
   static void StreamVertex(float x, float y, float z);
   static void StreamVertex(const CVector3f& vtx);
   static void StreamVertex(const float* vtx);
-#if !RSTL_PRIME1
   // Guessed name. Delay each streamed vertex by eight instructions.
   static void DelayStreamVertex() {
     #ifdef __MWERKS__
@@ -465,27 +417,16 @@ public:
     }
     #endif
   }
-#endif
 
   static void StreamNormal(const float* nrm);
   static void StreamEnd();
   static void Render2D(const CTexture& tex, int x, int y, int w, int h, const CColor& col);
-#if !RSTL_PRIME1
   static void Render2D(const CTexture* tex, int x, int y, int w, int h, const CColor& col);
-  // Names and signatures from the Prime demo map. Unreferenced and dead-stripped in Echoes retail.
-#endif
 
   static bool BeginRender2D(const CTexture& tex);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static void DoRender2D(const CTexture& tex, int x, int y, int texX, int texY, int texW, int texH,
                          int w, int h, const CColor& col);
   static void EndRender2D(bool restoreLights);
-#else
-  static void EndRender2D(bool restoreLights);
-  static void DoRender2D(const CTexture& tex, int x, int y, int texX, int texY, int texW, int texH,
-                         int w, int h, const CColor& col);
-#endif
 
   static void DrawPrimitive(ERglPrimitive primitive, const float* pos, const CVector3f& normal,
                             const CColor& col, int numVerts);
@@ -494,13 +435,9 @@ public:
   static void VideoPostCallback(u32 retraceCount);
 
   static const CViewport& GetViewport() { return mViewport; }
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8E_02
   static float GetPixelAspectRatio() { return mPixelAspectRatio; }
-#endif
   static int GetViewportWidth() { return mViewport.mWidth; }
   static int GetViewportHeight() { return mViewport.mHeight; }
-#endif
 
   static void GetViewport(int& left, int& top, int& width, int& height) {
     left = mViewport.mLeft;
@@ -508,33 +445,28 @@ public:
     width = mViewport.mWidth;
     height = mViewport.mHeight;
   }
-// TODO: verify that this Prime/Echoes difference is real
+  static bool Is50Hz() { return sIs50Hz; } // Guessed name.
 #if RSTL_PRIME1
   static const CVector3f& GetViewPoint() { return mViewPoint; }
 #else
-  static float GetPixelAspectRatio() { return mPixelAspectRatio; }
-  static const GXRenderModeObj& GetRenderMode() { return mRenderModeObj; }
-  static bool Is50Hz() { return sIs50Hz; } // Guessed name.
   static CVector3f GetViewPoint() { return mViewMatrix.GetTranslation(); }
 #endif
 
   static bool IsPAL() { return sIsPAL; } // Guessed name; PAL TV format.
 
   static const CTransform4f& GetViewMatrix() { return mViewMatrix; }
-#if !RSTL_PRIME1
   static const Mtx& GetCameraMtx() { return mCameraMtx; }
-#endif
 
   static const CTransform4f& GetModelMatrix() { return mModelMatrix; }
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+  static uint GetLightMask() { return mLightActive; }
+#else
   static uchar GetLightMask() { return mLightActive; }
 #endif
 
   static void SetViewPointMatrix(const CTransform4f&);
   static void SetBrightness(float b) { mBrightness = b; }
-#if RSTL_PRIME1
   static float GetBrightness() { return mBrightness; }
-#endif
 
   static void SetOrtho(float left, float right, float top, float bottom, float znear, float zfar);
 
@@ -547,10 +479,8 @@ public:
   static void SetFog(ERglFogMode mode, float startz, float endz, const CColor& color);
 
   static void SetModelMatrix(const CTransform4f& xf);
-#if !RSTL_PRIME1
   static void SetUseNormalMatrix(bool enabled);      // Guessed name
   static void SetUseStreamVertexDelay(bool enabled); // Guessed name
-#endif
 
   static void SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op, ERglAlphaFunc comp1,
                               uchar ref1);
@@ -558,9 +488,7 @@ public:
 
   static void SetBlendMode(ERglBlendMode mode, ERglBlendFactor src, ERglBlendFactor dst,
                            ERglLogicOp op);
-#if RSTL_PRIME1
   static ERglCullMode GetCullMode() { return mCullMode; }
-#endif
 
   static void SetCullMode(ERglCullMode cullMode);
   static void SetTevStates(uchar);
@@ -570,7 +498,6 @@ public:
   static bool GetDolphinLastFrameAbove() { return mLastFrameUsedAbove; }
   static bool GetUseVideoFilter();
   static int GetFrameCounter();
-#if !RSTL_PRIME1
   static const CTransform4f& GetGXModelView() {
     return *reinterpret_cast< const CTransform4f* >(mGxModelView);
   }
@@ -578,29 +505,19 @@ public:
   static void* GetDolphinSpareBuffer() { return mpSpareBuffer; }
   static int GetSpareBufferSize() { return mSpareBufferSize; }
   static GXTexRegion* GetSpareTextureRegion() { return &mTexRegions[0]; }
-#endif
+  static void InvalidateSpareTexture();
 
   static void SetProgressiveMode(bool b);
-#if !RSTL_PRIME1
   static void SetPAL60(bool enabled); // Guessed name; PAL60 (60 Hz) video-mode switch.
-#endif
 
   static bool GetProgressiveMode();
   static bool CanSetProgressiveMode();
   static bool GetProgressiveDefault();
 
-#if RSTL_PRIME1
-  static void* GetDolphinSpareBuffer() { return mpSpareBuffer; }
-  static void InvalidateSpareTexture();
-  static int GetSpareBufferSize() { return mSpareBufferSize; }
-#endif
-
   // Screen Position
   static void GetScreenPosition(int* stretch, int* xOffset, int* yOffset);
   static void SetScreenPosition(int stretch, int xOffset, int yOffset);
-#if !RSTL_PRIME1
   static const CTevCombiners::CTevPass& EnvModulate() { return kEnvModulate; }
-#endif
 
   static const CTevCombiners::CTevPass& kEnvPassthru;
   static CTevCombiners::CTevPass kEnvModulateConstColor;
@@ -617,17 +534,13 @@ public:
   static const GXTexMapID kSpareBufferTexMapID;
 
 private:
-#if !RSTL_PRIME1
   static void ConfigureVideo(bool initial, uchar progressive); // Guessed name
-#endif
 
   static void UpdateVertexDataStream();
   static void ResetVertexDataStream(bool initial);
   static void FlushStream();
   static void FullRender();
-#if !RSTL_PRIME1
   static void FullRenderWithVertexDelay(); // Guessed name
-#endif
 
   static VecPtr vtxBuffer;
   static VecPtr nrmBuffer;
@@ -663,14 +576,7 @@ private:
   static GXTexRegionCallback mGXDefaultTexRegionCallback;
   static void* mpFifo;
   static GXFifoObj* mpFifoObj;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8J_00
   static uint mFifoSize;
-#endif
-#else
-  static uint mFifoSize;
-#endif
 
   static uint mRenderTimings;
   static float mSecondsMod900;
@@ -685,9 +591,7 @@ private:
   static CTransform4f mViewMatrix;
   static CTransform4f mModelMatrix;
   static CColor mClearColor;
-#if RSTL_PRIME1
   static CVector3f mViewPoint;
-#endif
 
   static CViewport mViewport;
   static ELightType mLightTypes[8];
@@ -696,19 +600,13 @@ private:
   static GXTexRegion mTexRegionsCI[GX_MAX_TEXMAP / 2];
   static GXRenderModeObj mRenderModeObj;
   static bool sIsPAL; // Guessed name.
-#if !RSTL_PRIME1
   static bool sIs50Hz; // Guessed name; shared video timing and splash-coordinate flag.
-#endif
 
   static Mtx mGXViewPointMatrix;
-#if RSTL_PRIME1
   static Mtx mGXModelMatrix;
-#endif
 
   static Mtx mGxModelView;
-#if !RSTL_PRIME1
   static Mtx mGxModelViewInvXpose;
-#endif
 
   static Mtx mCameraMtx;
 
@@ -718,15 +616,8 @@ private:
   static ERglPrimitive mCurrentPrimitive;
   static float mDepthFar;
   static u32 mClearDepthValue; // = GX_MAX_Z24
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8E_02
-  static float mPixelAspectRatio;
-#endif
-#else
   static float mPixelAspectRatio;
   static bool mUseNormalMatrix;
-#endif
 
   static bool mIsGXModelMatrixIdentity;
   static bool mFirstFrame;
@@ -734,8 +625,6 @@ private:
   static float mBrightness;
 };
 
-#if !RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CGraphics, CClippedScreenQuad, 0x3c)
-#endif
 
 #endif // _CGRAPHICS

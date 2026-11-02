@@ -17,11 +17,9 @@
 
 uint CGraphicsPalette::sCurrentFrameCount = 0;
 
-#if !RSTL_PRIME1
 static inline GXTlutFmt format_to_format(EPaletteFormat format) {
   return static_cast< GXTlutFmt >(format);
 }
-#endif
 
 CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 : mFmt(format)
@@ -32,7 +30,6 @@ CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 #endif
 
 , mEntryCount(numEntries)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mEntries((ushort*)CMemory::Alloc(numEntries * sizeof(ushort), IAllocator::kHI_RoundUpLen))
 #if NONMATCHING
@@ -48,7 +45,6 @@ CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 }
 
 CGraphicsPalette::CGraphicsPalette(CInputStream& in)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : mFmt(EPaletteFormat(in.ReadLong()))
 #if NONMATCHING
@@ -73,12 +69,7 @@ CGraphicsPalette::CGraphicsPalette(CInputStream& in)
 }
 
 CGraphicsPalette::~CGraphicsPalette() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  uint frameDiff = sCurrentFrameCount - mFrameLoaded;
-#else
   const uint frameDiff = sCurrentFrameCount - mFrameLoaded;
-#endif
 
   if (frameDiff < 2) {
     CFrameDelayedKiller::ScheduleDeletion(frameDiff > 0

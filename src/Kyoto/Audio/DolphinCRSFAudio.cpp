@@ -1,6 +1,5 @@
 #include "Kyoto/Audio/DolphinCRSFAudio.hpp"
 #include "rstl/RstlVersions.h"
-// Prime keeps the AI DMA callbacks on CRSFAudio; Echoes moved them to CAIInterruptManager.
 #if RSTL_PRIME1
 typedef CRSFAudio CAICallbackOwner;
 #else
@@ -125,7 +124,6 @@ static void MixToMono(ushort* data, int numSamples); // Guessed name
 void MixStereoToMono(short* buf, int numSamples);
 #endif
 
-// Prime declares the output buffer const and the input mutable; Echoes swapped that.
 #if RSTL_PRIME1
 void CRSFAudio::Decode(const ushort* out, ushort* in, const int numSamples) {
 #else
