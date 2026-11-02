@@ -124,12 +124,11 @@ void CRSFAudio::Decode(ushort* out, const ushort* in, const int numSamples) {
   int curSamp = mCurSamp / 2;
   int loopEndSamp = mLoopEndSamp / 2;
   int loopStartSamp = mLoopStartSamp / 2;
-  DecodeMonoAndMix(out, in, numSamples, curSamp, loopEndSamp, loopStartSamp,
-                   mVolume, mLeftState);
+  DecodeMonoAndMix(out, in, numSamples, curSamp, loopEndSamp, loopStartSamp, mVolume, mLeftState);
 
   int halfLen = mRsfLength / 2;
-  DecodeMonoAndMix(out + 1, in + 1, numSamples, curSamp + halfLen,
-                   loopEndSamp + halfLen, loopStartSamp + halfLen, mVolume, mRightState);
+  DecodeMonoAndMix(out + 1, in + 1, numSamples, curSamp + halfLen, loopEndSamp + halfLen,
+                   loopStartSamp + halfLen, mVolume, mRightState);
 
 #if !RSTL_PRIME1
   if (CAudioSys::GetSurroundMode() == CAudioSys::kSM_Mono) {
