@@ -111,17 +111,12 @@ public:
   CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
 #if RSTL_PRIME1
-  void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-                          const CCharAnimTime& time) const;
-  const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
-  const CCharAnimTime& GetTimePerFrame() const { return mInterval; }
   bool HasPOIData() const { return !mEventData.null(); }
   const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const;
   const rstl::vector< CInt32POINode >& GetInt32POIStream() const;
   const rstl::vector< CParticlePOINode >& GetParticlePOIStream() const;
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const;
   rstl::set< rstl::pair< rstl::string, int > > GetUniqueBoolPOIs() const;
-  CSegId GetPrimaryOffsetChannel() const { return mRoot; }
 #endif
 
   CVector3f GetOverallOffset(const CCharAnimTime& time) const {
@@ -132,17 +127,17 @@ public:
     return CSteadyStateAnimInfo(false, GetAnimationDuration(), GetOverallOffset(time));
   }
   void CalcAverageVelocity();
-#if !RSTL_PRIME1
   void GetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
                           const CCharAnimTime& time) const;
+#if !RSTL_PRIME1
   // Guessed name.
   void GetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
                            const CCharAnimTime& time) const;
+#endif
 
   const CCharAnimTime& GetAnimationDuration() const { return mDuration; }
   const CCharAnimTime& GetTimePerFrame() const { return mInterval; }
   CSegId GetPrimaryOffsetChannel() const { return mRoot; }
-#endif
 
   float GetAverageVelocity() const { return mAverageVelocity; }
 #if !RSTL_PRIME1

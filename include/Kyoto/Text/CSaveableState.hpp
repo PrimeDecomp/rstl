@@ -30,35 +30,22 @@ public:
   void SetFont(const TToken< CRasterFont >& font) { mFont = font; }
   rstl::vector< CTextColor >& GetColors() { return mColors; }
   rstl::vector< bool >& GetOverride() { return mColorOverrides; }
-#if !RSTL_PRIME1
   void SetLineSpacing(float spacing) { mLineSpacing = spacing; }
   void SetLineExtraSpace(int spacing) { mExtraLineSpacing = spacing; }
-#endif
 
   float GetLineSpacing() const { return mLineSpacing; }
-#if RSTL_PRIME1
-  void SetLineSpacing(float spacing) { mLineSpacing = spacing; }
-#endif
 
   int GetLineExtraSpacing() const { return mExtraLineSpacing; }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void SetLineExtraSpace(int spacing) { mExtraLineSpacing = spacing; }
-#endif
   void SetWordWrapping(RSTL_PRIME1_CONST bool wrap) { mEnableWordWrap = wrap; }
 
   bool IsWordWrapping() const { return mEnableWordWrap; }
   void SetJustification(EJustification just) { mJust = just; }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void SetVerticalJustification(EVerticalJustification just) { mVjust = just; }
-#endif
 
   EJustification GetJustification() const { return mJust; }
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
   void SetVerticalJustification(EVerticalJustification just) { mVjust = just; }
-#endif
 
   EVerticalJustification GetVerticalJustification() const { return mVjust; }
 

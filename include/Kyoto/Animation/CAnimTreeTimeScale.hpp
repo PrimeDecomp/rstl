@@ -76,15 +76,11 @@ public:
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node,
                      const rstl::ownership_transfer< IVaryingAnimationTimeScale >& timeScale,
                      const CCharAnimTime& time, const rstl::string& name);
-#else
-  CCharAnimTime GetRealLifeTime(const CCharAnimTime& time) const;
 #endif
+  CCharAnimTime GetRealLifeTime(const CCharAnimTime& time) const;
 
   static rstl::string CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& node, float scaleA,
                                           const CCharAnimTime& time, float scaleB);
-#if RSTL_PRIME1
-  CCharAnimTime GetRealLifeTime(const CCharAnimTime& time) const;
-#endif
 
 private:
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node,

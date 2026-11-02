@@ -29,13 +29,8 @@ public:
 
     const CMatrix3f& GetRotation() const { return mRotation; }
     const CVector3f& GetOffset() const { return mOffset; }
-#else
-  const CMatrix3f& GetRotation(const CSegId& id) const;
-#endif
 
   private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     CMatrix3f mRotation;
     CVector3f mOffset;
   };
@@ -43,7 +38,9 @@ public:
   CPoseAsTransforms(uchar count);
 
   void Insert(const CSegId& seg, const CMatrix3f& rotation, const CVector3f& offset);
+#endif
   const CMatrix3f& GetRotation(const CSegId& id) const;
+#if RSTL_PRIME1
   const CMatrix3f& GetTransformMinusOffset(const CSegId& id) const;
   const CVector3f& GetOffset(const CSegId& id) const;
   void Clear();
@@ -51,8 +48,10 @@ public:
   void AccumulateScaledTransform(const CSegId& seg, CMatrix3f& transform, float scale) const;
   bool ContainsDataFor(const CSegId& seg) const;
   const TSegIdMapVariableSize< CElementType >& GetTransforms() const { return mSegIdMap; }
+#endif
 
 private:
+#if RSTL_PRIME1
   TSegIdMapVariableSize< CElementType > mSegIdMap;
 #else
   CSegId mNextId;

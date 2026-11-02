@@ -13,25 +13,32 @@ class CAnimPOIData;
 
 class CAnimSourceReaderBase : public IAnimReader {
 public:
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ~CAnimSourceReaderBase() override {}
+#else
+  ~CAnimSourceReaderBase() override;
+#endif
   uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-                       uint iterator, int unk) const override;
+                       uint iterator, int additive) const override;
   uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-                        uint iterator, int unk) const override;
+                        uint iterator, int additive) const override;
   uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
-                           uint iterator, int unk) const override;
+                           uint iterator, int additive) const override;
   uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
-                        uint iterator, int unk) const override;
+                        uint iterator, int additive) const override;
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
   bool VGetBoolPOIState(const char* name) const override;
   s32 VGetInt32POIState(const char* name) const override;
   CParticleData::EParentedMode VGetParticlePOIState(const char* name) const override;
+#else
+  bool VGetBoolPOIState(uint nameHash) const override;
+  s32 VGetInt32POIState(uint nameHash) const override;
+  CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;
 #endif
 
   CAnimSourceReaderBase(const rstl::ownership_transfer< IAnimSourceInfo >& sourceInfo
 #if !RSTL_PRIME1
-                        
                         , const CAnimPOIData* poiData
 #endif
                         )
@@ -71,22 +78,6 @@ public:
   , mBoolStates(boolStates)
   , mInt32States(intStates)
   , mParticleStates(particleStates) {}
-
-#if !RSTL_PRIME1
-  // IAnimReader
-  ~CAnimSourceReaderBase() override;
-  uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
-                       uint iterator, int additive) const override;
-  uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
-                        uint iterator, int additive) const override;
-  uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
-                           uint iterator, int additive) const override;
-  uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
-                        uint iterator, int additive) const override;
-  bool VGetBoolPOIState(uint nameHash) const override;
-  s32 VGetInt32POIState(uint nameHash) const override;
-  CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;
-#endif
 
   void PostConstruct(const CCharAnimTime& time);
   void UpdatePOIStates();

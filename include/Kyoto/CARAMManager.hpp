@@ -94,14 +94,14 @@ private:
   static uint mChunkSize;
   static uint mNumChunks;
   static uint* mpBookKeepingMemory;
-#else
+#endif
   static uint mDMAUniqueID;
+#if !RSTL_PRIME1
   static CAramPool* mPools[2];
 #endif
 
   static uint mPreInitializeAlloc;
 #if RSTL_PRIME1
-  static uint mDMAUniqueID;
   static uint mChunksAllocated;
 #endif
 

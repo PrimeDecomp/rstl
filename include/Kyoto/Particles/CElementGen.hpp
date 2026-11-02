@@ -215,7 +215,6 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   virtual uint Get4CharId() const override;
-  int GetMaxParticles() const { return mMAXP; }
   void SetZTest(bool enabled) { mZTest = enabled; }
   rstl::vector< CParticle >& Particles() { return mParticles; }
   const rstl::vector< CParticle >& GetParticles() const { return mParticles; }
@@ -306,8 +305,8 @@ public:
 #endif
 
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
-#if !RSTL_PRIME1
   int GetMaxParticles() const { return mMAXP; }
+#if !RSTL_PRIME1
   double GetCurrentTime() const { return mCurSeconds; } // Guessed name
   float GetTimeDeltaScale() const { return mTimeDeltaScale; } // Guessed name
 #endif

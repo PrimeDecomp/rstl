@@ -8,9 +8,7 @@
 
 class CRelAngle {
 public:
-#if RSTL_PRIME1
   CRelAngle(float rad) : mAngle(rad) {}
-#endif
 
   float AsDegrees() const { return mAngle * (180.f / M_PIF); }
   float AsRadians() const { return mAngle; }
@@ -45,10 +43,6 @@ public:
   static CRelAngle FromRadians(RSTL_PRIME1_CONST float rad) { return CRelAngle(rad); }
 
 private:
-#if !RSTL_PRIME1
-  CRelAngle(float rad) : mAngle(rad) {}
-#endif
-
   float mAngle;
 };
 CHECK_SIZEOF(CRelAngle, 0x4)

@@ -13,6 +13,8 @@ public:
   }
   uint Depth() const override { return 1; }
   uint VGetNumChildren() const override { return 0; }
+#else
+  ~CAnimTreeAnimReaderContainer() override {}
 #endif
 
   CAnimTreeAnimReaderContainer(const rstl::ownership_transfer< IAnimReader >& reader,
@@ -26,11 +28,6 @@ public:
 #endif
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  // IAnimReader
-  ~CAnimTreeAnimReaderContainer() override {}
-#endif
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   CCharAnimTime VGetTimeRemaining() const override;
@@ -79,15 +76,11 @@ public:
   void VSetPhase(float phase) override;
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const override;
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
-
-  // CAnimTreeNode
   uint Depth() const override { return 1; }
   CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const override;
   uint VGetNumChildren() const override { return 0; }
 #endif
-
   rstl::rc_ptr< CAnimTreeNode > VGetBestUnblendedChild() const override;
   void VGetWeightedReaders(
       float weight,

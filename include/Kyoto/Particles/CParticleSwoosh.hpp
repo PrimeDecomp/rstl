@@ -131,14 +131,10 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetCurParticle() const { return mCurParticle; }
-#else
-  const rstl::vector< SSwooshData >& GetSwooshes() const { return mSwooshes; }
 #endif
+  const rstl::vector< SSwooshData >& GetSwooshes() const { return mSwooshes; }
 
   rstl::vector< SSwooshData >& Swooshes() { return mSwooshes; }
-#if RSTL_PRIME1
-  const rstl::vector< SSwooshData >& GetSwooshes() const { return mSwooshes; }
-#endif
 
   bool IsLargeEnough() const;
   void UpdateSwooshTranslation(const CVector3f& translation);

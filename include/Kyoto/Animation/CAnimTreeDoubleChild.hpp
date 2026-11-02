@@ -8,30 +8,18 @@
 class CAnimTreeDoubleChild : public CAnimTreeNode {
 public:
   class CDoubleChildAdvancementResult {
-#if !RSTL_PRIME1
   public:
-    CDoubleChildAdvancementResult(const CCharAnimTime& time, const CAdvancementDeltas& left,
-                                  const CAdvancementDeltas& right);
+    CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
+                                  const CAdvancementDeltas& leftDeltas,
+                                  const CAdvancementDeltas& rightDeltas);
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
     const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
     const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
 
   private:
-#endif
-
     CCharAnimTime mTrueAdvancement;
     CAdvancementDeltas mLeftDeltas;
     CAdvancementDeltas mRightDeltas;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  public:
-    CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
-                                  const CAdvancementDeltas& leftDeltas,
-                                  const CAdvancementDeltas& rightDeltas);
-    const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
-    const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
-    const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
-#endif
   };
 
 #if RSTL_PRIME1

@@ -14,14 +14,9 @@
 #include "Kyoto/Text/CTextColor.hpp"
 
 class IObjectStore;
-#if !RSTL_PRIME1
 class CTextExecuteBuffer;
-#endif
 
 class CRasterFont;
-#if RSTL_PRIME1
-class CTextExecuteBuffer;
-#endif
 
 class CTextParser {
 public:

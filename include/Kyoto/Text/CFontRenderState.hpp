@@ -49,28 +49,22 @@ public:
   int GetX() const { return mCurX; }
   void SetY(int y) { mCurY = y; }
   int GetY() const { return mCurY; }
-#if !RSTL_PRIME1
   void AddY(const int y) { mCurY += y; }
-#endif
 
   const CLineInstruction* GetLine() const { return mCurrentLineInst; }
-#if !RSTL_PRIME1
   void SetLine(const CLineInstruction* line) { mCurrentLineInst = line; }
-#endif
 
   bool IsFirstWordOnLine() const { return mLineInitialized; }
   void SetFirstWordOnLine(bool v) { mLineInitialized = v; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  void SetLine(const CLineInstruction* line) { mCurrentLineInst = line; }
 
   void SubX(const int x) { mCurX -= x; }
 
   void AddX(const int x) { mCurX += x; }
 
   void SubY(const int y) { mCurY -= y; }
-  void AddY(const int y) { mCurY += y; }
 #endif
 
   int GetSpacing(const int value) const {
