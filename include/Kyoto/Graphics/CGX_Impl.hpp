@@ -21,11 +21,8 @@
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 // Setters wrapped in "!defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00" are only
 // defined in CGX.cpp from PAL on, so callers no longer inline them.
-#endif
 
 CGX_INLINE void CGX::SetNumChans(uchar num) {
   CGX_STATE.mNumChans = num;
