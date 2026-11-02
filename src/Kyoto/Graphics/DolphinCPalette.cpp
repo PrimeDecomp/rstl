@@ -30,7 +30,6 @@ CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 #endif
 
 , mEntryCount(numEntries)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mEntries((ushort*)CMemory::Alloc(numEntries * sizeof(ushort), IAllocator::kHI_RoundUpLen))
 #if NONMATCHING
@@ -46,7 +45,6 @@ CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 }
 
 CGraphicsPalette::CGraphicsPalette(CInputStream& in)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : mFmt(EPaletteFormat(in.ReadLong()))
 #if NONMATCHING

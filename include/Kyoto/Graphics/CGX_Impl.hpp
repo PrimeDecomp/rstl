@@ -15,7 +15,6 @@
 
 #ifndef CGX_INLINE
 #define CGX_INLINE inline
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #define CGX_INLINE_HEADER
 #endif
@@ -46,13 +45,8 @@ CGX_INLINE void CGX::SetChanAmbColor(EChannelId channel, const GXColor& color) {
 }
 
 CGX_INLINE GXColor CGX::GetChanAmbColor(EChannelId channel) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  return sGXState.mChanAmbColors[channel];
-#else
-  const GXColor color = gpGXState->mChanAmbColors[channel];
+  const GXColor color = CGX_STATE.mChanAmbColors[channel];
   return color;
-#endif
 
 }
 
@@ -111,7 +105,6 @@ CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
   if (!(*reinterpret_cast< const CColor* >(&sGXState.mKColors[id]) == color)) {
@@ -245,7 +238,6 @@ CGX_INLINE void CGX::SetTevKAlphaSel(GXTevStageID stageId, GXTevKAlphaSel sel) {
 
 CGX_INLINE void CGX::SetTevOrder(GXTevStageID stageId, GXTexCoordID texCoord, GXTexMapID texMap,
                                  GXChannelID color) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   STevState& state = sGXState.mTevStates[stageId];
   uint flags = (texCoord & 0xFF) | ((texMap & 0xFF) << 8) | ((color & 0xFF) << 16);
@@ -274,7 +266,6 @@ CGX_INLINE void CGX::SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlen
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CGX_INLINE void CGX::SetZMode(const bool compareEnable, GXCompare func,
                               const bool updateEnable) {
@@ -292,7 +283,6 @@ CGX_INLINE void CGX::SetZMode(const GXBool compareEnable, GXCompare func,
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
@@ -399,7 +389,6 @@ CGX_INLINE void CGX::SetNumIndStages(uchar num) {
 }
 
 CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint idx = attr - GX_VA_POS;
   if (data == nullptr || sGXState.mArrayPtrs[idx] == data) {
@@ -409,7 +398,6 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
 
     return;
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   sGXState.mArrayPtrs[idx] = data;
 #else

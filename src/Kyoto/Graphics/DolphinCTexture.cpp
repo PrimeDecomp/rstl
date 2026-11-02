@@ -4,7 +4,6 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif

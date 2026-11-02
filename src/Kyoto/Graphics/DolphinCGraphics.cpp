@@ -11,7 +11,6 @@
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Animation/CSkinnedModel.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
@@ -38,7 +37,6 @@ static bool sGXAborted;
 
 bool CGraphicsSys::mGraphicsInitialized;
 static CStopwatch sFPSTimer;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool sIs50Hz = RSTL_VERSION == RSTL_GM8P_00;
 #if RSTL_VERSION == RSTL_GM8P_00
@@ -333,7 +331,6 @@ ERglEnum CGraphics::mDepthFunc = kE_LEqual;
 ERglPrimitive CGraphics::mCurrentPrimitive = kP_Points;
 float CGraphics::mDepthFar = 1.f;
 u32 CGraphics::mClearDepthValue = GX_MAX_Z24;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8E_02
 float CGraphics::mPixelAspectRatio = 1.f;
@@ -367,7 +364,6 @@ void CGraphics::InitGraphicsFifo(GXFifoObj* obj, void* fifo, uint fifoSize) {
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::ConfigureVideoMode(bool initial, bool rgb60) {
@@ -510,7 +506,6 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
 
   CGX::ResetGXStates();
   InitGraphicsVariables();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   ConfigureFrameBuffer();
@@ -529,7 +524,6 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
                          (9 + 2 * i) << 15, GX_TEXCACHE_32K);
   }
   mGXDefaultTexRegionCallback = GXSetTexRegionCallback(TexRegionCallback);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   mSpareBufferSize = sSpareFrameBufferSize;
@@ -737,7 +731,6 @@ void CGraphics::InitGraphicsVariables() {
 
 void CGraphics::Shutdown() {
   GXSetTexRegionCallback(mGXDefaultTexRegionCallback);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
   CFrameDelayedKiller::StallAndFlushAllAllocations();
@@ -774,7 +767,6 @@ void CGraphics::InitGraphicsDefaults() {
   SetDefaultVtxAttrFmt();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::ConfigureFrameBuffer() {
@@ -830,7 +822,6 @@ void CGraphics::EnableLight(ERglLight light) {
 }
 
 static inline GXLightID get_hw_light_index(ERglLight light) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // one instruction, no branches
@@ -1097,7 +1088,6 @@ void CGraphics::SetPerspective(float fovy, float aspect, float znear, float zfar
 }
 
 CMatrix4f CGraphics::GetPerspectiveProjectionMatrix() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // construct in place
@@ -1155,7 +1145,6 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 #endif
 
   float bottom = -top;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
   // construct in place
@@ -1678,7 +1667,6 @@ void CGraphics::DrawPrimitive(ERglPrimitive primitive, const float* pos, const C
 
 #define STREAM_PRIM_BUFFER_SIZE 240
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #define VTX_BUFFER_ADDR static_cast< uchar* >(LCGetBase())
 #if NONMATCHING
@@ -2166,7 +2154,6 @@ void CGraphics::SetDepthRange(float near, float far) {
 }
 
 static inline GXTevStageID get_texture_unit(const ERglTevStage stage) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   return static_cast< GXTevStageID >(stage);
@@ -2545,7 +2532,6 @@ CVector2i CGraphics::ProjectPoint(const CVector3f& point) {
   return CVector2i(CCast::FtoL(vec.GetX()), CCast::FtoL(vec.GetY()));
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 void CGraphics::SetProgressiveMode(bool rgb60) {
@@ -2725,7 +2711,6 @@ void CGraphics::SetScreenPosition(int stretch, int xOffset, int yOffset) {
 
 void CGraphics::SetIsBeginSceneClearFb(bool b) { mIsBeginSceneClearFb = b; }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8P_00
 CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool rgb60) {

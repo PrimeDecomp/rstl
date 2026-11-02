@@ -351,7 +351,6 @@ bool CDvdFile::FileExists(const char* filename) {
 }
 
 void CDvdFile::internalCallback(s32 res, DVDFileInfo* info) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8E_01
   DCInvalidateRange((void*)info->cb.addr, info->cb.length);

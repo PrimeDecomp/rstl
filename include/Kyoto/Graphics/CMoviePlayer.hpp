@@ -73,7 +73,6 @@ public:
   void DrawFrame(const CVector3f&, const CVector3f&, const CVector3f&, const CVector3f&);
   void MixAudio(short* out, const short* in, unsigned long samples);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   EPlayMode GetPlayMode() const { return mPlayMode; }
 #else
@@ -113,7 +112,6 @@ private:
   CDvdFile mDvdFile;
   THPHeader mHeader;
   THPFrameCompInfo mThpComponents;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   THPVideoInfoOld mVideoInfo;
   THPAudioInfoOld mAudioInfo;
@@ -124,7 +122,6 @@ private:
 
   rstl::vector< CTHPTextureSet > mTextures;
   rstl::auto_ptr< uchar > mRequestBuffer;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::single_ptr< CDvdRequest > mRequest;
 #else
@@ -132,7 +129,6 @@ private:
 #endif
 
   rstl::vector< rstl::auto_ptr< uchar > > mRequestQueue;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::single_ptr< SIndexLoad > mIndexLoad;
   uint mNextReadSize;

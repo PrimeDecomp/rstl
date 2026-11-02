@@ -32,7 +32,6 @@ public:
     uchar mKColorSel;
     uchar mKAlphaSel;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     STevState()
     : mColorInArgs(0)
@@ -52,7 +51,6 @@ public:
   struct STexState {
     uint mCoordGen;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     STexState() : mCoordGen(0) {}
 #else
@@ -133,7 +131,6 @@ public:
                           GXLightID lights, GXDiffuseFn diffFn, GXAttnFn attnFn);
   static void SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl);
   static void SetTevKColor(GXTevKColorID id, const GXColor& color);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void SetTevKColor(GXTevKColorID id, const CColor& color);
 #else
@@ -158,7 +155,6 @@ public:
                           GXChannelID color);
   static void SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlendFactor dstFac,
                            GXLogicOp op);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void SetZMode(bool compareEnable, GXCompare func, bool updateEnable);
 #else
@@ -231,7 +227,6 @@ public:
   static inline void CopyGXColor(GXColor& dst, const GXColor& src) {
     *reinterpret_cast< uint* >(&dst) = *reinterpret_cast< const uint* >(&src);
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static inline uint MaskAndShiftLeft(uint v, uint m, uint s) { return (v << s) & (m << s); }
 #else
@@ -252,7 +247,6 @@ private:
   static void FlushChanCtrl(GXChannelID chan, ushort flags);
 
   static void update_fog(uint flags);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static inline void apply_fog();
 #else
@@ -267,7 +261,6 @@ private:
 
 };
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 // Direct FIFO write macros
 #ifndef GXFIFO_ADDR

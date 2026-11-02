@@ -27,7 +27,6 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/TToken.hpp"
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
@@ -596,7 +595,6 @@ uint CModel::GetDataSize() const { return mDataLen; }
 rstl::auto_ptr< uchar > CModel::GetData() { return rstl::auto_ptr< uchar >(mData.get()); }
 
 namespace {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #ifdef __MWERKS__
 inline void RemapPointer(const void*& pointer, uintptr_t offset) {
@@ -615,7 +613,6 @@ inline void RemapPointer(const void*& pointer, uintptr_t offset) {
 
 template < typename T >
 inline void RemapPointer(T*& pointer, uintptr_t offset) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #ifdef __MWERKS__
   RemapPointer(reinterpret_cast< const void*& >(pointer), offset);

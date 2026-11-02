@@ -10,7 +10,6 @@
 
 #include "limits.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "GameVersions.h"
 #else
@@ -33,7 +32,6 @@ static const uint sAlwaysAlphaCompare = CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 0) |
                                         CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 14);
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if NONMATCHING
 // Doesn't need to be so big
@@ -45,7 +43,6 @@ static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #define CGX_INLINE
 #define CGX_CPP
@@ -68,7 +65,6 @@ void CGX::SetNumChans(uchar num) {
 }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #include "Kyoto/Graphics/CGX_Impl.hpp" // IWYU pragma: keep
 #else
@@ -458,7 +454,6 @@ void CGX::ResetGXStates() {
     GXSetTexCoordScaleManually(static_cast< GXTexCoordID >(i), false, 0, 0);
   }
   GXSetZTexture(GX_ZT_DISABLE, GX_TF_Z8, 0);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION == RSTL_GM8J_00
   GXSetMisc(GX_MT_XF_FLUSH, 8);
@@ -473,11 +468,7 @@ void CGX::ResetGXStates() {
 }
 
 void CGX::ResetGXStatesFull() {
-#if RSTL_PRIME1
-  new (&sGXState) SGXState();
-#else
-  new (gpGXState) SGXState();
-#endif
+  new (&CGX_STATE) SGXState();
   ResetGXStates();
 }
 
@@ -701,7 +692,6 @@ void CGX::GetFog(GXFogType* fogType, float* fogStartZ, float* fogEndZ, float* fo
     *fogFarZ = CGX_STATE.mFogParams.mFogFarZ;
   }
   if (fogColor != nullptr) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CopyGXColor(*fogColor, sGXState.mFogParams.mFogColor);
 #else
