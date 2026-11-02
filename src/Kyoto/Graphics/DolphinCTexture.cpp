@@ -379,13 +379,7 @@ bool CTexture::TryReloadBitmapData(CResFactory& factory) const {
   return false;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CTexture::fn_8030F088() const {
-#else
 int CTexture::GetBitmapDataStatus() const {
-#endif
-
   if (!mBitmapReloader.null()) {
     if (mBitmapReloader->GetStatus() == 0) {
       return 2;
@@ -410,14 +404,8 @@ int CTexture::GetBitmapDataStatus() const {
   }
 }
 
-CTexture::CDumpedBitmapDataReloader::CDumpedBitmapDataReloader(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    uint textureId,
-#else
-    CAssetId textureId,
-#endif
-    uint bitmapSize, bool loadToARAM)
+CTexture::CDumpedBitmapDataReloader::CDumpedBitmapDataReloader(CAssetId textureId, uint bitmapSize,
+                                                               bool loadToARAM)
 : mState(0)
 , mTextureId(textureId)
 , mResourceSize(0)
@@ -431,12 +419,7 @@ void CTexture::CDumpedBitmapDataReloader::BeginReloadBitmapData(CResFactory& fac
   SObjectTag tag('TXTR', mTextureId);
   mResourceSize = factory.ResourceSize(tag);
   mData = static_cast< uchar* >(CMemory::Alloc(mResourceSize, IAllocator::kHI_RoundUpLen));
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mRequest = factory.GetResLoader().LoadResourceAsync(tag, (char*)mData.get());
-#else
   mRequest = factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mData.get()));
-#endif
 
   mState = 1;
 }

@@ -17,11 +17,9 @@
 
 uint CGraphicsPalette::sCurrentFrameCount = 0;
 
-#if !RSTL_PRIME1
 static inline GXTlutFmt format_to_format(EPaletteFormat format) {
   return static_cast< GXTlutFmt >(format);
 }
-#endif
 
 CGraphicsPalette::CGraphicsPalette(EPaletteFormat format, int numEntries)
 : mFmt(format)

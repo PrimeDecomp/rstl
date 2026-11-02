@@ -9,7 +9,6 @@
 
 class CCubeModel;
 class CCubeSurface {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 public:
   CCubeSurface(void* ptr) { mRawdata = static_cast< uchar* >(ptr); }
@@ -22,7 +21,6 @@ public:
     CVector3f mCenter;
     uint mMaterialIndex;
     uint mDisplayListSizeAndNormalHint;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CCubeModel* mParent;
     void* mNextSurface;
@@ -43,7 +41,6 @@ public:
   };
 
   static const CVector3f skDefaultNormal;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   union {
     uchar* mRawdata;
@@ -53,7 +50,6 @@ public:
   const SSurfaceData* mData;
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint GetDisplayListSize() const { return mData->mDisplayListSizeAndNormalHint & 0x7fffffff; }
   const void* GetDisplayList() const {
@@ -72,7 +68,6 @@ public:
   const CVector3f& GetCenter() const { return mData->mCenter; }
   const CUnitVector3f& GetNormalHint() const { return mData->mNormal; }
   uint GetMaterialIndex() const { return mData->mMaterialIndex; }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CAABox GetBounds() const;
 #else
@@ -87,7 +82,6 @@ public:
 #endif
 
   CCubeSurface GetNextSurface() const { return CCubeSurface(mData->mNextSurface); }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool IsValid() const { return mRawdata != nullptr; }
 
@@ -97,9 +91,7 @@ private:
 #endif
 
 };
-#if !RSTL_PRIME1
 CHECK_SIZEOF(CCubeSurface, 4)
-#endif
 
 #if !RSTL_PRIME1
 namespace rstl {
