@@ -34,7 +34,6 @@ class CModel {
     SShader* mNext;
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     SShader(uchar* data) : mData(data) {};
 #else
@@ -43,18 +42,16 @@ class CModel {
     ~SShader();
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     void UnlockTextures();
 #else
     void UnlockTextures() const;
+#endif
     void RemoveFromList();
     void MoveToThisFrameList();
-#endif
 
   };
   static uint sTotalMemory;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static CModel* sThisFrameList;
   static CModel* sOneFrameList;
@@ -87,17 +84,28 @@ public:
 
   bool IsLoaded(int matIdx) const;
   int GetNumMaterialSets() const { return mMatSets.size(); }
-#if !RSTL_PRIME1
-  bool IsDefinitelyOpaque() const;
   const CAABox& GetAABB() const;
+  const CAABox& GetBoundingBox() const { return mModelInstance->GetBoundingBox(); }
+#if RSTL_PRIME1
+  bool IsDefinitelyOpaque() const {
+    return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
+  }
+  void UnlockTextures() {
+    rstl::vector< SShader >::iterator matIter;
+    for (matIter = mMatSets.begin() + 1; matIter != mMatSets.end(); ++matIter) {
+      matIter->UnlockTextures();
+    }
+    mModelInstance->UnlockTextures();
+  }
+#else
+  bool IsDefinitelyOpaque() const;
   void UnlockTextures();
 #endif
 
   const float* GetPositions() const;
   const float* GetNormals() const;
-#if !RSTL_PRIME1
   const CCubeModel* GetModelInstance() const { return mModelInstance.get(); }
-#endif
+  const CCubeModel* GetCubeModel() const { return mModelInstance.get(); }
 
   void UpdateLastFrame() const;
   void VerifyCurrentShader(int shader) const;
@@ -106,14 +114,6 @@ public:
   rstl::auto_ptr< uchar > GetData();
   uint GetDataSize() const;
   void RemapData(uchar* data);
-#if RSTL_PRIME1
-  const CCubeModel* GetCubeModel() const { return mModelInstance.get(); }
-  const CAABox& GetBoundingBox() const { return mModelInstance->GetBoundingBox(); }
-  bool IsDefinitelyOpaque() const {
-    return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
-  }
-#endif
-
   static void DisableTextureTimeout();
   static void EnableTextureTimeout();
   static void FrameDone();
@@ -121,31 +121,15 @@ public:
   static void RemoveFromTotal(uint amt) { sTotalMemory -= amt; }
   static uint GetTotalMemory() { return sTotalMemory; }
 
-#if RSTL_PRIME1
   void RemoveFromList() const;
   void MoveToThisFrameList() const;
-#endif
-#if RSTL_PRIME1
-  void UnlockTextures() {
-    rstl::vector< SShader >::iterator matIter;
-    for (matIter = mMatSets.begin() + 1; matIter != mMatSets.end(); ++matIter) {
-      matIter->UnlockTextures();
-    }
-    mModelInstance->UnlockTextures();
-  }
-#endif
 
 private:
   void* SetupSkinMatrices() const;
 
   rstl::single_ptr< uchar > mData;
   uint mDataLen;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::vector< void* > mSurfaces;
-#else
-  rstl::vector< CCubeSurface > mSurfaces;
-#endif
+  CCubeModel::SurfaceList mSurfaces;
 
   mutable rstl::vector< SShader > mMatSets;
   rstl::single_ptr< CCubeModel > mModelInstance;
@@ -164,9 +148,7 @@ private:
 #endif
 
 };
-#if !RSTL_PRIME1
-CHECK_SIZEOF(CModel, 0x34)
-#endif
+CHECK_SIZEOF(CModel, RSTL_PRIME1 ? 0x3c : 0x34)
 
 RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
                                                  const rstl::auto_ptr< uchar >& ptr, int len,
