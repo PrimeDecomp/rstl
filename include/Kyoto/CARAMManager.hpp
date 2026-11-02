@@ -56,8 +56,8 @@ public:
 
   static void RefreshActiveDMAList();
   static void CollectGarbage();
-#if !RSTL_PRIME1
   static bool IsValidAlloc(const void* ptr);
+#if !RSTL_PRIME1
   static const void* GetInvalidAlloc();
 #endif
 

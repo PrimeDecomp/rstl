@@ -40,12 +40,15 @@ public:
 #endif
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   bool ContainsDataFor(const CSegId& id) const {
+#if RSTL_PRIME1
     return mIndirectionMap[id.val()] != rstl::pair< char, char >(-1, -1);
-  }
 #else
+    return mIndirectionMap[id.val()] !=
+           rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null());
+#endif
+  }
+#if !RSTL_PRIME1
   int GetNumNodes() const { return mBoneCount; }
 #endif
 
@@ -57,14 +60,6 @@ public:
 #endif
 
   const T& AccessElement(int index) const { return mNodes[index]; }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  bool ContainsDataFor(const CSegId& id) const {
-    return mIndirectionMap[id.val()] !=
-           rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null());
-  }
-#endif
 
   void insert(const CSegId& id, const T& value);
 

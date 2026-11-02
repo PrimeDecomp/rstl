@@ -23,6 +23,8 @@
 
 class CDvdRequest;
 
+class CBufferedDvdRequest;
+
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 class CInputStream;
@@ -105,9 +107,7 @@ public:
   CPakFile* FindResourceForLoad(RSTL_PRIME1_CONST CAssetId asset);
 
   CPakFile* FindResource(const SObjectTag& tag);
-#if RSTL_PRIME1
   bool ResourceExists(CAssetId asset);
-#endif
 
   void ClearCache();
   void AsyncIdlePakLoading();
@@ -122,9 +122,7 @@ public:
   ECompressionType GetResourceCompression(const SObjectTag& tag) const;
 // TODO: verify that this Prime/Echoes difference is real
   CDvdRequest* LoadResourceAsync(const SObjectTag& tag, char* extBuf);
-#if !RSTL_PRIME1
   CBufferedDvdRequest* LoadResourceAsync(const SObjectTag& tag);
-#endif
   CDvdRequest* LoadResourcePartAsync(const SObjectTag& tag, int offset, int length, char* extBuf);
 
   CInputStream* LoadNewResourceSync(const SObjectTag& tag, char* extBuf);

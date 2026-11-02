@@ -35,10 +35,6 @@ public:
   static void EnsureTevsDirect();
   static void KillCachedViewDepState();
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  inline const uchar* GetData() const { return static_cast< const uchar* >(mData); }
-#else
   static void UseThermalTevs();
   static void UseNormalTevs();
   static void ResetTransparencyKColor();
@@ -48,7 +44,6 @@ public:
   static uint GetExtraPostTexMtx();
 
   const uchar* GetData() const { return static_cast< const uchar* >(mData); }
-#endif
 
   uint GetFlags() const { return CBasics::SwapBytes(*reinterpret_cast< const uint* >(GetData())); }
   bool IsFlagSet(const EStateFlags flag) const { return (GetFlags() & flag) != 0; }

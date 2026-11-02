@@ -62,9 +62,9 @@ CHECK_CHILD_SIZEOF(CAnimSourceInfo, IAnimSourceInfo, 0x10)
 
 class CAnimSourceReader : public CAnimSourceReaderBase {
 public:
-#if !RSTL_PRIME1
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time,
                     const CAnimPOIData* poiData);
+#if !RSTL_PRIME1
 
   // IAnimReader
   ~CAnimSourceReader() override;
@@ -96,10 +96,7 @@ public:
   virtual CVector3f VGetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   virtual bool VSupportsReverseView() const;
   virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time);
-#endif
 
 private:
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source

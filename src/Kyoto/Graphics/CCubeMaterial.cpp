@@ -1718,15 +1718,12 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-void CCubeMaterial::KillCachedViewDepState() { sLastModelCached = NULL; }
-#else
 void CCubeMaterial::KillCachedViewDepState() {
   sLastModelCached = nullptr;
+#if !RSTL_PRIME1
   sMaterialCachedState = 0;
-}
 #endif
+}
 
 void CCubeMaterial::ResetCachedMaterials() {
   KillCachedViewDepState();

@@ -1006,8 +1006,8 @@ void CGraphics::SetViewPointMatrix(const CTransform4f& xf) {
   SetViewMatrix();
 }
 
-#if RSTL_PRIME1
 void CGraphics::SetIdentityViewPointMatrix() {
+#if RSTL_PRIME1
   mViewMatrix = CTransform4f::Identity();
   MTXIdentity(mGXViewPointMatrix);
   mGXViewPointMatrix[2][2] = 0.f;
@@ -1016,10 +1016,10 @@ void CGraphics::SetIdentityViewPointMatrix() {
   mGXViewPointMatrix[2][1] = -1.f;
   mViewPoint = CVector3f::Zero();
   SetViewMatrix();
-}
 #else
-void CGraphics::SetIdentityViewPointMatrix() { SetViewPointMatrix(CTransform4f::Identity()); }
+  SetViewPointMatrix(CTransform4f::Identity());
 #endif
+}
 
 void CGraphics::SetModelMatrix(const CTransform4f& xf) {
   if (&xf == &CTransform4f::Identity()) {

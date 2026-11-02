@@ -83,12 +83,7 @@ bool CVector3f::IsNotInf() const {
   return true;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 bool CVector3f::IsNormalizable() const { return IsNotInf() && MagSquared() >= 9.9999995e-29f; }
-#else
-bool CVector3f::IsNormalizable() const { return IsNotInf() && MagSquared() >= 9.99999943e-29f; }
-#endif
 
 bool CVector3f::CanBeNormalized() const {
   int x = __HI(mX);

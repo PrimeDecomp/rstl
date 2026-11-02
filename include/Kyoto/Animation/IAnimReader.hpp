@@ -129,19 +129,11 @@ public:
 
   virtual rstl::ownership_transfer< IAnimReader > VClone() const = 0;
   virtual rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VSimplified();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified();
-#endif
   virtual void VSetPhase(float phase) = 0;
   virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const;
   rstl::ownership_transfer< IAnimReader > Clone() const { return VClone(); }
-#if !RSTL_PRIME1
-  rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified() {
-    return VSimplified();
-  }
-#endif
   SAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
   CCharAnimTime GetTimeRemaining() const { return VGetTimeRemaining(); }
   CSteadyStateAnimInfo GetSteadyStateAnimInfo() const { return VGetSteadyStateAnimInfo(); }
@@ -186,5 +178,11 @@ public:
 };
 DECLARE_FULL_SIZE_FOR(IAnimReader, 0x4)
 CHECK_SIZEOF(IAnimReader, IAnimReader_FULL_SIZE)
+
+#if !RSTL_PRIME1
+inline rstl::optional_object< rstl::ownership_transfer< IAnimReader > > IAnimReader::Simplified() {
+  return VSimplified();
+}
+#endif
 
 #endif // _IANIMREADER

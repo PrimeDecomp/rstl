@@ -22,14 +22,6 @@ public:
     CAdvancementDeltas mRightDeltas;
   };
 
-#if RSTL_PRIME1
-protected:
-  CDoubleChildAdvancementResult AdvanceViewBothChildren(const CCharAnimTime& time, bool runLeft,
-                                                        bool loopLeft);
-
-public:
-#endif
-
   CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                        const rstl::ncrc_ptr< CAnimTreeNode >& b, const rstl::string& name);
   // IAnimReader
@@ -81,10 +73,8 @@ public:
   const rstl::rc_ptr< CAnimTreeNode >& GetRightChild() const { return mB; }
 
 protected:
-#if !RSTL_PRIME1
   CDoubleChildAdvancementResult AdvanceViewBothChildren(const CCharAnimTime& time, bool runLeft,
                                                         bool loopLeft);
-#endif
 
   rstl::ncrc_ptr< CAnimTreeNode > mA;
   rstl::ncrc_ptr< CAnimTreeNode > mB;

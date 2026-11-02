@@ -11,12 +11,13 @@ class CObjectReference;
 
 class CToken {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  CToken()
 #if RSTL_PRIME1
-  CToken() : mObjRef(NULL), mLockHeld_init(0) {}
-#else
-  CToken() {}
+  : mObjRef(NULL)
+  , mLockHeld_init(0)
 #endif
+  {
+  }
 
   CToken(CObjectReference* ref);
   CToken(IObj* obj); // : x0_objRef(new CObjectReference(obj)), x4_lockHeld(false) {}

@@ -11,9 +11,7 @@ class CInputStream;
 
 class CPlane {
 public:
-#if !RSTL_PRIME1
   CPlane(CInputStream& in);
-#endif
 
   CPlane(const CVector3f& vec, const CUnitVector3f& normal)
   : mNormal(normal), mConstant(CVector3f::Dot(vec, normal)) {}

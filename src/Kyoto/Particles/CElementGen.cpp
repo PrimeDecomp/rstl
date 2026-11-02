@@ -4623,31 +4623,22 @@ void CElementGen::RenderModels() {
 
 int CElementGen::GetParticleCountAll() const { return mRecursiveParticleCount; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-int CElementGen::GetParticleCountAllInternal() const {
-  int ret = mActiveParticleCount;
-  for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
-    CParticleGen* child = *it;
-    if (child->Get4CharId() == 'PART') {
-      ret += static_cast< CElementGen* >(child)->GetParticleCountAll();
-    }
-  }
-  return ret;
-}
-#else
 int CElementGen::GetParticleCountAllInternal() const {
   int count = mActiveParticleCount;
-  for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin();
-       it != mActivePartChildren.end(); ++it) {
+  for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
+#if RSTL_PRIME1
+    if (child->Get4CharId() == 'PART') {
+      count += static_cast< CElementGen* >(child)->GetParticleCountAll();
+    }
+#else
     count += child->Get4CharId() == 'PART'
                  ? static_cast< CElementGen* >(child)->GetParticleCountAll()
                  : child->GetParticleCount();
+#endif
   }
   return count;
 }
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

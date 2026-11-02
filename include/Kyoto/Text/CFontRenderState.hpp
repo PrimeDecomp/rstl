@@ -24,16 +24,17 @@ public:
   void PopState();
   void SetColor(EColorType type, const CTextColor& color);
   void RefreshPalette();
+  TToken< CRasterFont >& GetFont() {
 #if RSTL_PRIME1
-  TToken< CRasterFont >& GetFont() { return *mState.GetFont(); }
+    return *mState.GetFont();
+#else
+    return mState.GetFont();
 #endif
+  }
 
   bool IsFinishedLoading() { return mState.IsFinishedLoading(); }
   CDrawStringOptions& GetOptions() { return mState.GetOptions(); }
   void SetFont(const TToken< CRasterFont >& font) { mState.SetFont(font); }
-#if !RSTL_PRIME1
-  TToken< CRasterFont >& GetFont() { return mState.GetFont(); }
-#endif
 
   rstl::vector< CTextColor >& GetColors() { return mState.GetColors(); }
   rstl::vector< bool >& GetOverride() { return mState.GetOverride(); }

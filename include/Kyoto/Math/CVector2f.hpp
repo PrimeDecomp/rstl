@@ -15,12 +15,16 @@ public:
   CVector2f() {}
 #endif
   CVector2f(float x, float y);
-// TODO: verify that this Prime/Echoes difference is real
+  CVector2f(CInputStream& in)
 #if RSTL_PRIME1
-  CVector2f(CInputStream& in) : mX(in.Get< float >()), mY(in.Get< float >()) {}
+  : mX(in.Get< float >())
+  , mY(in.Get< float >())
 #else
-  CVector2f(CInputStream& in) : mX(in.ReadFloat()), mY(in.ReadFloat()) {}
+  : mX(in.ReadFloat())
+  , mY(in.ReadFloat())
 #endif
+  {
+  }
 
   float GetX() const { return mX; }
   float GetY() const { return mY; }

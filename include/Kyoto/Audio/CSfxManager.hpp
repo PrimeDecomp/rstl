@@ -118,12 +118,10 @@ public:
     void Release();
     RSTL_PRIME1_CONST float GetTimeRemaining();
     void SetTimeRemaining(float time);
-#if !RSTL_PRIME1
     ushort GetPitchBend() const;
     void SetPitchBend(ushort pitch);
     bool GetIgnoreAreaLowPass() const;
     void SetIgnoreAreaLowPass(bool ignore);
-#endif
 
   private:
     float mTimeRemaining;
@@ -379,7 +377,6 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void SetActiveAreas(const rstl::reserved_vector< int, 10 >& areas);
-  static const short GetReverbAmount();
 
   static CSfxHandle SfxStart(const ushort id, const short vol = 127, const short pan = 64,
                              bool useAcoustics = false, const short prio = kMedPriority,
@@ -405,9 +402,7 @@ public:
 
   static void SfxStop(CSfxHandle handle);
   static void SfxStop(ESfxChannels channel, CSfxHandle handle);
-#if !RSTL_PRIME1
   static void StopSound(ESfxChannels channel, CSfxHandle handle);
-#endif
 
   static void SfxVolume(CSfxHandle handle, uchar volume);
   static void SfxPan(CSfxHandle handle, uchar pan);
@@ -441,8 +436,8 @@ public:
   static int GetRank(CBaseSfxWrapper* sound);
   static CSfxWrapper* AllocateCSfxWrapper(const CSfxWrapper& sound);
   static CSfxEmitterWrapper* AllocateCSfxEmitterWrapper(const CSfxEmitterWrapper& sound);
+  static RSTL_PRIME1_CONST short GetReverbAmount();
 #if !RSTL_PRIME1
-  static short GetReverbAmount();
   static uchar GetStudio(int area);                                 // Guessed name
   static void SetAreaVolume(int area, uchar volume);                // Guessed name
   static uchar GetAreaVolume(int area);                             // Guessed name

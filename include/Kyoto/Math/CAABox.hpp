@@ -113,28 +113,21 @@ public:
   const CVector3f& GetMinPoint() const { return min; }
   const CVector3f& GetMaxPoint() const { return max; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CVector3f GetPointA() const { return CVector3f(min.GetX(), min.GetY(), min.GetZ()); }
   CVector3f GetPointB() const { return CVector3f(max.GetX(), min.GetY(), min.GetZ()); }
   CVector3f GetPointC() const { return CVector3f(max.GetX(), min.GetY(), max.GetZ()); }
   CVector3f GetPointD() const { return CVector3f(min.GetX(), min.GetY(), max.GetZ()); }
-  CVector3f GetPointE() const { return CVector3f(max.GetX(), max.GetY(), min.GetZ()); }
+  CVector3f GetPointE() const {
+#if RSTL_PRIME1
+    return CVector3f(max.GetX(), max.GetY(), min.GetZ());
+#else
+    // Corner order guessed to follow GetPoint(int): bit 0 = X, bit 1 = Y, bit 2 = Z.
+    return CVector3f(min.GetX(), min.GetY(), max.GetZ());
+#endif
+  }
   CVector3f GetPointF() const { return CVector3f(min.GetX(), max.GetY(), max.GetZ()); }
   CVector3f GetPointG() const { return CVector3f(max.GetX(), max.GetY(), max.GetZ()); }
   CVector3f GetPointH() const { return CVector3f(max.GetX(), max.GetY(), min.GetZ()); }
-#else
-  // GetPointA__6CAABoxCFv weak
-  // GetPointB__6CAABoxCFv weak
-  // GetPointC__6CAABoxCFv weak
-  // GetPointD__6CAABoxCFv weak
-  // GetPointE__6CAABoxCFv weak
-  // Corner order guessed to follow GetPoint(int): bit 0 = X, bit 1 = Y, bit 2 = Z.
-  CVector3f GetPointE() const { return CVector3f(min.GetX(), min.GetY(), max.GetZ()); }
-  // GetPointF__6CAABoxCFv weak
-  // GetPointG__6CAABoxCFv weak
-  // GetPointH__6CAABoxCFv weak
-#endif
 
   float GetWidth() const { return max.GetX() - min.GetX(); }
   float GetHeight() const { return max.GetY() - min.GetY(); }

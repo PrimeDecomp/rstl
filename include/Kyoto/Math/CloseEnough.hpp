@@ -15,12 +15,13 @@ struct Real32 {
   static inline float Epsilon() { return 1.e-5f; }
 };
 struct Double {
-// TODO: verify that this Prime/Echoes difference is real
+  static inline double Epsilon() {
 #if RSTL_PRIME1
-  static inline double Epsilon() { return 1.0 / 60000.0; }
+    return 1.0 / 60000.0;
 #else
-  static inline double Epsilon() { return 1.e-5; } // TODO check
+    return 1.e-5; // TODO check
 #endif
+  }
 };
 static inline float vector3_epsilon() { return 1.e-4f; }
 static inline float vector2_epsilon() { return 1.e-4f; }

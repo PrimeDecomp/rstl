@@ -284,9 +284,8 @@ const SND_VOICEID CSfxManager::CSfxEmitterWrapper::GetHandle() const { return mE
 uint CSfxManager::CSfxEmitterWrapper::GetHandle() const { return mEmitterHandle; }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 bool CSfxManager::CSfxEmitterWrapper::IsPlaying() const {
+#if RSTL_PRIME1
   if (!IsLooped()) {
     bool ret = false;
     if (CBaseSfxWrapper::IsPlaying() && CAudioSys::S3dCheckEmitter(mEmitterHandle)) {
@@ -297,15 +296,13 @@ bool CSfxManager::CSfxEmitterWrapper::IsPlaying() const {
   }
 
   return CBaseSfxWrapper::IsPlaying();
-}
 #else
-bool CSfxManager::CSfxEmitterWrapper::IsPlaying() const {
   if (IsLooped()) {
     return CBaseSfxWrapper::IsPlaying();
   }
   return CBaseSfxWrapper::IsPlaying() && CAudioSys::S3dCheckEmitter(mEmitterHandle);
-}
 #endif
+}
 
 RSTL_PRIME1_CONST bool CSfxManager::CSfxEmitterWrapper::Ready() { return IsLooped() || mReady; }
 
@@ -338,29 +335,28 @@ RSTL_PRIME1_CONST SND_VOICEID CSfxManager::CSfxEmitterWrapper::GetVoice() const 
   return IsPlaying() ? CAudioSys::S3dEmitterVoiceID(mEmitterHandle) : SND_ID_ERROR;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 void CSfxManager::CSfxEmitterWrapper::UpdateEmitterSilent() {
+#if RSTL_PRIME1
   mCachedMaxVol = mEmitterData.mMaxVol;
 
   CAudioSys::S3dUpdateEmitter(mEmitterHandle, mEmitterData.mPos, mEmitterData.mDir, 1);
-}
-
-void CSfxManager::CSfxEmitterWrapper::UpdateEmitter() {
-  CAudioSys::S3dUpdateEmitter(mEmitterHandle, mEmitterData.mPos, mEmitterData.mDir, mCachedMaxVol);
-}
 #else
-void CSfxManager::CSfxEmitterWrapper::UpdateEmitterSilent() {
   if (mEmitterData.mMaxVol != 1) {
     mCachedMaxVolume = mEmitterData.mMaxVol;
     mEmitterData.mMaxVol = 1;
 
     CAudioSys::S3dUpdateEmitter(mEmitterHandle, mEmitterData.mPos, mEmitterData.mDir, 1);
   }
+#endif
 }
 
-void CSfxManager::CSfxEmitterWrapper::UpdateEmitter() { mUpdatePending = true; }
+void CSfxManager::CSfxEmitterWrapper::UpdateEmitter() {
+#if RSTL_PRIME1
+  CAudioSys::S3dUpdateEmitter(mEmitterHandle, mEmitterData.mPos, mEmitterData.mDir, mCachedMaxVol);
+#else
+  mUpdatePending = true;
 #endif
+}
 
 CSfxManager::CSfxWrapper::CSfxWrapper(RSTL_PRIME1_CONST bool looped,
                                       RSTL_PRIME1_CONST short priority,

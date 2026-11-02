@@ -7,14 +7,14 @@
 
 class CAnimTreeAnimReaderContainer : public CAnimTreeNode {
 public:
-#if RSTL_PRIME1
   ~CAnimTreeAnimReaderContainer() override {
+#if RSTL_PRIME1
     CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
+#endif
   }
+#if RSTL_PRIME1
   uint Depth() const override { return 1; }
   uint VGetNumChildren() const override { return 0; }
-#else
-  ~CAnimTreeAnimReaderContainer() override {}
 #endif
 
   CAnimTreeAnimReaderContainer(const rstl::ownership_transfer< IAnimReader >& reader,

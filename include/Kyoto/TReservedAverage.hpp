@@ -30,9 +30,7 @@ public:
   TReservedAverage(const T& value) { this->resize(N, value); }
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const;
-#if !RSTL_PRIME1
   rstl::optional_object< T > GetMax() const;
-#endif
   rstl::optional_object< T > GetEntry(int idx) const;
 };
 

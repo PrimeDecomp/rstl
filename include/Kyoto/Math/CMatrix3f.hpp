@@ -26,9 +26,7 @@ public:
   , m21(_m21)
   , m22(_m22) {}
   CMatrix3f(const CVector3f& _m0, const CVector3f& _m1, const CVector3f& _m2);
-#if !RSTL_PRIME1
   CMatrix3f(const CMatrix3f& other, float scale);
-#endif
 
   CMatrix3f(const CMatrix3f& left, float leftScale, const CMatrix3f& right, float rightScale);
   CMatrix3f(CInputStream& in);

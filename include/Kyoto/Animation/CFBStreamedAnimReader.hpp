@@ -141,11 +141,8 @@ private:
   short* mSegIds;
   float* mComputedFloats;
   uint mRotDiv;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float mTransMult;
-#else
   float mOffsetMult;
+#if !RSTL_PRIME1
   float mScaleMult;
 #endif
 
@@ -341,13 +338,10 @@ inline CSegIdToIndexConverter::CSegIdToIndexConverter(const CFBStreamedAnimReade
 
 class CFBStreamedAnimReader : public CAnimSourceReaderBase {
 public:
-#if !RSTL_PRIME1
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time, const CAnimPOIData* poiData);
 
   // IAnimReader
-#endif
-
   ~CFBStreamedAnimReader() override;
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
@@ -373,11 +367,8 @@ public:
 
   virtual bool VSupportsReverseView() const;
   virtual SAdvancementResults VReverseView(const CCharAnimTime& time);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CFBStreamedAnimReader(const TSubAnimTypeToken< CFBStreamedCompression >& source,
                         CCharAnimTime time);
-#endif
 
 private:
   void SetReadTime(const CCharAnimTime& time) const;

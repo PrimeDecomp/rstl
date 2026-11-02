@@ -143,15 +143,11 @@ float CLight::GetRadius() const {
   return mCachedRadius;
 }
 
-#if !RSTL_PRIME1
 float CLight::CalculateLightRadius() const {
+#if !RSTL_PRIME1
   if (mType == kLT_Hard) {
     return -mDistC / mDistL;
   }
-#endif
-
-#if RSTL_PRIME1
-float CLight::CalculateLightRadius() const {
 #endif
 
   if (mDistL < gkEpsilon32 && mDistQ < gkEpsilon32) {

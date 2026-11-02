@@ -14,14 +14,20 @@ class
 #endif
 CSegStatement {
 public:
-// TODO: verify that this Prime/Echoes difference is real
+  CSegStatement()
 #if RSTL_PRIME1
-  CSegStatement() : mStatus(0) {}
+  : mStatus(0)
+#else
+  : mRotationValid(false)
+  , mOffsetValid(false)
+  , mScaleValid(false)
+#endif
+  {
+  }
+#if RSTL_PRIME1
   CQuaternion GetOrientation() const { return Orientation(); }
   CVector3f GetOffset() const { return Offset(); }
   CQuaternion& Orientation() { return mRotation; }
-#else
-  CSegStatement() : mRotationValid(false), mOffsetValid(false), mScaleValid(false) {}
 #endif
 
   const CQuaternion& Orientation() const { return mRotation; }
@@ -42,20 +48,19 @@ public:
 #endif
   }
 #if RSTL_PRIME1
-  void Set(const CQuaternion& rotation) { Orientation() = rotation; }
+  void SetStatus(uint status) { mStatus = status; }
 #else
   bool ScaleValid() const { return mScaleValid; }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void SetStatus(uint status) { mStatus = status; }
-#else
   void Set(const CQuaternion& rotation) {
+#if RSTL_PRIME1
+    Orientation() = rotation;
+#else
     mRotation = rotation;
     mRotationValid = true;
-  }
 #endif
+  }
 
   void Set(const CVector3f& offset) {
     mOffset = offset;
