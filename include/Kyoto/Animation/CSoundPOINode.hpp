@@ -8,7 +8,6 @@
 
 class CSoundPOINode : public CPOINode {
 public:
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CSoundPOINode(const rstl::string name = "", const EPOIType type = kPT_Sound,
                 const CCharAnimTime& time = CCharAnimTime(), const int index = -1,
@@ -19,12 +18,6 @@ public:
   , mSfxId(sfxId)
   , mFalloff(fallOff)
   , mMaxDist(maxDist) {}
-
-  CSoundPOINode(CInputStream& in)
-  : CPOINode(in)
-  , mSfxId(in.ReadInt32())
-  , mFalloff(in.Get< float >())
-  , mMaxDist(in.Get< float >()) {}
 #else
   CSoundPOINode(uint nameHash = -1, EPOIType type = kPT_Sound,
                 const CCharAnimTime& time = CCharAnimTime(), int index = -1,
@@ -32,7 +25,9 @@ public:
                 int sfxId = 0, float fallOff = 0.f, float maxDist = 0.f,
                 const CSegId& segId = CSegId(0), ushort pitchStart = 0, ushort pitchEnd = 0,
                 float pitchDuration = 0.f);
+#endif
   CSoundPOINode(CInputStream& in);
+#if !RSTL_PRIME1
   ~CSoundPOINode() override;
 #endif
 
@@ -70,7 +65,10 @@ private:
   float mPitchDuration;
 #endif
 };
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+inline CSoundPOINode::CSoundPOINode(CInputStream& in)
+: CPOINode(in), mSfxId(in.ReadInt32()), mFalloff(in.Get< float >()), mMaxDist(in.Get< float >()) {}
+#else
 CHECK_CHILD_SIZEOF(CSoundPOINode, CPOINode, 0x18)
 #endif
 

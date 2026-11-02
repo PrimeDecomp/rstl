@@ -28,15 +28,9 @@ public:
   CVector3f(CInputStream& in);
   void PutTo(COutputStream& out) const;
 
-#if RSTL_KYOTO_CONST_SCALAR_RETURNS
-  const float GetX() const { return mX; }
-  const float GetY() const { return mY; }
-  const float GetZ() const { return mZ; }
-#else
-  float GetX() const { return mX; }
-  float GetY() const { return mY; }
-  float GetZ() const { return mZ; }
-#endif
+  RSTL_PRIME1_CONST float GetX() const { return mX; }
+  RSTL_PRIME1_CONST float GetY() const { return mY; }
+  RSTL_PRIME1_CONST float GetZ() const { return mZ; }
 
   void SetX(float x) { mX = x; }
   void SetY(float y) { mY = y; }
@@ -116,17 +110,16 @@ public:
     mZ *= v;
     return *this;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CVector3f& operator/=(const float v) { return *this *= (1.f / v); }
-#else
   CVector3f& operator/=(const float v) {
+#if RSTL_PRIME1
+    return *this *= (1.f / v);
+#else
     mX /= v;
     mY /= v;
     mZ /= v;
     return *this;
-  }
 #endif
+  }
 
   CVector2f ToVec2f() const { return CVector2f(mX, mY); }
 

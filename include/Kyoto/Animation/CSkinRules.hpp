@@ -40,25 +40,24 @@ public:
 #endif
 
   int GetNumPoints() const { return mVertexCount; }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetNumNormals() const { return mNormalCount; }
+#endif
   int GetNumVirtualBones() const { return mVirtualBones.size(); }
   const rstl::vector< CVirtualBone >& GetVirtualBones() const { return mVirtualBones; }
+#if RSTL_PRIME1
   static int ProcessingPoints(int count, ushort** buf);
   static int ProcessingNormals(int count, ushort** buf);
+#else
+  const uchar* GetVertexToBoneMap() const { return mVertexToBone.get(); }
+#endif
 
 private:
   rstl::vector< CVirtualBone > mVirtualBones;
+#if RSTL_PRIME1
   int mVertexCount;
   int mNormalCount;
 #else
-  int GetNumVirtualBones() const { return mBones.size(); }
-  const rstl::vector< CVirtualBone >& GetVirtualBones() const { return mBones; }
-  const uchar* GetVertexToBoneMap() const { return mVertexToBone.get(); }
-
-private:
-  rstl::vector< CVirtualBone > mBones;
   rstl::vector< short > mMatrixIndices;
   int mVertexCount;
   rstl::single_ptr< uchar > mVertexToBone;

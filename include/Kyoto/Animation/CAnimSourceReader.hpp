@@ -20,7 +20,6 @@ public:
 
   ~CAnimSourceInfo() override {}
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool HasPOIData() const override { return mToken->HasPOIData(); }
   const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const override {
@@ -35,10 +34,14 @@ public:
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const override {
     return mToken->GetSoundPOIStream();
   }
-  CCharAnimTime GetAnimationDuration() const override { return mToken->GetAnimationDuration(); }
-#else
-  CCharAnimTime GetAnimationDuration() const override { return mSource->GetAnimationDuration(); }
 #endif
+  CCharAnimTime GetAnimationDuration() const override {
+#if RSTL_PRIME1
+    return mToken->GetAnimationDuration();
+#else
+    return mSource->GetAnimationDuration();
+#endif
+  }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -59,15 +62,14 @@ CHECK_CHILD_SIZEOF(CAnimSourceInfo, IAnimSourceInfo, 0x10)
 
 class CAnimSourceReader : public CAnimSourceReaderBase {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~CAnimSourceReader() override {}
-#else
+#if !RSTL_PRIME1
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time,
                     const CAnimPOIData* poiData);
 
   // IAnimReader
   ~CAnimSourceReader() override;
+#else
+  ~CAnimSourceReader() override {}
 #endif
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 

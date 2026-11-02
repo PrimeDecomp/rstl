@@ -42,12 +42,12 @@ CSkinRules::CSkinRules(CInputStream& in)
 }
 #else
 CSkinRules::CSkinRules(CInputStream& in)
-: mBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
+: mVirtualBones(in), mMatrixIndices(in), mVertexCount(in.ReadInt32()), mVertexToBone(nullptr) {
   if (mVertexCount > 0) {
     mVertexToBone = rs_new uchar[mVertexCount];
     in.Get(mVertexToBone.get(), mVertexCount);
   }
-  CModel::AddToTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+  CModel::AddToTotal(sizeof(CSkinRules) + mVirtualBones.size() * sizeof(CVirtualBone));
 }
 #endif
 
@@ -56,7 +56,7 @@ CSkinRules::~CSkinRules() {
 #if RSTL_PRIME1
   CModel::RemoveFromTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
 #else
-  CModel::RemoveFromTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+  CModel::RemoveFromTotal(sizeof(CSkinRules) + mVirtualBones.size() * sizeof(CVirtualBone));
 #endif
 }
 
@@ -95,9 +95,9 @@ void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose
     mVirtualBones[i].BuildAccumulatedTransform(pose, points);
   }
 #else
-  const int boneCount = mBones.size();
+  const int boneCount = mVirtualBones.size();
   for (int i = 0; i < boneCount; ++i) {
-    mBones[i].BuildAccumulatedTransform(pose, points, out[i]);
+    mVirtualBones[i].BuildAccumulatedTransform(pose, points, out[i]);
   }
 #endif
 }

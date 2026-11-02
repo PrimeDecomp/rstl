@@ -17,13 +17,7 @@ public:
 
   CPlane(const CVector3f& vec, const CUnitVector3f& normal)
   : mNormal(normal), mConstant(CVector3f::Dot(vec, normal)) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CPlane(const float constant, const CUnitVector3f& normal)
-  : mNormal(normal), mConstant(constant) {}
-#else
   CPlane(const float constant, const CUnitVector3f& normal);
-#endif
 
   CPlane(const CVector3f&, const CVector3f&, const CVector3f&);
   // TODO
@@ -59,6 +53,11 @@ private:
   float mConstant;
 };
 CHECK_SIZEOF(CPlane, 0x10)
+
+#if RSTL_PRIME1
+inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
+: mNormal(normal), mConstant(constant) {}
+#endif
 
 #if !RSTL_PRIME1
 #ifdef __MWERKS__

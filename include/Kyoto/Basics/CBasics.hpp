@@ -38,11 +38,6 @@ inline T SwapBytes(T value) {
 // Where the declarations say const changes code generation. Prime returns every scalar const and
 // also takes uint, short and ushort as const parameters; Echoes returns only int const; the
 // prototype says const nowhere.
-#if RSTL_KYOTO_CONST_SCALAR_RETURNS
-#define CBASICS_PRIME_CONST const
-#else
-#define CBASICS_PRIME_CONST
-#endif
 #if RSTL_KYOTO_PROTO_SOURCE_FORMS
 #define CBASICS_INT_CONST
 #else
@@ -52,10 +47,10 @@ inline T SwapBytes(T value) {
   inline returnConst T SwapBytes(parameterConst T x) { return CBASICS_SWAPPED(x); }
 
 CBASICS_SWAP_BYTES(CBASICS_INT_CONST, int, )
-CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, uint, CBASICS_PRIME_CONST)
-CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, short, CBASICS_PRIME_CONST)
-CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, ushort, CBASICS_PRIME_CONST)
-CBASICS_SWAP_BYTES(CBASICS_PRIME_CONST, u64, )
+CBASICS_SWAP_BYTES(RSTL_PRIME1_CONST, uint, RSTL_PRIME1_CONST)
+CBASICS_SWAP_BYTES(RSTL_PRIME1_CONST, short, RSTL_PRIME1_CONST)
+CBASICS_SWAP_BYTES(RSTL_PRIME1_CONST, ushort, RSTL_PRIME1_CONST)
+CBASICS_SWAP_BYTES(RSTL_PRIME1_CONST, u64, )
 #if RSTL_KYOTO_CONST_SCALAR_RETURNS
 CBASICS_SWAP_BYTES(const, float, )
 #else
@@ -76,7 +71,6 @@ inline float SwapBytes(float x) {
 
 #undef CBASICS_SWAP_BYTES
 #undef CBASICS_INT_CONST
-#undef CBASICS_PRIME_CONST
 #undef CBASICS_SWAPPED
 
 } // namespace CBasics

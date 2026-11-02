@@ -73,11 +73,7 @@ public:
   void DrawFrame(const CVector3f&, const CVector3f&, const CVector3f&, const CVector3f&);
   void MixAudio(short* out, const short* in, unsigned long samples);
 
-#if RSTL_PRIME1
-  EPlayMode GetPlayMode() const { return mPlayMode; }
-#else
   EPlayMode GetPlayMode() const;
-#endif
 
   void SetPlayMode(EPlayMode mode);
   float GetTotalSeconds() const;
@@ -180,5 +176,9 @@ private:
 
 };
 CHECK_SIZEOF(CMoviePlayer, RSTL_PRIME1 ? 0x100 : 0x120)
+
+#if RSTL_PRIME1
+inline CMoviePlayer::EPlayMode CMoviePlayer::GetPlayMode() const { return mPlayMode; }
+#endif
 
 #endif // _CMOVIEPLAYER

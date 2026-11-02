@@ -202,7 +202,6 @@ public:
 
 class CIEGetEmitterTime : public CIntElement {
 public:
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ~CIEGetEmitterTime() override;
 #else

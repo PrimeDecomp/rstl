@@ -1479,12 +1479,7 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
     mActivePartChildren.reserve(ncsyVal + mActivePartChildren.size());
     for (int i = 0; i < ncsyVal; ++i) {
       TLockedToken< CGenDescription > icsToken = mLoadedGenDesc->mICTS->GetToken();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      bool descOPTS = icsToken->mOPTS;
-#else
-      const bool descOPTS = icsToken->mOPTS;
-#endif
+      RSTL_ECHOES_CONST bool descOPTS = icsToken->mOPTS;
       if (mEnableOPTS && descOPTS) {
         break;
       }
@@ -1501,12 +1496,7 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
   if (mLoadedGenDesc->mIITS && mPrevFrame != mCurFrame && mCurFrame < mPSLT &&
       mParticleEmission == true && mCurFrame >= mSISY && (mCurFrame - mSISY) % mPISY == 0) {
     TLockedToken< CGenDescription > iitsToken = mLoadedGenDesc->mIITS->GetToken();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    bool iitsOPTS = iitsToken->mOPTS;
-#else
-    const bool iitsOPTS = iitsToken->mOPTS;
-#endif
+    RSTL_ECHOES_CONST bool iitsOPTS = iitsToken->mOPTS;
     if (!(mEnableOPTS && iitsOPTS)) {
       mActivePartChildren.reserve(mActivePartChildren.size() + 1);
 // TODO: verify that this Prime/Echoes difference is real
@@ -1576,12 +1566,7 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
     mActivePartChildren.reserve(ndsyVal + mActivePartChildren.size());
     for (int i = 0; i < ndsyVal; ++i) {
       TLockedToken< CGenDescription > idtsToken = mLoadedGenDesc->mIDTS->GetToken();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      bool idtsOPTS = idtsToken->mOPTS;
-#else
-      const bool idtsOPTS = idtsToken->mOPTS;
-#endif
+      RSTL_ECHOES_CONST bool idtsOPTS = idtsToken->mOPTS;
       if (mEnableOPTS && idtsOPTS) {
         break;
       }
@@ -2043,14 +2028,8 @@ void CElementGen::RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) {
 void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const {
 #endif
   for (int i = 0; i < mParticles.size(); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CParticle& particle = mParticles[i];
-    CVector3f viewPos =
-#else
-    const CParticle& particle = mParticles[i];
-    const CVector3f viewPos =
-#endif
+    RSTL_ECHOES_CONST CParticle& particle = mParticles[i];
+    RSTL_ECHOES_CONST CVector3f viewPos =
         xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -2061,12 +2040,7 @@ void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf)
     const float halfSize = 0.5f * particle.mLineLengthOrSize;
 #endif
     float x = viewPos.GetX() + halfSize;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    float y = viewPos.GetY();
-#else
-    const float y = viewPos.GetY();
-#endif
+    RSTL_ECHOES_CONST float y = viewPos.GetY();
     float z = viewPos.GetZ() + halfSize;
 
     GXPosition3f32(x, y, z);
@@ -2097,14 +2071,8 @@ void CElementGen::RenderBasicParticlesRotNoTS(const CTransform4f& xf) {
 void CElementGen::RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const {
 #endif
   for (int i = 0; i < mParticles.size(); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CParticle& particle = mParticles[i];
-    CVector3f viewPos =
-#else
-    const CParticle& particle = mParticles[i];
-    const CVector3f viewPos =
-#endif
+    RSTL_ECHOES_CONST CParticle& particle = mParticles[i];
+    RSTL_ECHOES_CONST CVector3f viewPos =
         xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -3974,12 +3942,7 @@ void CElementGen::RenderLines() {
     CVector3f direction = particle.mPos - particle.mPrevPos;
 
     if (mFXLL) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      float magnitude = direction.Magnitude();
-#else
-      const float magnitude = direction.Magnitude();
-#endif
+      RSTL_ECHOES_CONST float magnitude = direction.Magnitude();
       if (magnitude > 0.f) {
         direction *= 1.f / magnitude;
       }
@@ -3990,12 +3953,7 @@ void CElementGen::RenderLines() {
         systemCameraMatrix * (particle.mPos + particle.mLineLengthOrSize * direction);
 
     if (widtConst) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      uint color = particle.mColor.GetColor_u32();
-#else
-      const uint color = particle.mColor.GetColor_u32();
-#endif
+      RSTL_ECHOES_CONST uint color = particle.mColor.GetColor_u32();
 
       GXPosition3f32(p1[0], p1[1], p1[2]);
       GXColor1u32(color);
@@ -4012,12 +3970,7 @@ void CElementGen::RenderLines() {
       }
       CGX::SetLineWidth(CCast::ToUint8(6.f * lineWidth), GX_TO_ZERO);
       CGX::Begin(GX_LINES, GX_VTXFMT0, 2);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      uint color = particle.mColor.GetColor_u32();
-#else
-      const uint color = particle.mColor.GetColor_u32();
-#endif
+      RSTL_ECHOES_CONST uint color = particle.mColor.GetColor_u32();
 
       GXPosition3f32(p1[0], p1[1], p1[2]);
       GXColor1u32(color);
@@ -4721,16 +4674,9 @@ int CElementGen::GetSystemCount() const {
 #endif
 
 void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float x = pos.GetX();
-  float y = pos.GetY();
-  float z = pos.GetZ();
-#else
-  const float x = pos.GetX();
-  const float y = pos.GetY();
-  const float z = pos.GetZ();
-#endif
+  RSTL_ECHOES_CONST float x = pos.GetX();
+  RSTL_ECHOES_CONST float y = pos.GetY();
+  RSTL_ECHOES_CONST float z = pos.GetZ();
   if (x > mAabbMax.GetX()) {
     mAabbMax.SetX(x);
   }

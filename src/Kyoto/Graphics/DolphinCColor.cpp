@@ -176,18 +176,10 @@ ushort CColor::ToRGB565() const {
 #endif
 
 ushort CColor::ToRGB5A3() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  uchar r = GetRedu8();
-  uchar g = GetGreenu8();
-  uchar b = GetBlueu8();
-  uchar a = GetAlphau8();
-#else
-  const uchar r = GetRedu8();
-  const uchar g = GetGreenu8();
-  const uchar b = GetBlueu8();
-  const uchar a = GetAlphau8();
-#endif
+  RSTL_ECHOES_CONST uchar r = GetRedu8();
+  RSTL_ECHOES_CONST uchar g = GetGreenu8();
+  RSTL_ECHOES_CONST uchar b = GetBlueu8();
+  RSTL_ECHOES_CONST uchar a = GetAlphau8();
 
   ushort ret = (1 << 15) | ((b & 0xf8) >> 3) | ((g & 0xf8) << 2) | ((r & 0xf8) << 7);
   if (a != 0xff) {

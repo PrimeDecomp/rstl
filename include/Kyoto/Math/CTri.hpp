@@ -9,13 +9,7 @@
 
 class CTri {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CTri(const CVector3f& a, const CVector3f& b, const CVector3f& c)
-  : mPlane(a, b, c), mA(a), mB(b), mC(c) {}
-#else
   CTri(const CVector3f& a, const CVector3f& b, const CVector3f& c);
-#endif
 
   const CPlane& GetPlane() const { return mPlane; }
   const CVector3f& GetPointA() const { return mA; }
@@ -33,5 +27,10 @@ private:
   CVector3f mC;
 };
 CHECK_SIZEOF(CTri, 0x34)
+
+#if RSTL_PRIME1
+inline CTri::CTri(const CVector3f& a, const CVector3f& b, const CVector3f& c)
+: mPlane(a, b, c), mA(a), mB(b), mC(c) {}
+#endif
 
 #endif // _CTRI

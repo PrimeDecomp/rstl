@@ -151,14 +151,8 @@ CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(
 CAnimTreeEffectiveContribution CAnimTreeDoubleChild::VGetContributionOfHighestInfluence() const {
   CAnimTreeEffectiveContribution a = mA->GetContributionOfHighestInfluence();
   CAnimTreeEffectiveContribution b = mB->GetContributionOfHighestInfluence();
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
-  float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
-#else
-  const float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
-  const float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
-#endif
+  RSTL_ECHOES_CONST float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
+  RSTL_ECHOES_CONST float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
   return leftWeight > rightWeight
              ? CAnimTreeEffectiveContribution(leftWeight, a.GetPrimitiveName(),
                                               a.GetSteadyStateAnimInfo(), a.GetTimeRemaining(),

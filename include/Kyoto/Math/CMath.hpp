@@ -150,16 +150,9 @@ public:
 
   static float InvSqrtF(float x);
   static float FastArcCosR(float x);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static float SlowCosineR(float x);
   static float SlowSineR(float x);
   static float SlowTangentR(float x);
-#else
-  static float SlowCosineR(float x) { return cos(x); }
-  static float SlowSineR(float x) { return sin(x); }
-  static float SlowTangentR(float x) { return tan(x); }
-#endif
 
   static float FastSinR(float x);
   static float FastCosR(float x);
@@ -174,21 +167,11 @@ public:
   static float Deg2Rad(float deg) { return Deg2Rev(deg) * M_2PIF; }
   static float Deg2Rev(float deg) { return deg * (1.f / 360.f); }
   static float ArcSineR(float v);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static float ArcCosineR(float v);
-#else
-  static float ArcCosineR(float v) { return acosf(v); }
-#endif
 
   static float ArcTangentR(float v);
   static float PowF(float x, float y);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static const float FloorF(float x);
-#else
-  static const float FloorF(float x) { return floor(x); }
-#endif
 
   static float CeilingF(float x);
   static CVector3f GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
@@ -250,15 +233,14 @@ public:
   static bool IsEpsilon(float x, float y, float epsilon) { return AbsF(x - y) < epsilon; }
 
   static float FastMin(float a, float b) { return FastFSel(a - b, b, a); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static float FastMax(float a, float b) {
+#if RSTL_PRIME1
     a = FastFSel(a - b, a, b);
     return a;
-  }
 #else
-  static float FastMax(float a, float b) { return FastFSel(a - b, a, b); }
+    return FastFSel(a - b, a, b);
 #endif
+  }
 
 #if RSTL_PRIME1
   static float FastClamp(float min, float val, float max) {
@@ -290,16 +272,7 @@ public:
   // CeilingF__5CMathFf global
   // ArcTangentR__5CMathFf global
   template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void Swap(T& a, T& b) {
-    T tmp = a;
-    a = b;
-    b = tmp;
-  }
-#else
   static void Swap(T& a, T& b);
-#endif
 
   static int FloorPowerOfTwo(int v);
 #if !RSTL_PRIME1
@@ -308,6 +281,23 @@ public:
 #endif
 
 };
+
+#if !RSTL_PRIME1
+inline float CMath::SlowCosineR(float x) { return cos(x); }
+inline float CMath::SlowSineR(float x) { return sin(x); }
+inline float CMath::SlowTangentR(float x) { return tan(x); }
+inline float CMath::ArcCosineR(float v) { return acosf(v); }
+inline const float CMath::FloorF(float x) { return floor(x); }
+#endif
+
+#if RSTL_PRIME1
+template < typename T >
+inline void CMath::Swap(T& a, T& b) {
+  T tmp = a;
+  a = b;
+  b = tmp;
+}
+#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

@@ -232,14 +232,8 @@ CGX_INLINE void CGX::SetTevKAlphaSel(GXTevStageID stageId, GXTevKAlphaSel sel) {
 
 CGX_INLINE void CGX::SetTevOrder(GXTevStageID stageId, GXTexCoordID texCoord, GXTexMapID texMap,
                                  GXChannelID color) {
-#if RSTL_PRIME1
   STevState& state = CGX_STATE.mTevStates[stageId];
   uint flags = (texCoord & 0xFF) | ((texMap & 0xFF) << 8) | ((color & 0xFF) << 16);
-#else
-  STevState& state = CGX_STATE.mTevStates[stageId];
-  uint flags = MaskAndShiftLeft(texCoord, 0xFF, 0) | MaskAndShiftLeft(texMap, 0xFF, 8) |
-               MaskAndShiftLeft(color, 0xFF, 16);
-#endif
 
   if (state.mTevOrderFlags != flags) {
     state.mTevOrderFlags = flags;
@@ -286,31 +280,16 @@ CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, 
   }
 }
 #endif
-
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
-CGX_INLINE void CGX::SetTevIndirect(const GXTevStageID stageId, const GXIndTexStageID indStage,
-                                    const GXIndTexFormat fmt, const GXIndTexBiasSel biasSel,
-                                    const GXIndTexMtxID mtxSel, const GXIndTexWrap wrapS,
-                                    const GXIndTexWrap wrapT, GXBool addPrev, const GXBool indLod,
-                                    const GXIndTexAlphaSel alphaSel) {
-  STevState& state = CGX_STATE.mTevStates[stageId];
-  uint flags = MaskAndShiftLeft(indStage, 3, 0) | MaskAndShiftLeft(fmt, 3, 2) |
-               MaskAndShiftLeft(biasSel, 7, 4) | MaskAndShiftLeft(mtxSel, 15, 7) |
-               MaskAndShiftLeft(wrapS, 7, 11) | MaskAndShiftLeft(wrapT, 7, 14) |
-               MaskAndShiftLeft(addPrev, 1, 17) | MaskAndShiftLeft(indLod, 1, 18) |
-               MaskAndShiftLeft(alphaSel, 3, 19);
-  if (state.mIndFlags != flags) {
-    state.mIndFlags = flags;
-    GXSetTevIndirect(stageId, indStage, fmt, biasSel, mtxSel, wrapS, wrapT, addPrev, indLod,
-                     alphaSel);
-  }
-}
 #endif
-#else
-CGX_INLINE void CGX::SetTevIndirect(GXTevStageID stageId, GXIndTexStageID indStage,
-                                    GXIndTexFormat fmt, GXIndTexBiasSel biasSel,
-                                    GXIndTexMtxID mtxSel, GXIndTexWrap wrapS, GXIndTexWrap wrapT,
-                                    GXBool addPrev, GXBool indLod, GXIndTexAlphaSel alphaSel) {
+
+#if !RSTL_PRIME1 || !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+CGX_INLINE void
+CGX::SetTevIndirect(RSTL_PRIME1_CONST GXTevStageID stageId,
+                    RSTL_PRIME1_CONST GXIndTexStageID indStage,
+                    RSTL_PRIME1_CONST GXIndTexFormat fmt, RSTL_PRIME1_CONST GXIndTexBiasSel biasSel,
+                    RSTL_PRIME1_CONST GXIndTexMtxID mtxSel, RSTL_PRIME1_CONST GXIndTexWrap wrapS,
+                    RSTL_PRIME1_CONST GXIndTexWrap wrapT, GXBool addPrev,
+                    RSTL_PRIME1_CONST GXBool indLod, RSTL_PRIME1_CONST GXIndTexAlphaSel alphaSel) {
   STevState& state = CGX_STATE.mTevStates[stageId];
   uint flags = MaskAndShiftLeft(indStage, 3, 0) | MaskAndShiftLeft(fmt, 3, 2) |
                MaskAndShiftLeft(biasSel, 7, 4) | MaskAndShiftLeft(mtxSel, 15, 7) |
@@ -381,15 +360,13 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
 #if RSTL_PRIME1
   uint idx = attr - GX_VA_POS;
   if (data == nullptr || CGX_STATE.mArrayPtrs[idx] == data) {
-#else
-  if (data == nullptr) {
-#endif
-
     return;
   }
-#if RSTL_PRIME1
   CGX_STATE.mArrayPtrs[idx] = data;
 #else
+  if (data == nullptr) {
+    return;
+  }
   if (attr >= GX_VA_POS && attr < GX_POS_MTX_ARRAY) {
     uint idx = attr - GX_VA_POS;
     if (CGX_STATE.mArrayPtrs[idx] == data) {

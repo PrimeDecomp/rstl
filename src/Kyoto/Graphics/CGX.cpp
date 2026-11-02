@@ -502,27 +502,21 @@ void CGX::FlushState() {
     GXSetNumChans(CGX_STATE.mNumChans);
     CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
-#if RSTL_PRIME1
   if (CGX_STATE.mChanFlags & 2) {
+#if RSTL_PRIME1
     __SetChanCtrlCompressed(GX_COLOR0, CGX_STATE.mChanCtrls[0]);
-    CGX_STATE.mPrevChanCtrls[0] = CGX_STATE.mChanCtrls[0];
 #else
-  if (CGX_STATE.mChanFlags & 2) {
     FlushChanCtrl(GX_COLOR0, CGX_STATE.mChanCtrls[0]);
+#endif
     CGX_STATE.mPrevChanCtrls[0] = CGX_STATE.mChanCtrls[0];
-#endif
-
   }
+  if (CGX_STATE.mChanFlags & 4) {
 #if RSTL_PRIME1
-  if (CGX_STATE.mChanFlags & 4) {
     __SetChanCtrlCompressed(GX_COLOR1, CGX_STATE.mChanCtrls[1]);
-    CGX_STATE.mPrevChanCtrls[1] = CGX_STATE.mChanCtrls[1];
 #else
-  if (CGX_STATE.mChanFlags & 4) {
     FlushChanCtrl(GX_COLOR1, CGX_STATE.mChanCtrls[1]);
-    CGX_STATE.mPrevChanCtrls[1] = CGX_STATE.mChanCtrls[1];
 #endif
-
+    CGX_STATE.mPrevChanCtrls[1] = CGX_STATE.mChanCtrls[1];
   }
   CGX_STATE.mChanFlags = 0;
 }

@@ -42,13 +42,13 @@ public:
     return TObjOwnerDerivedFromIObj< T >::GetNewDerivedObject(obj);
   }
 
-// TODO: verify that this Prime/Echoes difference is real
+  TToken< T > NonConstCopy() const {
 #if RSTL_PRIME1
-  TToken< T > NonConstCopy() const { return *this; }
+    return *this;
 #else
-  TToken< T > NonConstCopy() const { return *const_cast< TToken< T >* >(this); }
+    return *const_cast< TToken< T >* >(this);
 #endif
-
+  }
 };
 
 template < typename T >

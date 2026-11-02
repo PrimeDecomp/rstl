@@ -36,12 +36,7 @@ public:
   static CQuaternion Slerp(const CQuaternion& a, const CQuaternion& b, float t);
   static CQuaternion SlerpLocal(const CQuaternion& from, const CQuaternion& to, float t);
   CRelAngle AngleFrom(const CQuaternion& other) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CQuaternion BuildEquivalent() const;
-#else
-  CQuaternion BuildEquivalent() const { return CQuaternion(-w, -imaginary); }
-#endif
 
   CQuaternion BuildNormalized() const;
   static CQuaternion AxisAngle(const CUnitVector3f&, const CRelAngle&);
@@ -55,14 +50,13 @@ public:
   CMatrix3f BuildTransform() const;
   CTransform4f BuildTransform4f() const;
   CTransform4f BuildTransform4f(const CVector3f&) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CQuaternion BuildInverted() const { return ScalarVector(GetScalar(), -GetVector()); }
-#else
   CQuaternion BuildInverted() const {
+#if RSTL_PRIME1
+    return ScalarVector(GetScalar(), -GetVector());
+#else
     return CQuaternion(GetScalar(), CVector3f(-AxisX(), -AxisY(), -AxisZ()));
-  }
 #endif
+  }
 
   static CQuaternion FromMatrixRows(const CVector3f&, const CVector3f&, const CVector3f&);
 #if !RSTL_PRIME1
@@ -103,6 +97,10 @@ private:
   static const CQuaternion sNoRotation;
 };
 CHECK_SIZEOF(CQuaternion, 0x10)
+
+#if !RSTL_PRIME1
+inline CQuaternion CQuaternion::BuildEquivalent() const { return CQuaternion(-w, -imaginary); }
+#endif
 
 #if !RSTL_PRIME1
 namespace rstl {

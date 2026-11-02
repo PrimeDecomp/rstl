@@ -141,16 +141,15 @@ public:
 #endif
 
 #ifdef __MWERKS__
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CColor WithAlphaOf(float a) const { return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f)); }
-#else
   CColor WithAlphaOf(float a) const {
+#if RSTL_PRIME1
+    return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f));
+#else
     const float value = a;
     const float byteScale = 255.f;
     return CColor((mRgba & ~0xff) | CCast::ToUint8(byteScale * value));
-  }
 #endif
+  }
 #else
   CColor WithAlphaOf(float a) const { return CColor(mR, mG, mB, CCast::ToUint8(a * 255.f)); }
 #endif

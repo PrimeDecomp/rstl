@@ -23,13 +23,21 @@ class CTransition {
 
 public:
   explicit CTransition(CInputStream& in);
-// TODO: verify that this Prime/Echoes difference is real
+  uint GetFromAnimIndex() const {
 #if RSTL_PRIME1
-  uint GetFromAnimIndex() const { return mAnimA; }
-  uint GetToAnimIndex() const { return mAnimB; }
+    return mAnimA;
 #else
-  uint GetFromAnimIndex() const { return mAnimPair.first; }
-  uint GetToAnimIndex() const { return mAnimPair.second; }
+    return mAnimPair.first;
+#endif
+  }
+  uint GetToAnimIndex() const {
+#if RSTL_PRIME1
+    return mAnimB;
+#else
+    return mAnimPair.second;
+#endif
+  }
+#if !RSTL_PRIME1
   uint GetAnimA() const { return mAnimPair.first; }
   uint GetAnimB() const { return mAnimPair.second; }
   rstl::pair< uint, uint > GetAnimPair() const { return mAnimPair; }

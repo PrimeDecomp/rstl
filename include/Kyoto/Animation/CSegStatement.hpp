@@ -30,14 +30,20 @@ public:
 #endif
 
   const CVector3f& Offset() const { return mOffset; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool OffsetValid() const { return mStatus != 0; }
-  void Set(const CQuaternion& rotation) { Orientation() = rotation; }
-#else
+#if !RSTL_PRIME1
   const CVector3f& Scale() const { return mScale; }
   bool RotationValid() const { return mRotationValid; }
-  bool OffsetValid() const { return mOffsetValid; }
+#endif
+  bool OffsetValid() const {
+#if RSTL_PRIME1
+    return mStatus != 0;
+#else
+    return mOffsetValid;
+#endif
+  }
+#if RSTL_PRIME1
+  void Set(const CQuaternion& rotation) { Orientation() = rotation; }
+#else
   bool ScaleValid() const { return mScaleValid; }
 #endif
 

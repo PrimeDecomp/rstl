@@ -53,7 +53,7 @@ CFBStreamedAnimReaderTotals::CFBStreamedAnimReaderTotals(const CFBStreamedCompre
 , mCumulativeInts(nullptr)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mHasTrans(nullptr)
+, mHasOffset(nullptr)
 #else
 , mHasRotation(nullptr)
 , mHasOffset(nullptr)
@@ -129,7 +129,7 @@ void CFBStreamedAnimReaderTotals::Allocate(uint channelCount) {
   offset += shortsSize;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  mHasTrans = reinterpret_cast< bool* >(mBuffer + offset);
+  mHasOffset = reinterpret_cast< bool* >(mBuffer + offset);
   offset += flagsSize;
 #else
   mHasRotation = reinterpret_cast< bool* >(mBuffer + offset);
@@ -198,7 +198,7 @@ void CFBStreamedAnimReaderTotals::SetToReadStart(const CFBStreamedCompression& s
     ++values;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    mHasTrans[channel] = offset.GetWidth() != 0;
+    mHasOffset[channel] = offset.GetWidth() != 0;
 #else
     mHasOffset[channel] = offset.GetWidth() != 0;
     if (mHasScaleData) {
@@ -253,11 +253,11 @@ void CFBStreamedAnimReaderTotals::CalculateDown() {
 #endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    if (mHasTrans[i]) {
-      computed[4] = values[4] * mTransMult;
-      computed[5] = values[5] * mTransMult;
-      computed[6] = values[6] * mTransMult;
-    }
+  if (mHasOffset[i]) {
+    computed[4] = values[4] * mTransMult;
+    computed[5] = values[5] * mTransMult;
+    computed[6] = values[6] * mTransMult;
+  }
 #else
     if (mHasOffset[i]) {
       computed[4] = values[4] * mOffsetMult;
@@ -379,11 +379,11 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
     if (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-        mHasTrans[channel]
-#else
         mHasOffset[channel]
+#else
+          mHasOffset[channel]
 #endif
-        ) {
+    ) {
       const CFBStreamedPerChannelHeader::OffsetHeader& offset = it->GetOffsetBitStorage();
       output[4] = input[4] + loader.LoadSigned(offset.GetBitCount(0));
       output[5] = input[5] + loader.LoadSigned(offset.GetBitCount(1));

@@ -54,14 +54,8 @@ public:
   const int GetCharacterIndex() const { return mCharIdx; }
   const int GetFlags() const { return mFlags; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   bool operator>(const CPOINode& other) const;
   bool operator<(const CPOINode& other) const;
-#else
-  bool operator>(const CPOINode& other) const { return mTime > other.mTime; }
-  bool operator<(const CPOINode& other) const { return mTime < other.mTime; }
-#endif
 
   static int compare(const void* a, const void* b);
 #if !RSTL_PRIME1
@@ -91,6 +85,12 @@ protected:
   int mCharIdx;
   int mFlags;
 };
+
+#if !RSTL_PRIME1
+inline bool CPOINode::operator>(const CPOINode& other) const { return mTime > other.mTime; }
+
+inline bool CPOINode::operator<(const CPOINode& other) const { return mTime < other.mTime; }
+#endif
 DECLARE_FULL_SIZE_FOR(CPOINode, RSTL_PRIME1 ? 0x38 : 0x2c)
 CHECK_SIZEOF(CPOINode, CPOINode_FULL_SIZE)
 

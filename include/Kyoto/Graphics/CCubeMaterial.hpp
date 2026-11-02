@@ -52,20 +52,21 @@ public:
 
   uint GetFlags() const { return CBasics::SwapBytes(*reinterpret_cast< const uint* >(GetData())); }
   bool IsFlagSet(const EStateFlags flag) const { return (GetFlags() & flag) != 0; }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void SetCurrent(const CModelFlags& flags, const CCubeSurface& surface,
                   const CCubeModel& model) const;
   void SetCurrentBlack() const;
+#endif
   uint GetTextureCount() const {
+#if RSTL_PRIME1
     const uchar* data = GetData();
     data += sizeof(uint);
     const int ret = CBasics::SwapBytes(*reinterpret_cast< const uint* >(data));
     return ret;
-  }
 #else
-  uint GetTextureCount() const { return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]); }
+    return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]);
 #endif
+  }
 
   uint GetVertexDesc() const {
 // TODO: verify that this Prime/Echoes difference is real

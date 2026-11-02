@@ -32,30 +32,14 @@ public:
     uchar mKColorSel;
     uchar mKAlphaSel;
 
-#if RSTL_PRIME1
-    STevState()
-    : mColorInArgs(0)
-    , mAlphaInArgs(0)
-    , mColorOps(0)
-    , mAlphaOps(0)
-    , mIndFlags(0)
-    , mTevOrderFlags(UINT_MAX)
-    , mKColorSel(UCHAR_MAX)
-    , mKAlphaSel(UCHAR_MAX) {}
-#else
     STevState();
-#endif
 
   };
 
   struct STexState {
     uint mCoordGen;
 
-#if RSTL_PRIME1
-    STexState() : mCoordGen(0) {}
-#else
     STexState();
-#endif
 
   };
 
@@ -219,11 +203,13 @@ public:
   static inline void CopyGXColor(GXColor& dst, const GXColor& src) {
     *reinterpret_cast< uint* >(&dst) = *reinterpret_cast< const uint* >(&src);
   }
+  static inline uint MaskAndShiftLeft(uint v, uint m, uint s) {
 #if RSTL_PRIME1
-  static inline uint MaskAndShiftLeft(uint v, uint m, uint s) { return (v << s) & (m << s); }
+    return (v << s) & (m << s);
 #else
-  static inline uint MaskAndShiftLeft(uint v, uint m, uint s) { return (v & m) << s; }
+    return (v & m) << s;
 #endif
+  }
 
   static inline uint ShiftRightAndMask(uint v, uint m, uint s) { return (v >> s) & m; }
 
@@ -248,6 +234,20 @@ private:
 #endif
 
 };
+
+#if RSTL_PRIME1
+inline CGX::STevState::STevState()
+: mColorInArgs(0)
+, mAlphaInArgs(0)
+, mColorOps(0)
+, mAlphaOps(0)
+, mIndFlags(0)
+, mTevOrderFlags(UINT_MAX)
+, mKColorSel(UCHAR_MAX)
+, mKAlphaSel(UCHAR_MAX) {}
+
+inline CGX::STexState::STexState() : mCoordGen(0) {}
+#endif
 
 #if RSTL_PRIME1
 // Direct FIFO write macros

@@ -2237,15 +2237,13 @@ void CGraphics::SetDefaultVtxAttrFmt() {
   }
 }
 
-#if RSTL_PRIME1
-void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, void* data,
-#else
-void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt, const void* data,
-#endif
+void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
+                                        RSTL_ECHOES_CONST void* data,
 
                                         GXTexMapID texId
 #if RSTL_KYOTO_SPARE_TEXTURE_FILTER
-                                        , GXTexFilter filter
+                                        ,
+                                        GXTexFilter filter
 #endif
 ) {
 #if !RSTL_KYOTO_SPARE_TEXTURE_FILTER

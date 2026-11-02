@@ -45,19 +45,11 @@ public:
   const CVector3f& GetTranslation() const override;
   const CTransform4f& GetGlobalOrientation() const override;
   const CVector3f& GetGlobalTranslation() const override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CVector3f& GetGlobalScale() const override { return mGlobalScale; }
-#else
   const CVector3f& GetGlobalScale() const override;
-#endif
 
   bool GetParticleEmission() const override { return mEmitting; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CColor& GetModulationColor() const override { return mModuColor; }
-#else
   const CColor& GetModulationColor() const override;
+#if !RSTL_PRIME1
   float GetGeneratorRate() const override;
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
@@ -112,17 +104,8 @@ public:
 #endif
 
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CParticleElectricManager(uint idx, uint slif, uint startFrame)
-    : mIdx(idx)
-    , mSLIF(slif)
-    , mStartFrame(startFrame)
-    , mEndFrame(startFrame + slif)
-    , mGPSMIdx(-1)
-    , mEPSMIdx(-1) {}
-#else
     CParticleElectricManager(uint idx, uint slif, uint startFrame);
+#if !RSTL_PRIME1
     const CVector3f& GetInitialPos() const { return mInitialPos; }
     const CVector3f& GetInitialVel() const { return mInitialVel; }
     const CVector3f& GetFinalPos() const { return mFinalPos; }
@@ -235,6 +218,23 @@ private:
   static ushort sSeed;
 };
 CHECK_SIZEOF(CParticleElectric, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x440 : 0x458) : 0x460)
+
+#if RSTL_PRIME1
+inline const CColor& CParticleElectric::GetModulationColor() const { return mModuColor; }
+
+inline CParticleElectric::CParticleElectricManager::CParticleElectricManager(uint idx, uint slif,
+                                                                             uint startFrame)
+: mIdx(idx)
+, mSLIF(slif)
+, mStartFrame(startFrame)
+, mEndFrame(startFrame + slif)
+, mGPSMIdx(-1)
+, mEPSMIdx(-1) {}
+#endif
+
+#if RSTL_PRIME1
+inline const CVector3f& CParticleElectric::GetGlobalScale() const { return mGlobalScale; }
+#endif
 NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager,
                     (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ) ? 0x3c : 0x40)
 NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, RSTL_PRIME1 ? 0x18 : 0x48)

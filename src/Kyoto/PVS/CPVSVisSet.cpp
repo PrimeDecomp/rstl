@@ -30,12 +30,7 @@ EPVSVisSetState CPVSVisSet::GetVisible(int idx) const {
   }
 
   /* This is a light lookup */
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  int lightTest = idx - numFeatures + idx;
-#else
-  const int lightTest = idx - numFeatures + idx;
-#endif
+  RSTL_ECHOES_CONST int lightTest = idx - numFeatures + idx;
 
   const char* ptr = &mPtr.get()[lightTest / 8];
 // TODO: verify that this Prime/Echoes difference is real

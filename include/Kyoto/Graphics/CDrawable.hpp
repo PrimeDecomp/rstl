@@ -77,12 +77,7 @@ private:
 #endif
 
   ushort mExtraSort;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void* mData;
-#else
-  const void* mData;
-#endif
+  RSTL_ECHOES_CONST void* mData;
   CAABox mBounds;
   float mViewDistance;
 

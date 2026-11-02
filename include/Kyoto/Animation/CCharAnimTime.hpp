@@ -39,12 +39,7 @@ public:
   bool GreaterThanZero() const;
   bool EqualsZero() const;
   void PutTo(COutputStream& out) const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static CCharAnimTime Infinity() { return CCharAnimTime(kT_Infinity, 1.0f); }
-#else
   static CCharAnimTime Infinity();
-#endif
   static CCharAnimTime ZeroPlus() { return CCharAnimTime(kT_ZeroIncreasing, 0.f); }
 #if RSTL_PRIME1
   static CCharAnimTime ZeroFlat() { return CCharAnimTime(kT_ZeroSteady, 0.f); }
@@ -72,7 +67,6 @@ public:
     return kT_ZeroIncreasing;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimTime ZeroSignScale(float other) const {
     if (other > 0.f) {
@@ -94,7 +88,9 @@ private:
 };
 CHECK_SIZEOF(CCharAnimTime, 0x8)
 
-#if !RSTL_PRIME1
+#if RSTL_PRIME1
+inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.0f); }
+#else
 inline CCharAnimTime CCharAnimTime::ZeroSignScale(float other) const {
   if (other > 0.f) {
     return *this;

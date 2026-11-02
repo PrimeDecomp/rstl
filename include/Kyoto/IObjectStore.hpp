@@ -19,12 +19,7 @@ public:
   virtual CToken GetObj(const char* name, const CVParamTransfer& xfer) = 0;
   virtual bool HasObject(const SObjectTag& tag) const = 0;
   virtual bool ObjectIsLive(const SObjectTag& tag) const = 0;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  virtual IFactory& GetFactory() const = 0;
-#else
-  virtual IFactory& GetFactory() = 0;
-#endif
+  virtual IFactory& GetFactory() RSTL_PRIME1_CONST = 0;
 
   virtual void Flush() = 0;
   virtual void ObjectUnreferenced(const SObjectTag& tag) = 0;

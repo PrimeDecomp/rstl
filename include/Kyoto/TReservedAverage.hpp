@@ -28,19 +28,24 @@ class TReservedAverage : public rstl::reserved_vector< T, N > {
 public:
   TReservedAverage() {}
   TReservedAverage(const T& value) { this->resize(N, value); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const;
+#if !RSTL_PRIME1
+  rstl::optional_object< T > GetMax() const;
+#endif
   rstl::optional_object< T > GetEntry(int idx) const;
 };
 
 template < typename T, int N >
 inline void TReservedAverage< T, N >::AddValue(const T& value) {
+#if RSTL_PRIME1
   RS_ASSERT(this->size() < this->capacity(), "rstl precondition");
   RS_ASSERT(this->size() < this->capacity(), "rstl precondition");
   RS_ASSERT(this->size() < this->capacity(), "rstl precondition");
   if (this->size() < this->capacity()) {
+#else
+  if (this->size() < N) {
+#endif
     this->push_back(value);
   }
   for (int i = this->size() - 1; i > 0; --i) {
@@ -53,10 +58,25 @@ template < typename T, int N >
 inline rstl::optional_object< T > TReservedAverage< T, N >::GetAverage() const {
   if (this->empty()) {
     return rstl::optional_object_null();
+#if RSTL_PRIME1
   } else {
     return GetAverageValue(this->data(), this->size());
   }
+#else
+  }
+  return GetAverageValue(this->data(), this->size());
+#endif
 }
+
+#if !RSTL_PRIME1
+template < typename T, int N >
+inline rstl::optional_object< T > TReservedAverage< T, N >::GetMax() const {
+  if (this->empty()) {
+    return rstl::optional_object_null();
+  }
+  return GetMaxValue(this->data(), this->size());
+}
+#endif
 
 template < typename T, int N >
 inline rstl::optional_object< T > TReservedAverage< T, N >::GetEntry(int idx) const {
@@ -66,36 +86,5 @@ inline rstl::optional_object< T > TReservedAverage< T, N >::GetEntry(int idx) co
     return rstl::optional_object< T >(this->operator[](idx));
   }
 }
-#else
-  void AddValue(const T& value) {
-    if (this->size() < N) {
-      this->push_back(value);
-    }
-    for (int i = this->size() - 1; i > 0; --i) {
-      this->operator[](i) = this->operator[](i - 1u);
-    }
-    this->operator[](0) = value;
-  }
-  rstl::optional_object< T > GetAverage() const {
-    if (this->empty()) {
-      return rstl::optional_object_null();
-    }
-    return GetAverageValue(this->data(), this->size());
-  }
-  rstl::optional_object< T > GetMax() const {
-    if (this->empty()) {
-      return rstl::optional_object_null();
-    }
-    return GetMaxValue(this->data(), this->size());
-  }
-  rstl::optional_object< T > GetEntry(int idx) const {
-    if (idx >= this->size()) {
-      return rstl::optional_object_null();
-    } else {
-      return rstl::optional_object< T >(this->operator[](idx));
-    }
-  }
-};
-#endif
 
 #endif // _TRESERVEDAVERAGE

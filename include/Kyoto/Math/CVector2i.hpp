@@ -34,12 +34,13 @@ public:
 #endif
 
   int& operator[](int idx) { return *(&mX + idx); }
-// TODO: verify that this Prime/Echoes difference is real
+  const int& operator[](int idx) const {
 #if RSTL_PRIME1
-  const int& operator[](int idx) const { return reinterpret_cast< const int* >(this)[idx]; }
+    return reinterpret_cast< const int* >(this)[idx];
 #else
-  const int& operator[](int idx) const { return *(&mX + idx); }
+    return *(&mX + idx);
 #endif
+  }
 
   static CVector2i Lerp(const CVector2i& a, const CVector2i& b, float t) {
 // TODO: verify that this Prime/Echoes difference is real

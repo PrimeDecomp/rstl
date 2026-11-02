@@ -538,13 +538,7 @@ rstl::vector< rstl::pair< rstl::string, SObjectTag > > CResLoader::GetResourceId
   return ret;
 }
 int CResLoader::GetPakCount() const { return mAramList.size() + mPakLoadedList.size(); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CPakFile*
-#else
-const CPakFile*
-#endif
-CResLoader::GetPakFile(const int idx) const {
+RSTL_ECHOES_CONST CPakFile* CResLoader::GetPakFile(const int idx) const {
   int numAramPaks = mAramList.size();
   if (idx < numAramPaks) {
 // TODO: verify that this Prime/Echoes difference is real

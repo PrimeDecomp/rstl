@@ -347,14 +347,10 @@ public:
   static CMatrix4f CalculatePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
   static void ResetGfxStates();
   static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
-#if RSTL_PRIME1
-                                      void* data,
-#else
-                                      const void* data,
-#endif
-                                      GXTexMapID texId
+                                      RSTL_ECHOES_CONST void* data, GXTexMapID texId
 #if RSTL_KYOTO_SPARE_TEXTURE_FILTER
-                                      , GXTexFilter filter = GX_NEAR
+                                      ,
+                                      GXTexFilter filter = GX_NEAR
 #endif
   );
   static void LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, GXTlut tlut,
