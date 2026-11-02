@@ -1,17 +1,32 @@
-#include "rstl/RstlVersions.h"
-#include "Kyoto/Audio/CSfxHandle.hpp"
+
 #include "Kyoto/Audio/CMidiManager.hpp"
 
 #include "Kyoto/Audio/CAudioSys.hpp"
-
+#include "Kyoto/Audio/CSfxHandle.hpp"
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
-
+#include "Kyoto/Platform.h"
 #include "Kyoto/Streams/CInputStream.hpp"
+#include "rstl/RstlVersions.h"
+
+#if defined(TARGET_PC)
+#include "Metaforce/Audio.hpp"
+#include "Metaforce/Common.hpp"
+
+namespace {
+constexpr borealis::Log Log{"CMidiManager"};
+}
+#endif
 
 rstl::reserved_vector< CMidiManager::CMidiWrapper, 3 > CMidiManager::mMidiWrappers;
 
-CMidiManager::CMidiWrapper::CMidiWrapper() : mSysHandle(0), mAvailable(true) {}
+CMidiManager::CMidiWrapper::CMidiWrapper()
+: mSysHandle(0)
+#if IS_TARGET_PC
+, mSongId(-1)
+#endif
+, mAvailable(true) {
+}
 
 const CSfxHandle& CMidiManager::CMidiWrapper::GetManagerHandle() const { return mMidiHandle; }
 
@@ -25,9 +40,7 @@ const short CMidiManager::CMidiWrapper::GetSongId() const { return mSongId; }
 
 void CMidiManager::CMidiWrapper::SetAvailable(const bool v) { mAvailable = v; }
 
-void CMidiManager::CMidiWrapper::SetAudioSysHandle(const TSysHandle handle) {
-  mSysHandle = handle;
-}
+void CMidiManager::CMidiWrapper::SetAudioSysHandle(const TSysHandle handle) { mSysHandle = handle; }
 
 void CMidiManager::CMidiWrapper::SetMidiHandle(const CSfxHandle& handle) { mMidiHandle = handle; }
 
@@ -46,6 +59,10 @@ CSfxHandle CMidiManager::Play(const CMidiData& data, unsigned short fadeTime, bo
   wrapper.SetMidiHandle(handle);
   if (stopExisting) {
     for (int i = 0; i < mMidiWrappers.size(); ++i) {
+      if (IS_TARGET_PC && &mMidiWrappers[i] == &wrapper) {
+        continue;
+      }
+
       if (mMidiWrappers[i].IsAvailable()) {
         continue;
       }
@@ -66,6 +83,10 @@ CSfxHandle CMidiManager::Play(const CMidiData& data, unsigned short fadeTime, bo
   } else {
     CMidiWrapper::TSysHandle sysHandle =
         CAudioSys::SeqPlayEx(data.GetGroupId(), data.GetSongId(), data.GetData(), nullptr, 0);
+    if (IS_TARGET_PC && sysHandle == SND_ID_ERROR) {
+      wrapper.SetAvailable(true);
+      return CSfxHandle();
+    }
     if (fadeTime != 0) {
       CAudioSys::SeqVolume(0, 0, sysHandle, 0);
     }
@@ -120,7 +141,27 @@ CSfxHandle CMidiManager::LocateHandle() {
 }
 
 CMidiManager::CMidiData::CMidiData(CInputStream& in)
-: mSongId(-1), mGroupId(-1), mAgscId(-1) {
+: mSongId(-1)
+, mGroupId(-1)
+, mAgscId(-1)
+{
+#if defined(TARGET_PC)
+  u8 bytes[20];
+  metaforce::AudioSongHeader header{};
+  REQUIRE(in.ReadBytes(bytes, sizeof(bytes)) == sizeof(bytes) &&
+              metaforce::ReadAudioSongHeader(bytes, header),
+          "Invalid CSNG header");
+  mSongId = header.song;
+  mGroupId = header.group;
+  mAgscId = header.audioGroup;
+  mData = rs_new uchar[header.length];
+  REQUIRE(in.ReadBytes(mData.get(), header.length) == header.length,
+          "Truncated CSNG arrangement");
+  SND_PC_ASSET_ERROR error{};
+  REQUIRE(sndPCValidateArrangement({mData.get(), header.length}, &error),
+          "Invalid CSNG arrangement at {}: {}", error.offset, error.reason ? error.reason : "");
+#else
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   in.ReadLong();
@@ -136,10 +177,10 @@ CMidiManager::CMidiData::CMidiData(CInputStream& in)
   int len = in.ReadInt32();
   mData = rs_new uchar[len];
   in.Get(mData.get(), len);
+#endif
 }
 
 RSTL_PRIME1_CONST CFactoryFnReturn FMidiDataFactory(const SObjectTag& tag, CInputStream& in,
                                                     const CVParamTransfer&) {
   return rs_new CMidiManager::CMidiData(in);
 }
-

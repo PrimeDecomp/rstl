@@ -1,6 +1,7 @@
 #include "Kyoto/Audio/CDSPStream.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Platform.h"
 
 #include "musyx/musyx.h"
 
@@ -8,6 +9,9 @@
 #include "dolphin/os.h"
 
 #include "string.h"
+#if defined(TARGET_PC)
+#include "Metaforce/Audio.hpp"
+#endif
 
 static struct {
   CDSPStream streams[4];
@@ -77,7 +81,7 @@ int CDSPStream::FindStreamIdx(int handle) {
 
 void CDSPStream::DoAllocateStream() {
   mBuffer = CMemory::Alloc(0x11DC0, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1,
-                              IAllocator::kTP_Heap, CCallStack(-1, "??(??)"));
+                           IAllocator::kTP_Heap, CCallStack(-1, "??(??)"));
   mStreamId = sndStreamAllocEx(
       static_cast< u8 >(0xFF), mBuffer, mStreamSamples, static_cast< u32 >(32000),
       static_cast< u8 >(0), static_cast< u8 >(0x40), static_cast< u8 >(0), static_cast< u8 >(0),
@@ -109,10 +113,40 @@ void CDSPStream::Initialize() {
 }
 
 void CDSPStream::FreeAllStreams() {
+#if defined(TARGET_PC)
+  {
+    metaforce::AudioLockGuard lock;
+    for (auto& stream : g_Streams) {
+      stream.mSilenced = 1;
+      stream.mStopRequested = 1;
+      if (stream.mStreamId != SND_ID_ERROR)
+        sndStreamDeactivate(stream.mStreamId);
+    }
+  }
+  // DVD completion takes the same lock. Wait without holding it, and keep
+  // refill buffers alive until both requests and their callbacks have retired.
+  for (auto& stream : g_Streams) {
+    DVDCancel(&stream.mFileInfo1.cb);
+    DVDCancel(&stream.mFileInfo2.cb);
+  }
+  metaforce::AudioLockGuard lock;
+  for (auto& stream : g_Streams) {
+    if (stream.mState != 0)
+      stream.CloseFiles();
+    if (stream.mStreamId != SND_ID_ERROR)
+      sndStreamFree(stream.mStreamId);
+    CMemory::Free(stream.mBuffer);
+    stream.mBuffer = nullptr;
+    stream.mStreamId = SND_ID_ERROR;
+    stream.mState = 0;
+    stream.mRight = stream.mLeft = nullptr;
+  }
+#else
   for (uint i = 0; i < 4; ++i) {
     sndStreamFree(g_Streams[i].mStreamId);
     CMemory::Free(g_Streams[i].mBuffer);
   }
+#endif
 }
 
 uint CDSPStream::AllocateStream(const SStreamInfo& info, char vol, char pan) {
@@ -211,11 +245,9 @@ int CDSPStream::AllocateStereo(const SStreamInfo& leftInfo, const SStreamInfo& r
       OSRestoreInterrupts(ints);
       OpenFiles(streams[0]->mFileName, *streams[0]);
       OpenFiles(streams[1]->mFileName, *streams[1]);
-      DVDReadAsyncPrio(&streams[0]->mFileInfo1, streams[0]->mBuffer,
-                       static_cast< s32 >(readLen[0]),
+      DVDReadAsyncPrio(&streams[0]->mFileInfo1, streams[0]->mBuffer, static_cast< s32 >(readLen[0]),
                        static_cast< s32 >(streams[0]->mHeaderSize), ReadCompleted, 1);
-      DVDReadAsyncPrio(&streams[1]->mFileInfo1, streams[1]->mBuffer,
-                       static_cast< s32 >(readLen[1]),
+      DVDReadAsyncPrio(&streams[1]->mFileInfo1, streams[1]->mBuffer, static_cast< s32 >(readLen[1]),
                        static_cast< s32 >(streams[1]->mHeaderSize), ReadCompleted, 1);
       return handle;
     }
@@ -331,8 +363,8 @@ void CDSPStream::BufferStream() {
       mFileCur = mLoopStartByte;
     } else {
       memset(buf, 0, mBufferBytes >> 1);
-      sndStreamARAMUpdate(mStreamId, mCurBuffer != 0 ? mStreamSamples >> 1 : 0,
-                          mStreamSamples >> 1, 0, 0);
+      sndStreamARAMUpdate(mStreamId, mCurBuffer != 0 ? mStreamSamples >> 1 : 0, mStreamSamples >> 1,
+                          0, 0);
       readLen = 0;
     }
   }
@@ -410,12 +442,20 @@ int CDSPStream::InitializeStream() {
 }
 
 void CDSPStream::ReadCompleted(s32, DVDFileInfo* fileInfo) {
+#if defined(TARGET_PC)
+  metaforce::AudioLockGuard lock;
+#endif
+
   int idx = 0;
   CDSPStream* s = g_Streams;
   for (; idx < 4; ++idx, ++s) {
     if (&s->mFileInfo1 == fileInfo || &s->mFileInfo2 == fileInfo) {
       break;
     }
+  }
+
+  if (IS_TARGET_PC && idx == 4) {
+    return;
   }
 
   CDSPStream& stream = g_Streams[idx];
@@ -462,8 +502,7 @@ void CDSPStream::ReadCompleted(s32, DVDFileInfo* fileInfo) {
       }
       break;
     case 4:
-      sndStreamARAMUpdate(stream.mStreamId,
-                          stream.mCurBuffer != 0 ? 0 : stream.mStreamSamples >> 1,
+      sndStreamARAMUpdate(stream.mStreamId, stream.mCurBuffer != 0 ? 0 : stream.mStreamSamples >> 1,
                           stream.mStreamSamples >> 1, 0, 0);
       break;
     }
@@ -481,4 +520,3 @@ void CDSPStream::ReadCompleted(s32, DVDFileInfo* fileInfo) {
     }
   }
 }
-

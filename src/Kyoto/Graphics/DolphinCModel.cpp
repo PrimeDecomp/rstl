@@ -86,7 +86,7 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
 , mCurrentMatxIdx(0)
 , mLastMaterialFrame(0)
 #else
-CModel::SShader::SShader(uchar* data, CModel* owner)
+CModel::SShader::SShader(TModelData data, CModel* owner)
 : mData(data), mOwner(owner), mPrev(nullptr), mNext(nullptr) {}
 
 CModel::SShader::SShader(const SShader& other)

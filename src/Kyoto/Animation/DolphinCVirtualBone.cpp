@@ -1,62 +1,36 @@
 #include "rstl/RstlVersions.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
-#endif
 #include "Kyoto/Animation/CVirtualBone.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
-#endif
 
 #include "dolphin/mtx.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Basics/CBasics.hpp"
 
 #include "rstl/math.hpp"
 
 #include "string.h"
-#endif
+
 
 static rstl::reserved_vector< SSkinWeighting, 3 > StreamInSkinWeighting(CInputStream& in) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  int i = 0;
   int weightCount = 0;
 #endif
   rstl::reserved_vector< SSkinWeighting, 3 > weights;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   weightCount = in.ReadInt32();
 #else
   const int weightCount = in.Get< int >();
 #endif
   if (weightCount > weights.capacity()) {
-    for (
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-        int
-#endif
-        i = 0; i < weights.capacity(); ++i) {
+    for (int i = 0; i < weights.capacity(); ++i) {
       weights.push_back(SSkinWeighting(in));
     }
-    for (
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-        int
-#endif
-        i = weights.capacity(); i < weightCount; ++i) {
+    for (int i = weights.capacity(); i < weightCount; ++i) {
       SSkinWeighting tmp(in);
     }
   } else {
-    for (
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-        int
-#endif
-        i = 0; i < weightCount; ++i) {
+    for (int i = 0; i < weightCount; ++i) {
       weights.push_back(SSkinWeighting(in));
     }
   }
@@ -65,7 +39,6 @@ static rstl::reserved_vector< SSkinWeighting, 3 > StreamInSkinWeighting(CInputSt
 
 CVirtualBone::CVirtualBone(CInputStream& in)
 : mWeights(StreamInSkinWeighting(in))
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mVertexCount(in.ReadLong())
 , mXf(CTransform4f::Identity())
@@ -358,6 +331,7 @@ void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile 
 static CVector3f ReadVertex(const ushort* in, size_t index) {
   float values[3];
   memcpy(values, reinterpret_cast< const uchar* >(in) + index * sizeof(values), sizeof(values));
+  // FIXME: Don't swap on pc?
   return CVector3f(CBasics::SwapBytes(values[0]), CBasics::SwapBytes(values[1]),
                    CBasics::SwapBytes(values[2]));
 }
