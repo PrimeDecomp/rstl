@@ -458,11 +458,7 @@ public:
   static const Mtx& GetCameraMtx() { return mCameraMtx; }
 
   static const CTransform4f& GetModelMatrix() { return mModelMatrix; }
-#if RSTL_PRIME1
   static uint GetLightMask() { return mLightActive; }
-#else
-  static uchar GetLightMask() { return mLightActive; }
-#endif
 
   static void SetViewPointMatrix(const CTransform4f&);
   static void SetBrightness(float b) { mBrightness = b; }
