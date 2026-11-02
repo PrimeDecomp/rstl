@@ -65,13 +65,13 @@ CRSFAudio::CRSFAudio(const rstl::string& audioFile, const int loopStart, const i
   }
 }
 
-CRSFAudio::~CRSFAudio() { StopMixOut(); }
+CRSFAudio::~CRSFAudio() { Stop(); }
 
 const bool CRSFAudio::IsFullyLoaded() const {
   return !mDvdRequests.empty() ? mDvdRequests.back()->IsComplete() : true;
 }
 
-void CRSFAudio::StartMixOut() {
+void CRSFAudio::Play() {
   if (sPlayingAudio == this) {
     return;
   }
@@ -88,7 +88,7 @@ void CRSFAudio::StartMixOut() {
   CAIInterruptManager::RunDMACallback(MixCallback);
 }
 
-void CRSFAudio::StopMixOut() {
+void CRSFAudio::Stop() {
   if (sPlayingAudio == this) {
     CAIInterruptManager::CancelDMACallback(MixCallback);
     sPlayingAudio = nullptr;
