@@ -6,9 +6,12 @@
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 
-namespace {
+namespace PortalPlane {
 CTransform4f sTextureTransform = CTransform4f::Identity();
 CPlane sWorldSpacePlane(0.f, CVector3f::Forward());
+} // namespace PortalPlane
+
+namespace {
 bool sHasPlane = false;
 } // namespace
 
