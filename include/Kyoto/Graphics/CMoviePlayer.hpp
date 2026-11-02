@@ -125,14 +125,13 @@ private:
 #endif
 
   rstl::vector< rstl::auto_ptr< uchar > > mRequestQueue;
-#if RSTL_PRIME1
   rstl::single_ptr< SIndexLoad > mIndexLoad;
+#if RSTL_PRIME1
   uint mNextReadSize;
   uint mNextReadOff;
   uint mReadSizeWrapped;
   uint mReadOffWrapped;
 #else
-  rstl::single_ptr< SIndexLoad > mIndexLoad;
   int mNextReadSize;
   int mNextReadOff;
   int mReadSizeWrapped;

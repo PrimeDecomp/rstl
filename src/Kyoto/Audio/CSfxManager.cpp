@@ -32,25 +32,44 @@
 #include "math.h"
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 float CSfxManager::mReverbAmount = 1.f;
 float CSfxManager::mReverbScale = 0.1f;
 CSfxManager::EAuxEffect CSfxManager::mCurrentAuxEffect = kAE_None;
 CSfxManager::EAuxEffect CSfxManager::mRequestedAuxEffect = kAE_None;
 CSfxManager::CSfxChannel CSfxManager::mChannels[4];
+#endif
 
 CSfxManager::ESfxChannels CSfxManager::mCurrentChannel = kSC_Default;
 bool CSfxManager::mDoUpdate = false;
-
+#if RSTL_PRIME1
 rstl::vector< short >* CSfxManager::mTranslationTable;
-bool CSfxManager::mMuted = false;
-rstl::auto_ptr< CToken > CSfxManager::mTranslationTableTok;
+#else
+int CSfxManager::mNextAreaFilterId = 0;
+int CSfxManager::mNextFilterId = 0;
+int CSfxManager::mNextAuxEffectId = 0;
+rstl::vector< short >* CSfxManager::mTranslationTable = nullptr;
+#endif
 
+bool CSfxManager::mMuted = false;
+#if !RSTL_PRIME1
+int CSfxManager::mAreaLowPassFrequency = 16000;
+int CSfxManager::mLowPassFrequency = 16000;
+int CSfxManager::mCurrentArea = -1;
+
+CSfxManager::CSfxChannel CSfxManager::mChannels[4];
+rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mAreaLowPassFilters;
+rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mLowPassFilters;
+#endif
+
+rstl::auto_ptr< CToken > CSfxManager::mTranslationTableTok;
+#if RSTL_PRIME1
 bool CSfxManager::mAuxProcessingEnabled = false;
+#endif
 
 rstl::reserved_vector< CSfxManager::CSfxEmitterWrapper, 64 > CSfxManager::mEmitterWrapperPool;
 rstl::reserved_vector< CSfxManager::CSfxWrapper, 64 > CSfxManager::mWrapperPool;
+#if RSTL_PRIME1
 SND_AUX_REVERBHI sReverbHi;
 SND_AUX_CHORUS sChorus;
 SND_AUX_REVERBSTD sReverbStd;
@@ -59,44 +78,26 @@ SND_AUX_REVERBHI sPendingReverbHi;
 SND_AUX_CHORUS sPendingChorus;
 SND_AUX_REVERBSTD sPendingReverbStd;
 SND_AUX_DELAY sPendingDelay;
-
-const short CSfxManager::kMaxPriority = 255;
-const short CSfxManager::kMedPriority = 127;
-const ushort CSfxManager::kInternalInvalidSfxId = -1;
-
-const int CSfxManager::kAllAreas = -1;
 #else
-CSfxManager::ESfxChannels CSfxManager::mCurrentChannel = kSC_Default;
-bool CSfxManager::mDoUpdate = false;
-int CSfxManager::mNextAreaFilterId = 0;
-int CSfxManager::mNextFilterId = 0;
-int CSfxManager::mNextAuxEffectId = 0;
-rstl::vector< short >* CSfxManager::mTranslationTable = nullptr;
-bool CSfxManager::mMuted = false;
-int CSfxManager::mAreaLowPassFrequency = 16000;
-int CSfxManager::mLowPassFrequency = 16000;
-int CSfxManager::mCurrentArea = -1;
-
-CSfxManager::CSfxChannel CSfxManager::mChannels[4];
-rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mAreaLowPassFilters;
-rstl::reserved_vector< CSfxManager::SLowPassFilter, 8 > CSfxManager::mLowPassFilters;
-rstl::auto_ptr< CToken > CSfxManager::mTranslationTableTok;
-
-rstl::reserved_vector< CSfxManager::CSfxEmitterWrapper, 64 > CSfxManager::mEmitterWrapperPool;
-rstl::reserved_vector< CSfxManager::CSfxWrapper, 64 > CSfxManager::mWrapperPool;
 rstl::reserved_vector< CSfxPitchBend, 8 > CSfxManager::mPitchBends;
 rstl::reserved_vector< CAuxEffect, 10 > CSfxManager::mAuxEffects;
 rstl::reserved_vector< CSfxManager::SAreaVolume, 10 >
     CSfxManager::mAreaVolumes(10, SAreaVolume(-1, uchar(0)));
 CAuxEffectManager CSfxManager::mAuxEffectManager;
 rstl::pair< int, bool > CSfxManager::mStudioState(-1, false);
+#endif
 
 const short CSfxManager::kMaxPriority = 255;
 const short CSfxManager::kMedPriority = 127;
+#if RSTL_PRIME1
+const ushort CSfxManager::kInternalInvalidSfxId = -1;
+#else
 const ushort CSfxManager::kInternalInvalidSfxId = 0xffff;
+#endif
 
 const int CSfxManager::kAllAreas = -1;
 
+#if !RSTL_PRIME1
 CSfxManager::CSfxChannel::CSfxChannel() : mListeners(4, SListener()) {}
 
 CSfxManager::SListener::SListener() : mActive(false) {}

@@ -45,13 +45,13 @@ public:
     AddColor(type, CTextColor(static_cast< uchar >(255.f * r), static_cast< uchar >(255.f * g),
                               static_cast< uchar >(255.f * b), static_cast< uchar >(255.f * a)));
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PRIME1
+  void AddColorOverride(int idx, const CTextColor& color);
+#endif
   void AddRemoveColorOverride(int idx);
+#if RSTL_PRIME1
   void AddColorOverride(int idx, const CTextColor& color);
 #else
-  void AddColorOverride(int idx, const CTextColor& color);
-  void AddRemoveColorOverride(int idx);
   void AddLineSpacing(float spacing);
   void AddLineExtraSpace(int spacing);
   void AddCharacterExtraSpace(int spacing); // Guessed name

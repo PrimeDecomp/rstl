@@ -54,12 +54,13 @@ public:
 
 private:
   rstl::vector< CVirtualBone > mVirtualBones;
-#if RSTL_PRIME1
+#if !RSTL_PRIME1
+  rstl::vector< short > mMatrixIndices;
+#endif
   int mVertexCount;
+#if RSTL_PRIME1
   int mNormalCount;
 #else
-  rstl::vector< short > mMatrixIndices;
-  int mVertexCount;
   rstl::single_ptr< uchar > mVertexToBone;
 #endif
 };

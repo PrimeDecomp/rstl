@@ -88,9 +88,7 @@ private:
 };
 CHECK_SIZEOF(CCharAnimTime, 0x8)
 
-#if RSTL_PRIME1
-inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.0f); }
-#else
+#if !RSTL_PRIME1
 inline CCharAnimTime CCharAnimTime::ZeroSignScale(float other) const {
   if (other > 0.f) {
     return *this;
@@ -101,9 +99,8 @@ inline CCharAnimTime CCharAnimTime::ZeroSignScale(float other) const {
 }
 
 inline CCharAnimTime CCharAnimTime::ZeroFlat() { return CCharAnimTime(kT_ZeroSteady, 0.f); }
-
-inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.f); }
 #endif
+inline CCharAnimTime CCharAnimTime::Infinity() { return CCharAnimTime(kT_Infinity, 1.f); }
 
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {

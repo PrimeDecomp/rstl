@@ -237,10 +237,15 @@ void CPakFile::LoadResourceTable(CMemoryInStream& in) {
   int reserveBytes = round_up_32(mResTableCount * static_cast< int >(sizeof(SResInfo))) +
                      static_cast< int >(sizeof(SResInfo)) - 1;
   mResList.reserve(static_cast< uint >(rstl::max_val(reserveBytes, 64)) / sizeof(SResInfo));
+#else
+  rstl::vector< SResInfo, rstl::aligned_allocator > sortedResources;
+  sortedResources.reserve(mResTableCount);
+#endif
+
   if (mBuildDepList) {
     mDepList.reserve(mResTableCount);
   }
-
+#if RSTL_PRIME1
   for (int i = 0; i < static_cast< int >(mResTableCount); ++i) {
     uint flags = in.Get< uint >();
     uint fourCC = in.Get< uint >();
@@ -252,15 +257,7 @@ void CPakFile::LoadResourceTable(CMemoryInStream& in) {
       mDepList.push_back(id);
     }
   }
-
-  static rstl::less< SResInfo > compare;
-  rstl::sort(mResList.begin(), mResList.end(), compare);
 #else
-  rstl::vector< SResInfo, rstl::aligned_allocator > sortedResources;
-  sortedResources.reserve(mResTableCount);
-  if (mBuildDepList) {
-    mDepList.reserve(mResTableCount);
-  }
   for (int i = 0; i < static_cast< int >(mResTableCount); ++i) {
     const uint flags = in.ReadInt32();
     const uint type = in.ReadInt32();
@@ -287,8 +284,12 @@ void CPakFile::LoadResourceTable(CMemoryInStream& in) {
       info.SetLookaheadAfterResourceSize(groupedSize);
     }
   }
+#endif
 
   static rstl::less< SResInfo > compare;
+#if RSTL_PRIME1
+  rstl::sort(mResList.begin(), mResList.end(), compare);
+#else
   rstl::sort(sortedResources.begin(), sortedResources.end(), compare);
   RebuildResourceLists(sortedResources);
 #endif
@@ -310,16 +311,19 @@ const CPakFile::SResInfo* CPakFile::GetResInfo(uint id) RSTL_PRIME1_CONST {
     return nullptr;
 #if RSTL_PRIME1
   SResInfo key(id, 'TXTR', 0, 0, 0);
-  static rstl::less< SResInfo > compare;
-  rstl::vector< SResInfo >::const_iterator it =
-      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
 #else
   const uint bucket = id & 0xff;
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator first =
       mResInfoBuckets.begin() + mBucketOffsets[bucket];
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator last =
       mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
+#endif
+
   static rstl::less< SResInfo > compare;
+#if RSTL_PRIME1
+  rstl::vector< SResInfo >::const_iterator it =
+      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
+#else
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator it =
       rstl::lower_bound(first, last, SResInfo::SearchKey(id), compare);
 #endif
@@ -342,16 +346,19 @@ const CPakFile::SResInfo* CPakFile::GetResInfoForLoadDirectionless(uint id)
     return nullptr;
 #if RSTL_PRIME1
   SResInfo key(id, 'TXTR', 0, 0, 0);
-  static rstl::less< SResInfo > compare;
-  rstl::vector< SResInfo >::const_iterator it =
-      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
 #else
   const uint bucket = id & 0xff;
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator first =
       mResInfoBuckets.begin() + mBucketOffsets[bucket];
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator last =
       mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
+#endif
+
   static rstl::less< SResInfo > compare;
+#if RSTL_PRIME1
+  rstl::vector< SResInfo >::const_iterator it =
+      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
+#else
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator it =
       rstl::lower_bound(first, last, SResInfo::SearchKey(id), compare);
 #endif
@@ -393,16 +400,19 @@ const CPakFile::SResInfo* CPakFile::GetResInfoForLoadPreferForward(uint id)
     return nullptr;
 #if RSTL_PRIME1
   SResInfo key(id, 'TXTR', 0, 0, 0);
-  static rstl::less< SResInfo > compare;
-  rstl::vector< SResInfo >::iterator it =
-      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
 #else
   const uint bucket = id & 0xff;
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator first =
       mResInfoBuckets.begin() + mBucketOffsets[bucket];
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator last =
       mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
+#endif
+
   static rstl::less< SResInfo > compare;
+#if RSTL_PRIME1
+  rstl::vector< SResInfo >::iterator it =
+      rstl::lower_bound(mResList.begin(), mResList.end(), key, compare);
+#else
   rstl::vector< SResInfo, rstl::aligned_allocator >::const_iterator it =
       rstl::lower_bound(first, last, SResInfo::SearchKey(id), compare);
 #endif
@@ -415,11 +425,10 @@ const CPakFile::SResInfo* CPakFile::GetResInfoForLoadPreferForward(uint id)
       || it->GetId() != id) {
     return nullptr;
   }
-#if RSTL_PRIME1
   const SResInfo* best = &*it;
+#if RSTL_PRIME1
   int bestDelta = mCurrentSeek - static_cast< int >(best->GetOffset());
 #else
-  const SResInfo* best = &*it;
   int bestDelta = mCurrentSeek - static_cast< int >(it->GetOffset());
 #endif
   ++it;

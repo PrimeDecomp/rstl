@@ -134,12 +134,12 @@ private:
 #endif
 
   short* mCumulativeInts;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool* mHasOffset;
-#else
+#if !RSTL_PRIME1
   bool* mHasRotation;
+#endif
   bool* mHasOffset;
+
+#if !RSTL_PRIME1
   bool* mHasScale;
 #endif
 

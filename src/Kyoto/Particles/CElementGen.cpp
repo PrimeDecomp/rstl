@@ -1927,20 +1927,22 @@ void CElementGen::RenderBasicParticlesNoRotTS(const CTransform4f& xf) {
 void CElementGen::RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const {
 #endif
   for (int i = 0; i < mParticles.size(); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CParticle& particle = mParticles[i];
     CVector3f viewPos = xf * particle.mPos;
     float halfSize = 0.5f * particle.mLineLengthOrSize;
     uint color = particle.mColor.GetColor_u32();
-    float x = viewPos.GetX() + halfSize;
-    float y = viewPos.GetY();
 #else
     const CParticle& particle = mParticles[i];
     const CVector3f viewPos = xf * particle.mPos;
     const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
     const float halfSize = 0.5f * particle.mLineLengthOrSize;
+#endif
+
     float x = viewPos.GetX() + halfSize;
+#if RSTL_PRIME1
+    float y = viewPos.GetY();
+#else
     const float y = viewPos.GetY();
 #endif
     float z = viewPos.GetZ() + halfSize;

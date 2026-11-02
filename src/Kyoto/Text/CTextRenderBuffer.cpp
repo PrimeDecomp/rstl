@@ -313,32 +313,28 @@ void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontM
 void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint color) {
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
+#if RSTL_PRIME1
     mPrimOffsets.push_back(tmp);
 #else
-    int tmp = mCurBytecodeOffset;
-    mPrimOffsets.reserve(mPrimOffsets.size() + 1);
     mPrimOffsets.push_back_unsafe(tmp);
 #endif
 
     out.WriteUint8(kC_CharacterRender);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< short >(offset.GetX());
     out.Put< short >(offset.GetY());
     out.Put< short >(chr);
     out.Put< int >(color);
-    mCurBytecodeOffset += out.GetWrittenBytes();
 #else
     out.WriteInt16(offset.GetX());
     out.WriteInt16(offset.GetY());
     out.WriteInt16(chr);
     out.WriteInt32(color);
-    mCurBytecodeOffset += out.GetWrittenBytes();
 #endif
+
+    mCurBytecodeOffset += out.GetWrittenBytes();
   } else {
     // Command + x + y + char + color
     mBlobSize += sizeof(char) + sizeof(short) + sizeof(short) + sizeof(short) + sizeof(CTextColor);
@@ -351,14 +347,11 @@ void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint co
 void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& image) {
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     const int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
+#if RSTL_PRIME1
     mPrimOffsets.push_back(tmp);
 #else
-    const int tmp = mCurBytecodeOffset;
-    mPrimOffsets.reserve(mPrimOffsets.size() + 1);
     mPrimOffsets.push_back_unsafe(tmp);
 #endif
 
@@ -382,14 +375,13 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
 #endif
 
     out.WriteInt8(imageIdx);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< uint >(CColor::White().GetColor_u32());
-    mCurBytecodeOffset += out.GetWrittenBytes();
 #else
     out.WriteUint32(CColor::White().GetColor_u32());
-    mCurBytecodeOffset += out.GetWrittenBytes();
 #endif
+
+    mCurBytecodeOffset += out.GetWrittenBytes();
   } else {
     // Command + x + y + index + color
     mBlobSize += sizeof(char) + sizeof(short) + sizeof(short) + sizeof(char) + sizeof(uint);

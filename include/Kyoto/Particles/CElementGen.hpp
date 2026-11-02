@@ -306,16 +306,14 @@ public:
 #endif
 
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool IsIndirectTextured()
-      const; // { return x28_loadedGenDesc->x54_x40_TEXR && x28_loadedGenDesc->x58_x44_TIND; }
-  void SetExternalVar(int index, float val);
-#else
+#if !RSTL_PRIME1
   int GetMaxParticles() const { return mMAXP; }
   double GetCurrentTime() const { return mCurSeconds; } // Guessed name
   float GetTimeDeltaScale() const { return mTimeDeltaScale; } // Guessed name
+#endif
   bool IsIndirectTextured() const;
+#if RSTL_PRIME1
+  void SetExternalVar(int index, float val);
 #endif
 
   float GetExternalVar(int index) const;
