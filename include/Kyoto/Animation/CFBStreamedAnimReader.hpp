@@ -26,17 +26,14 @@ class CBitLevelLoader;
 template < typename T >
 class TAnimSourceInfo : public IAnimSourceInfo {
 public:
-#if !RSTL_PRIME1
   explicit TAnimSourceInfo(const TSubAnimTypeToken< T >& source) : mSource(source) {}
-
-  // IAnimSourceInfo
+#if !RSTL_PRIME1
   CCharAnimTime GetAnimationDuration() const override { return mSource->GetAnimationDuration(); }
   bool HasScaleData() const override { return mSource->HasScaleData(); }
 #endif
 
   ~TAnimSourceInfo() override {}
 #if RSTL_PRIME1
-  TAnimSourceInfo(const TSubAnimTypeToken< T >& source) : mSource(source) {}
   bool HasPOIData() const override { return mSource->HasPOIData(); }
   CCharAnimTime GetAnimationDuration() const override { return mSource->GetAnimationDuration(); }
   const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const override {

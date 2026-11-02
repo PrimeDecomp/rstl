@@ -20,10 +20,7 @@ public:
 
   TSegIdMap(CInputStream& in);
 
-#if !RSTL_PRIME1
   ~TSegIdMap();
-
-#endif
   T& operator[](const CSegId& id) {
 #if RSTL_PRIME1
     int index = mIndirectionMap[id.val()].second;
@@ -62,9 +59,7 @@ public:
   const T& AccessElement(int index) const { return mNodes[index]; }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  ~TSegIdMap();
-#else
+#if !RSTL_PRIME1
   bool ContainsDataFor(const CSegId& id) const {
     return mIndirectionMap[id.val()] !=
            rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null());

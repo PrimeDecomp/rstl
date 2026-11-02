@@ -133,18 +133,13 @@ public:
   }
 
   static const CVector3f& Zero() { return sZeroVector; }
-#if RSTL_PRIME1
   static const CVector3f& One() { return sOneVector; }
-#endif
   static const CUnitVector3f& Up();
   static const CUnitVector3f& Down();
   static const CUnitVector3f& Left();
   static const CUnitVector3f& Right();
   static const CUnitVector3f& Forward();
   static const CUnitVector3f& Back();
-#if !RSTL_PRIME1
-  static const CVector3f& One() { return sOneVector; }
-#endif
 
 #if RSTL_PRIME1
   friend CVector3f operator-(const CVector3f& lhs, const CVector3f& rhs);
@@ -164,18 +159,13 @@ protected:
   float mZ;
 
   static CVector3f sZeroVector;
-#if RSTL_PRIME1
   static CVector3f sOneVector;
-#endif
   static CUnitVector3f sUpVector;
   static CUnitVector3f sDownVector;
   static CUnitVector3f sLeftVector;
   static CUnitVector3f sRightVector;
   static CUnitVector3f sForwardVector;
   static CUnitVector3f sBackVector;
-#if !RSTL_PRIME1
-  static CVector3f sOneVector;
-#endif
 };
 DECLARE_FULL_SIZE_FOR(CVector3f, 0xc)
 CHECK_SIZEOF(CVector3f, CVector3f_FULL_SIZE)

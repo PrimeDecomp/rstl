@@ -45,16 +45,13 @@ inline CSegStatementSet::~CSegStatementSet() {}
 
 class CStackSegStatementSet : public CSegStatementSet {
 public:
-#if !RSTL_PRIME1
   CStackSegStatementSet();
+#if !RSTL_PRIME1
 
   // CSegStatementSet
 #endif
 
   ~CStackSegStatementSet() override;
-#if RSTL_PRIME1
-  CStackSegStatementSet();
-#endif
 };
 CHECK_CHILD_SIZEOF(CStackSegStatementSet, CSegStatementSet, 0x0)
 

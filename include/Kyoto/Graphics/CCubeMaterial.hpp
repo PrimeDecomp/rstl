@@ -52,11 +52,6 @@ public:
 
   uint GetFlags() const { return CBasics::SwapBytes(*reinterpret_cast< const uint* >(GetData())); }
   bool IsFlagSet(const EStateFlags flag) const { return (GetFlags() & flag) != 0; }
-#if RSTL_PRIME1
-  void SetCurrent(const CModelFlags& flags, const CCubeSurface& surface,
-                  const CCubeModel& model) const;
-  void SetCurrentBlack() const;
-#endif
   uint GetTextureCount() const {
 #if RSTL_PRIME1
     const uchar* data = GetData();
@@ -100,11 +95,9 @@ public:
 
   }
 
-#if !RSTL_PRIME1
   void SetCurrent(const CModelFlags& flags, const CCubeSurface& surface,
                   const CCubeModel& model) const;
   void SetCurrentBlack() const;
-#endif
 
   uint GetCompressedBlend() const;
 

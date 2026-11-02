@@ -64,14 +64,9 @@ public:
 
   void Update(float);
   void HardStopAll();
-#if !RSTL_PRIME1
   void SetDisabled(const bool disabled);
-#endif
 
   bool GetDisabled() const { return mDisabled; }
-#if RSTL_PRIME1
-  void SetDisabled(const bool disabled);
-#endif
 };
 
 #if !RSTL_PRIME1

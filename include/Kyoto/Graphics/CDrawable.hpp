@@ -50,8 +50,6 @@ public:
   EDrawableType GetType() const { return static_cast< EDrawableType >(mType); }
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  const CAABox& GetBounds() const { return mBounds; }
-  float GetDistance() const { return mViewDistance; }
   void* GetData() { return mData; }
 #else
   bool IsAlpha() const { return mAlpha; }
@@ -62,10 +60,9 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   u16 GetExtraSort() const { return mExtraSort; }
-#else
+#endif
   const CAABox& GetBounds() const { return mBounds; }
   float GetDistance() const { return mViewDistance; }
-#endif
 
 private:
 // TODO: verify that this Prime/Echoes difference is real

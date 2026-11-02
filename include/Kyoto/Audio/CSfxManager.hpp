@@ -338,10 +338,6 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void Update(float dt);
-  static void RemoveEmitter(CSfxHandle handle);
-  static void UpdateEmitter(CSfxHandle handle, const CVector3f& pos, const CVector3f& dir,
-                            const uchar maxVol);
   static void UpdateListener(const CVector3f& pos, const CVector3f& dir, const CVector3f&,
                              const CVector3f&, const uchar);
 #else
@@ -355,12 +351,11 @@ public:
   };
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static const short kMaxPriority;           // 0xFF
   static const short kMedPriority;           // 0x7F
   static const ushort kInternalInvalidSfxId; // 0xFFFF
   static const int kAllAreas;                // 0xFFFFFFFF
+#if RSTL_PRIME1
   static CSfxHandle AddEmitter(const SND_FXID id, const CVector3f& pos, const CVector3f& dir,
                                const bool useAcoustics = false, const bool looped = false,
                                const short prio = kMedPriority, const int areaId = kAllAreas);
@@ -375,16 +370,10 @@ public:
   typedef rstl::pair< int, uchar > SAreaVolume; // Guessed name
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void AddListener(ESfxChannels channel, const CVector3f& pos, const CVector3f& dir,
                           const CVector3f& vec1, const CVector3f& vec2, float f1, float f2,
                           float f3, uint w1, const uchar maxVolume);
-#else
-  static const short kMaxPriority;
-  static const short kMedPriority;
-  static const ushort kInternalInvalidSfxId;
-  static const int kAllAreas;
 #endif
 
 #if !RSTL_PRIME1
@@ -395,19 +384,15 @@ public:
   static void StopAndRemoveAllEmitters();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static bool LoadTranslationTable(CSimplePool* pool, const SObjectTag* tag);
-  static ushort TranslateSFXID(ushort);
   static void SetActiveAreas(const rstl::reserved_vector< int, 10 >& areas);
-
-  static void PitchBend(CSfxHandle handle, int pitch);
-  static void SetDuration(CSfxHandle handle, float duration);
   static const short GetReverbAmount();
 
   static CSfxHandle SfxStart(const ushort id, const short vol = 127, const short pan = 64,
                              bool useAcoustics = false, const short prio = kMedPriority,
                              const bool looped = false, const int areaId = kAllAreas);
-#else
+#endif
   static void Update(float dt);
+#if !RSTL_PRIME1
   static CSfxHandle SfxStart(ushort id, short volume, short pan, int area = kAllAreas,
                              bool useAcoustics = false, bool looped = false,
                              const short priority = kMedPriority);
@@ -419,10 +404,10 @@ public:
   static CSfxHandle AddEmitter(CAudioSys::C3DEmitterParmData& params, int area = kAllAreas,
                                bool useAcoustics = false, bool looped = false,
                                const short priority = kMedPriority);
+#endif
   static void RemoveEmitter(CSfxHandle handle);
   static void UpdateEmitter(CSfxHandle handle, const CVector3f& position,
-                            const CVector3f& direction, uchar maxVolume);
-#endif
+                            const CVector3f& direction, RSTL_PRIME1_CONST uchar maxVolume);
 
   static void SfxStop(CSfxHandle handle);
   static void SfxStop(ESfxChannels channel, CSfxHandle handle);
@@ -431,23 +416,28 @@ public:
 #endif
 
   static void SfxVolume(CSfxHandle handle, uchar volume);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  static void SfxSpan(CSfxHandle, uchar);
-#else
+#if !RSTL_PRIME1
   static void SfxPan(CSfxHandle handle, uchar pan);
+#endif
   static void SfxSpan(CSfxHandle handle, uchar span);
   static void PitchBend(CSfxHandle handle, int pitch);
+#if !RSTL_PRIME1
   static void AddPitchBend(const CSfxPitchBend& pitchBend); // Guessed name
+#endif
   static void SetDuration(CSfxHandle handle, float duration);
   static bool IsPlaying(CSfxHandle handle);
+#if !RSTL_PRIME1
   static bool IsQueued(CSfxHandle handle);
   static void SetMuted(bool muted);
+#endif
   static void SetChannel(ESfxChannels channel);
+#if !RSTL_PRIME1
   static ESfxChannels GetChannel();
+#endif
   static void KillAll(ESfxChannels channel);
   static void TurnOnChannel(ESfxChannels channel);
   static void TurnOffChannel(ESfxChannels channel);
+#if !RSTL_PRIME1
   static void AddListener(ESfxChannels channel, const CVector3f& position,
                           const CVector3f& direction, const CVector3f& heading, const CVector3f& up,
                           float frontSur, float backSur, float soundSpeed, uint flags,
@@ -456,12 +446,16 @@ public:
                              const CVector3f& heading, const CVector3f& up, uchar maxVolume,
                              int listener);
   static void SetActiveAreas(const rstl::reserved_vector< int, 10 >& areas, int currentArea);
+#endif
   static ushort TranslateSFXID(ushort id);
   static bool LoadTranslationTable(CSimplePool* pool, const SObjectTag* tag);
+#if !RSTL_PRIME1
   static CSfxHandle LocateHandle(int priority);
+#endif
   static int GetRank(CBaseSfxWrapper* sound);
   static CSfxWrapper* AllocateCSfxWrapper(const CSfxWrapper& sound);
   static CSfxEmitterWrapper* AllocateCSfxEmitterWrapper(const CSfxEmitterWrapper& sound);
+#if !RSTL_PRIME1
   static short GetReverbAmount();
   static uchar GetStudio(int area);                                 // Guessed name
   static void SetAreaVolume(int area, uchar volume);                // Guessed name
@@ -483,7 +477,6 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static bool IsPlaying(CSfxHandle handle);
   static void StopSound(CSfxHandle handle);
 #else
   // Guessed names; each registration returns an effect ID (zero is invalid).
@@ -503,14 +496,8 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static void SetChannel(ESfxChannels);
-  static void KillAll(ESfxChannels);
-  static void TurnOnChannel(ESfxChannels);
-  static void TurnOffChannel(ESfxChannels);
   static CSfxHandle LocateHandle(const short id);
 
-  static CSfxEmitterWrapper* AllocateCSfxEmitterWrapper(const CSfxEmitterWrapper& wrapper);
-  static CSfxWrapper* AllocateCSfxWrapper(const CSfxWrapper& wrapper);
   static const bool IsAuxProcessingEnabled();
   static void ApplyReverb();
   static void DisableAuxCallbacks();
@@ -553,7 +540,6 @@ private:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static bool IsHandleValid(CSfxHandle handle);
-  static int GetRank(CBaseSfxWrapper* wrapper);
 #else
   static rstl::reserved_vector< SLowPassFilter, 8 > mAreaLowPassFilters;
   static rstl::reserved_vector< SLowPassFilter, 8 > mLowPassFilters;

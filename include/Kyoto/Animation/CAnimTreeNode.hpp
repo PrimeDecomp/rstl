@@ -13,21 +13,17 @@
 
 class CAnimTreeNode : public IAnimReader {
 public:
-#if !RSTL_PRIME1
   explicit CAnimTreeNode(const rstl::string& name);
-
-  // IAnimReader
-  ~CAnimTreeNode() override;
-  bool IsCAnimTreeNode() const override;
-#endif
-
-  virtual uint Depth() const = 0;
 #if RSTL_PRIME1
-  CAnimTreeNode(const rstl::string&);
   ~CAnimTreeNode() override {
     CCharAnimMemoryMetrics::SubtractFromTotalSize(mName.size(), CCharAnimMemoryMetrics::kASS_Two);
   }
+#else
+  ~CAnimTreeNode() override;
 #endif
+  bool IsCAnimTreeNode() const override;
+
+  virtual uint Depth() const = 0;
 
   virtual CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const = 0;
 
@@ -43,9 +39,6 @@ public:
   rstl::rc_ptr< CAnimTreeNode > GetBestUnblendedChild() const { return VGetBestUnblendedChild(); }
 
   const rstl::string& GetPrimitiveName() const { return mName; }
-#if RSTL_PRIME1
-  bool IsCAnimTreeNode() const override;
-#endif
 
 protected:
   rstl::string mName;

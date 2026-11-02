@@ -80,11 +80,6 @@ public:
 #endif
 
   CVector3f GetPoint(int) const;
-#if !RSTL_PRIME1
-  // Include__6CAABoxFRC9CVector3f weak
-  // Include__6CAABoxFRC6CAABox weak
-  void AccumulateBounds(const CVector3f&);
-#endif
 
   void Include(const CAABox& box) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -98,8 +93,8 @@ public:
   }
 #if RSTL_PRIME1
   void Include(const CVector3f& vec) { AccumulateBounds(vec); }
-  void AccumulateBounds(const CVector3f&);
 #endif
+  void AccumulateBounds(const CVector3f&);
 
   bool Invalid() const;
   bool PointInside(const CVector3f& vec) const;

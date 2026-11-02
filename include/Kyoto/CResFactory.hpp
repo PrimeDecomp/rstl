@@ -56,9 +56,9 @@ public:
     ~SLoadingData();
     bool PumpDecompression(uint time);
   };
+#endif
 
   CResFactory();
-#endif
 
   ~CResFactory() override;
   rstl::auto_ptr< IObj > Build(const SObjectTag&, const CVParamTransfer&) override;
@@ -89,12 +89,6 @@ public:
     ~SLoadingData();
     bool PumpDecompression(uint time);
   };
-
-  CResFactory();
-
-  FourCC GetResourceTypeById(CAssetId id) { return GetResLoader().GetResourceTypeById(id); }
-
-  rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
 
   uint ResourceSize(const SObjectTag& tag) { return mResLoader.ResourceSize(tag); }
 #else
@@ -128,10 +122,9 @@ public:
   CInputStream* LoadResourceFromMemorySync(const SObjectTag& tag, const void* extBuf) {
     return mResLoader.LoadResourceFromMemorySync(tag, extBuf);
   }
-#else
+#endif
   FourCC GetResourceTypeById(CAssetId id) { return GetResLoader().GetResourceTypeById(id); }
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
-#endif
 
 private:
   typedef rstl::list< SLoadingData > LoadList;

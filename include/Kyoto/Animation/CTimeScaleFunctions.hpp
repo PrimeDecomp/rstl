@@ -32,9 +32,7 @@ CHECK_SIZEOF(IVaryingAnimationTimeScale, IVaryingAnimationTimeScale_FULL_SIZE)
 
 class CConstantAnimationTimeScale : public IVaryingAnimationTimeScale {
 public:
-#if !RSTL_PRIME1
   explicit CConstantAnimationTimeScale(float scale) : mScale(scale) {}
-#endif
 
   EVaryingAnimationTimeScaleType GetType() const override { return kVATST_Constant; }
   float VTimeScaleIntegral(const float& lowerLimit, const float& upperLimit) const override;
@@ -43,9 +41,6 @@ public:
   rstl::ownership_transfer< IVaryingAnimationTimeScale >
   VGetFunctionMirrored(const float& value) const override;
 
-#if RSTL_PRIME1
-  explicit CConstantAnimationTimeScale(float scale) : mScale(scale) {}
-#endif
 
 private:
   float mScale;

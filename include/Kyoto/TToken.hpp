@@ -65,13 +65,9 @@ public:
 #endif
 
   T* GetObject() const { return mItem; }
-#if !RSTL_PRIME1
   const CToken& GetToken() const { return *this; }
-#endif
 
-#if !RSTL_PRIME1
   bool IsLoaded() const { return mItem != nullptr || CToken::IsLoaded(); }
-#endif
 
   bool TryCache() {
     if (mItem != nullptr) {
@@ -93,16 +89,12 @@ public:
 #if RSTL_PRIME1
   void Lock() { TToken< T >::Lock(); }
 
-  const CToken& GetToken() const { return *this; }
 #endif
 
   void Unlock() {
     mItem = nullptr;
     TToken< T >::Unlock();
   }
-#if RSTL_PRIME1
-  bool IsLoaded() const { return mItem != nullptr || CToken::IsLoaded(); }
-#endif
 
   void ForceCache() {
     if (mItem == nullptr) {

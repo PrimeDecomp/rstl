@@ -28,13 +28,13 @@ private:
 };
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 uint& TOneStatic< T >::ReferenceCount() {
   static uint sReferenceCount = 0;
   return sReferenceCount;
 }
-#else
+
+#if !RSTL_PRIME1
+template < typename T >
 void* TOneStatic< T >::operator new(size_t sz, const char*, const char*) {
   ReferenceCount()++;
   return GetAllocSpace();
@@ -43,7 +43,6 @@ void* TOneStatic< T >::operator new(size_t sz, const char*, const char*) {
 
 template < typename T >
 void* TOneStatic< T >::GetAllocSpace() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ALIGNAS(T) static char sAllocSpace[sizeof(T)];
 #else
@@ -53,18 +52,12 @@ void* TOneStatic< T >::GetAllocSpace() {
   return &sAllocSpace;
 }
 
-template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+template < typename T >
 void* TOneStatic< T >::operator new(size_t sz, const char* const fileAndLine,
                                     const char* const type) {
   ReferenceCount()++;
   return GetAllocSpace();
-}
-#else
-uint& TOneStatic< T >::ReferenceCount() {
-  static uint sReferenceCount = 0;
-  return sReferenceCount;
 }
 #endif
 

@@ -28,45 +28,24 @@ public:
   rstl::vector< CToken > GetAssets() const;
 
   void AddFont(const TToken< CRasterFont >& font);
-#if RSTL_PRIME1
-  void AddLineSpacing(float spacing);
-  void AddLineExtraSpace(int space);
-  void AddCharacterExtraSpace(int space);
-  void AddJustification(EJustification just);
-  void AddVerticalJustification(EVerticalJustification just);
-  void AddWordWrapping(const bool wrap) { mState.SetWordWrapping(wrap); }
-  void AddPushState();
-  void AddPopState();
-#endif
-
   void AddImage(const CFontImageDef& image);
   void AddColor(EColorType type, const CTextColor& color);
   void AddColor(EColorType type, float r, float g, float b, float a) {
     AddColor(type, CTextColor(static_cast< uchar >(255.f * r), static_cast< uchar >(255.f * g),
                               static_cast< uchar >(255.f * b), static_cast< uchar >(255.f * a)));
   }
-#if !RSTL_PRIME1
   void AddColorOverride(int idx, const CTextColor& color);
-#endif
   void AddRemoveColorOverride(int idx);
-#if RSTL_PRIME1
-  void AddColorOverride(int idx, const CTextColor& color);
-#else
   void AddLineSpacing(float spacing);
   void AddLineExtraSpace(int spacing);
-  void AddCharacterExtraSpace(int spacing); // Guessed name
+  void AddCharacterExtraSpace(int spacing);
   void AddJustification(EJustification justification);
   void AddVerticalJustification(EVerticalJustification justification);
-  void AddWordWrapping(bool wrap) { mState.SetWordWrapping(wrap); }
+  void AddWordWrapping(RSTL_PRIME1_CONST bool wrap) { mState.SetWordWrapping(wrap); }
   void AddPushState();
   void AddPopState();
   void AddString(const wchar_t* str, int len);
-#endif
-
   void AddString(const rstl::wstring& str) { AddString(str.data(), str.size()); }
-#if RSTL_PRIME1
-  void AddString(const wchar_t* str, const int len);
-#endif
 
   void BeginBlock(int x, int y, int width, int height, const bool imageBaseline, ETextDirection dir,
                   EJustification just, EVerticalJustification vjust);

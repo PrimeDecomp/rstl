@@ -9,29 +9,18 @@
 class CVector2i {
 public:
   CVector2i() : mX(0), mY(0) {}
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CVector2i(int x, int y = 0);
+#if RSTL_PRIME1
   CVector2i(CInputStream& in) {
     mX = in.ReadLong();
     mY = in.ReadLong();
   }
-#else
-  CVector2i(int, int);
 #endif
 
   int GetX() const { return mX; }
-#if RSTL_PRIME1
-  void SetX(const int x) { mX = x; }
-#endif
+  void SetX(RSTL_PRIME1_CONST int x) { mX = x; }
   int GetY() const { return mY; }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void SetY(const int y) { mY = y; }
-#else
-  void SetX(int x) { mX = x; }
-  void SetY(int y) { mY = y; }
-#endif
+  void SetY(RSTL_PRIME1_CONST int y) { mY = y; }
 
   int& operator[](int idx) { return *(&mX + idx); }
   const int& operator[](int idx) const {
