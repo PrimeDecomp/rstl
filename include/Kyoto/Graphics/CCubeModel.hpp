@@ -28,16 +28,17 @@ enum ESurfaceSelection {
 
 class CCubeModel {
 public:
+#if RSTL_PRIME1
+  typedef rstl::vector< void* > SurfaceList;
+#else
+  typedef rstl::vector< CCubeSurface > SurfaceList;
+#endif
+
   class ModelInstance {
   public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    ModelInstance(rstl::vector< void* >& surfaces,
-#else
-    ModelInstance(rstl::vector< CCubeSurface >& surfaces,
-#endif
-                  const void* materialData, const void* positions, const void* normals,
-                  const void* colors, const void* uvs, const void* packedTexCoords)
+    ModelInstance(SurfaceList& surfaces, const void* materialData, const void* positions,
+                  const void* normals, const void* colors, const void* uvs,
+                  const void* packedTexCoords)
     : mSurfacePtrs(surfaces)
     , mMaterialData(materialData)
     , mPositions(positions)
@@ -46,14 +47,9 @@ public:
     , mTexCoords(uvs)
     , mPackedTexCoords(packedTexCoords) {}
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::vector< void* >& Surfaces() { return mSurfacePtrs; }
-    const rstl::vector< void* >& GetSurfaces() const { return mSurfacePtrs; }
-#else
-    rstl::vector< CCubeSurface >& Surfaces() { return mSurfacePtrs; }
-    const rstl::vector< CCubeSurface >& Surfaces() const { return mSurfacePtrs; }
-#endif
+    SurfaceList& Surfaces() { return mSurfacePtrs; }
+    const SurfaceList& Surfaces() const { return mSurfacePtrs; }
+    const SurfaceList& GetSurfaces() const { return mSurfacePtrs; }
 
     const void* GetMaterialPointer() const { return mMaterialData; }
     void SetMaterialPointer(const void* data) { mMaterialData = data; }
@@ -65,13 +61,7 @@ public:
     const void* GetPackedTCPointer() const { return mPackedTexCoords; }
 
   private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    rstl::vector< void* >& mSurfacePtrs;
-#else
-    rstl::vector< CCubeSurface >& mSurfacePtrs;
-#endif
-
+    SurfaceList& mSurfacePtrs;
     const void* mMaterialData;
     const void* mPositions;
     const void* mNormals;
@@ -79,49 +69,39 @@ public:
     const void* mTexCoords;
     const void* mPackedTexCoords;
   };
-  CCubeModel(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      rstl::vector< void* >* surfaces,
-#else
-      rstl::vector< CCubeSurface >* surfaces,
-#endif
-      rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
-      const void* positions, const void* normals, const void* colors, const void* uvs,
-      const void* compressedUvs, const CAABox& bounds, uchar visorFlags, bool texturesLoaded,
-      uint idx);
+  CCubeModel(SurfaceList* surfaces, rstl::vector< TCachedToken< CTexture > >* textures,
+             const void* materialData, const void* positions, const void* normals,
+             const void* colors, const void* uvs, const void* compressedUvs, const CAABox& bounds,
+             uchar visorFlags, bool texturesLoaded, uint idx);
 
   static void SetRenderModelBlack(bool v);
   static void SetModelWireframe(bool v);
-#if RSTL_PRIME1
-  void UnlockTextures() const;
-  void RemapMaterialData(const void* data, rstl::vector< TCachedToken< CTexture > >* texture);
-  void DrawNormal(const float* positions, const float* normals, ESurfaceSelection which) const;
-#endif
-
   static void DisableShadowMaps();
   static void EnableShadowMaps(const CTexture*, const CTransform4f&, unsigned char, unsigned char);
   static void SetNewPlayerPositionAndTime(const CVector3f& pos, const CStopwatch& stopwatch);
-
   static void SetDrawingOccluders(bool);
   static void MakeTexturesFromMats(const void* data,
                                    rstl::vector< TCachedToken< CTexture > >& textures,
                                    IObjectStore& store, bool cache);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  // Echoes method names below are inferred from Prime and call sites.
   void UnlockTextures() const;
-  void RemapMaterialData(const void* data, rstl::vector< TCachedToken< CTexture > >* textures);
   bool TryLockTextures() const;
-  void DrawNormal(ESurfaceSelection which) const;
-  void DrawFlat(int flags) const;
+  void RemapMaterialData(const void* data, rstl::vector< TCachedToken< CTexture > >* textures);
+  void SetStaticArraysCurrent() const;
+  void SetArraysCurrent() const;
+  void SetSkinningArraysCurrent(const float* positions, const float* normals) const;
+  void SetUsingPackedLightmaps(bool v) const;
+  static bool IsUsingPackedLightmaps() { return sUsingPackedLightmaps; }
+
   void Draw(const CModelFlags& flags) const;
   void Draw(u64 mask, const CModelFlags& flags) const;
+  void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
   void DrawNormal(const CModelFlags& flags) const;
+  void DrawNormal(ESurfaceSelection which) const;
+  void DrawNormal(const float* positions, const float* normals, ESurfaceSelection which) const;
   void DrawAlpha(const CModelFlags& flags) const;
-  void SetArraysCurrent() const;
-  void SetStaticArraysCurrent() const;
+  void DrawFlat(int flags) const;
+  void DrawFlat(const float* positions, const float* normals, ESurfaceSelection which) const;
   void DrawSurface(const CCubeSurface& surface, const CModelFlags& flags) const;
   void DrawSurfaceWireframe(const CCubeSurface& surface) const;
   void DrawSurfaceFlat(const CCubeSurface& surface) const; // Guessed name.
@@ -130,78 +110,36 @@ public:
   void DrawNormalSurfaces(const CModelFlags& flags) const;
   void DrawAlphaSurfaces(const CModelFlags& flags) const;
 
-  void SetUsingPackedLightmaps(bool v) const;
-  static bool IsUsingPackedLightmaps() { return sUsingPackedLightmaps; }
-#endif
-
   const ModelInstance& GetModelInstance() const { return mInstance; }
-#if RSTL_PRIME1
-  bool AreTexturesLoaded() const { return !mLoadTextures; }
-#endif
-
   const void* GetPositions() const { return mInstance.GetVertexPointer(); }
   const void* GetNormals() const { return mInstance.GetNormalPointer(); }
-#if !RSTL_PRIME1
   bool AreTexturesLoaded() const { return !mLoadTextures; }
   uchar GetModelFlags() const { return mVisorFlags; }
   int GetModelIndex() const { return mIdx; }
-#endif
-
-#if !RSTL_PRIME1
-  const rstl::vector< TCachedToken< CTexture > >& GetTextures() const { return *mTextures; }
-  const rstl::vector< TCachedToken< CTexture > >* GetTexturesPtr() const { return mTextures; }
-#endif
-
   const CAABox& GetBoundingBox() const { return mBounds; }
   const CCubeSurface& GetNormalSurfaces() const { return mFirstUnsorted; }
   const CCubeSurface& GetAlphaSurfaces() const { return mFirstSorted; }
-#if RSTL_PRIME1
   bool GetShouldDrawWorldFlag() const { return mVisible; }
   void SetShouldDrawWorldFlag(bool shouldDraw) { mVisible = shouldDraw; }
-  uchar GetModelFlags() const { return mVisorFlags; }
-  int GetModelIndex() const { return mIdx; } // TODO: name
-#endif
+  const rstl::vector< TCachedToken< CTexture > >* GetTexturesPtr() const { return mTextures; }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCubeMaterial GetMaterialByIndex(const int idx) const;
-  void SetStaticArraysCurrent() const;
-  void SetArraysCurrent() const;
-  void SetSkinningArraysCurrent(const float* positions, const float* normals) const;
-  void SetUsingPackedLightmaps(const bool use) const;
-  static bool IsUsingPackedLightmaps() { return sUsingPackedLightmaps; }
-  void DrawSurface(const CCubeSurface& surface, const CModelFlags& modelFlags) const;
-  void DrawSurfaceWireframe(const CCubeSurface& surface) const;
-  void DrawFlat(const float* positions, const float* normals, ESurfaceSelection which) const;
-  bool TryLockTextures() const;
-  void Draw(const CModelFlags& flags) const;
-  void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
-  void DrawNormal(const CModelFlags& flags) const;
-  void DrawAlpha(const CModelFlags& flags) const;
-  void DrawSurfaces(const CModelFlags& flags) const;
-  void DrawNormalSurfaces(const CModelFlags& flags) const;
-  void DrawAlphaSurfaces(const CModelFlags& flags) const;
-#else
-  // Guessed name; the target passes a surface handle by value for material lookup.
-  CCubeMaterial GetMaterial(CCubeSurface surface) const {
-    return GetMaterialByIndex(surface.GetMaterialIndex());
-  }
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   rstl::vector< TCachedToken< CTexture > >& GetTextures() const { return *mTextures; };
 #else
   CCubeMaterial GetMaterialByIndex(int index) const {
     const uint offset = index != 0 ? CBasics::SwapBytes(mMaterialOffsets[index - 1]) : 0;
     return CCubeMaterial(mMaterialData + offset);
   }
+  const rstl::vector< TCachedToken< CTexture > >& GetTextures() const { return *mTextures; }
 #endif
+  // Guessed name; the target passes a surface handle by value for material lookup.
+  CCubeMaterial GetMaterial(CCubeSurface surface) const {
+    return GetMaterialByIndex(surface.GetMaterialIndex());
+  }
 
 private:
-#if !RSTL_PRIME1
   void CacheMaterialData(); // Guessed name; caches the offsets and material payload.
-#endif
 
   ModelInstance mInstance;
   rstl::vector< TCachedToken< CTexture > >* mTextures;

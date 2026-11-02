@@ -69,15 +69,7 @@ public:
   void DecodeFromRead(const void* ptr);
 
   bool DrawVideo() const;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
   void DrawFrame(int left, int right, int bottom, int top);
-#endif
-#else
-  void DrawFrame(int left, int right, int bottom, int top);
-#endif
-
   void DrawFrame(const CVector3f&, const CVector3f&, const CVector3f&, const CVector3f&);
   void MixAudio(short* out, const short* in, unsigned long samples);
 
@@ -94,13 +86,7 @@ public:
   uint GetWidth() const;
   uint GetHeight() const;
   bool CanDrawVideo() const { return mIndexLoad.null(); }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  bool PumpIndexLoad();
-#else
   bool ContinueLoading();
-#endif
-
   void Rewind();
   bool GetIsFullyCached() const;
   bool GetIsMovieFinishedPlaying() const;
@@ -112,24 +98,17 @@ public:
   bool IsLooping() const { return mLoop; }
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  struct SMovieReadState;
-#else
   struct SIndexLoad;
-#endif
 
   static void VerifyCallbackStatus();
   static void StaticMyAudioCallback();
   void InitializeTextures();
   void ReadCompleted();
   void PostDVDReadRequestIfNeeded();
-#if !RSTL_PRIME1
   void PrefetchNextFrame();
   void HandleDVDInterrupt(DVDFileInfo* info);
   static void DVDCallback(s32 result, DVDFileInfo* info);
   void CancelReadRequests();
-#endif
 
   CDvdFile mDvdFile;
   THPHeader mHeader;
@@ -155,7 +134,7 @@ private:
   rstl::vector< rstl::auto_ptr< uchar > > mRequestQueue;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  rstl::single_ptr< SMovieReadState > mIndexLoad;
+  rstl::single_ptr< SIndexLoad > mIndexLoad;
   uint mNextReadSize;
   uint mNextReadOff;
   uint mReadSizeWrapped;

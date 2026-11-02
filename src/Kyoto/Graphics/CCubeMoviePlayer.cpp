@@ -52,28 +52,18 @@ ATTRIBUTE_ALIGN_DECL(32, static short soundBuffer[2][320]);
 static bool sAudioEnabled = true;
 static uchar sSfxVolume = 127;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-struct CMoviePlayer::SMovieReadState {
-#else
 struct CMoviePlayer::SIndexLoad {
-#endif
-
   rstl::single_ptr< CDvdRequest > mHeaderRequest;
   rstl::single_ptr< CDvdRequest > mVideoRequest;
   rstl::single_ptr< CDvdRequest > mAudioRequest;
   rstl::single_ptr< uchar > mBuffer;
   int mState;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  SMovieReadState()
-#else
+#if !RSTL_PRIME1
   ~SIndexLoad() {}
 
-  SIndexLoad()
 #endif
-
+  SIndexLoad()
   : mBuffer(static_cast< uchar* >(CMemory::Alloc(64, IAllocator::kHI_RoundUpLen))), mState(0) {}
 };
 ATTRIBUTE_ALIGN_DECL(32, const unsigned char skInterlacePattern[32]) = {
@@ -213,7 +203,7 @@ CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const b
 , mThpComponents()
 , mVideoInfo()
 , mAudioInfo()
-, mIndexLoad(rs_new SMovieReadState)
+, mIndexLoad(rs_new SIndexLoad)
 #else
 : mDvdFile(SelectMoviePath(path).data())
 , mIndexLoad(rs_new SIndexLoad)
@@ -274,10 +264,7 @@ CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const b
   mIndexLoad->mHeaderRequest = mDvdFile.SyncRead(mIndexLoad->mBuffer.get(), 64);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-bool CMoviePlayer::PumpIndexLoad() {
-#else
+#if !RSTL_PRIME1
 CMoviePlayer::~CMoviePlayer() {
   CancelReadRequests();
   --sNumReferences;
@@ -290,9 +277,8 @@ CMoviePlayer::~CMoviePlayer() {
   }
 }
 
-bool CMoviePlayer::ContinueLoading() {
 #endif
-
+bool CMoviePlayer::ContinueLoading() {
   if (mIndexLoad.null()) {
     return false;
   }
