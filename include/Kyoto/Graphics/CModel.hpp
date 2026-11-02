@@ -42,11 +42,7 @@ class CModel {
     ~SShader();
 #endif
 
-#if RSTL_PRIME1
-    void UnlockTextures();
-#else
-    void UnlockTextures() const;
-#endif
+    void UnlockTextures() RSTL_ECHOES_CONST;
     void RemoveFromList();
     void MoveToThisFrameList();
 
@@ -86,21 +82,8 @@ public:
   int GetNumMaterialSets() const { return mMatSets.size(); }
   const CAABox& GetAABB() const;
   const CAABox& GetBoundingBox() const { return mModelInstance->GetBoundingBox(); }
-#if RSTL_PRIME1
-  bool IsDefinitelyOpaque() const {
-    return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
-  }
-  void UnlockTextures() {
-    rstl::vector< SShader >::iterator matIter;
-    for (matIter = mMatSets.begin() + 1; matIter != mMatSets.end(); ++matIter) {
-      matIter->UnlockTextures();
-    }
-    mModelInstance->UnlockTextures();
-  }
-#else
   bool IsDefinitelyOpaque() const;
   void UnlockTextures();
-#endif
 
   const float* GetPositions() const;
   const float* GetNormals() const;
@@ -149,6 +132,20 @@ private:
 
 };
 CHECK_SIZEOF(CModel, RSTL_PRIME1 ? 0x3c : 0x34)
+
+#if RSTL_PRIME1
+inline bool CModel::IsDefinitelyOpaque() const {
+  return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
+}
+
+inline void CModel::UnlockTextures() {
+  rstl::vector< SShader >::iterator matIter;
+  for (matIter = mMatSets.begin() + 1; matIter != mMatSets.end(); ++matIter) {
+    matIter->UnlockTextures();
+  }
+  mModelInstance->UnlockTextures();
+}
+#endif
 
 RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
                                                  const rstl::auto_ptr< uchar >& ptr, int len,

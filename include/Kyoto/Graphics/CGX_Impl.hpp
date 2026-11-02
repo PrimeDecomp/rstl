@@ -105,15 +105,9 @@ CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
   }
 }
 
-#if RSTL_PRIME1
-CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
-  if (!(*reinterpret_cast< const CColor* >(&CGX_STATE.mKColors[id]) == color)) {
-    CopyGXColor(CGX_STATE.mKColors[id], color.GetGXColor());
-#else
 inline void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
   if (!(*reinterpret_cast< const CColor* >(&CGX_STATE.mKColors[id]) == color)) {
     CopyGXColor(CGX_STATE.mKColors[id], color.GetGXColor());
-#endif
 
     GXSetTevKColor(id, color.GetGXColor());
   }
@@ -266,13 +260,8 @@ CGX_INLINE void CGX::SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlen
   }
 }
 
-#if RSTL_PRIME1
 CGX_INLINE void CGX::SetZMode(const bool compareEnable, GXCompare func,
                               const bool updateEnable) {
-#else
-CGX_INLINE void CGX::SetZMode(const GXBool compareEnable, GXCompare func,
-                              const GXBool updateEnable) {
-#endif
 
   uchar flags = MaskAndShiftLeft(compareEnable, 0xFF, 0) | MaskAndShiftLeft(updateEnable, 0xFF, 1) |
                 MaskAndShiftLeft(func, 0xFF, 2);

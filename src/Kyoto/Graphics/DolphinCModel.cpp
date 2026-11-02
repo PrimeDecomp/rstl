@@ -340,16 +340,10 @@ void CModel::SShader::RemoveFromList() {
   mNext = nullptr;
 }
 
-#if RSTL_PRIME1
-void CModel::SShader::UnlockTextures() {
-  for (AUTO(it, mTextures.begin()); it != mTextures.end(); ++it) {
-    it->Unlock();
-#else
-void CModel::SShader::UnlockTextures() const {
+void CModel::SShader::UnlockTextures() RSTL_ECHOES_CONST {
   for (rstl::vector< TCachedToken< CTexture > >::const_iterator it = mTextures.begin();
        it != mTextures.end(); ++it) {
     const_cast< TCachedToken< CTexture >& >(*it).Unlock();
-#endif
 
   }
 #if !RSTL_PRIME1

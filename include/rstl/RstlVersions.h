@@ -566,6 +566,15 @@
 #else
 #define RSTL_PRIME1_CONST
 #endif
+// Echoes-only `const` member functions and Prime-only `inline` declarations where MWCC codegen
+// depends on them (CModel::SShader::UnlockTextures, CGX::apply_fog).
+#if RSTL_PRIME1
+#define RSTL_ECHOES_CONST
+#define RSTL_PRIME1_INLINE inline
+#else
+#define RSTL_ECHOES_CONST const
+#define RSTL_PRIME1_INLINE
+#endif
 // CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
 // The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
 #define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1

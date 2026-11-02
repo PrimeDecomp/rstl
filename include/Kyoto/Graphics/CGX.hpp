@@ -131,11 +131,7 @@ public:
                           GXLightID lights, GXDiffuseFn diffFn, GXAttnFn attnFn);
   static void SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl);
   static void SetTevKColor(GXTevKColorID id, const GXColor& color);
-#if RSTL_PRIME1
-  static void SetTevKColor(GXTevKColorID id, const CColor& color);
-#else
   static inline void SetTevKColor(GXTevKColorID id, const CColor& color);
-#endif
 
   static void SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b, GXTevColorArg c,
                             GXTevColorArg d);
@@ -155,11 +151,7 @@ public:
                           GXChannelID color);
   static void SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlendFactor dstFac,
                            GXLogicOp op);
-#if RSTL_PRIME1
   static void SetZMode(bool compareEnable, GXCompare func, bool updateEnable);
-#else
-  static void SetZMode(GXBool compareEnable, GXCompare func, GXBool updateEnable);
-#endif
 
   static void SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                               uchar ref1);
@@ -247,11 +239,7 @@ private:
   static void FlushChanCtrl(GXChannelID chan, ushort flags);
 
   static void update_fog(uint flags);
-#if RSTL_PRIME1
-  static inline void apply_fog();
-#else
-  static void apply_fog();
-#endif
+  static RSTL_PRIME1_INLINE void apply_fog();
 
 #if RSTL_CGX_STATE_POINTER
   static SGXState* gpGXState;

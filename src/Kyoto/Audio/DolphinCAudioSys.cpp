@@ -179,6 +179,12 @@ void* CAudioSys::mpSampleDataUploadBuffer = nullptr;
 
 const rstl::string CAudioSys::mpDefaultInvalidString(rstl::string_l("NULL"));
 
+#if RSTL_PRIME1
+static const uchar kProLogic2Studios = 1;
+#else
+static const uchar kProLogic2Studios = 3;
+#endif
+
 void* DoMalloc(size_t len) { return rs_new char[len]; }
 
 void DoFree(void* ptr) {
@@ -196,13 +202,7 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
 
   sndSetHooks(&hooks);
   if (mProLogic2) {
-    sndInit(numVoices, numMusic, numSfx,
-#if RSTL_PRIME1
-            1,
-#else
-            3,
-#endif
-            1, aramSize);
+    sndInit(numVoices, numMusic, numSfx, kProLogic2Studios, 1, aramSize);
   } else {
     sndInit(numVoices, numMusic, numSfx,
 #if RSTL_PRIME1

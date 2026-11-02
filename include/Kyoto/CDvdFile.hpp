@@ -4,6 +4,7 @@
 
 #include "Kyoto/CDvdRequest.hpp"
 #include "types.h"
+#include <stdint.h>
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/reserved_vector.hpp"
@@ -47,7 +48,7 @@ public:
 
   static bool FileExists(const char*);
   static void DVDARAMXferCallback(s32, DVDFileInfo*);
-  static void ARAMARAMXferCallback(u32 addr);
+  static void ARAMARAMXferCallback(uintptr_t addr);
 
   static void internalCallback(s32, DVDFileInfo*);
   const rstl::string& GetFilename() const { return mFilename; }
