@@ -14,10 +14,10 @@
 
 class CColor;
 
-#if RSTL_PRIME1
-#define CGX_STATE (CGX::sGXState)
-#else
+#if RSTL_CGX_STATE_POINTER
 #define CGX_STATE (*CGX::gpGXState)
+#else
+#define CGX_STATE (CGX::sGXState)
 #endif
 
 class CGX {
@@ -253,10 +253,10 @@ private:
   static void apply_fog();
 #endif
 
-#if RSTL_PRIME1
-  static SGXState sGXState;
-#else
+#if RSTL_CGX_STATE_POINTER
   static SGXState* gpGXState;
+#else
+  static SGXState sGXState;
 #endif
 
 };
