@@ -1,21 +1,15 @@
 #include "rstl/RstlVersions.h"
-#include "Kyoto/CARAMToken.hpp"
-#if RSTL_PRIME1
-#include "GameVersions.h"
-#endif
-
-#include "Kyoto/CDvdFile.hpp"
-#include "Kyoto/CDvdRequest.hpp"
 
 #include "Kyoto/CARAMManager.hpp"
-
+#include "Kyoto/CARAMToken.hpp"
+#include "Kyoto/CDvdFile.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #include "rstl/math.hpp"
-
-#include "dolphin/os/OSCache.h"
 
 #include "dolphin/arq.h"
 #include "dolphin/dvd.h"
 #include "dolphin/os.h"
+#include "dolphin/os/OSCache.h"
 
 #include "string.h"
 
@@ -43,9 +37,7 @@ struct CDvdFileARAM {
 
   ARQRequest mARQRequest;
   struct SDvdInfo {
-    SDvdInfo()
-    : mDvdFile(nullptr)
-    , mNextfile(nullptr) {}
+    SDvdInfo() : mDvdFile(nullptr), mNextfile(nullptr) {}
 
     DVDFileInfo mDvdFileInfo;
     CDvdFile* mDvdFile;
@@ -73,19 +65,24 @@ const char* DecodeARAMFile(const char* filename) {
 }
 
 void CDvdFile::DVDARAMXferCallback(s32 result, DVDFileInfo* info) {
+#if !defined(TARGET_PC)
   CDvdFileARAM::SDvdInfo* ptr = reinterpret_cast< CDvdFileARAM::SDvdInfo* >(info);
   if (!sPollingMode) {
     DVDClose(&ptr->mDvdFileInfo);
   }
 
   ptr->mDvdFile->HandleDVDInterrupt();
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::ARAMARAMXferCallback(uintptr_t addr) {
+#if !defined(TARGET_PC)
   reinterpret_cast< CDvdFileARAM* >(addr)->mInfo.mDvdFile->HandleARAMInterrupt();
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::HandleARAMInterrupt() {
+#if !defined(TARGET_PC)
   BOOL enabled = OSDisableInterrupts();
   CDvdFileARAM* arFile = mARAMFile.get();
 
@@ -96,6 +93,7 @@ void CDvdFile::HandleARAMInterrupt() {
   }
 
   OSRestoreInterrupts(enabled);
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::HandleDVDInterrupt() {
@@ -112,6 +110,7 @@ void CDvdFile::HandleDVDInterrupt() {
 }
 
 void CDvdFile::PingARAMTransfer() {
+#if !defined(TARGET_PC)
   CDvdFileARAM* aramFile = mARAMFile.get();
 
   if (aramFile->mBufferLen == 0) {
@@ -122,8 +121,7 @@ void CDvdFile::PingARAMTransfer() {
   int length = rstl::min_val(65536, aramFile->mBufferLen);
   ARQPostRequest(&aramFile->mARQRequest, 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH,
                  reinterpret_cast< u32 >(aramFile->mBuffers[aramFile->mBufferIndex].get()),
-                 reinterpret_cast< u32 >(mARAMBuffer + aramFile->mAramOffset),
-                 length,
+                 reinterpret_cast< u32 >(mARAMBuffer + aramFile->mAramOffset), length,
                  ARAMARAMXferCallback);
 
   aramFile->mBufferLen -= length;
@@ -148,9 +146,11 @@ void CDvdFile::PingARAMTransfer() {
     aramFile->mGotDvdInterrupt = false;
 #endif
   }
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::TryARAMFile() {
+#if !defined(TARGET_PC)
   mARAMBuffer = static_cast< uchar* >(CARAMManager::Alloc(mSize));
   if (
 #if RSTL_PRIME1
@@ -168,9 +168,11 @@ void CDvdFile::TryARAMFile() {
   arfile->mFileSize1 = arfile->mCurBufferLen = arfile->mBufferLen = GetFileSize();
   mARAMAllocated = true;
   PushARAMFileLoad();
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::PushARAMFileLoad() {
+#if !defined(TARGET_PC)
   BOOL enabled = true;
   if (!sPollingMode) {
     enabled = OSDisableInterrupts();
@@ -190,9 +192,11 @@ void CDvdFile::PushARAMFileLoad() {
   if (!sPollingMode) {
     OSRestoreInterrupts(enabled);
   }
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::PopARAMFileLoad() {
+#if !defined(TARGET_PC)
   BOOL enabled = true;
   if (!sPollingMode) {
     enabled = OSDisableInterrupts();
@@ -207,9 +211,11 @@ void CDvdFile::PopARAMFileLoad() {
   if (!sPollingMode) {
     OSRestoreInterrupts(enabled);
   }
+#endif // !defined(TARGET_PC)
 }
 
 bool CDvdFile::IsARAMFileLoaded() {
+#if !defined(TARGET_PC)
   if (!mARAMAllocated) {
     return true;
   }
@@ -222,11 +228,13 @@ bool CDvdFile::IsARAMFileLoaded() {
   }
 
   mARAMFile = nullptr;
+#endif // !defined(TARGET_PC)
 
   return true;
 }
 
 void CDvdFile::StartARAMFileLoad() {
+#if !defined(TARGET_PC)
   CDvdFileARAM* aramFile = mARAMFile.get();
   aramFile->mBuffers.push_back(
       static_cast< uchar* >(CMemory::Alloc(0x10000, IAllocator::kHI_RoundUpLen)));
@@ -246,12 +254,15 @@ void CDvdFile::StartARAMFileLoad() {
 #if !RSTL_PRIME1
   gDvdActivity = true;
 #endif
+#endif // !defined(TARGET_PC)
 }
 
 void CDvdFile::StallForARAMFile() {
+#if !defined(TARGET_PC)
   while (mARAMFile.get() != nullptr) {
     OSYieldThread();
   }
+#endif // !defined(TARGET_PC)
 }
 
 CDvdFile::CDvdFile(const char* filename)
@@ -384,4 +395,3 @@ void CDvdFile::UpdateFilePos(int pos) {
     mOffset = filesize;
   }
 }
-

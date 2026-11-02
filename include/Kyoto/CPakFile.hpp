@@ -99,7 +99,9 @@ private:
   uint mResTableOffset;
 #if RSTL_PRIME1
   uint mResTableCount;
+#if !defined(TARGET_PC)
   void* mAramBase;
+#endif // !defined(TARGET_PC)
 #else
   int mResTableCount;
   int mFakeStaticSize;

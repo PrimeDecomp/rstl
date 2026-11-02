@@ -7,6 +7,10 @@
 
 #include "rstl/construct.hpp"
 
+#if defined(TARGET_PC)
+#include "Metaforce/CModelSectionReader.hpp"
+#endif
+
 class CCubeModel;
 class CCubeSurface {
   friend class CCubeModel;
@@ -26,7 +30,15 @@ public:
     short x2e_;
 #endif
     CAABox mBounds;
+#if defined(TARGET_PC)
+    const void* displayList;
+    uint headerSize;
+#endif
   };
+
+#if defined(TARGET_PC)
+  static SSurfaceData ReadData(TModelData data, CCubeModel* parent, uint materialCount);
+#endif
 
   CCubeSurface(const void* data) : mData(static_cast< const SSurfaceData* >(data)) {}
 
@@ -40,9 +52,19 @@ public:
   short GetShadowBank() const { return mData->x2e_; }        // Target-derived grouping key.
 #endif
   uint GetDisplayListSize() const { return mData->mDisplayListSizeAndNormalHint & 0x7fffffff; }
-  uint GetSurfaceHeaderSize() const { return (sizeof(SSurfaceData) + 7 + mData->mExtraSize) & ~31; }
+  uint GetSurfaceHeaderSize() const {
+#if defined(TARGET_PC)
+    return mData->headerSize;
+#else
+    return (sizeof(SSurfaceData) + 7 + mData->mExtraSize) & ~31;
+#endif
+  }
   const void* GetDisplayList() const {
+#if defined(TARGET_PC)
+    return mData->displayList;
+#else
     return reinterpret_cast< const uchar* >(mData) + GetSurfaceHeaderSize();
+#endif
   }
   CCubeSurface GetNextSurface() const { return CCubeSurface(mData->mNextSurface); }
   bool IsValid() const { return mData != nullptr; }

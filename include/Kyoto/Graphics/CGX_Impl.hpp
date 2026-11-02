@@ -1,17 +1,19 @@
 #ifndef _CGX_IMPL
 #define _CGX_IMPL
+
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CGX.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
-
 #include "Kyoto/Graphics/CColor.hpp"
 #if RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
-
 #include "dolphin/gx.h"
 #endif
+
+// TODO: figure out why MSVC doesn't like this
+#if !defined(TARGET_PC) || defined(CGX_CPP)
 
 #ifndef CGX_INLINE
 #define CGX_INLINE inline
@@ -356,10 +358,20 @@ CGX_INLINE void CGX::SetNumIndStages(uchar num) {
   }
 }
 
-CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
+CGX_INLINE void CGX::SetArray(
+  GXAttr attr, const void* data, uchar stride
+#if defined(TARGET_PC)
+  , size_t size, bool le
+#endif // defined(TARGET_PC)
+) {
 #if RSTL_PRIME1
   uint idx = attr - GX_VA_POS;
-  if (data == nullptr || CGX_STATE.mArrayPtrs[idx] == data) {
+  if (
+    data == nullptr 
+#if !defined(TARGET_PC)
+    || CGX_STATE.mArrayPtrs[idx] == data
+#endif
+  ) {
     return;
   }
   CGX_STATE.mArrayPtrs[idx] = data;
@@ -376,7 +388,12 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
   }
 #endif
 
-  GXSetArray(attr, data, stride);
+  GXSetArray(
+    attr, data, stride
+#if defined(TARGET_PC)
+    , size, le
+#endif // defined(TARGET_PC)
+  );
 }
 
 #if RSTL_PRIME1
@@ -428,6 +445,9 @@ CGX_INLINE void CGX::SetLineWidth(uchar width, GXTexOffset offset) {
     GXSetLineWidth(width, offset);
   }
 }
-#endif
+#endif // RSTL_PRIME1
+
+
+#endif // !defined(TARGET_PC) || defined(CGX_CPP)
 
 #endif // _CGX_IMPL
