@@ -44,13 +44,7 @@ struct CDvdFileARAM {
   ARQRequest mARQRequest;
   struct SDvdInfo {
     SDvdInfo()
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    : mDvdFileInfo()
-    , mDvdFile(nullptr)
-#else
     : mDvdFile(nullptr)
-#endif
     , mNextfile(nullptr) {}
 
     DVDFileInfo mDvdFileInfo;
@@ -159,7 +153,6 @@ void CDvdFile::PingARAMTransfer() {
 void CDvdFile::TryARAMFile() {
   mARAMBuffer = static_cast< uchar* >(CARAMManager::Alloc(mSize));
   if (
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CARAMManager::GetInvalidAlloc() == mARAMBuffer
 #else

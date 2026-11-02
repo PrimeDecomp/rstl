@@ -35,7 +35,6 @@
 
 static bool sIsTextureTimeoutEnabled = true;
 uint CModel::sTotalMemory = 0;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CModel* CModel::sThisFrameList = nullptr;
 CModel* CModel::sOneFrameList = nullptr;
@@ -78,7 +77,6 @@ static uchar* MemoryFromPartData(uchar*& dataCur, int*& secSizeCur) {
   return ret;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& store)
 : mData(data.release())
@@ -97,7 +95,6 @@ CModel::SShader::SShader(const SShader& other)
 #endif
 
 , mPrev(nullptr)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mNext(sThisFrameList)
 , mLastFrame(CGraphics::GetFrameCounter() - 2) {
@@ -105,7 +102,6 @@ CModel::SShader::SShader(const SShader& other)
 , mNext(nullptr) {}
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint sectionSizeStart = 0x2c;
   uchar* dataPtr = data.get();
@@ -120,7 +116,6 @@ CModel::SShader::SShader(const SShader& other)
 CModel::SShader::~SShader() { RemoveFromList(); }
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const int sectionCount = *reinterpret_cast< const int* >(dataPtr + 0x24);
   uchar* dataCur;
@@ -301,7 +296,6 @@ void CModel::SShader::MoveToThisFrameList() {
   }
   RemoveFromList();
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (sThisFrameList != nullptr) {
     mNext = sThisFrameList;
@@ -315,7 +309,6 @@ void CModel::SShader::MoveToThisFrameList() {
 
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   sThisFrameList = const_cast< CModel* >(this);
 #else
@@ -324,7 +317,6 @@ void CModel::SShader::MoveToThisFrameList() {
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CModel::RemoveFromList() const {
 #else
@@ -349,7 +341,6 @@ void CModel::SShader::RemoveFromList() {
   mNext = nullptr;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CModel::SShader::UnlockTextures() {
   for (AUTO(it, mTextures.begin()); it != mTextures.end(); ++it) {
@@ -562,7 +553,6 @@ void CModel::FrameDone() {
     return;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (CModel* model = sTwoFrameList; model != nullptr;) {
     CModel* next = model->mNext;
@@ -580,7 +570,6 @@ void CModel::FrameDone() {
 #endif
 
     }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     model->mModelInstance->UnlockTextures();
     model->mPrev = model->mNext = nullptr;
@@ -666,7 +655,6 @@ void CModel::RemapData(uchar* data) {
   RemapPointer(uvs, offset);
   RemapPointer(packedUvs, offset);
   for (int i = 0; i < mSurfaces.size(); ++i) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     RemapPointer(mSurfaces[i], offset);
 #else
@@ -678,7 +666,6 @@ void CModel::RemapData(uchar* data) {
   mModelInstance =
       rs_new CCubeModel(&mSurfaces, &mMatSets.front().mTextures, mMatSets.front().mData, positions,
                         normals, colors, uvs, packedUvs, bounds, flags, texturesLoaded, index);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   MoveToThisFrameList();
 #else

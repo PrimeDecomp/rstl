@@ -196,7 +196,6 @@ static bool ShouldEnableLockedCache() { return LCGetBase() != GetLockedCacheAllo
 
 CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const bool loop,
                            const bool deinterlace)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : mDvdFile(path)
 , mHeader()
@@ -242,12 +241,10 @@ CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const b
 , mFieldFlip(false)
 , mCachedBytes(0)
 , mFieldIndex(0)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mVolume(127)
 #endif
 {
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   if (sNumReferences == 0 && ShouldEnableLockedCache()) {
     LCEnable();
@@ -307,7 +304,6 @@ bool CMoviePlayer::ContinueLoading() {
           CBasics::SwapBytes(static_cast< uint >(mHeader.mMovieDataOffsets));
       mHeader.mFinalFrameDataOffsets =
           CBasics::SwapBytes(static_cast< uint >(mHeader.mFinalFrameDataOffsets));
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mIndexLoad->mHeaderRequest = mDvdFile.AsyncSeekRead(
           buffer, 32, kSO_Begin, static_cast< int >(mHeader.mCompInfoDataOffsets));
@@ -336,18 +332,12 @@ bool CMoviePlayer::ContinueLoading() {
           CBasics::SwapBytes(static_cast< uint >(mThpComponents.mNumComponents));
       mIndexLoad->mHeaderRequest = nullptr;
       uchar* audioBuffer = buffer + 32;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      int offset = static_cast< int >(mHeader.mCompInfoDataOffsets + sizeof(THPFrameCompInfo));
-#else
       int offset = mHeader.mCompInfoDataOffsets + sizeof(THPFrameCompInfo);
-#endif
 
       for (uint i = 0; i < mThpComponents.mNumComponents; ++i) {
         switch (mThpComponents.mFrameComp[i]) {
         case 0:
           mIndexLoad->mVideoRequest = mDvdFile.AsyncSeekRead(buffer, 32, kSO_Begin, offset);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
           offset += sizeof(THPVideoInfoOld);
 #else
@@ -357,7 +347,6 @@ bool CMoviePlayer::ContinueLoading() {
           break;
         case 1:
           mIndexLoad->mAudioRequest = mDvdFile.AsyncSeekRead(audioBuffer, 32, kSO_Begin, offset);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
           offset += sizeof(THPAudioInfoOld);
 #else
@@ -384,7 +373,6 @@ bool CMoviePlayer::ContinueLoading() {
 #endif
 
     bool complete = true;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     hasVideo = mIndexLoad->mVideoRequest;
     hasAudio = mIndexLoad->mAudioRequest;
@@ -403,7 +391,6 @@ bool CMoviePlayer::ContinueLoading() {
       return true;
     }
     if (hasVideo) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       memcpy(&mVideoInfo, buffer, sizeof(THPVideoInfoOld));
 #else
@@ -414,7 +401,6 @@ bool CMoviePlayer::ContinueLoading() {
       mVideoInfo.mYSize = CBasics::SwapBytes(static_cast< uint >(mVideoInfo.mYSize));
     }
     if (hasAudio) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       memcpy(&mAudioInfo, buffer + 32, sizeof(THPAudioInfoOld));
 #else
@@ -439,32 +425,15 @@ bool CMoviePlayer::ContinueLoading() {
   mNextReadSize = mHeader.mFirstFrameSize;
   mReadSizeWrapped = mHeader.mFirstFrameSize;
   mReadOffWrapped = mHeader.mMovieDataOffsets;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mTotalSeconds = static_cast< float >(mHeader.mNumFrames) / mHeader.mFrameRate;
-#else
   mTotalSeconds = mHeader.mNumFrames / mHeader.mFrameRate;
-#endif
 
   if (mPreLoadSeconds < 0.f) {
     mPreLoadSeconds = mTotalSeconds;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mPreLoadFrames = static_cast< int >(mHeader.mNumFrames);
-#else
     mPreLoadFrames = mHeader.mNumFrames;
-#endif
 
   } else if (mPreLoadSeconds > 0.f) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mPreLoadFrames = static_cast< int >(
-        rstl::min_val(static_cast< uint >(mHeader.mNumFrames),
-                      static_cast< uint >(mPreLoadSeconds * mHeader.mFrameRate)));
-#else
     mPreLoadFrames = rstl::min_val(static_cast< uint >(mHeader.mNumFrames),
                                    static_cast< uint >(mPreLoadSeconds * mHeader.mFrameRate));
-#endif
 
     mPreLoadSeconds = rstl::min_val(mPreLoadSeconds, mTotalSeconds);
   }
@@ -499,7 +468,6 @@ void CMoviePlayer::InitializeTextures() {
     DCFlushRangeNoSync(u, uvSize);
     DCFlushRangeNoSync(v, uvSize);
     DCFlushRangeNoSync(audio, audioSize);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mTextures.push_back(CTHPTextureSet(y, u, v, audio));
 #else
@@ -542,7 +510,6 @@ void CMoviePlayer::PostDVDReadRequestIfNeeded() {
 
     mRequestBuffer = rstl::auto_ptr< uchar >(
         static_cast< uchar* >(CMemory::Alloc(mNextReadSize, IAllocator::kHI_RoundUpLen)));
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mRequest = mDvdFile.AsyncSeekRead(mRequestBuffer.get(), mNextReadSize, kSO_Begin,
                                       static_cast< int >(mNextReadOff));
@@ -598,7 +565,6 @@ void CMoviePlayer::ReadCompleted() {
 
   mRequest = nullptr;
   if (mCurLoadFrame == mRequestQueue.size() && mPreLoadFrames > mCurLoadFrame) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mRequestQueue.push_back(mRequestBuffer);
 #else
@@ -664,12 +630,7 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
       texture.SetAudioSamplesConsumed(0);
       OSRestoreInterrupts(interrupts);
     }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const int size = static_cast< int >(CBasics::SwapBytes(*sizes));
-#else
     uint size = CBasics::SwapBytes(*sizes);
-#endif
 
     offset += size;
     dataStart += size;
@@ -698,7 +659,6 @@ void CMoviePlayer::Update(RSTL_PRIME1_CONST float dt) {
       }
     }
   } else if (!mRequest.null()) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     bool canDecode = false;
     if (mRequestFrameWrapped >= mRequestQueue.size() && mCurLoadFrame >= mRequestQueue.size()) {
@@ -810,7 +770,6 @@ void CMoviePlayer::DrawFrame(const CVector3f& v1, const CVector3f& v2, const CVe
   OSRestoreInterrupts(interrupts);
   CTHPTextureSet& texture = mTextures[mDrawTexSlot];
   const bool field = CGraphics::GetDolphinLastFrameAbove();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const bool deinterlace = mDeinterlace;
   MyTHPGXYuv2RgbSetup(field, deinterlace);
@@ -831,7 +790,6 @@ void CMoviePlayer::DrawFrame(const CVector3f& v1, const CVector3f& v2, const CVe
   GXTexCoord2u16(1, 0);
   CGX::End();
   MyTHPGXRestore();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mFieldIndex == 0 && field) {
 #else
@@ -858,7 +816,6 @@ bool CMoviePlayer::GetIsMovieFinishedPlaying() const {
   return !mLoop && mCurFrame == mHeader.mNumFrames;
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CMoviePlayer::Rewind() {
   if (!mRequest.null()) {
@@ -937,7 +894,6 @@ void CMoviePlayer::MixAudio(short* out, const short* in, unsigned long samples) 
     }
     return;
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const uchar volume = rstl::min_val(127, sSfxVolume * 100 >> 7);
 #else
@@ -967,12 +923,7 @@ void CMoviePlayer::MixAudio(short* out, const short* in, unsigned long samples) 
         } else if (sample > 32767) {
           sample = 32767;
         }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        *out = static_cast< short >(sample);
-#else
         *out = sample;
-#endif
 
         ++out;
         ++input;
@@ -986,12 +937,7 @@ void CMoviePlayer::MixAudio(short* out, const short* in, unsigned long samples) 
         } else if (sample > 32767) {
           sample = 32767;
         }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        *out = static_cast< short >(sample);
-#else
         *out = sample;
-#endif
 
         ++out;
         ++audio;
@@ -1010,7 +956,6 @@ void CMoviePlayer::MixAudio(short* out, const short* in, unsigned long samples) 
 
 void CMoviePlayer::VerifyCallbackStatus() {
   if (sNumReferences > 0) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CRSFAudio::RunDMACallback(StaticMyAudioCallback);
 #else
@@ -1018,7 +963,6 @@ void CMoviePlayer::VerifyCallbackStatus() {
 #endif
 
   } else {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CRSFAudio::CancelDMACallback(StaticMyAudioCallback);
 #else

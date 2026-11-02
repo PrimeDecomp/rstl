@@ -23,7 +23,6 @@ extern GXData* __GXData;
 #endif
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CGX::SGXState CGX::sGXState;
 #else
@@ -410,7 +409,6 @@ CGX::SGXState::SGXState()
 , mLineWidthAndOffset(USHRT_MAX)
 , mBlendMode(USHRT_MAX)
 , mAlphaCompare(UINT_MAX)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mDstAlphaEnabled(false)
 , mDstAlpha(0)
@@ -475,7 +473,6 @@ void CGX::ResetGXStates() {
 }
 
 void CGX::ResetGXStatesFull() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   new (&sGXState) SGXState();
 #else
@@ -484,7 +481,6 @@ void CGX::ResetGXStatesFull() {
   ResetGXStates();
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static inline void __SetChanCtrlCompressed(GXChannelID channel, uint flags) {
   GXBool enable = CGX::ShiftRightAndMask(flags, 1, 0);
@@ -513,7 +509,6 @@ void CGX::FlushState() {
     GXSetNumChans(CGX_STATE.mNumChans);
     CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (sGXState.mChanFlags & 2) {
     __SetChanCtrlCompressed(GX_COLOR0, sGXState.mChanCtrls[0]);
@@ -525,7 +520,6 @@ void CGX::FlushState() {
 #endif
 
   }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (sGXState.mChanFlags & 4) {
     __SetChanCtrlCompressed(GX_COLOR1, sGXState.mChanCtrls[1]);
@@ -556,7 +550,6 @@ void CGX::SetVtxDescv_Compressed(uint flags) {
   GXVtxDescList* list = sVtxDescList;
   for (uint idx = 0; idx < 11; ++idx) {
     uint shift = idx * 2;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if ((flags & 3 << shift) == (sGXState.mDescList & 3 << shift)) {
 #else
@@ -592,7 +585,6 @@ void CGX::SetVtxDescv_Compressed(uint flags) {
 }
 
 void CGX::SetVtxDesc(GXAttr attr, GXAttrType type) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint lshift = (attr - GX_VA_POS) * 2;
   uint rshift = 3 << lshift;

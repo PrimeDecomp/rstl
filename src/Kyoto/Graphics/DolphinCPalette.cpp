@@ -71,12 +71,7 @@ CGraphicsPalette::CGraphicsPalette(CInputStream& in)
 }
 
 CGraphicsPalette::~CGraphicsPalette() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  uint frameDiff = sCurrentFrameCount - mFrameLoaded;
-#else
   const uint frameDiff = sCurrentFrameCount - mFrameLoaded;
-#endif
 
   if (frameDiff < 2) {
     CFrameDelayedKiller::ScheduleDeletion(frameDiff > 0

@@ -14,7 +14,6 @@
 
 #include "string.h"
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static bool sDrawingOccluders = false;
 #else
@@ -31,7 +30,6 @@ inline uint GetMaterialOffset(const uchar* materialData, const int idx) {
 }
 
 CCubeModel::CCubeModel(
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     rstl::vector< void* >* surfaces,
 #else
@@ -54,7 +52,6 @@ CCubeModel::CCubeModel(
 
 , mVisorFlags(visorFlags)
 , mIdx(idx)
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 , mMaterialOffsets(nullptr)
 , mMaterialData(nullptr)
@@ -63,7 +60,6 @@ CCubeModel::CCubeModel(
 #if !RSTL_PRIME1
   CacheMaterialData();
 #endif
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::vector< void* >& surf = mInstance.Surfaces();
   for (AUTO(it, surf.begin()); it != surf.end(); ++it) {
@@ -78,7 +74,6 @@ CCubeModel::CCubeModel(
   }
 
   for (int i = surf.size(); i > 0; i--) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     void*& data = surf[i - 1];
     uint materialIndex = static_cast< CCubeSurface::SSurfaceData* >(data)->mMaterialIndex;
@@ -93,7 +88,6 @@ CCubeModel::CCubeModel(
 #endif
 
     } else {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       static_cast< CCubeSurface::SSurfaceData* >(data)->mNextSurface = mFirstUnsorted.mRawdata;
       mFirstUnsorted.mRawdata = static_cast< uchar* >(data);
@@ -115,7 +109,6 @@ void CCubeModel::MakeTexturesFromMats(const void* data,
   textures.reserve(textureCount);
 
   for (int i = 0; i < textureCount; i++) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     textures.push_back(store.GetObj(SObjectTag('TXTR', CBasics::SwapBytes(*textureIds))));
 #else
@@ -196,7 +189,6 @@ CCubeMaterial CCubeModel::GetMaterialByIndex(const int idx) const {
 #endif
 
 void CCubeModel::DrawSurface(const CCubeSurface& surface, const CModelFlags& modelFlags) const {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
   if (material.IsFlagSet(kStateFlag_ShadowOccluderMesh) && !sDrawingOccluders) {
@@ -238,7 +230,6 @@ static inline const ushort proxy_to_uint(const uchar* data) {
 }
 
 void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
 #else
@@ -286,7 +277,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
       break;
     }
     bytesRead += 3;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     ushort elementCount = proxy_to_uint(dispList + 1);
 #else
@@ -307,7 +297,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
     dispList += attrCountTimes2 * 3;
     CGX::End();
     if (pType == GX_TRIANGLES) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       elementCount -= 3;
       for (int j = 0; j < elementCount; j += 3) {
@@ -325,7 +314,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
         CGX::End();
       }
     } else if (pType == GX_TRIANGLESTRIP) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       elementCount -= 3;
 #else
@@ -333,7 +321,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 #endif
 
       uint winding = 1;
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       for (int j = 0; j < elementCount; ++j) {
 #else
@@ -354,7 +341,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
       if (pType != GX_TRIANGLEFAN) {
         return;
       }
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       elementCount -= 3;
 #else
@@ -363,7 +349,6 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 
       const uchar* indices = dispList - attrCountTimes2 * 3;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       for (int j = 0; j < elementCount; ++j) {
 #else
@@ -385,24 +370,12 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 bool CCubeModel::TryLockTextures() const {
   if (!mLoadTextures) {
     bool texturesLoading = false;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    for (int i = 0; i < GetTextures().size(); ++i) {
-      GetTextures()[i].Lock();
-      if (!GetTextures()[i].TryCache()) {
-#else
     for (int i = 0; i < mTextures->size(); ++i) {
       (*mTextures)[i].Lock();
       if (!(*mTextures)[i].TryCache()) {
-#endif
 
         texturesLoading = true;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      } else if (!GetTextures()[i].GetObject()->LoadToMRAM()) {
-#else
       } else if (!(*mTextures)[i].GetObject()->LoadToMRAM()) {
-#endif
 
         texturesLoading = true;
       }
@@ -494,7 +467,6 @@ void CCubeModel::DrawAlphaSurfaces(const CModelFlags& flags) const {
   }
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CCubeModel::DrawFlat(const float* positions, const float* normals,
                           ESurfaceSelection which) const {
@@ -513,7 +485,6 @@ void CCubeModel::DrawFlat(int which) const {
   if (which != kSS_Sorted) {
     for (CCubeSurface surface = mFirstUnsorted; surface.IsValid();
          surface = surface.GetNextSurface()) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
       CGX::SetVtxDescv_Compressed(material.GetVertexDescLwzx());
@@ -530,7 +501,6 @@ void CCubeModel::DrawFlat(int which) const {
   if (which != kSS_Unsorted) {
     for (CCubeSurface surface = mFirstSorted; surface.IsValid();
          surface = surface.GetNextSurface()) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
       CGX::SetVtxDescv_Compressed(material.GetVertexDescLwzx());
@@ -551,7 +521,6 @@ void CCubeModel::Draw(const CModelFlags& flags) const {
   DrawSurfaces(flags);
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CCubeModel::Draw(const float* positions, const float* normals,
                       const CModelFlags& flags) const {
@@ -560,7 +529,6 @@ void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const {
 #endif
 
   CCubeMaterial::KillCachedViewDepState();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   SetSkinningArraysCurrent(positions, normals);
   DrawSurfaces(flags);
@@ -584,7 +552,6 @@ void CCubeModel::DrawAlpha(const CModelFlags& flags) const {
 }
 
 void CCubeModel::SetDrawingOccluders(const bool drawOccluders) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   sDrawingOccluders = drawOccluders;
 #else
@@ -600,13 +567,8 @@ void CCubeModel::SetDrawingOccluders(const bool drawOccluders) {
 void CCubeModel::SetModelWireframe(const bool drawWireframe) { sDrawingWireframe = drawWireframe; }
 
 void CCubeModel::UnlockTextures() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  for (AUTO(texture, mTextures->begin()); texture != mTextures->end(); ++texture) {
-#else
   for (rstl::vector< TCachedToken< CTexture > >::iterator texture = mTextures->begin();
        texture != mTextures->end(); ++texture) {
-#endif
 
     texture->Unlock();
   }
@@ -626,7 +588,6 @@ void CCubeModel::RemapMaterialData(const void* data,
 
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CCubeModel::DrawNormal(const float* positions, const float* normals,
                             ESurfaceSelection which) const {
@@ -643,7 +604,6 @@ void CCubeModel::DrawNormal(ESurfaceSelection which) const {
   CGX::SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
   CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
   CGX::SetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_ONE, GX_LO_CLEAR);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   DrawFlat(positions, normals, which);
 #else
