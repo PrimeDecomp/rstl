@@ -55,9 +55,9 @@ public:
   };
 
   struct C3DEmitterParmData {
-    // Prime inlines this constructor; Echoes has an out-of-line one (CAudioSys.cpp).
     C3DEmitterParmData(const float maxDist = 150.f, const float distComp = 0.1f,
-                       const uint flags = 1, uchar maxVol = 127, uchar minVol = 0)
+                       const uint flags = 1, RSTL_PRIME1_CONST uchar maxVol = 127,
+                       RSTL_PRIME1_CONST uchar minVol = 0)
 #if RSTL_PRIME1
     : mPos(0.f, 0.f, 0.f)
     , mDir(0.f, 0.f, 0.f)
@@ -118,8 +118,6 @@ public:
   static bool SysIsGroupSetLoaded(const rstl::string& name);
   static rstl::ncrc_ptr< CAudioGroupSet > FindGroupSet(const rstl::string& name);
 
-  // Without const on a narrow by-value parameter, MWCC re-truncates the argument at each call
-  // site. Prime declares more of these parameters const than Echoes does.
   static SND_VOICEID SfxStart(const SND_FXID sfxId, RSTL_PRIME1_CONST uchar vol,
                               RSTL_PRIME1_CONST uchar pan, const uchar prio);
   static void SfxStop(SND_VOICEID handle);
@@ -161,7 +159,6 @@ public:
   static uint S3dEmitterVoiceID(uint handle);
   static uint S3dFindUnusedHandle();
   static uint S3dFindLowerPriorityHandle(uint prio);
-  // No retail or demo-map symbol; nothing calls it.
   static void S3dAddEmitter(SND_FXID fxid, const CVector3f& pos, const CVector3f& dir,
                             const bool b1, const bool b2, short, int);
 

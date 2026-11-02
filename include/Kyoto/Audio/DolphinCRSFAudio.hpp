@@ -20,8 +20,6 @@ class CDvdRequest;
 typedef void (*FAudioCallback)();
 #endif
 
-// Names from the Corruption prototype's asserts: DolphinCRSFAudio.cpp, IsFullyLoaded,
-// sPlayingAudio, audioFile.
 class CRSFAudio {
 public:
   CRSFAudio(const rstl::string& audioFile, const int loopStart, const int loopEnd);
@@ -33,7 +31,6 @@ public:
 
   static void MixCallback();
 #if RSTL_PRIME1
-  // Echoes moved these into CAIInterruptManager.
   static void RunDMACallback(FAudioCallback);
   static void CancelDMACallback(FAudioCallback);
   static void InstallAICallback();

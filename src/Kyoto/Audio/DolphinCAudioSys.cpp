@@ -197,7 +197,6 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
   sndSetHooks(&hooks);
   if (mProLogic2) {
     sndInit(numVoices, numMusic, numSfx,
-// Echoes activates three studios (Dolby Pro Logic II); Prime uses one.
 #if RSTL_PRIME1
             1,
 #else
@@ -206,7 +205,6 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
             1, aramSize);
   } else {
     sndInit(numVoices, numMusic, numSfx,
-// Echoes activates three studios (Dolby Pro Logic II); Prime uses one.
 #if RSTL_PRIME1
             1,
 #else
@@ -237,7 +235,6 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
 #endif
 
   mpDVDTrackDB = rs_new rstl::map< rstl::string, rstl::ncrc_ptr< CTrkData > >();
-// The rmemory_allocator argument follows the rstl vector constructor of each version.
 #if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8E_02
   mpEmitterDB = rs_new rstl::vector< CEmitterData >(maxNumEmitters, CEmitterData(),
                                                     rstl::rmemory_allocator());
@@ -290,7 +287,6 @@ void CAudioSys::SysSetSfxVolume(const uchar volume, const ushort time, const uch
   sndMasterVolume(volume, time, music, fx);
 }
 
-// Echoes' CAudioGroupSet has no token constructor; only Prime loads group sets here.
 #if RSTL_PRIME1
 bool CAudioSys::SysLoadGroupSet(CSimplePool* pool, const uint id) {
   const rstl::string& name = SysGetGroupSetName(id);
@@ -476,7 +472,6 @@ int CAudioSys::TrkQueueTrack(const rstl::string& name, void (*callback)(u32),
   return 5000;
 }
 
-// Unused in both games; each body emits the weak map helpers its target expects.
 #if RSTL_PRIME1
 void CAudioSys::TrkRemoveTrack(const rstl::string& name) { mpDVDTrackDB->erase(name); }
 
@@ -607,7 +602,6 @@ uint CAudioSys::S3dAddEmitterParaEx(const C3DEmitterParmData& params, ushort gro
   _dir.y = params.mDir.GetY();
   _dir.z = params.mDir.GetZ();
 
-// Echoes routes emitters to a studio (mStudio); Prime always uses the default one.
 #if RSTL_PRIME1
   const uchar scaledMaxVol =
       (mVolumeScale * (params.mMaxVol > 0x7f ? 0x7f : params.mMaxVol)) / 0x7f;
