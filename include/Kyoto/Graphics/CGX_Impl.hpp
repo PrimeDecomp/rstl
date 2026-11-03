@@ -406,7 +406,6 @@ CGX_INLINE void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
 
 CGX_INLINE void CGX::End() { GXEnd(); }
 
-#if RSTL_PRIME1
 CGX_INLINE void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
@@ -415,7 +414,6 @@ CGX_INLINE void CGX::apply_fog() {
            (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
                                                                  : CGX_STATE.mFogParams.mFogColor);
 }
-#endif
 
 #if RSTL_PRIME1
 CGX_INLINE void CGX::SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
