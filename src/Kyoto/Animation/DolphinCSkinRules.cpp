@@ -1,20 +1,23 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinRules.hpp"
+
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
-#include "Kyoto/CFactoryMgr.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
-#endif
-
+#include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
-#include "rstl/math.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#include "dolphin/os/OSCache.h"
-#else
+#include "Kyoto/Platform.h"
+#include "rstl/RstlVersions.h"
+
 #include "dolphin/gx.h"
+#include "dolphin/os/OSCache.h"
+#include "rstl/math.hpp"
+
+#if defined(TARGET_PC)
+#include <borealis/log.hpp>
+
+namespace {
+constexpr borealis::Log Log{"CSkinRules"};
+} // namespace
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -114,6 +117,9 @@ void CSkinRules::BuildPoints(volatile void* pipe) const {
     for (int done = 0; done < vertexCount;) {
       const int count = ProcessingPoints(vertexCount - done, &buffer);
       mVirtualBones[i].BuildPoints(buffer, pipe, count);
+#if defined(TARGET_PC)
+      pipe = static_cast< volatile float* >(pipe) + count * 3;
+#endif
       done += count;
     }
   }
@@ -126,6 +132,9 @@ void CSkinRules::BuildNormals(volatile void* pipe) const {
     for (int done = 0; done < vertexCount;) {
       const int count = ProcessingNormals(vertexCount - done, &buffer);
       mVirtualBones[i].BuildNormals(buffer, pipe, count);
+#if defined(TARGET_PC)
+      pipe = static_cast< volatile float* >(pipe) + count * 3;
+#endif
       done += count;
     }
   }
@@ -175,31 +184,35 @@ void CSkinRules::InitLockedCacheState(const CModel& model) {
 }
 
 void CSkinRules::StartNextTransaction() {
-  uchar* destination = reinterpret_cast< uchar* >(LCGetBase());
-  if (!sTransferringFirstPage) {
-    destination += 0x1000;
-  }
-
-  int count;
-  const CVector3f* source;
-  if (sNextPointStart != sLockedRules->GetNumPoints()) {
-    count = rstl::min_val(336, sLockedRules->GetNumPoints() - sNextPointStart);
-    source = static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetPositions()) +
-             sNextPointStart;
-  } else {
-    const int normalCount = sLockedRules->GetNumNormals();
-    if (normalCount == sNextNormalStart) {
-      return;
+  if (!IS_TARGET_PC) {
+    uchar* destination = reinterpret_cast< uchar* >(LCGetBase());
+    if (!sTransferringFirstPage) {
+      destination += 0x1000;
     }
-    count = rstl::min_val(336, normalCount - sNextNormalStart);
-    source = static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetNormals()) +
-             sNextNormalStart;
-  }
 
-  LCLoadData(destination, const_cast< CVector3f* >(source), (count * sizeof(CVector3f) + 31) & ~31);
-  sCurrentPointCount = count;
-  ++sTransactionCount;
-  sTransferringFirstPage = !sTransferringFirstPage;
+    int count;
+    const CVector3f* source;
+    if (sNextPointStart != sLockedRules->GetNumPoints()) {
+      count = rstl::min_val(336, sLockedRules->GetNumPoints() - sNextPointStart);
+      source =
+          static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetPositions()) +
+          sNextPointStart;
+    } else {
+      const int normalCount = sLockedRules->GetNumNormals();
+      if (normalCount == sNextNormalStart) {
+        return;
+      }
+      count = rstl::min_val(336, normalCount - sNextNormalStart);
+      source = static_cast< const CVector3f* >(sCurrentTransaction->GetCubeModel()->GetNormals()) +
+               sNextNormalStart;
+    }
+
+    LCLoadData(destination, const_cast< CVector3f* >(source),
+               (count * sizeof(CVector3f) + 31) & ~31);
+    sCurrentPointCount = count;
+    ++sTransactionCount;
+    sTransferringFirstPage = !sTransferringFirstPage;
+  }
 }
 
 static void WaitForQueue() {
@@ -210,52 +223,74 @@ static void WaitForQueue() {
 }
 
 int CSkinRules::ProcessingPoints(int count, ushort** buf) {
-  if (sCurrentPoint + count > sNextPointStart) {
-    if (sCurrentPoint == sNextPointStart) {
-      WaitForQueue();
-      sCurrentFirst = sNextPointStart;
-      sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
-      if (sTransferringFirstPage) {
-        sCurrentBase = reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
-      }
-
-      sNextPointStart += sCurrentPointCount;
-      StartNextTransaction();
+  if (IS_TARGET_PC) {
+    if (count < 0 || count > sLockedRules->GetNumPoints() - sCurrentPoint) {
+      IF_TARGET_PC(Log.fatal("Skin bone indices exceed model array"));
     }
-
-    int c = rstl::min_val(sNextPointStart - sCurrentPoint, count);
-    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
-    sCurrentPoint += c;
-    return c;
-  } else {
-    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
+    *buf = reinterpret_cast< ushort* >(const_cast< float* >(sCurrentTransaction->GetPositions()) +
+                                       sCurrentPoint * 3);
     sCurrentPoint += count;
     return count;
+  } else {
+    if (sCurrentPoint + count > sNextPointStart) {
+      if (sCurrentPoint == sNextPointStart) {
+        WaitForQueue();
+        sCurrentFirst = sNextPointStart;
+        sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
+        if (sTransferringFirstPage) {
+          sCurrentBase =
+              reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
+        }
+
+        sNextPointStart += sCurrentPointCount;
+        StartNextTransaction();
+      }
+
+      int c = rstl::min_val(sNextPointStart - sCurrentPoint, count);
+      *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
+      sCurrentPoint += c;
+      return c;
+    } else {
+      *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentPoint - sCurrentFirst));
+      sCurrentPoint += count;
+      return count;
+    }
   }
 }
 
 int CSkinRules::ProcessingNormals(int count, ushort** buf) {
-  if (sCurrentNormal + count > sNextNormalStart) {
-    if (sCurrentNormal == sNextNormalStart) {
-      WaitForQueue();
-      sCurrentFirst = sNextNormalStart;
-      sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
-      if (sTransferringFirstPage) {
-        sCurrentBase = reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
-      }
-
-      sNextNormalStart += sCurrentPointCount;
-      StartNextTransaction();
+  if (IS_TARGET_PC) {
+    if (count < 0 || count > sLockedRules->GetNumNormals() - sCurrentNormal) {
+      IF_TARGET_PC(Log.fatal("Skin bone indices exceed model array"));
     }
-
-    int c = rstl::min_val(sNextNormalStart - sCurrentNormal, count);
-    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
-    sCurrentNormal += c;
-    return c;
-  } else {
-    *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
+    *buf = reinterpret_cast< ushort* >(const_cast< float* >(sCurrentTransaction->GetNormals()) +
+                                       sCurrentNormal * 3);
     sCurrentNormal += count;
     return count;
+  } else {
+    if (sCurrentNormal + count > sNextNormalStart) {
+      if (sCurrentNormal == sNextNormalStart) {
+        WaitForQueue();
+        sCurrentFirst = sNextNormalStart;
+        sCurrentBase = reinterpret_cast< CVector3f* >(LCGetBase());
+        if (sTransferringFirstPage) {
+          sCurrentBase =
+              reinterpret_cast< CVector3f* >(static_cast< uchar* >(LCGetBase()) + 0x1000);
+        }
+
+        sNextNormalStart += sCurrentPointCount;
+        StartNextTransaction();
+      }
+
+      int c = rstl::min_val(sNextNormalStart - sCurrentNormal, count);
+      *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
+      sCurrentNormal += c;
+      return c;
+    } else {
+      *buf = reinterpret_cast< ushort* >(sCurrentBase + (sCurrentNormal - sCurrentFirst));
+      sCurrentNormal += count;
+      return count;
+    }
   }
 }
 #else
@@ -267,7 +302,11 @@ void CSkinRules::LoadMatrixBank(int bank) const {
     if (index != -1) {
       const int slot = (i - start) * 3;
       GXLoadPosMtxIndx(index, slot);
+#ifdef TARGET_PC
+      CGX::LoadNrmMtxIndx3x3(index, slot);
+#else
       GXLoadNrmMtxIndx3x3(index, slot);
+#endif
     }
   }
 }

@@ -3,9 +3,9 @@
 #include "rstl/RstlVersions.h"
 
 #include "types.h"
-#include "Kyoto/Graphics/CCubeMaterial.hpp"
-
 #include "Kyoto/Graphics/CCubeSurface.hpp"
+#include "Kyoto/Graphics/CCubeMaterial.hpp"
+#include "Kyoto/Graphics/ModelTypes.hpp"
 
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/TToken.hpp"
@@ -36,7 +36,11 @@ public:
 
   class ModelInstance {
   public:
-    ModelInstance(SurfaceList& surfaces, const void* materialData, const void* positions,
+#if defined(TARGET_PC)
+    ModelInstance(TModelData materialData, const SModelArrays& arrays)
+    : mMaterialData(materialData), mArrays(arrays) {}
+#else
+    ModelInstance(SurfaceList& surfaces, TModelData materialData, const void* positions,
                   const void* normals, const void* colors, const void* uvs,
                   const void* packedTexCoords)
     : mSurfacePtrs(surfaces)
@@ -46,33 +50,57 @@ public:
     , mColors(colors)
     , mTexCoords(uvs)
     , mPackedTexCoords(packedTexCoords) {}
+#endif
 
     SurfaceList& Surfaces() { return mSurfacePtrs; }
     const SurfaceList& Surfaces() const { return mSurfacePtrs; }
     const SurfaceList& GetSurfaces() const { return mSurfacePtrs; }
 
-    const void* GetMaterialPointer() const { return mMaterialData; }
-    void SetMaterialPointer(const void* data) { mMaterialData = data; }
-
+    const void* GetMaterialPointer() const { return GetModelDataPointer(mMaterialData); }
+    TModelData GetMaterialData() const { return mMaterialData; }
+    void SetMaterialPointer(TModelData mat) { mMaterialData = mat; }
+#if defined(TARGET_PC)
+    const SModelArrays& GetArrays() const { return mArrays; }
+    const void* GetVertexPointer() const { return mArrays.positions.data(); }
+    const void* GetNormalPointer() const { return mArrays.normals.data(); }
+    const void* GetColorPointer() const { return mArrays.colors.data(); }
+    const void* GetTCPointer() const { return mArrays.texCoords.data(); }
+    const void* GetPackedTCPointer() const { return mArrays.packedTexCoords.data(); }
+#else
     const void* GetVertexPointer() const { return mPositions; }
     const void* GetNormalPointer() const { return mNormals; }
     const void* GetColorPointer() const { return mColors; }
     const void* GetTCPointer() const { return mTexCoords; }
     const void* GetPackedTCPointer() const { return mPackedTexCoords; }
+#endif
 
   private:
+#if !defined(TARGET_PC)
     SurfaceList& mSurfacePtrs;
-    const void* mMaterialData;
+#endif
+    TModelData mMaterialData;
+#if defined(TARGET_PC)
+    SModelArrays mArrays;
+#else
     const void* mPositions;
     const void* mNormals;
     const void* mColors;
     const void* mTexCoords;
     const void* mPackedTexCoords;
+#endif
   };
+
+#if defined(TARGET_PC)
+  CCubeModel(std::span< const TModelData > surfaces,
+             rstl::vector< TCachedToken< CTexture > >* textures, TModelData materialData,
+             const SModelArrays& arrays, const CAABox& bounds, uchar visorFlags,
+             bool texturesLoaded, uint idx);
+#else
   CCubeModel(SurfaceList* surfaces, rstl::vector< TCachedToken< CTexture > >* textures,
-             const void* materialData, const void* positions, const void* normals,
+             TModelData materialData, const void* positions, const void* normals,
              const void* colors, const void* uvs, const void* compressedUvs, const CAABox& bounds,
              uchar visorFlags, bool texturesLoaded, uint idx);
+#endif
 
   static void SetRenderModelBlack(bool v);
   static void SetModelWireframe(bool v);
@@ -80,16 +108,16 @@ public:
   static void EnableShadowMaps(const CTexture*, const CTransform4f&, unsigned char, unsigned char);
   static void SetNewPlayerPositionAndTime(const CVector3f& pos, const CStopwatch& stopwatch);
   static void SetDrawingOccluders(bool);
-  static void MakeTexturesFromMats(const void* data,
+  static void MakeTexturesFromMats(TModelData data,
                                    rstl::vector< TCachedToken< CTexture > >& textures,
                                    IObjectStore& store, bool cache);
 
   void UnlockTextures() const;
   bool TryLockTextures() const;
-  void RemapMaterialData(const void* data, rstl::vector< TCachedToken< CTexture > >* textures);
+  void RemapMaterialData(TModelData data, rstl::vector< TCachedToken< CTexture > >* textures);
   void SetStaticArraysCurrent() const;
   void SetArraysCurrent() const;
-  void SetSkinningArraysCurrent(const float* positions, const float* normals) const;
+  void SetSkinningArraysCurrent(TModelPositions positions, TModelNormals normals) const;
   void SetUsingPackedLightmaps(bool v) const;
   static bool IsUsingPackedLightmaps() { return sUsingPackedLightmaps; }
 
@@ -98,10 +126,10 @@ public:
   void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
   void DrawNormal(const CModelFlags& flags) const;
   void DrawNormal(ESurfaceSelection which) const;
-  void DrawNormal(const float* positions, const float* normals, ESurfaceSelection which) const;
+  void DrawNormal(TModelPositions positions, TModelNormals normals, ESurfaceSelection which) const;
   void DrawAlpha(const CModelFlags& flags) const;
   void DrawFlat(int flags) const;
-  void DrawFlat(const float* positions, const float* normals, ESurfaceSelection which) const;
+  void DrawFlat(TModelPositions positions, TModelNormals normals, ESurfaceSelection which) const;
   void DrawSurface(const CCubeSurface& surface, const CModelFlags& flags) const;
   void DrawSurfaceWireframe(const CCubeSurface& surface) const;
   void DrawSurfaceFlat(const CCubeSurface& surface) const; // Guessed name.
@@ -130,6 +158,12 @@ public:
     return GetMaterialByIndex(surface.GetMaterialIndex());
   }
 
+#if defined(TARGET_PC)
+  size_t GetSurfaceStorageSize() const {
+    return mSurfaces.capacity() * sizeof(CCubeSurface::SSurfaceData);
+  }
+#endif
+
 private:
   void CacheMaterialData(); // Guessed name; caches the offsets and material payload.
 
@@ -150,6 +184,10 @@ private:
   const uint* mMaterialOffsets;
   const uchar* mMaterialData;
 #endif
+#if defined(TARGET_PC)
+  rstl::vector< CCubeSurface::SSurfaceData > mSurfaces;
+#endif
+
 
   static bool sUsingPackedLightmaps;
 };

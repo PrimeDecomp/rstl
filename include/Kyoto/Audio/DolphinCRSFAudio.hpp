@@ -5,11 +5,9 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
 #include "dolphin/hw_regs.h"
-#endif
-
 #include "Kyoto/Audio/g721.h"
+#include "Kyoto/Platform.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
@@ -25,11 +23,12 @@ public:
   void Play();
   void Stop();
 
-  static void MixCallback();
   // Guessed names for the balanced Wii audio-suppression API.
   static void PushMute();
   static void PopMute();
-  void DoMix();
+
+  static void MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
+  void DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
 
   void Decode(ushort* out, const ushort* in, int numSamples);
   void DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, int startSample,
@@ -51,6 +50,13 @@ private:
   g72x_state mLeftState;
   g72x_state mRightState;
   ushort mVolume;
+#if defined(TARGET_PC)
+  u32 mAudioPhase = 0;
+  short mAudioHistory[2][2] = {};
+  short mAudioPair[4] = {};
+  u32 mAudioPairRead = 2;
+  bool mAudioPrimed = false;
+#endif
 };
 
 CHECK_SIZEOF(CRSFAudio, 0xC4)

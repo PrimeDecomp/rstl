@@ -9,6 +9,7 @@ class CMemorySys;
 
 class CGraphicsSys {
 public:
+  explicit CGraphicsSys(const COsContext& osContext); // PC-specific
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint, void*);
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys);
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive);

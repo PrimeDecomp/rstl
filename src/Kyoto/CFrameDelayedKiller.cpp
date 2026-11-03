@@ -1,15 +1,16 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 
 #include "Kyoto/Particles/CElementAllocationChunk.hpp"
-
 #include "Kyoto/Particles/IElement.hpp"
-
-#include "dolphin/gx/GXManage.h"
+#include "Kyoto/Platform.h"
+#include "rstl/RstlVersions.h"
 #include "rstl/list.hpp"
 
-#if RSTL_PRIME1 && NONMATCHING
+#include "dolphin/gx/GXManage.h"
+
 #include "stdint.h"
+#if defined(TARGET_PC)
+#include <dolphin/gx/GXAurora.h>
 #endif
 
 static uint sCurList = 0;
@@ -19,17 +20,13 @@ static bool sInitialized = false;
 
 static rstl::list< void* > sFrameDelayedList[2];
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if defined(__MWERKS__) && (RSTL_VERSION < RSTL_GM8P_00)
 #pragma force_active on
 CFrameDelayedKiller::Stats CFrameDelayedKiller::mUnusedStats = {0, 0, 0, 0, 0, 0};
 #pragma force_active reset
 #endif
-#endif
 
 void CFrameDelayedKiller::Initialize() {
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   sInitialized = true;
 #endif
@@ -38,7 +35,6 @@ void CFrameDelayedKiller::Initialize() {
 
 void CFrameDelayedKiller::ShutDown() {
   StallAndFlushAllAllocations();
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   sInitialized = false;
 #endif
@@ -51,12 +47,14 @@ void CFrameDelayedKiller::FlushAllAllocations() {
 }
 
 void CFrameDelayedKiller::StallAndFlushAllAllocations() {
-  GXDrawDone();
+  if (!IS_TARGET_PC) {
+    // At this point, we've already drained the GX FIFO
+    GXDrawDone();
+  }
   FlushAllAllocations();
 }
 
 void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame whichFrame, void* victim) {
-// TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   if (victim == nullptr) {
     return;
@@ -68,7 +66,6 @@ void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame whichFrame, void* v
   }
 
 #endif
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint index = whichFrame == true ? sCurList : sCurList ^ 1;
 #else
@@ -80,6 +77,10 @@ void CFrameDelayedKiller::ScheduleDeletion(const EWhichFrame whichFrame, void* v
 void CFrameDelayedKiller::FlushAllocationsForFrame() {
   sCurList ^= 1;
   rstl::list< void* >& list = sFrameDelayedList[sCurList];
+  if (IS_TARGET_PC && !list.empty()) {
+    IF_TARGET_PC(AuroraGXSync());
+  }
+
   for (rstl::list< void* >::iterator t = list.begin(); t != list.end(); ++t) {
     CMemory::Free(*t);
   }
@@ -88,9 +89,7 @@ void CFrameDelayedKiller::FlushAllocationsForFrame() {
 }
 
 CElementAllocationChunk::CElementAllocationChunk()
-: mCapacity(256)
-, mAllocatedWords(0)
-, mAllocationCount(0) {}
+: mCapacity(256), mAllocatedWords(0), mAllocationCount(0) {}
 
 bool CElementAllocationChunk::CanAllocate(uint size) const {
   return mCapacity > mAllocatedWords + (size + 3) / 4;
@@ -98,8 +97,7 @@ bool CElementAllocationChunk::CanAllocate(uint size) const {
 
 bool CElementAllocationChunk::Contains(const void* ptr) const {
 #if RSTL_PRIME1 && NONMATCHING
-  return reinterpret_cast< uintptr_t >(ptr) - reinterpret_cast< uintptr_t >(mData) <
-         sizeof(mData);
+  return reinterpret_cast< uintptr_t >(ptr) - reinterpret_cast< uintptr_t >(mData) < sizeof(mData);
 #else
   int offset = static_cast< const char* >(ptr) - reinterpret_cast< const char* >(mData);
   int index = offset / 4;
@@ -134,4 +132,3 @@ void* IElement::operator new(size_t sz, const char* fileAndLine, const char* typ
 }
 
 void IElement::operator delete(void* ptr, const size_t sz) { CElementAllocator::Free(ptr, sz); }
-

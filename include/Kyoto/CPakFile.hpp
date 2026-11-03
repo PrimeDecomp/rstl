@@ -5,14 +5,13 @@
 #include "types.h"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/SObjectTag.hpp"
+#include "Kyoto/IObjectStore.hpp"
 
+#include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/IObjectStore.hpp"
-#endif
 
 class CMemoryInStream;
 
@@ -51,6 +50,12 @@ public:
   };
 #pragma pack(pop)
 
+#if RSTL_PRIME1
+  typedef rstl::vector< SResInfo > ResListType;
+#else
+  typedef rstl::vector< SResInfo, rstl::aligned_allocator > ResListType;
+#endif
+
   CPakFile(const rstl::string& filename, RSTL_PRIME1_CONST bool buildDepList,
            RSTL_PRIME1_CONST bool worldPak);
 
@@ -77,7 +82,7 @@ public:
   const SResInfo* GetResInfo(uint id) RSTL_PRIME1_CONST;
   const SResInfo* GetResInfoForLoadDirectionless(uint id);
   const SResInfo* GetResInfoForLoadPreferForward(uint id);
-  uint GetFakeStaticSize() const;
+  int GetFakeStaticSize() const;
 
 private:
   void UpdateFakeStaticSize();
@@ -98,24 +103,23 @@ private:
   rstl::vector< uchar, rstl::aligned_allocator > mHeaderData;
   uint mResTableOffset;
 #if RSTL_PRIME1
-  uint mResTableCount;
-  void* mAramBase;
+  int mResTableCount;
 #else
   int mResTableCount;
   int mFakeStaticSize;
-  const void* mpARAMHeader;
 #endif
+#if !defined(TARGET_PC)
+  RSTL_ECHOES_CONST void* mAramBase;
+#endif // !defined(TARGET_PC)
 
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > mNameList;
   rstl::vector< CAssetId > mDepList;
-#if RSTL_PRIME1
-  rstl::vector< SResInfo > mResList;
-  int mCurrentSeek;
-#else
-  rstl::vector< SResInfo, rstl::aligned_allocator > mResInfoBuckets;
+  ResListType mResList;
+#if !RSTL_PRIME1
   rstl::vector< int > mBucketOffsets;
-  mutable int mCurrentSeek;
+  mutable
 #endif
+  int mCurrentSeek;
 };
 CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : 0x9c)
 NESTED_CHECK_SIZEOF(CPakFile, SResInfo, RSTL_PRIME1 ? 0xa : 0xb)

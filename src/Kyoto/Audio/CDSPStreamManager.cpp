@@ -1,21 +1,20 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
-
-#include "Kyoto/CDvdFile.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CInterruptGuard.hpp"
+#include "Kyoto/CDvdFile.hpp"
+#include "Kyoto/Platform.h"
+#include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
 #include "dolphin/dvd.h"
-#endif
-
 #include "dolphin/os.h"
-#if RSTL_PRIME1
 #include "dolphin/os/OSThread.h"
-#endif
 
 #include "string.h"
+
+#if defined(TARGET_PC)
+#include "Metaforce/Audio.hpp"
+#endif
 
 #if RSTL_PRIME1
 CDSPStreamManager g_Streams[4] = {CDSPStreamManager(), CDSPStreamManager(), CDSPStreamManager(),
@@ -65,14 +64,35 @@ bool CDSPStreamManager::StartHeaderRead(DVDCallback callback) {
   return true;
 }
 
-bool CDSPStreamManager::HasSupportedSampleRate() { return mHeader.mSampleRate == 32000; }
+bool CDSPStreamManager::HasSupportedSampleRate() {
+  if (IS_TARGET_PC) {
+    return mHeader.mSampleRate > 0 && mHeader.mSampleRate <= 65535;
+  } else {
+    return mHeader.mSampleRate == 32000;
+  }
+}
 
 void CDSPStreamManager::WaitForReadCompletion() {
   BOOL ints = OSEnableInterrupts();
+#if IS_TARGET_PC
+  for (;;) {
+    bool complete;
+    {
+      metaforce::AudioLockGuard lock;
+      complete = mHeaderReadState != kHRS_Reading;
+    }
+    if (complete) {
+      OSRestoreInterrupts(ints);
+      return;
+    }
+    OSYieldThread();
+  }
+#else
   while (mHeaderReadState == 1) {
     OSYieldThread();
   }
   OSRestoreInterrupts(ints);
+#endif
 }
 
 CDSPStreamManager& CDSPStreamManager::operator=(const CDSPStreamManager& other) {
@@ -118,6 +138,14 @@ void CDSPStreamManager::Initialize() {
 }
 
 void CDSPStreamManager::Shutdown() {
+#if defined(TARGET_PC)
+  {
+    metaforce::AudioLockGuard lock;
+    for (auto& stream : g_Streams) stream.mHeaderReadCancelled = true;
+  }
+  for (auto& stream : g_Streams) stream.WaitForReadCompletion();
+#endif
+
 #if RSTL_PRIME1
   CDSPStream::FreeAllStreams();
   for (int i = 0; i < 4; ++i) {
@@ -754,12 +782,26 @@ CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
 }
 
 void CDSPStreamManager::HeaderReadComplete(s32 result, DVDFileInfo* fileInfo) {
+#if defined(TARGET_PC)
+  metaforce::AudioLockGuard lock;
+#endif
   DVDClose(fileInfo);
 
   for (int idx = 0; idx < 4; ++idx) {
     CDSPStreamManager* stream = &g_Streams[idx];
     if (&stream->mDvdFile == fileInfo && !stream->mUnclaimed) {
       CInterruptGuard interrupts;
+
+      #if (IS_TARGET_PC)
+        if (result != 0x60 
+            || !metaforce::ReadDSPHeader({reinterpret_cast<const u8*>(&stream->mHeader), 0x60}, stream->mHeader) 
+            || fileInfo->length < 0x60 
+            || (u64(stream->mHeader.mNumNibbles) + 1) / 2 > fileInfo->length - 0x60) {
+          *stream = CDSPStreamManager();
+          return;
+        }
+      #endif
+
       if (result <= 0 || !stream->HasSupportedSampleRate()) {
         *stream = CDSPStreamManager();
         return;

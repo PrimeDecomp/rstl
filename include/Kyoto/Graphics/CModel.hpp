@@ -27,7 +27,7 @@ class CModel {
 
   struct SShader {
     rstl::vector< TCachedToken< CTexture > > mTextures;
-    uchar* mData;
+    TModelData mData;
 #if !RSTL_PRIME1
     CModel* mOwner;
     SShader* mPrev;
@@ -35,9 +35,9 @@ class CModel {
 #endif
 
 #if RSTL_PRIME1
-    SShader(uchar* data) : mData(data) {};
+    SShader(TModelData data) : mData(data) {};
 #else
-    SShader(uchar* data, CModel* owner);
+    SShader(TModelData data, CModel* owner);
     SShader(const SShader& other);
     ~SShader();
 #endif
@@ -93,10 +93,12 @@ public:
   void UpdateLastFrame() const;
   void VerifyCurrentShader(int shader) const;
 
+#if !defined(TARGET_PC)
   // Retail buffer relocation methods; names are inferred from their implementations.
   rstl::auto_ptr< uchar > GetData();
-  uint GetDataSize() const;
   void RemapData(uchar* data);
+#endif
+  uint GetDataSize() const;
   static void DisableTextureTimeout();
   static void EnableTextureTimeout();
   static void FrameDone();
@@ -112,7 +114,9 @@ private:
 
   rstl::single_ptr< uchar > mData;
   uint mDataLen;
+#if !defined(TARGET_PC)
   CCubeModel::SurfaceList mSurfaces;
+#endif
 
   mutable rstl::vector< SShader > mMatSets;
   rstl::single_ptr< CCubeModel > mModelInstance;
@@ -129,7 +133,9 @@ private:
   uint mInitialTextureLocksReleased : 1;
   uint mHasSkinMatrices : 1;
 #endif
-
+#if defined(TARGET_PC)
+  uint mResourceSize;
+#endif
 };
 CHECK_SIZEOF(CModel, RSTL_PRIME1 ? 0x3c : 0x34)
 

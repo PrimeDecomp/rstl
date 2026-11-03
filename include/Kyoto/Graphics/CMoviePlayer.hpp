@@ -1,16 +1,70 @@
 #ifndef _CMOVIEPLAYER
 #define _CMOVIEPLAYER
+
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 
-#include "dolphin/thp/THPInfo.h"
 #include "rstl/vector.hpp"
-#include "types.h"
+#include "Kyoto/Platform.h"
 
-#include "dolphin/thp/THPFile.h"
+#if !defined(TARGET_PC)
+#include "dolphin/thp/THPPlayer.h"
+#else
+
+typedef struct THPHeader {
+  char mMagic[4];
+  u32 mVersion;
+  u32 mBufferSize;
+  u32 mAudioMaxSamples;
+  f32 mFrameRate;
+  u32 mNumFrames;
+  u32 mFirstFrameSize;
+  u32 mMovieDataSize;
+  u32 mCompInfoDataOffsets;
+  u32 mOffsetDataOffsets;
+  u32 mMovieDataOffsets;
+  u32 mFinalFrameDataOffsets;
+} THPHeader;
+CHECK_SIZEOF(THPHeader, 0x30)
+
+typedef struct THPVideoInfo {
+  u32 mXSize;
+  u32 mYSize;
+  u32 mVideoType;
+} THPVideoInfo;
+CHECK_SIZEOF(THPVideoInfo, 0xC)
+
+typedef struct THPVideoInfoOld {
+  u32 mXSize;
+  u32 mYSize;
+} THPVideoInfoOld;
+CHECK_SIZEOF(THPVideoInfoOld, 0x8)
+
+typedef struct THPAudioInfo {
+  u32 mSndChannels;
+  u32 mSndFrequency;
+  u32 mSndNumSamples;
+  u32 mSndNumTracks;
+} THPAudioInfo;
+CHECK_SIZEOF(THPAudioInfo, 0x10)
+
+typedef struct THPAudioInfoOld {
+  u32 mSndChannels;
+  u32 mSndFrequency;
+  u32 mSndNumSamples;
+} THPAudioInfoOld;
+CHECK_SIZEOF(THPAudioInfoOld, 0xC)
+
+typedef struct THPFrameCompInfo {
+  u32 mNumComponents;
+  u8 mFrameComp[16];
+} THPFrameCompInfo;
+CHECK_SIZEOF(THPFrameCompInfo, 0x14)
+
+#endif
 
 class CMoviePlayer {
 public:
@@ -96,7 +150,7 @@ private:
   struct SIndexLoad;
 
   static void VerifyCallbackStatus();
-  static void StaticMyAudioCallback();
+  static void StaticMyAudioCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
   void InitializeTextures();
   void ReadCompleted();
   void PostDVDReadRequestIfNeeded();
@@ -110,10 +164,10 @@ private:
   THPFrameCompInfo mThpComponents;
 #if RSTL_PRIME1
   THPVideoInfoOld mVideoInfo;
-  THPAudioInfoOld mAudioInfo;
+  THPAudioInfoOld mAudioInfo IF_TARGET_PC({});
 #else
   THPVideoInfo mVideoInfo;
-  THPAudioInfo mAudioInfo;
+  THPAudioInfo mAudioInfo IF_TARGET_PC({});
 #endif
 
   rstl::vector< CTHPTextureSet > mTextures;
@@ -172,7 +226,11 @@ private:
 #if !RSTL_PRIME1
   uchar mVolume;
 #endif
-
+#if defined(TARGET_PC)
+  u32 m_audioPhase = 0;
+  short m_audioHistory[2][2] = {};
+  bool m_audioPrimed = false;
+#endif
 };
 CHECK_SIZEOF(CMoviePlayer, RSTL_PRIME1 ? 0x100 : 0x120)
 

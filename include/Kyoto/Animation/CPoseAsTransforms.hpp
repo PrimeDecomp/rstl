@@ -1,22 +1,15 @@
 #ifndef _CPOSEASTRANSFORMS
 #define _CPOSEASTRANSFORMS
-#include "rstl/RstlVersions.h"
 
 #include "types.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Animation/TSegIdMapVariableSize.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
-#else
-#include "Echoes/MetroidPrime/TGameTypes.hpp"
-#endif
-
 #include "Kyoto/Math/CTransform4f.hpp"
-#if !RSTL_PRIME1
+
 #include "rstl/reserved_vector.hpp"
 #include "rstl/single_ptr.hpp"
-#endif
+#include "rstl/RstlVersions.h"
 
 class CPoseAsTransforms {
 public:

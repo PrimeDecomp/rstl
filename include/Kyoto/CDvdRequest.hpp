@@ -33,11 +33,15 @@ public:
   DVDFileInfo& FileInfo() { return mFileInfo; }
 
 private:
-  DVDFileInfo mFileInfo;
+  DVDFileInfo mFileInfo
+  #if defined(TARGET_PC)
+  {}
+  #endif
+  ;
 };
-
 CHECK_CHILD_SIZEOF(CRealDvdRequest, CDvdRequest, 0x3c)
 
+#if !defined(TARGET_PC)
 class CARAMDvdRequest : public CDvdRequest {
 public:
   CARAMDvdRequest(uint i) : mDmaReq(i) {}
@@ -50,7 +54,7 @@ public:
 private:
   uint mDmaReq;
 };
-
 CHECK_CHILD_SIZEOF(CARAMDvdRequest, CDvdRequest, 0x4)
+#endif // !defined(TARGET_PC)
 
 #endif // _CDVDREQUEST

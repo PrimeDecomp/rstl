@@ -189,7 +189,9 @@ public:
   static SND_LISTENER* mpListener;
   static uint mUnusedEmitterHandle;
   static ESurroundModes mSurroundMode;
+#if !defined(TARGET_PC)
   static int mMaxAramUsage;
+#endif
   static void* mAICallback;
   static bool mAICallbackEnabled;
   static bool mProLogic2;
@@ -198,7 +200,9 @@ public:
   static bool mVerbose;
   static rstl::map< rstl::string, rstl::ncrc_ptr< CAudioGroupSet > >* mpGroupSetDB;
   static rstl::map< uint, rstl::string >* mpGroupSetResNameDB;
+#if !defined(TARGET_PC)
   static int mCurrentAramUsage;
+#endif
 
   static const uchar kMaxVolume;
   static const uchar kEmitterMedPriority;

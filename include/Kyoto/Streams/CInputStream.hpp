@@ -8,7 +8,7 @@
 #include "stddef.h"
 
 #if RSTL_KYOTO_BLOCK_INPUT_STREAM
-#ifndef __MWERKS__
+#if !defined(__MWERKS__) && !defined(CLANGD)
 #include <cstdlib>
 #include <type_traits>
 #endif
@@ -96,7 +96,7 @@ CHECK_SIZEOF(CInputStream, CInputStream_FULL_SIZE)
 
 template < typename T >
 inline T cinput_stream_helper(const TType< T >& type, CInputStream& in) {
-#ifndef __MWERKS__
+#if !defined(__MWERKS__) && !defined(CLANGD)
   if constexpr (!std::is_constructible_v< T, CInputStream& >) {
     abort();
   } else

@@ -161,7 +161,13 @@ public:
   static void SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src, GXTexMtx mtx,
                              GXBool normalize, GXPTTexMtx postMtx);
   static void SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags);
-  static void SetArray(GXAttr attr, const void* data, uchar stride);
+  static void SetArray(
+    GXAttr attr, const void* data, uchar stride
+#if defined(TARGET_PC)
+    , size_t size, bool le
+#endif // defined(TARGET_PC)
+  );
+
   static void SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
                      const GXColor& color);
   static void SetLineWidth(uchar width, GXTexOffset offset);
@@ -255,6 +261,9 @@ inline CGX::STexState::STexState() : mCoordGen(0) {}
 #define GXFIFO_ADDR 0xCC008000
 #endif
 
+#if TARGET_PC
+#define RSPosition3f32(x, y, z) GXPosition3f32(x, y, z)
+#else
 #if RSTL_VERSION >= RSTL_R3IJ
 #define RSWrite(T, n) (*(volatile T*)GXFIFO_ADDR) = n
 #else
@@ -266,7 +275,9 @@ inline CGX::STexState::STexState() : mCoordGen(0) {}
     RSWrite(f32, y);                                                                               \
     RSWrite(f32, z);                                                                               \
   }
-#else
+#endif // TARGET_PC
+
+#else // RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CGX, SGXState, 0x264)
 #endif
 
