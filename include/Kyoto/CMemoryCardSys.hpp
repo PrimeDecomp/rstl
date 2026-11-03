@@ -6,14 +6,8 @@
 #include "types.h"
 
 #include "Kyoto/CSimplePool.hpp"
-#if !RSTL_PRIME1
-#include "Kyoto/TToken.hpp"
-#endif
-
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "dolphin/card.h"
 #include "rstl/optional_object.hpp"
@@ -21,7 +15,9 @@
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
 
-#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
+#define RSTL_CARD_SAVE_BLOCKS (!RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00)
+
+#if !RSTL_CARD_SAVE_BLOCKS
 typedef rstl::vector< uchar, rstl::aligned_allocator > TCardFileBuffer;
 #endif
 
@@ -58,17 +54,11 @@ struct CardStat {
 
   CardStat() { memset(this, 0, sizeof(CardStat)); }
 
-#if !RSTL_PRIME1
   uint GetFileLength();
-#endif
-
   int GetTime() const;
   int GetCommentAddr() const;
-#if RSTL_PRIME1
-  int GetFileLength();
   int GetBannerFormat();
   int GetIconFormat(int idx);
-#endif
 
   void SetBannerFormat(int format);
   void SetIconFormat(int format, int idx);
@@ -82,9 +72,7 @@ class CMemoryCardSys {
 public:
   enum EMemoryCardPort { kCS_SlotA, kCS_SlotB };
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION == RSTL_GM8EAB_00
+#if RSTL_PRIME1 && RSTL_VERSION == RSTL_GM8EAB_00
   struct CCardFileInfo {
     CARDFileInfo mFileInfo;
   };
@@ -126,14 +114,16 @@ public:
       void Check();
     };
 
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CARD_SAVE_BLOCKS
+    typedef rstl::vector< uchar > TCardFileBuffer;
+
     int mBlockCount;
     int mBlockSize;
     int mWriteBlock;
     uint mSequence;
 #endif
     EStatus mStatus;
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CARD_SAVE_BLOCKS
     bool mWriteBothBlocks;
 #endif
     CARDFileInfo mFileInfo;
@@ -143,32 +133,25 @@ public:
     CAssetId mBannerTex;
     rstl::optional_object< TLockedToken< CTexture > > mBannerTok;
     rstl::reserved_vector< Icon, 8 > mIconToks;
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CARD_SAVE_BLOCKS
     rstl::vector< uchar, rstl::aligned_allocator > mHeaderBuffer;
     rstl::reserved_vector< SSaveBlock, 2 > mSaveBlocks;
 #endif
-    rstl::vector< u8 > mSaveBuffer;
-#if RSTL_VERSION >= RSTL_GM8P_00
-    rstl::vector< u8 > mCardBuffer;
-#else
+    rstl::vector< uchar > mSaveBuffer;
     TCardFileBuffer mCardBuffer;
-#endif
 
   public:
     CCardFileInfo(EMemoryCardPort port, const rstl::string& name);
-#if RSTL_VERSION >= RSTL_GM8P_00
     ~CCardFileInfo();
-#else
-    ~CCardFileInfo() {}
-#endif
 
-    void SetComment(const rstl::string& name);
-    void LockBannerToken(CAssetId bannerTxtr, CSimplePool& sp);
-    void LockIconToken(CAssetId iconTxtr, int speed, CSimplePool& sp);
+    void SetComment(const rstl::string& comment);
+    void ResetBannerAndIcons();
+    void LockBannerToken(CAssetId bannerTxtr, CSimplePool& pool);
+    void LockIconToken(CAssetId iconTxtr, int speed, CSimplePool& pool);
 
-    ECardResult PumpCardTransfer();
-    ECardResult CreateFile();
     ECardResult Open();
+    ECardResult CreateFile();
+    ECardResult CloseFile();
     ECardResult StartRead();
     ECardResult TryFileRead();
     ECardResult FileRead();
@@ -176,117 +159,29 @@ public:
     ECardResult CheckHeader();
     ECardResult WriteFile();
     ECardResult WriteBlock(int index);
-    ECardResult CloseFile();
+    ECardResult PumpCardTransfer();
     ECardResult GetStatus(CardStat& stat);
-    EMemoryCardPort GetCardPort();
+    EMemoryCardPort GetPort();
     int GetFileNo();
+    int GetTotalBlockCount();
     uint CalculateBannerDataSize();
     uint CalculateTotalDataSize();
     void BuildCardBuffer();
     void BuildHeader();
     void BuildSaveBlock();
-    int GetTotalBlockCount();
-    void ResetBannerAndIcons();
     void WriteBannerData(COutputStream& out);
     void WriteIconData(COutputStream& out);
 
-    rstl::vector< u8 >& SaveBuffer() { return mSaveBuffer; }
-
-    inline CMemoryStreamOut BeginMemoryOut(uint sz) {
-      mSaveBuffer.resize(sz);
-      return CMemoryStreamOut(mSaveBuffer.data(), sz);
-    }
-  };
-#endif
-#else
-  // Echoes stores a 0x2000-byte header block followed by two alternating copies of the save data.
-  class CCardFileInfo {
-    struct Icon {
-      CAssetId mId;
-      int mSpeed;
-      TLockedToken< CTexture > mTex;
-
-      Icon(CAssetId id, int speed, CSimplePool& pool);
-    };
-
-    struct SSaveSlot {
-      int mGeneration;
-      bool mCorrupt;
-      rstl::vector< uchar, rstl::aligned_allocator > mData;
-
-      SSaveSlot();
-      void CheckCrc();
-    };
-
-    enum EStatus {
-      kS_Standby,
-      kS_ReadHeader,
-      kS_RepairHeader,
-      kS_ReadSlotA,
-      kState_ReadingData1,
-      kS_WriteHeader,
-      kS_WriteSlot,
-      kS_WriteFirstSlot,
-      kState_WritingStatus,
-    };
-
-    int mSlotBlocks;
-    int mAlignedUserDataSize;
-    int mSlot;
-    int mGeneration;
-    EStatus mState;
-    bool mNewFile;
-    CARDFileInfo mFileInfo;
-    rstl::string mFileName;
-    rstl::string mComment;
-    int x4c_;
-    CAssetId mBannerTex;
-    rstl::optional_object< TLockedToken< CTexture > > mBannerTok;
-    rstl::reserved_vector< Icon, 8 > mIconToks;
-    rstl::vector< uchar, rstl::aligned_allocator > mHeaderBuffer;
-    rstl::reserved_vector< SSaveSlot, 2 > mSlots;
-    rstl::vector< uchar > mLoadedData;
-    rstl::vector< uchar > mUserDataWrite;
-
-  public:
-    CCardFileInfo(EMemoryCardPort port, const rstl::string& name);
-    ~CCardFileInfo();
-
-    void SetComment(const rstl::string& comment);
-    void ResetHeaderInfo();
-    void LockBannerToken(CAssetId bannerTxtr, CSimplePool& pool);
-    void LockIconToken(CAssetId iconTxtr, int speed, CSimplePool& pool);
-    void BuildHeaderBuffer();
-
-    ECardResult Open();
-    ECardResult CreateFile();
-    ECardResult StartRead();
-    ECardResult PumpCardRead();
-    ECardResult WriteFile();
-    ECardResult PumpCardTransfer();
-    ECardResult GetStatus(CardStat& stat);
-    EMemoryCardPort GetPort();
-    int GetFileNo();
-    int GetTotalNumBlocks();
-    bool IsRepairingHeader() const { return mState == kS_RepairHeader; }
-
-    rstl::vector< uchar >& LoadedData() { return mLoadedData; }
-    rstl::vector< uchar >& SaveBuffer() { return mUserDataWrite; }
-
-  private:
-    ECardResult CheckHeaderCrc();
-    ECardResult SelectSaveSlot();
-    void BuildSaveSlot();
-    void WriteBannerData(COutputStream& out);
-    void WriteIconData(COutputStream& out);
-    ECardResult WriteSaveSlot(int slot);
+    bool IsRepairingHeader() const { return mStatus == kS_Done; }
+    rstl::vector< uchar >& SaveBuffer() { return mSaveBuffer; }
+    TCardFileBuffer& CardBuffer() { return mCardBuffer; }
+    CMemoryStreamOut BeginMemoryOut(uint sz);
   };
 #endif
 
   CMemoryCardSys();
   ~CMemoryCardSys();
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION == RSTL_GM8EAB_00
   ECardResult MountCard(EMemoryCardPort port);
   ECardResult UnmountCard(EMemoryCardPort port);
@@ -323,9 +218,7 @@ public:
   static void FreeCardWorkArea(EMemoryCardPort port);
   inline void Initialize();
 
-#if !RSTL_PRIME1
   static bool mIsCardBusy;
-#endif
 #endif
 
 private:
@@ -335,10 +228,19 @@ private:
   static TCardWorkArea mWorkAreaB;
 };
 
-// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_VERSION != RSTL_GM8EAB_00 || !RSTL_PRIME1
+NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, RSTL_CARD_SAVE_BLOCKS ? 0x16c : 0x114)
+
+#if !RSTL_CARD_SAVE_BLOCKS
+inline CMemoryCardSys::CCardFileInfo::~CCardFileInfo() {}
+#endif
+
 #if RSTL_PRIME1
-#if RSTL_VERSION != RSTL_GM8EAB_00
-NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, RSTL_VERSION >= RSTL_GM8P_00 ? 0x16c : 0x114)
+inline CMemoryStreamOut CMemoryCardSys::CCardFileInfo::BeginMemoryOut(uint sz) {
+  mSaveBuffer.resize(sz);
+  return CMemoryStreamOut(mSaveBuffer.data(), sz);
+}
+#endif
 #endif
 
 struct SMemoryCardFileInfo {
@@ -366,11 +268,6 @@ struct SMemoryCardFileInfo {
 };
 CHECK_SIZEOF(SMemoryCardFileInfo, 0x44);
 
-#if RSTL_VERSION == RSTL_GM8EAB_00
 extern CMemoryCardSys* gpMemoryCardSys;
-#endif
-#else
-NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, 0x16C)
-#endif
 
 #endif // _CMEMORYCARDSYS
