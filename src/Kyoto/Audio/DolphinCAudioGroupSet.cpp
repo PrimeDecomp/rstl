@@ -16,8 +16,22 @@
 
 #include "string.h"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+extern "C" {
+u32 sndStackGetSize(void);
+u32 sndStackAdd(void* buffer, const void* aramAddr, u32 size);
+bool sndStackSetCurrent(u32 id);
+void sndStackRemove(u32 id);
+}
+
+bool CAudioGrpSetLoc::sInSinglePlayer;
+static uchar* sUploadBuffer;
+
+static void* UploadCallback(u32 offset, u32 bytes) {
+  memcpy(sUploadBuffer, reinterpret_cast< void* >(offset), bytes);
+  DCFlushRange(sUploadBuffer, bytes);
+  return sUploadBuffer;
+}
+
 CAudioGroupSet::CAudioGroupSet(const TLockedToken< CAudioGrpSetLoc >& group)
 : mBaseDir(group->GetBaseDirName()), mGroupSetName(group->GetGroupSetName()), mGroupSetTok(group) {}
 
@@ -27,7 +41,17 @@ void CAudioGroupSet::Reload() {}
 
 void CAudioGroupSet::FreeSampleBuffer() { mGroupSetTok.data()->FreeSampleBuffer(); }
 
+#if !RSTL_PRIME1
+RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
+                                                                const rstl::auto_ptr< uchar >& data,
+                                                                int length,
+                                                                const CVParamTransfer& xfer) {
+  return rs_new CAudioGrpSetLoc(data, length);
+}
+#endif
+
 CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length)
+#if RSTL_PRIME1
 : mData(data.release())
 , mAramSize(0)
 , mPool(nullptr)
@@ -80,40 +104,7 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
   mSampleDir = mGroupData.get() + roundedProjectSize;
   memcpy(mSampleDir, ptr + (sdirOffset + 4), sdirSize);
   mSamples = &ptr[sampOffset + 4];
-}
-
-void CAudioGrpSetLoc::FreeSampleBuffer() const {
-  mData = nullptr;
-  mSamples = nullptr;
-}
 #else
-extern "C" {
-u32 sndStackGetSize(void);
-u32 sndStackAdd(void* buffer, const void* aramAddr, u32 size);
-bool sndStackSetCurrent(u32 id);
-void sndStackRemove(u32 id);
-}
-
-bool CAudioGrpSetLoc::sInSinglePlayer;
-static uchar* sUploadBuffer;
-
-static void* UploadCallback(u32 offset, u32 bytes) {
-  memcpy(sUploadBuffer, reinterpret_cast< void* >(offset), bytes);
-  DCFlushRange(sUploadBuffer, bytes);
-  return sUploadBuffer;
-}
-#endif
-
-RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-                                                                const rstl::auto_ptr< uchar >& data,
-                                                                int length,
-                                                                const CVParamTransfer& xfer) {
-  return rs_new CAudioGrpSetLoc(data, length);
-}
-
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length)
 : mStackId(-2), mAramAlloc(CARAMManager::GetInvalidAlloc()) {
   CMemoryInStream in(data.get(), length);
   if (in.ReadInt32() <= 1) {
@@ -176,8 +167,24 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
       }
     }
   }
+#endif
 }
 
+#if RSTL_PRIME1
+void CAudioGrpSetLoc::FreeSampleBuffer() const {
+  mData = nullptr;
+  mSamples = nullptr;
+}
+
+RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
+                                                                const rstl::auto_ptr< uchar >& data,
+                                                                int length,
+                                                                const CVParamTransfer& xfer) {
+  return rs_new CAudioGrpSetLoc(data, length);
+}
+#endif
+
+#if !RSTL_PRIME1
 CAudioGrpSetLoc::~CAudioGrpSetLoc() {
   if (mStackId != -2 && mStackId != -1) {
     sndStackSetCurrent(mStackId);

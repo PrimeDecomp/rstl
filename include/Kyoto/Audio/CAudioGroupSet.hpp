@@ -11,50 +11,32 @@
 #include "rstl/single_ptr.hpp"
 #include "rstl/string.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 
 class CInputStream;
-#else
-#include "Kyoto/CFactoryMgr.hpp"
-
 class CVParamTransfer;
-
-// Echoes AGSC: the group is pushed straight into ARAM through a MusyX sound stack.
-#endif
 
 class CAudioGrpSetLoc {
 public:
   CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const rstl::string& GetBaseDirName() const { return mBaseDirName; }
-  const rstl::string& GetGroupSetName() const { return mGroupSetName; }
-  void FreeSampleBuffer() const;
-  int AramUsage() const { return mAramSize; }
-  void* GetPool() const { return mPool; }
-  void* GetProject() const { return mProject; }
-  void* GetSample() const { return mSamples; }
-  void* GetSampleDir() const { return mSampleDir; }
-#else
   ~CAudioGrpSetLoc();
+  const rstl::string& GetBaseDirName() const;
+  const rstl::string& GetGroupSetName() const;
+  void FreeSampleBuffer() const;
+  int AramUsage() const;
+  void* GetPool() const;
+  void* GetProject() const;
+  void* GetSample() const;
+  void* GetSampleDir() const;
 
   static bool sInSinglePlayer;
-#endif
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
+  uint ReadHeader(void* ptr, uint len, uint& readPosition);
+
 #if RSTL_PRIME1
-  uint ReadHeader(void* ptr, uint len, uint& readPosition) {
-    CMemoryInStream in(ptr, len);
-    in.CInputStream::Read(mBaseDirName);
-    in.CInputStream::Read(mGroupSetName);
-    const uint ret = in.ReadLong();
-    readPosition = in.GetReadPosition();
-    return ret;
-  }
   mutable rstl::auto_ptr< uchar > mData;
   rstl::auto_ptr< uchar > mGroupData;
   rstl::string mBaseDirName;
@@ -72,12 +54,28 @@ private:
   rstl::single_ptr< uchar > mProject;
   rstl::single_ptr< uchar > mSampleDir;
 #endif
-
 };
 CHECK_SIZEOF(CAudioGrpSetLoc, RSTL_PRIME1 ? 0x44 : 0x18)
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+inline CAudioGrpSetLoc::~CAudioGrpSetLoc() {}
+inline const rstl::string& CAudioGrpSetLoc::GetBaseDirName() const { return mBaseDirName; }
+inline const rstl::string& CAudioGrpSetLoc::GetGroupSetName() const { return mGroupSetName; }
+inline int CAudioGrpSetLoc::AramUsage() const { return mAramSize; }
+inline void* CAudioGrpSetLoc::GetPool() const { return mPool; }
+inline void* CAudioGrpSetLoc::GetProject() const { return mProject; }
+inline void* CAudioGrpSetLoc::GetSample() const { return mSamples; }
+inline void* CAudioGrpSetLoc::GetSampleDir() const { return mSampleDir; }
+inline uint CAudioGrpSetLoc::ReadHeader(void* ptr, uint len, uint& readPosition) {
+  CMemoryInStream in(ptr, len);
+  in.CInputStream::Read(mBaseDirName);
+  in.CInputStream::Read(mGroupSetName);
+  const uint ret = in.ReadLong();
+  readPosition = in.GetReadPosition();
+  return ret;
+}
+#endif
+
 class CAudioGroupSet {
 public:
   CAudioGroupSet(const TLockedToken< CAudioGrpSetLoc >& group);
@@ -97,13 +95,11 @@ private:
   rstl::string mGroupSetName;
   rstl::optional_object< TLockedToken< CAudioGrpSetLoc > > mGroupSetTok;
 };
-
 CHECK_SIZEOF(CAudioGroupSet, 0x30)
-#else
-CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
-                                              const rstl::auto_ptr< uchar >& data, int length,
-                                              const CVParamTransfer& xfer);
-#endif
+
+RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
+                                                                const rstl::auto_ptr< uchar >& data,
+                                                                int length,
+                                                                const CVParamTransfer& xfer);
 
 #endif // _CAUDIOGROUPSET
-
