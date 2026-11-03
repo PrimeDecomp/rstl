@@ -5,11 +5,9 @@
 
 #include "types.h"
 
-#if RSTL_PRIME1
 #include "dolphin/hw_regs.h"
-#endif
-
 #include "Kyoto/Audio/g721.h"
+#include "Kyoto/Platform.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
@@ -29,13 +27,8 @@ public:
   static void PushMute();
   static void PopMute();
 
-#if defined(TARGET_PC)
-  static void MixCallback(short* output, size_t frames, u32 rate, u32 channels);
-  void DoMix(short* output, size_t frames, u32 rate, u32 channels);
-#else
-  static void MixCallback();
-  void DoMix();
-#endif
+  static void MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
+  void DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
 
   void Decode(ushort* out, const ushort* in, int numSamples);
   void DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, int startSample,
@@ -58,11 +51,11 @@ private:
   g72x_state mRightState;
   ushort mVolume;
 #if defined(TARGET_PC)
-  u32 m_audioPhase = 0;
-  short m_audioHistory[2][2] = {};
-  short m_audioPair[4] = {};
-  u32 m_audioPairRead = 2;
-  bool m_audioPrimed = false;
+  u32 mAudioPhase = 0;
+  short mAudioHistory[2][2] = {};
+  short mAudioPair[4] = {};
+  u32 mAudioPairRead = 2;
+  bool mAudioPrimed = false;
 #endif
 };
 

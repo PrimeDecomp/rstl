@@ -72,6 +72,9 @@ const bool CRSFAudio::IsFullyLoaded() const {
 }
 
 void CRSFAudio::Play() {
+#if IS_TARGET_PC
+  const metaforce::AudioLockGuard lock;
+#endif
   if (sPlayingAudio == this) {
     return;
   }
@@ -84,20 +87,69 @@ void CRSFAudio::Play() {
   mCurSamp = 0;
   g72x_init_state(&mLeftState);
   g72x_init_state(&mRightState);
+#if IS_TARGET_PC
+  mAudioPhase = 0;
+  mAudioPairRead = 2;
+  mAudioPrimed = false;
+#endif
   sPlayingAudio = this;
   CAIInterruptManager::RunDMACallback(MixCallback);
 }
 
 void CRSFAudio::Stop() {
+#if IS_TARGET_PC
+  const metaforce::AudioLockGuard lock;
+#endif
   if (sPlayingAudio == this) {
     CAIInterruptManager::CancelDMACallback(MixCallback);
     sPlayingAudio = nullptr;
   }
 }
 
-void CRSFAudio::MixCallback() { sPlayingAudio->DoMix(); }
+void CRSFAudio::MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
+  sPlayingAudio->DoMix(IF_TARGET_PC(output, frames, rate, channels));
+}
 
-void CRSFAudio::DoMix() {
+void CRSFAudio::DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
+#if IS_TARGET_PC
+  // RSF stores two 32 kHz G.721 channels, with two samples packed in each byte.
+  // Keep decoding pairs even when the output rate requires fractional frames.
+  const auto readFrame = [this](short* frame) {
+    if (mAudioPairRead == 2) {
+      std::fill_n(mAudioPair, 4, short(0));
+      ushort* pair = reinterpret_cast< ushort* >(mAudioPair);
+      Decode(pair, pair, 2);
+      mAudioPairRead = 0;
+    }
+    frame[0] = mAudioPair[mAudioPairRead * 2];
+    frame[1] = mAudioPair[mAudioPairRead * 2 + 1];
+    ++mAudioPairRead;
+  };
+  if (!mAudioPrimed) {
+    readFrame(mAudioHistory[0]);
+    readFrame(mAudioHistory[1]);
+    mAudioPrimed = true;
+  }
+
+  for (size_t frame = 0; frame < frames; ++frame, output += channels) {
+    for (u32 channel = 0; channel < 2; ++channel) {
+      // The original DMA buffer is R,L; native output uses FL,FR.
+      const s32 a = mAudioHistory[0][1 - channel];
+      const s32 b = mAudioHistory[1][1 - channel];
+      const s32 sample = a + (s64(b - a) * mAudioPhase) / rate;
+      if (mVolume != 0) {
+        output[channel] = std::clamp(s32(output[channel]) + sample, -32768, 32767);
+      }
+    }
+    mAudioPhase += 32000;
+    while (mAudioPhase >= rate) {
+      mAudioPhase -= rate;
+      mAudioHistory[0][0] = mAudioHistory[1][0];
+      mAudioHistory[0][1] = mAudioHistory[1][1];
+      readFrame(mAudioHistory[1]);
+    }
+  }
+#else
   const ushort* aiStart = static_cast< const ushort* >(OSPhysicalToCached(AIGetDMAStartAddr()));
   mCurBuf ^= 1;
   uintptr_t buf =
@@ -112,6 +164,7 @@ void CRSFAudio::DoMix() {
   Decode(reinterpret_cast< ushort* >(buf), aiStart, 160);
   DCFlushRange(reinterpret_cast< void* >(buf), 0x280);
   OSRestoreInterrupts(cookie);
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -247,6 +300,9 @@ void CRSFAudio::DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, 
 }
 
 void CRSFAudio::SetVolume(uchar vol) {
+#if IS_TARGET_PC
+  const metaforce::AudioLockGuard lock;
+#endif
   if (static_cast< uchar >(vol) > 127) {
     vol = 127;
   }

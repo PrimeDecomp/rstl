@@ -1,21 +1,21 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CAudioSys.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Audio/CAudioGroupSet.hpp"
+#include "rstl/RstlVersions.h"
+#include "rstl/math.hpp"
 
 #include "dolphin/ai.h"
 #include "dolphin/ar.h"
-
 #include "dolphin/dtk.h"
 #include "dolphin/os.h"
-
 #include "dolphin/types.h"
-
 #include "musyx/musyx.h"
 
-#include "rstl/math.hpp"
 #include "string.h"
+#if defined(TARGET_PC)
+#include "Metaforce/Audio.hpp"
+#endif
 
 extern "C" bool sndFXSetFilter(SND_VOICEID vid, u32 filter, u32 param);
 
@@ -163,8 +163,10 @@ rstl::vector< CAudioSys::CEmitterData >* CAudioSys::mpEmitterDB = nullptr;
 SND_LISTENER* CAudioSys::mpListener = nullptr;
 uint CAudioSys::mUnusedEmitterHandle = 0;
 CAudioSys::ESurroundModes CAudioSys::mSurroundMode = CAudioSys::kSM_Mono;
+#if !defined(TARGET_PC)
 int CAudioSys::mMaxAramUsage = 0;
 int CAudioSys::mCurrentAramUsage = 0;
+#endif
 
 const uchar CAudioSys::kMaxVolume = 0x7f;
 const uchar CAudioSys::kEmitterMedPriority = 0x7f;
@@ -201,17 +203,15 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
   AIInit(nullptr);
 
   sndSetHooks(&hooks);
+#if defined(TARGET_PC)
+  metaforce::InitializeAudio(numVoices, numMusic, numSfx, 0);//mProLogic2 ? 1 : 0);
+#else
   if (mProLogic2) {
     sndInit(numVoices, numMusic, numSfx, kProLogic2Studios, 1, aramSize);
   } else {
-    sndInit(numVoices, numMusic, numSfx,
-#if RSTL_PRIME1
-            1,
-#else
-            3,
-#endif
-            0, aramSize);
+    sndInit(numVoices, numMusic, numSfx, kProLogic2Studios, 0, aramSize);
   }
+#endif
 #if !RSTL_PRIME1
   for (int i = 1; i < 3; ++i) {
     if (mProLogic2) {
@@ -254,7 +254,9 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
     mSurroundMode = kSM_Surround;
   }
 
+#if !defined(TARGET_PC)
   mMaxAramUsage = aramSize;
+#endif
 }
 
 CAudioSys::~CAudioSys() {
@@ -294,11 +296,13 @@ bool CAudioSys::SysLoadGroupSet(CSimplePool* pool, const uint id) {
   if (!existing) {
     TLockedToken< CAudioGrpSetLoc > token(pool->GetObj(SObjectTag('AGSC', id)));
     rstl::ncrc_ptr< CAudioGroupSet > group(rs_new CAudioGroupSet(token));
+#if !defined(TARGET_PC)
     int aramUsage = mCurrentAramUsage + group->AramUsage();
     if (aramUsage > mMaxAramUsage) {
       return true;
     }
     mCurrentAramUsage = aramUsage;
+#endif
     const rstl::string& groupName = group->GetName();
     mpGroupSetDB->insert(
         rstl::pair< rstl::string, rstl::ncrc_ptr< CAudioGroupSet > >(groupName, group));
@@ -314,11 +318,13 @@ bool CAudioSys::SysLoadGroupSet(const CToken& token, const rstl::string& name, c
   if (!existing) {
     rstl::ncrc_ptr< CAudioGroupSet > group(
         rs_new CAudioGroupSet(TLockedToken< CAudioGrpSetLoc >(token)));
+#if !defined(TARGET_PC)
     int aramUsage = mCurrentAramUsage + group->AramUsage();
     if (aramUsage > mMaxAramUsage) {
       return true;
     }
     mCurrentAramUsage = aramUsage;
+#endif
     const rstl::string& groupName = group->GetName();
     mpGroupSetDB->insert(
         rstl::pair< rstl::string, rstl::ncrc_ptr< CAudioGroupSet > >(groupName, group));
@@ -352,7 +358,9 @@ bool CAudioSys::SysUnloadGroupSet(const rstl::string& name) {
         ++it;
       }
     }
+#if !defined(TARGET_PC)
     mCurrentAramUsage -= group->AramUsage();
+#endif
     mpGroupSetDB->erase(name);
     return true;
   }
@@ -377,6 +385,9 @@ bool CAudioSys::SysPushGroupIntoARAM(const rstl::string& name, const uchar group
     void* samples = group->GetSampleBuffer();
     void* sampleDir = group->GetSDirBuffer();
     void* pool = group->GetPoolBuffer();
+#if defined(TARGET_PC)
+    return sndPushGroup(project, groupId, samples, sampleDir, pool);
+#else
     uchar buffer[0x1020];
     mpSampleDataUploadBuffer =
         reinterpret_cast< void* >((reinterpret_cast< uintptr_t >(buffer) + 31) & ~31);
@@ -384,6 +395,7 @@ bool CAudioSys::SysPushGroupIntoARAM(const rstl::string& name, const uchar group
     const bool result = sndPushGroup(project, groupId, samples, sampleDir, pool);
     sndSetSampleDataUploadCallback(nullptr, 0);
     return result;
+#endif
   }
   return false;
 }
@@ -414,9 +426,8 @@ rstl::ncrc_ptr< CAudioGroupSet > CAudioSys::FindGroupSet(const rstl::string& nam
 }
 #endif
 
-SND_VOICEID CAudioSys::SfxStart(
-    const SND_FXID sfxId,
-    const uchar vol, const uchar pan, const uchar prio) {
+SND_VOICEID CAudioSys::SfxStart(const SND_FXID sfxId, const uchar vol, const uchar pan,
+                                const uchar prio) {
   const uchar scaledVol = (mVolumeScale * (vol > 0x7f ? 0x7f : vol)) / 0x7f;
   return sndFXStartEx(sfxId, scaledVol, pan, prio);
 }
@@ -427,17 +438,13 @@ SND_VOICEID CAudioSys::SfxCheck(const SND_VOICEID handle) { return sndFXCheck(ha
 
 void CAudioSys::SfxPan(const SND_VOICEID handle, const uchar pan) { sndFXPanning(handle, pan); }
 
-void CAudioSys::SfxSpan(
-    const
-    SND_VOICEID handle, const uchar span) {
+void CAudioSys::SfxSpan(const SND_VOICEID handle, const uchar span) {
   sndFXSurroundPanning(handle, span);
 }
 
 void CAudioSys::SfxVolume(const SND_VOICEID handle, const uchar vol) { sndFXVolume(handle, vol); }
 
-void CAudioSys::SfxPitchBend(
-    const
-    SND_VOICEID handle, const ushort pitch) {
+void CAudioSys::SfxPitchBend(const SND_VOICEID handle, const ushort pitch) {
   sndFXPitchBend(handle, pitch);
 }
 
@@ -452,9 +459,7 @@ bool CAudioSys::SfxSetFilter(const SND_VOICEID handle, const uint filter, const 
 
 int CAudioSys::TrkQueueTrack(const rstl::string& name, void (*callback)(u32),
                              const uint eventMask) {
-  while (TrkGetState() ==
-         kTPS_Busy
-  ) {
+  while (TrkGetState() == kTPS_Busy) {
   }
 
   rstl::ncrc_ptr< CTrkData > trk = FindTrack(name);
@@ -810,4 +815,3 @@ void CAudioSys::EnableAICallback(const bool enable) {
 }
 
 bool CAudioSys::IsAICallbackEnabled() { return mAICallbackEnabled; }
-

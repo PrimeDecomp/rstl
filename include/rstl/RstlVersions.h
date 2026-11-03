@@ -713,4 +713,12 @@
 #define RSTL_DELETE_PTR(TYPE, PTR) delete PTR
 #endif
 
+#if RSTL_PRIME1
+#define IF_RSTL_PRIME1(...) __VA_ARGS__
+#define IF_NOT_RSTL_PRIME1(...) 
+#else
+#define IF_RSTL_PRIME1(...)
+#define IF_NOT_RSTL_PRIME1(...) __VA_ARGS__
+#endif
+
 #endif // _RSTL_VERSIONS_H

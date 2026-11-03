@@ -8,11 +8,21 @@
 
 #include "dolphin/ai.h"
 
+#if defined(TARGET_PC)
+#include "Metaforce/Audio.hpp"
+#include <algorithm>
+#endif
+
 static rstl::reserved_vector< FAudioCallback, 4 > sCallbacks;
+#if !defined(TARGET_PC)
 ATTRIBUTE_ALIGN_DECL(8, static bool sDMACallbackInstalled) = false;
 static FAudioCallback sOldDMACallback = nullptr;
+#endif
 
 void CAIInterruptManager::InstallAICallback() {
+#if IS_TARGET_PC
+  sndPCSetOutputCallback(sCallbacks.empty() ? nullptr : AICallback);
+#else
   bool old = CAudioSys::IsAICallbackEnabled();
   CAudioSys::EnableAICallback(true);
 
@@ -26,13 +36,16 @@ void CAIInterruptManager::InstallAICallback() {
   }
 
   CAudioSys::EnableAICallback(old);
+#endif
 }
 
-void CAIInterruptManager::AICallback() {
-  sOldDMACallback();
+void CAIInterruptManager::AICallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
+  if (!IS_TARGET_PC) {
+    sOldDMACallback();
+  }
 
   for (int i = 0; i < sCallbacks.size(); ++i) {
-    sCallbacks[i]();
+    sCallbacks[i](IF_TARGET_PC(output, frames, rate, channels));
   }
 }
 
