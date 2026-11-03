@@ -4,6 +4,7 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/CDvdRequest.hpp"
+#include "Kyoto/Platform.h"
 #include "rstl/math.hpp"
 
 #include "dolphin/arq.h"
@@ -12,6 +13,15 @@
 #include "dolphin/os/OSCache.h"
 
 #include "string.h"
+
+#if defined(TARGET_PC)
+#include <borealis/log.hpp>
+#include <memory>
+
+namespace {
+constexpr borealis::Log Log{"CDvdFile"};
+} // namespace
+#endif
 
 static CDvdFile* sFirstARAM = nullptr;
 // Guessed name. Never set in retail; when set, transfers are driven by polling
@@ -274,6 +284,14 @@ CDvdFile::CDvdFile(const char* filename)
 , mOffset(0)
 , mSize(0)
 , mFilename(filename, -1) {
+#if defined(TARGET_PC)
+  DVDFileInfo fileInfo{};
+  if (mFileEntry != -1 && DVDFastOpen(mFileEntry, &fileInfo)) {
+    mSize = fileInfo.length;
+    DVDClose(&fileInfo);
+    mARAMAllocated = filename != decodedName;
+  }
+#else
   const char* decodedName = DecodeARAMFile(filename);
   mFileEntry = DVDConvertPathToEntrynum(const_cast< char* >(decodedName));
   DVDFileInfo fileInfo;
@@ -287,6 +305,7 @@ CDvdFile::CDvdFile(const char* filename)
   if (filename != decodedName) {
     TryARAMFile();
   }
+#endif
 }
 
 CDvdFile::~CDvdFile() { CloseFile(); }
@@ -296,6 +315,10 @@ CDvdRequest* CDvdFile::SyncRead(void* dest, uint len) {
 }
 
 void CDvdFile::SyncSeekRead(void* dest, uint len, ESeekOrigin origin, int offset) {
+#if defined(TARGET_PC)
+  std::unique_ptr< CDvdRequest > request{AsyncSeekRead(dest, len, origin, offset)};
+  request->WaitUntilComplete();
+#else
   StallForARAMFile();
   CalcFileOffset(offset, origin);
 
@@ -321,9 +344,23 @@ void CDvdFile::SyncSeekRead(void* dest, uint len, ESeekOrigin origin, int offset
   }
 
   UpdateFilePos(len);
+#endif
 }
 
 CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, int offset) {
+#if defined(TARGET_PC)
+  CalcFileOffset(offset, origin);
+  auto request = std::make_unique< CRealDvdRequest >();
+  DVDFileInfo* info = request->FileInfo();
+  if (mFileEntry == -1 || !DVDFastOpen(mFileEntry, info)) {
+    Log.fatal("Unable to open DVD file");
+  }
+  if (!DVDReadAsync(info, dest, len, mOffset, internalCallback)) {
+    Log.fatal("Unable to start DVD read");
+  }
+  UpdateFilePos(len);
+  return request.release();
+#else
   StallForARAMFile();
   CalcFileOffset(offset, origin);
   CDvdRequest* request;
@@ -346,10 +383,11 @@ CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, i
   UpdateFilePos(len);
 
   return request;
+#endif
 }
 
 void CDvdFile::CloseFile() {
-  if (!mARAMAllocated) {
+  if (!mARAMAllocated || IS_TARGET_PC) {
     return;
   }
 

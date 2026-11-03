@@ -1,22 +1,17 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/CMemoryCardSys.hpp"
+#include "rstl/RstlVersions.h"
 
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CCrc32.hpp"
-
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/MemoryCopy.hpp"
+#include "Kyoto/Platform.h"
 
 #include "dolphin/os/OSCache.h"
 
-#include "Kyoto/MemoryCopy.hpp"
-
 static inline uint CalculateCrc(const void* data, uint length) {
-#if RSTL_PRIME1
-  return CCRC32::Calculate(data, length);
-#else
-  return CCRC32::Calculate(data, length, 0xFFFFFFFF);
-#endif
+  return CCRC32::Calculate(data, length IF_NOT_RSTL_PRIME1(, 0xFFFFFFFF));
 }
 
 ECardResult SMemoryCardFileInfo::FileRead() {
@@ -24,11 +19,7 @@ ECardResult SMemoryCardFileInfo::FileRead() {
   saveData = rstl::vector< uchar >();
   const uint size = mSaveFileData.size();
   const void* data = mSaveFileData.data();
-#if NONMATCHING
-  const uint crc = CBasics::SwapBytes(*static_cast< const uint* >(data));
-#else
-  const uint crc = *static_cast< const uint* >(data);
-#endif
+  const uint crc = BE_SWAP(*static_cast< const uint* >(data));
   if (crc == CalculateCrc(static_cast< const uchar* >(data) + 4, size - 4)) {
     uint offset;
     ECardResult result = GetSaveDataOffset(offset);
@@ -580,14 +571,18 @@ CMemoryCardSys::CMemoryCardSys() {
   mIsCardSysExists = true;
 }
 
-#if !RSTL_PRIME1 || !TARGET_PC
 void CMemoryCardSys::Initialize() {
   if (!mIsInitialized) {
+#if TARGET_PC
+    CARDSetLoadType(CARD_RAWIMAGE);
+    // CARDDetectDolphin(-1);
+    CARDInit("GM8E", "01"); // FIXME: Other ID
+#else
     CARDInit();
+#endif
     mIsInitialized = true;
   }
 }
-#endif
 
 CMemoryCardSys::~CMemoryCardSys() {
   mIsCardSysExists = false;
@@ -622,7 +617,8 @@ ECardResult CMemoryCardSys::UnmountCard(EMemoryCardPort port) {
 }
 
 ECardResult CMemoryCardSys::FormatCard(EMemoryCardPort port) {
-  return static_cast< ECardResult >(CARDFormatAsync(port, nullptr));
+  return static_cast< ECardResult >(
+      IF_TARGET_PC_OR(CARDFormat, CARDFormatAsync)(port IF_NOT_TARGET_PC(, nullptr)));
 }
 
 ECardResult CMemoryCardSys::GetNumFreeBytes(EMemoryCardPort port, uint& freeBytes,

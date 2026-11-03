@@ -69,15 +69,13 @@ public:
     const uint* words = static_cast< const uint* >(mData);
     return CBasics::SwapBytes(words[GetTextureCount() + 2]);
 #endif
-
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   // TODO: Figure out wtf is going on here
   uint GetVertexDescLwzx() const {
     return CBasics::SwapBytes(static_cast< const uint* >(mData)[GetTextureCount() + 2]);
-#else
+  }
+#if !RSTL_PRIME1
   // Guessed name. Echoes material masks follow the compressed vertex descriptor.
   u64 GetMaterialMask() const {
 #ifdef TARGET_PC
@@ -86,9 +84,8 @@ public:
 #else
     return *reinterpret_cast< const u64* >(static_cast< const uint* >(mData) + GetTextureCount() + 3);
 #endif
-#endif
-
   }
+#endif
 
   void SetCurrent(const CModelFlags& flags, const CCubeSurface& surface,
                   const CCubeModel& model) const;

@@ -110,7 +110,6 @@ public:
     uint mAudioSamplesConsumed;
   };
 
-  static void SetSfxVolume(uchar);
   static void SetGlobalMovieVolume(uchar); // Original Wii export; also used by GameCube Echoes.
   static void SetAudioEnabled(bool enabled);
   static bool GetAudioEnabled();
@@ -227,9 +226,9 @@ private:
   uchar mVolume;
 #endif
 #if defined(TARGET_PC)
-  u32 m_audioPhase = 0;
-  short m_audioHistory[2][2] = {};
-  bool m_audioPrimed = false;
+  u32 mAudioPhase = 0;
+  short mAudioHistory[2][2] = {};
+  bool mAudioPrimed = false;
 #endif
 };
 CHECK_SIZEOF(CMoviePlayer, RSTL_PRIME1 ? 0x100 : 0x120)

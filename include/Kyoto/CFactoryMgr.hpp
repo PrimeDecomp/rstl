@@ -21,30 +21,27 @@ typedef RSTL_PRIME1_CONST CFactoryFnReturn (*FMemFactoryFunc)(
     const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer, int size,
     const CVParamTransfer& xfer);
 
+
+
 class CFactoryMgr {
 public:
+  #if RSTL_PRIME1
+  typedef void* MemoryBufferPtr;
+  #else
+  typedef const rstl::auto_ptr< uchar >& MemoryBufferPtr;
+  #endif
+
   CFactoryMgr();
   ~CFactoryMgr();
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  void AddFactory(uint type, FFactoryFunc factory);
-  void AddFactory(uint type, FMemFactoryFunc factory);
-#else
   void AddFactory(FourCC type, FFactoryFunc factory);
   void AddFactory(FourCC type, FMemFactoryFunc factory);
-#endif
 
   bool CanMakeMemory(const SObjectTag& tag) const;
   rstl::auto_ptr< IObj > MakeObject(const SObjectTag& tag, CInputStream& in,
                                     const CVParamTransfer& params);
   rstl::auto_ptr< IObj > MakeObjectFromMemory(const SObjectTag& tag,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                              void* buffer,
-#else
-                                              const rstl::auto_ptr< uchar >& buffer,
-#endif
+                                              MemoryBufferPtr buffer,
                                               int size, bool compressed,
                                               const CVParamTransfer& params);
 

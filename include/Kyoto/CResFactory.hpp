@@ -2,13 +2,14 @@
 #define _CRESFACTORY
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"
 #include "rstl/map.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
+#include "types.h"
+
 
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CResLoader.hpp"
@@ -56,12 +57,8 @@ public:
     CVParamTransfer mParams;
 
     SLoadingData(const SObjectTag& tag, CDvdRequest* request, IObj** target,
-#if RSTL_PRIME1
-                 void* buffer,
-#else
-                 const rstl::auto_ptr< uchar >& buffer,
-#endif
-                 int size, CResLoader::ECompressionType compression, const CVParamTransfer& params);
+                 CFactoryMgr::MemoryBufferPtr buffer, int size,
+                 CResLoader::ECompressionType compression, const CVParamTransfer& params);
     ~SLoadingData();
     bool PumpDecompression(uint time);
   };

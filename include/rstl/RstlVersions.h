@@ -727,9 +727,11 @@
 #if RSTL_PRIME1
 #define IF_RSTL_PRIME1(...) __VA_ARGS__
 #define IF_NOT_RSTL_PRIME1(...) 
+#define IF_RSTL_PRIME1_ELSE(A, B) A
 #else
 #define IF_RSTL_PRIME1(...)
 #define IF_NOT_RSTL_PRIME1(...) __VA_ARGS__
+#define IF_RSTL_PRIME1_ELSE(A, B) B
 #endif
 
 #endif // _RSTL_VERSIONS_H
