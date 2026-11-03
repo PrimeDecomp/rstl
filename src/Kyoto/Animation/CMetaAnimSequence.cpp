@@ -25,13 +25,8 @@ CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator end = mSequence.end();
 #endif
   rstl::vector< rstl::string > names;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(len, end - it);
   names.reserve(len++);
-#else
-  names.reserve(end - it);
-#endif
   while (it != end) {
     rstl::rc_ptr< IMetaAnim > anim = *it;
     rstl::ncrc_ptr< CAnimTreeNode > tree = anim->GetAnimationTree(animSys, orders);
