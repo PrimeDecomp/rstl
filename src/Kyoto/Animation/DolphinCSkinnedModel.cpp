@@ -32,6 +32,14 @@
 #define GET_NORMAL_VIEW(ptr) (ptr)
 #endif
 
+#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
+#define HAS_SKINNING_DATA_SIZE 1
+#define SKINNING_DATA_SIZE sStaticSkinningDataSize
+#else
+#define HAS_SKINNING_DATA_SIZE 0
+#define SKINNING_DATA_SIZE sizeof(sStaticSkinningData)
+#endif
+
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;
 void* CSkinnedModel::sPointGenData;
 
@@ -45,14 +53,14 @@ struct SSkinnedAllocation {
 };
 
 namespace Skinning {
-#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
+#if HAS_SKINNING_DATA_SIZE
 static void* sStaticSkinningData = nullptr;
 static int sStaticSkinningDataSize = 0x80000;
 #endif
 static ushort skCurrentToken = 0;
 static int sNumSkinnedObjects = 0;
 static bool sSkinningInitialized = false;
-#if RSTL_VERSION < RSTL_GM8P_00 || RSTL_VERSION == RSTL_GM8J_00
+#if !HAS_SKINNING_DATA_SIZE
 ATTRIBUTE_ALIGN_DECL(32, static char sStaticSkinningData[0x80000]);
 #endif
 static rstl::optional_object< CCircularBuffer > sSkinningBuffer;
@@ -61,12 +69,10 @@ static bool sbDumpedSpinLockMessage = false;
 
 void AddSkinnedRef();
 void DelSkinnedRef();
-#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
 void SetSkinningBuffer(void* buffer, int size);
-#endif
 } // namespace Skinning
 
-#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
+#if HAS_SKINNING_DATA_SIZE
 void Skinning::SetSkinningBuffer(void* buffer, int size) {
   sStaticSkinningDataSize = size;
   sAllocations.clear();
@@ -78,7 +84,9 @@ void Skinning::SetSkinningBuffer(void* buffer, int size) {
 #endif
 
 void Skinning::AddSkinnedRef() {
-  if (!IS_TARGET_PC) {
+  if (IS_TARGET_PC) {
+    ++sNumSkinnedObjects;
+  } else {
     if (!sSkinningInitialized) {
       GXSetDrawSync(0xFFFF);
       while (GXReadDrawSync() != 0xFFFF) {
@@ -86,21 +94,20 @@ void Skinning::AddSkinnedRef() {
       skCurrentToken = 1;
       sSkinningInitialized = true;
     }
+
+    if (
 #if RSTL_VERSION >= RSTL_GM8P_00
-    if (sNumSkinnedObjects++ == 0) {
-#if RSTL_VERSION == RSTL_GM8J_00
-      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
+        sNumSkinnedObjects++
 #else
-      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sStaticSkinningDataSize);
+        sNumSkinnedObjects
 #endif
+        == 0) {
+      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, SKINNING_DATA_SIZE);
     }
-#else
-    if (sNumSkinnedObjects == 0) {
-      sSkinningBuffer = CCircularBuffer(sStaticSkinningData, sizeof(sStaticSkinningData));
-    }
+#if RSTL_VERSION < RSTL_GM8P_00
+    ++sNumSkinnedObjects;
 #endif
   }
-  ++sNumSkinnedObjects;
 }
 
 void Skinning::DelSkinnedRef() {
@@ -111,7 +118,7 @@ void Skinning::DelSkinnedRef() {
   }
 }
 
-#if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
+#if HAS_SKINNING_DATA_SIZE
 void CSkinnedModel::SetSkinningBuffer(void* buffer, int size) {
   Skinning::SetSkinningBuffer(buffer, size);
 }
@@ -504,7 +511,7 @@ void* CSkinnedModel::EnsureAllocation(int size) {
     }
     Skinning::sAllocations.push_back(SSkinnedAllocation(ptr, size, Skinning::skCurrentToken));
     return ptr;
-}
+  }
 }
 
 void CSkinnedModel::AllocateStorage() {
