@@ -9,19 +9,13 @@
 
 #include "dolphin/os.h"
 #include "musyx/musyx.h"
+#include "musyx/synthdata.h"
 #include "rstl/RstlVersions.h"
 #include "rstl/StringExtras.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/string.hpp"
 
 #include "string.h"
-
-extern "C" {
-u32 sndStackGetSize(void);
-u32 sndStackAdd(void* buffer, const void* aramAddr, u32 size);
-bool sndStackSetCurrent(u32 id);
-void sndStackRemove(u32 id);
-}
 
 bool CAudioGrpSetLoc::sInSinglePlayer;
 static uchar* sUploadBuffer;
@@ -130,7 +124,7 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
     }
 
     mStackBuffer = rs_new uchar[sndStackGetSize()];
-    mStackId = sndStackAdd(mStackBuffer.get(), mAramAlloc, alignedSize);
+    mStackId = sndStackAdd(mStackBuffer.get(), reinterpret_cast< u32 >(mAramAlloc), alignedSize);
     if (mStackId == -1) {
       CARAMManager::Free(mAramAlloc, 1);
       mAramAlloc = CARAMManager::GetInvalidAlloc();
