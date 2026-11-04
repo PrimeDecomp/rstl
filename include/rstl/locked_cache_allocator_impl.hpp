@@ -4,7 +4,8 @@
 #include "rstl/locked_cache_allocator.hpp"
 
 namespace rstl {
-inline void locked_cache_allocator::Allocate(void*& out, int size) {
+template < typename T >
+inline void locked_cache_allocator::Allocate(T*& out, int size) {
   if (size == 0) {
     out = 0;
     return;
