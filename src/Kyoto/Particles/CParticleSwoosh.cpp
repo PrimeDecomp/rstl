@@ -1449,3 +1449,8 @@ const CTransform4f& CParticleSwoosh::GetGlobalOrientation() const { return mGlob
 const CVector3f& CParticleSwoosh::GetGlobalTranslation() const { return mGlobalTranslation; }
 const CVector3f& CParticleSwoosh::GetTranslation() const { return mTranslation; }
 
+#if RSTL_PARTICLE_SWOOSH_GEN_CLEAR
+// Guessed name. Stands in for a function the retail link stripped; only its weak
+// `vector< CParticleGen* >::clear` copy is left.
+void ClearParticleGens(rstl::vector< CParticleGen* >& gens) { gens.clear(); }
+#endif

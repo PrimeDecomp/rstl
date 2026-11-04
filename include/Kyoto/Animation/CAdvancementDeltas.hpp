@@ -3,6 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CQuaternion.hpp"
+#include "rstl/construct.hpp"
 
 struct CAdvancementDeltas {
 public:
@@ -30,5 +31,9 @@ public:
   CQuaternion mRotDelta;
 };
 CHECK_SIZEOF(CAdvancementDeltas, 0x1c)
+
+namespace rstl {
+RSTL_DECLARE_COPY_CONSTRUCTION(CAdvancementDeltas)
+}
 
 #endif // _CADVANCEMENTDELTAS_HPP

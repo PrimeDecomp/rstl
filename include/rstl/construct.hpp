@@ -321,6 +321,14 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(short, const short&)
   }                                                                                                \
   RSTL_DECLARE_DIRECT_CONSTRUCTION_MUTABLE(__VA_ARGS__)
 
+// Copies of T call its copy constructor directly, without the construction policy. A matching
+// reconstruction: the target inlines these copies where the policy path is too large.
+#define RSTL_DECLARE_COPY_CONSTRUCTION(...)                                                        \
+  template <>                                                                                      \
+  inline void construct< __VA_ARGS__ >(void* dest, const __VA_ARGS__& src) {                       \
+    new (dest) __VA_ARGS__(src);                                                                   \
+  }
+
 #define ECHOES_RSTL_DECLARE_DIRECT_CONSTRUCTION(T)                                                 \
   END_ECHOES_NAMESPACE                                                                             \
   namespace rstl {                                                                                 \

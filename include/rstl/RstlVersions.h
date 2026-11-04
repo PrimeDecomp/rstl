@@ -51,6 +51,9 @@
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
 #define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+// CParticleSwoosh.cpp ends with a function the retail link stripped; its weak
+// `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
+#define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
