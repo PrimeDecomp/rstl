@@ -3,6 +3,7 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/pair.hpp"
 #include "rstl/rmemory_allocator.hpp"
 #include "rstl/type_traits.hpp"
 #include "types.h"
@@ -73,6 +74,24 @@ public:
     mItem = nullptr;
   }
 };
+
+#if RSTL_PAIR_CONSTRUCTION_POLICY
+// Guessed reconstruction: pairs holding an auto_ptr keep the generic copy policy.
+template < typename L, typename R >
+struct construction_policy< pair< L, auto_ptr< R > >, false > {
+  static void construct(void* dest, const pair< L, auto_ptr< R > >& src) {
+    RSTL_PRECONDITION(dest != nullptr);
+    new (dest) pair< L, auto_ptr< R > >(src);
+  }
+};
+template < typename L, typename R >
+struct construction_policy< pair< auto_ptr< L >, R >, false > {
+  static void construct(void* dest, const pair< auto_ptr< L >, R >& src) {
+    RSTL_PRECONDITION(dest != nullptr);
+    new (dest) pair< auto_ptr< L >, R >(src);
+  }
+};
+#endif
 } // namespace rstl
 
 #endif // _RSTL_AUTO_PTR

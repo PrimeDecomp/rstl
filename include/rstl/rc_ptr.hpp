@@ -5,6 +5,7 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/construct.hpp"
+#include "rstl/pair.hpp"
 #include "rstl/rmemory_allocator.hpp"
 #include "types.h"
 
@@ -309,6 +310,24 @@ bool operator==(const rc_ptr< T >& left, const rc_ptr< T >& right) {
 #endif
   return left.GetPtr() == right.GetPtr();
 }
+
+#if RSTL_PAIR_CONSTRUCTION_POLICY
+// Guessed reconstruction: pairs holding an rc_ptr keep the generic copy policy.
+template < typename L, typename R >
+struct construction_policy< pair< L, rc_ptr< R > >, false > {
+  static void construct(void* dest, const pair< L, rc_ptr< R > >& src) {
+    RSTL_PRECONDITION(dest != nullptr);
+    new (dest) pair< L, rc_ptr< R > >(src);
+  }
+};
+template < typename L, typename R >
+struct construction_policy< pair< rc_ptr< L >, R >, false > {
+  static void construct(void* dest, const pair< rc_ptr< L >, R >& src) {
+    RSTL_PRECONDITION(dest != nullptr);
+    new (dest) pair< rc_ptr< L >, R >(src);
+  }
+};
+#endif
 
 } // namespace rstl
 

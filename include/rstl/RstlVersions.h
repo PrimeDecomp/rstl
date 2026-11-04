@@ -80,6 +80,9 @@
 // instead of acting directly (the policy classes exist everywhere; MWCC inlines the direct form
 // better, which the Wii and Prime 1 builds depend on).
 #define RSTL_CONSTRUCTION_POLICY RSTL_ECHOES_ERA
+// Pairs are copy-constructed without the generic policy's precondition statement, except pairs
+// holding an auto_ptr or rc_ptr.
+#define RSTL_PAIR_CONSTRUCTION_POLICY (RSTL_CONSTRUCTION_POLICY && !RSTL_CONSTRUCT_MUTABLE_OVERLOAD)
 // Precondition checks are the empty `RSTL_PRECONDITION` statements; otherwise `RS_ASSERT` or
 // `((void)0)` stubs.
 #define RSTL_PRECONDITION_MACRO (RSTL_VERSION >= RSTL_G2ME)

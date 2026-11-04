@@ -58,3 +58,12 @@ CCECharacterInfo::CCECharacterInfo(CInputStream& in)
   }
 }
 
+// Guessed; stands in for a function stripped from the link.
+static void CopyAnimBBoxes(const rstl::vector< rstl::pair< rstl::string, CAABox > >& bboxes) {
+  rstl::vector< rstl::pair< rstl::string, CAABox > > copy(bboxes);
+}
+
+// Guessed; stands in for a function stripped from the link.
+static void CopyCharacterEffects(const CCECharacterInfo::TEffectList& effects) {
+  CCECharacterInfo::TEffectList copy(effects);
+}

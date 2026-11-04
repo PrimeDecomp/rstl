@@ -82,6 +82,15 @@ struct use_assignment_for_construction< pair< L, R > > {
 
 #endif
 
+#if RSTL_PAIR_CONSTRUCTION_POLICY
+// Guessed reconstruction: pairs are copy-constructed without the generic policy's
+// precondition statement.
+template < typename L, typename R >
+struct construction_policy< pair< L, R >, false > {
+  static void construct(void* dest, const pair< L, R >& src) { new (dest) pair< L, R >(src); }
+};
+#endif
+
 #if RSTL_PAIR_INT_FLOAT_POLICY
 // These legacy element policies retain the native construction null checks and
 // destruction loops even though the individual members have trivial lifetimes.
