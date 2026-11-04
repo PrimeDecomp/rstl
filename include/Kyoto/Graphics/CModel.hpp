@@ -5,9 +5,10 @@
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "types.h"
 
-#include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
+#include "Kyoto/Graphics/CModelFlags.hpp"
 
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/TToken.hpp"
@@ -150,6 +151,12 @@ inline void CModel::UnlockTextures() {
     matIter->UnlockTextures();
   }
   mModelInstance->UnlockTextures();
+}
+
+inline void CModel::PreDrawModel(const CModelFlags& flags) const {
+  CCubeMaterial::ResetCachedMaterials();
+  MoveToThisFrameList();
+  VerifyCurrentShader(flags.GetShaderSet());
 }
 #endif
 

@@ -185,6 +185,12 @@ typedef struct {
   float y;
 } Vec2, *Vec2Ptr;
 
+#if RSTL_PRIME1
+typedef bool TVideoModeFlag;
+#else
+typedef uchar TVideoModeFlag;
+#endif
+
 class CGraphics {
   friend class CCubeRenderer;
 
@@ -323,7 +329,7 @@ public:
   static void ConfigureFrameBuffer(const COsContext& osContext);
 
   static void ConfigureFrameBuffer();
-  static void ConfigureVideoMode(bool initial, bool rgb60); // Guessed name. PAL arena/video setup.
+  static void ConfigureVideoMode(bool initial, TVideoModeFlag progressive); // Guessed name
 
   static void EnableLight(ERglLight light);
   static void LoadLight(ERglLight light, const CLight& info);
@@ -503,7 +509,6 @@ public:
   static void InvalidateSpareTexture();
 
   static void SetProgressiveMode(bool b);
-  static void SetPAL60(bool enabled); // Guessed name; PAL60 (60 Hz) video-mode switch.
 
   static bool GetProgressiveMode();
   static bool CanSetProgressiveMode();
@@ -529,8 +534,6 @@ public:
   static const GXTexMapID kSpareBufferTexMapID;
 
 private:
-  static void ConfigureVideo(bool initial, uchar progressive); // Guessed name
-
   static void UpdateVertexDataStream();
   static void ResetVertexDataStream(bool initial);
   static void FlushStream();

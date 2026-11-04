@@ -591,6 +591,11 @@
 // constructor (field layout changes from 0x10 on). PAL Prime reserves 0x23e000 bytes.
 #define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK                                                          \
   (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00 || RSTL_KYOTO_WII_OS_CONTEXT)
+// PAL Prime and GameCube Echoes allocate the frame buffers, FIFO and spare buffer from that block
+// in CGraphics::ConfigureVideoMode.
+#define RSTL_KYOTO_GRAPHICS_ARENA (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
+// The PAL builds switch between 50 Hz PAL and EURGB60 instead of progressive scan.
+#define RSTL_KYOTO_PAL_VIDEO (RSTL_VERSION == RSTL_GM8P_00 || RSTL_VERSION == RSTL_G2MP)
 // The fatal error handler pivots to a clean OSContext and waits for a controller on port 1.
 // Absent in the Prime demo and Prime USA 0-00.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
