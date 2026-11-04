@@ -1,33 +1,30 @@
-#include "rstl/RstlVersions.h"
-#include "Kyoto/Alloc/IAllocator.hpp"
-
-#include "Kyoto/CARAMToken.hpp"
-#include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if RSTL_PRIME1
-#include "Prime/MetroidPrime/CGameDebug.hpp"
-#endif
 
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/IAllocator.hpp"
+#include "Kyoto/CARAMToken.hpp"
+#include "Kyoto/CDvdRequest.hpp"
+#include "Kyoto/CFrameDelayedKiller.hpp"
+#include "Kyoto/CResFactory.hpp"
+#include "Kyoto/Graphics/CGraphicsPalette.hpp"
+#include "Kyoto/Math/CMath.hpp"
+#include "Kyoto/Platform.h"
 #include "Kyoto/SObjectTag.hpp"
+#include "Kyoto/Streams/CInputStream.hpp"
+#include "rstl/RstlVersions.h"
+#include "rstl/single_ptr.hpp"
+
 #include "dolphin/base/PPCArch.h"
 #include "dolphin/gx/GXEnum.h"
 #include "dolphin/gx/GXStruct.h"
 #include "dolphin/gx/GXTexture.h"
 #include "dolphin/os.h"
 #include "dolphin/os/OSCache.h"
-#include "rstl/single_ptr.hpp"
+#include "stdint.h"
 #include "types.h"
 
-#include "Kyoto/Alloc/CMemory.hpp"
-
-#include "Kyoto/CDvdRequest.hpp"
-#include "Kyoto/CResFactory.hpp"
-#include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#include "Kyoto/Math/CMath.hpp"
-
-#include "Kyoto/Streams/CInputStream.hpp"
-#if !RSTL_PRIME1
-#include "stdint.h"
+#if RSTL_PRIME1
+#include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 
 int CTexture::sCurrentFrameCount = 0;
@@ -130,7 +127,6 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
 #if RSTL_PRIME1
     mCanLoadPalette = true;
 #endif
-
   }
   mBitsPerPixel = TexelFormatBitsPerPixel(mTexelFormat);
 #if RSTL_PRIME1
@@ -167,16 +163,24 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
     if (DEBUG_TOOLS_GET_BOOL(kDO_ReviewTextureSize, false))
       DCFlushRangeNoSync(buf, OSRoundUp32B(bufLen));
 #endif
-
   }
 
   InitTextureObjects();
   PPCSync();
 }
 
-CTexture::~CTexture() { UncountMemory(); }
+CTexture::~CTexture() {
+  if (IS_TARGET_PC) {
+    ScheduleDeletion();
+  }
+  UncountMemory();
+}
 
 void CTexture::InitTextureObjects() {
+#if IS_TARGET_PC
+  GXDestroyTexObj(&mTexObj);
+#endif
+
   mIsPowerOfTwo =
       CMath::FloorPowerOfTwo(mWidth) == mWidth && CMath::FloorPowerOfTwo(mHeight) == mHeight;
 
@@ -203,72 +207,57 @@ void CTexture::InitTextureObjects() {
 #if !RSTL_PRIME1
   InvalidateTexmaps();
 #endif
-
 }
 
 void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
-#if RSTL_PRIME1
-  if (sLoadedTextures[tex] != this || mCanLoadObj) {
-#else
-  // The low address bits distinguish the three clamp modes in the cache.
-  if (reinterpret_cast< uintptr_t >(this) + clamp != sLoadedTextures[tex]) {
-    if (mCanLoadObj) {
-#endif
+  // Prime 2: The low address bits distinguish the three clamp modes in the cache.
+  if (IS_TARGET_PC ||
+      IF_RSTL_PRIME1_ELSE((sLoadedTextures[tex] != this || mCanLoadObj),
+                          (reinterpret_cast< uintptr_t >(this) + clamp != sLoadedTextures[tex]))) {
 
-    void* ptr = mARAMToken.GetMRAMSafe();
-    CountMemory();
+    void* ptr;
+    if (IS_TARGET_PC || RSTL_PRIME1 || mCanLoadObj) {
+      IF_NOT_TARGET_PC(ptr = mARAMToken.GetMRAMSafe());
+      CountMemory();
 
-    if (!mGraphicsPalette.null()) {
-      mGraphicsPalette->Load();
-#if RSTL_PRIME1
-      mCanLoadPalette = false;
-#else
-      } else {
+      if (!mGraphicsPalette.null()) {
+        mGraphicsPalette->Load();
+        IF_RSTL_PRIME1(mCanLoadPalette = false);
+      }
+#if !RSTL_PRIME1
+      else {
         mCanLoadObj = false;
       }
-      GXInitTexObjData(&mTexObj, ptr);
+      IF_NOT_TARGET_PC(GXInitTexObjData(&mTexObj, ptr));
 #endif
-
     }
+    IF_RSTL_PRIME1(mCanLoadObj = false);
 
 #if RSTL_PRIME1
-    mCanLoadObj = false;
-
     if (mClampMode != clamp) {
       if (!mIsPowerOfTwo) {
         mClampMode = kCM_Clamp;
       } else {
+        mClampMode = clamp;
+      }
+      GXInitTexObjWrapMode(&mTexObj, GXTexWrapMode(mClampMode), GXTexWrapMode(mClampMode));
+    }
+    IF_NOT_TARGET_PC(GXInitTexObjData(&mTexObj, ptr));
+    GXLoadTexObj(&mTexObj, tex);
+    sLoadedTextures[tex] = this;
+    mFrameAllocated = sCurrentFrameCount;
 #else
     if (mClampMode != clamp && mIsPowerOfTwo) {
-#endif
-
-        mClampMode = clamp;
-#if !RSTL_PRIME1
+      mClampMode = clamp;
       GXInitTexObjWrapMode(&mTexObj, GXTexWrapMode(mClampMode), GXTexWrapMode(mClampMode));
-#endif
-
-      }
-
-#if RSTL_PRIME1
-      GXInitTexObjWrapMode(&mTexObj, (GXTexWrapMode)mClampMode, (GXTexWrapMode)mClampMode);
-#else
+    }
     GXLoadTexObj(&mTexObj, tex);
     sLoadedTextures[tex] = reinterpret_cast< uintptr_t >(this) + clamp;
     mFrameAllocated = sCurrentFrameCount;
     ++sTextureLoadCount;
-  }
 #endif
-
-    }
-
-#if RSTL_PRIME1
-    GXInitTexObjData(&mTexObj, ptr);
-    GXLoadTexObj(&mTexObj, tex);
-    sLoadedTextures[tex] = this;
-    mFrameAllocated = sCurrentFrameCount;
   }
 }
-#endif
 
 void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
   char* ptr = static_cast< char* >(mARAMToken.GetMRAMSafe());
@@ -295,7 +284,6 @@ void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
 #if RSTL_PRIME1
     mCanLoadPalette = false;
 #endif
-
   }
 
   GXLoadTexObj(&obj, tex);
@@ -305,6 +293,9 @@ void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
 }
 
 void CTexture::UnloadBitmapData(CAssetId textureId) const {
+  if (IS_TARGET_PC) {
+    return;
+  }
   if (!mBitmapReloader.null()) {
     bool loadToARAM = mBitmapReloader->GetShouldBeInARAM();
     mBitmapReloader = rs_new CDumpedBitmapDataReloader(textureId, mMemoryAllocated, loadToARAM);
@@ -319,7 +310,6 @@ void CTexture::UnloadBitmapData(CAssetId textureId) const {
 #if !RSTL_PRIME1
     mCanLoadObj = true;
 #endif
-
   }
 }
 
@@ -448,7 +438,6 @@ void* CTexture::CDumpedBitmapDataReloader::TryBuildReloadedBitmapData(CResFactor
 
       in.Get(static_cast< char* >(ptr) + off, len);
       DCFlushRangeNoSync(static_cast< char* >(ptr) + off, OSRoundUp32B(len));
-
     }
     PPCSync();
     mData = nullptr;
@@ -476,6 +465,10 @@ bool CTexture::LoadToMRAM() const {
 }
 
 bool CTexture::LoadToARAM() const {
+  if (IS_TARGET_PC) {
+    return mARAMToken.LoadToARAM();
+  }
+
 #if !RSTL_PRIME1
   mCanLoadObj = true;
 #endif
@@ -498,7 +491,6 @@ bool CTexture::LoadToARAM() const {
 #else
       InvalidateTexmaps();
 #endif
-
     }
     return ret;
   }
@@ -506,6 +498,10 @@ bool CTexture::LoadToARAM() const {
 }
 
 bool CTexture::IsARAMTransferInProgress() const {
+  if (IS_TARGET_PC) {
+    return false;
+  }
+
   if (mNoSwap) {
     return false;
   }
@@ -586,19 +582,32 @@ void CTexture::InitBitmapBuffers(ETexelFormat fmt, short width, short height, in
   CountMemory();
 }
 
+#if defined(TARGET_PC)
+void* CTexture::Lock() {
+  // AuroraGXSync();
+  void* data = GetBitMapData(0);
+  GXDestroyCopyTex(data);
+  mLocked = true;
+  return data;
+}
+#endif
+
 void CTexture::UnLock() {
   mLocked = false;
 #if !RSTL_PRIME1
   mCanLoadObj = true;
 #endif
-
   CountMemory();
+#if defined(TARGET_PC)
+  GXInitTexObjData(&mTexObj, mARAMToken.GetMRAMSafe());
+  mCanLoadObj = true;
+#endif
   DCFlushRange(mARAMToken.GetMRAMSafe(), OSRoundUp32B(mMemoryAllocated));
 }
 
 RSTL_PRIME1_CONST CFactoryFnReturn FTextureFactory(const SObjectTag& tag, CInputStream& in,
 
-                                 const CVParamTransfer& xfer) {
+                                                   const CVParamTransfer& xfer) {
   return rs_new CTexture(in, CTexture::kAM_Zero, CTexture::kBK_Zero);
 }
 
@@ -609,7 +618,6 @@ const void* CTexture::GetConstBitMapData(const int mip) const {
   }
 
   return static_cast< const uchar* >(mARAMToken.GetMRAMSafe()) + offset;
-
 }
 
 void* CTexture::GetBitMapData(int mip) { return const_cast< void* >(GetConstBitMapData(mip)); }
@@ -712,7 +720,17 @@ void CTexture::UncountMemory() const {
 void CTexture::InvalidateTexmap(GXTexMapID texmap) { sLoadedTextures[texmap] = 0; }
 
 void CTexture::ScheduleDeletion() {
+#if IS_TARGET_PC
+  GXDestroyTexObj(&mTexObj);
+  for (auto& tex : sLoadedTextures) {
+    if (tex == this) {
+      tex = nullptr;
+    }
+  }
+#endif
+
   if (mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned) {
+    IF_TARGET_PC(GXDestroyCopyTex(mARAMToken.GetMRAMSafe()));
     CFrameDelayedKiller::ScheduleDeletion(CFrameDelayedKiller::kWhichFrame_NextFrame,
                                           mARAMToken.ForceSyncMRAM());
   }
@@ -727,4 +745,3 @@ void CTexture::InvalidateTexmaps() const {
   }
 }
 #endif
-

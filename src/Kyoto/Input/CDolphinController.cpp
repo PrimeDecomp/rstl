@@ -1,8 +1,8 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Input/CDolphinController.hpp"
-#include "Kyoto/Math/CMath.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Math/CMath.hpp"
+#include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1
 #include "dolphin/gba.h"
@@ -21,6 +21,16 @@ CDolphinController::CDolphinController()
     PADSetSpec(PAD_SPEC_5);
     PADInit();
     sIsInitialized = true;
+#if TARGET_PC
+    Poll();
+    static constexpr u32 stopAll[PAD_MAX_CONTROLLERS] = {
+        PAD_MOTOR_STOP_HARD,
+        PAD_MOTOR_STOP_HARD,
+        PAD_MOTOR_STOP_HARD,
+        PAD_MOTOR_STOP_HARD,
+    };
+    PADControlAllMotors(stopAll);
+#endif
   }
 }
 
@@ -277,4 +287,3 @@ const uint CDolphinController::skTypeUnknown = 'UNKN';
 const uint CDolphinController::skTypeStandard = 'STND';
 const uint CDolphinController::skTypeGBA = 'GBA_';
 const uint CDolphinController::skTypeWavebird = 'WAVE';
-

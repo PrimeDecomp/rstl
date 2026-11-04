@@ -167,6 +167,7 @@ public:
     , size_t size, bool le
 #endif // defined(TARGET_PC)
   );
+  static void LoadNrmMtxIndx3x3(ushort index, uint slot);
 
   static void SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
                      const GXColor& color);
@@ -240,6 +241,10 @@ private:
 #endif
 
 };
+
+inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
+  GXLoadNrmMtxIndx3x3(index, slot);
+}
 
 #if RSTL_PRIME1
 inline CGX::STevState::STevState()

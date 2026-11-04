@@ -34,8 +34,10 @@ public:
   const CVector3f& GetGlobalScale() const override;
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
+#if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
+#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;

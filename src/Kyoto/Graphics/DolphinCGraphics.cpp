@@ -1,26 +1,23 @@
-#include "rstl/RstlVersions.h"
-// G2ME01 scaffold remaining identity and code-generation questions are recorded in research.
 #include "Kyoto/Graphics/CGraphics.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/LockedCache.hpp"
+#include "Kyoto/Animation/CSkinnedModel.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
-
+#include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#include "Kyoto/Animation/CSkinnedModel.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-
 #include "Kyoto/Math/CRelAngle.hpp"
-#include "Kyoto/Alloc/LockedCache.hpp"
-#include "Kyoto/Basics/RAssertDolphin.hpp"
-
-#include "dolphin/types.h"
+#include "Kyoto/Platform.h"
+#include "rstl/RstlVersions.h"
 #include "rstl/math.hpp"
 
 #include "dolphin/gx.h"
+#include "dolphin/types.h"
 #include "dolphin/vi.h"
 
 #include "string.h"
@@ -39,12 +36,11 @@ bool sIs50Hz = RSTL_VERSION == RSTL_GM8P_00;
 static uchar* sGraphicsArena;
 static int sGraphicsArenaSize;
 static uint sGraphicsArenaOffset;
+static void* sSpareFrameBuffer;
+static int sSpareFrameBufferSize;
 #else
 static int sSpareFrameBufferSize;
-#endif
 static void* sSpareFrameBuffer;
-#if RSTL_PRIME1
-static int sSpareFrameBufferSize;
 #endif
 #else
 ATTRIBUTE_ALIGN_DECL(32, static uchar sSpareFrameBuffer[640 * 448]);
@@ -341,7 +337,7 @@ bool CGraphics::sIsPAL; // Guessed name; PAL TV format.
 
 const GXTexMapID CGraphics::kSpareBufferTexMapID = GX_TEXMAP7;
 
-#if (RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8J_00) || (!RSTL_PRIME1 && RSTL_VERSION < RSTL_R32J)
+#if RSTL_VERSION >= RSTL_GM8J_00
 void CGraphics::InitGraphicsFifo(GXFifoObj* obj, void* fifo, uint fifoSize) {
   GXFifoObj fifoObj;
   GXInitFifoBase(&fifoObj, fifo, fifoSize);
@@ -685,7 +681,6 @@ void CGraphics::InitGraphicsVariables() {
   const GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
   CGX::SetChanMatColor(CGX::Channel0, white);
   sRenderState.ResetFlushAll();
-
 }
 
 void CGraphics::Shutdown() {
@@ -903,7 +898,6 @@ void CGraphics::SetViewMatrix() {
 #else
     MTXConcat(mCameraMtx, mModelMatrix.GetCStyleMatrix(), mGxModelView);
 #endif
-
   }
   GXLoadPosMtxImm(mGxModelView, GX_PNMTX0);
 #if RSTL_PRIME1
@@ -972,8 +966,8 @@ void CGraphics::SetModelMatrix(const CTransform4f& xf) {
 #else
   if (&xf == &CTransform4f::Identity()) {
     if (mIsGXModelMatrixIdentity) {
-    return;
-  }
+      return;
+    }
     mIsGXModelMatrixIdentity = true;
   } else {
     mIsGXModelMatrixIdentity = false;
@@ -1145,7 +1139,6 @@ void CGraphics::SetViewport(int left, int bottom, int width, int height) {
 #if !RSTL_PRIME1
 int CGraphics::GetViewportTop(int bottom) {
   return mRenderModeObj.efbHeight - (bottom + mViewport.mHeight);
-
 }
 #endif
 
@@ -1190,11 +1183,20 @@ static const GXVtxDescList skPosColorTexDirect[] = {
     {GX_VA_NULL, GX_NONE},
 };
 
-void CGraphics::BeginScene() { ClearBackAndDepthBuffers(); }
+void CGraphics::BeginScene() {
+#if IS_TARGET_PC
+// TODO begin frame
+#endif
+  ClearBackAndDepthBuffers();
+}
 
 void CGraphics::SwapBuffers() {
-  GXDisableBreakPt();
-  mFlippingState = 1;
+  if (IS_TARGET_PC) {
+    mFlippingState = 0;
+  } else {
+    GXDisableBreakPt();
+    mFlippingState = 1;
+  }
 }
 
 void CGraphics::VideoPreCallback(u32 retraceCount) {
@@ -1260,6 +1262,17 @@ void CGraphics::VideoPostCallback(u32 retraceCount) {
 }
 
 void CGraphics::EndScene() {
+#if IS_TARGET_PC
+  CGX::SetZMode(true, GX_LEQUAL, RSTL_PRIME1);
+  GXCopyDisp(mpCurrenFrameBuf, mIsBeginSceneClearFb ? GX_TRUE : GX_FALSE);
+
+  const float elapsed = sFPSTimer.GetElapsedTime();
+  mLastFramesPerSecond = mFramesPerSecond;
+  mFramesPerSecond = elapsed > 0.f ? 1.f / elapsed : 0.f;
+  sFPSTimer.Reset();
+  mInterruptLastFrameUsedAbove = false;
+
+#else
 #if RSTL_PRIME1
   CGX::SetZMode(true, GX_LEQUAL, true);
 #endif
@@ -1278,7 +1291,7 @@ void CGraphics::EndScene() {
   } else {
     CStopwatch waitTimer;
     while (numBreakPt > 0 && !aborted) {
-    OSYieldThread();
+      OSYieldThread();
       if (OSTicksToMilliseconds(OSGetTime() - start) > 250) {
         const bool interrupts = OSDisableInterrupts();
         GXAbortFrame();
@@ -1370,8 +1383,8 @@ void CGraphics::EndScene() {
   GXFifoObj* fifo = GXGetGPFifo();
   GXGetFifoPtrs(fifo, &readPtr, &writePtr);
 #endif
-
   GXEnableBreakPt(writePtr);
+#endif
   mLastFrameUsedAbove = mInterruptLastFrameUsedAbove;
   ++mFrameCounter;
   CFrameDelayedKiller::FlushAllocationsForFrame();
@@ -1534,8 +1547,8 @@ bool CGraphics::BeginRender2D(const CTexture& tex) {
 }
 
 #if RSTL_PRIME1
-void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int srcX, int srcY,
-                           int srcW, int srcH, int w, int h, const CColor& col) {
+void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int srcX, int srcY, int srcW,
+                           int srcH, int w, int h, const CColor& col) {
   const float u0 = float(srcX) / tex.GetWidth();
   const float u1 = float(srcX + srcW) / tex.GetWidth();
   const float v0 = float(srcY) / tex.GetHeight();
@@ -1681,19 +1694,16 @@ void CGraphics::StreamNormal(const float* nrm) {
   vtxDescr.mNormal.y = nrm[1];
   vtxDescr.mNormal.z = nrm[2];
   vtxDescr.mStreamFlags |= kHasNormals;
-
 }
 
 void CGraphics::StreamColor(uint color) {
   vtxDescr.mColor = color;
   vtxDescr.mStreamFlags |= kHasColor;
-
 }
 
 void CGraphics::StreamColor(const CColor& color) {
   vtxDescr.mColor = color.GetColor_u32();
   vtxDescr.mStreamFlags |= kHasColor;
-
 }
 
 void CGraphics::StreamColor(float r, float g, float b, float a) {
@@ -1705,7 +1715,6 @@ void CGraphics::StreamColor(float r, float g, float b, float a) {
                    static_cast< uchar >(a * 255.f);
   // clang-format on
   vtxDescr.mStreamFlags |= kHasColor;
-
 }
 
 void CGraphics::StreamTexcoord(const CVector2f& uv) {
@@ -1713,7 +1722,6 @@ void CGraphics::StreamTexcoord(const CVector2f& uv) {
   vtxDescr.mTexCoord0.y = uv.GetY();
   vtxDescr.mStreamFlags |= kHasTexture;
   vtxDescr.mTextureUsed |= 1;
-
 }
 
 void CGraphics::StreamTexcoord(float u, float v) {
@@ -1721,7 +1729,6 @@ void CGraphics::StreamTexcoord(float u, float v) {
   vtxDescr.mTexCoord0.y = v;
   vtxDescr.mStreamFlags |= kHasTexture;
   vtxDescr.mTextureUsed |= 1;
-
 }
 
 void CGraphics::StreamEnd() {
@@ -1735,7 +1742,6 @@ void CGraphics::StreamEnd() {
   txtBuffer0 = nullptr;
   txtBuffer1 = nullptr;
   clrBuffer = nullptr;
-
 }
 
 void CGraphics::SetLineWidth(float w, ERglTexOffset offs) {
@@ -1846,17 +1852,14 @@ void CGraphics::FlushStream() {
   if ((vtxDescr.mStreamFlags & kHasNormals) != 0) {
     const GXVtxDescList normal = {GX_VA_NRM, GX_DIRECT};
     *next++ = normal;
-
   }
   if ((vtxDescr.mStreamFlags & kHasColor) != 0) {
     const GXVtxDescList color = {GX_VA_CLR0, GX_DIRECT};
     *next++ = color;
-
   }
   if ((vtxDescr.mStreamFlags & kHasTexture) != 0) {
     const GXVtxDescList texture = {GX_VA_TEX0, GX_DIRECT};
     *next++ = texture;
-
   }
   const GXVtxDescList end = {GX_VA_NULL, GX_NONE};
   *next = end;
@@ -1868,7 +1871,7 @@ void CGraphics::FlushStream() {
   if (sUseStreamVertexDelay) {
     FullRenderWithVertexDelay();
   } else {
-  FullRender();
+    FullRender();
   }
 #endif
 }
@@ -2012,7 +2015,6 @@ void CGraphics::FullRender() {
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
       GXColor1u32(clrBuffer[i]);
-
     }
     break;
   case kHasTexture:
@@ -2047,7 +2049,6 @@ void CGraphics::FullRender() {
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
       GXColor1u32(clrBuffer[i]);
-
     }
     break;
   case kHasColor | kHasTexture:
@@ -2134,7 +2135,6 @@ void CGraphics::SetTevOp(ERglTevStage stage, const CTevCombiners::CTevPass& pass
 #if !RSTL_PRIME1
 void CGraphics::SetTevRegisterColor(int index, const CColor& color) {
   CTevCombiners::SetTevRegisterColor(index, color);
-
 }
 #endif
 
@@ -2183,6 +2183,7 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
                GX_CLAMP, GX_DISABLE);
   GXInitTexObjLOD(&texObj, filter, filter, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
   GXLoadTexObj(&texObj, texId);
+  IF_TARGET_PC(GXDestroyTexObj(&texObj));
   CTexture::InvalidateTexmap(texId);
   if (texId == GX_TEXMAP7) {
     GXInvalidateTexRegion(&mTexRegions[0]);
@@ -2192,7 +2193,8 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
 void CGraphics::LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, GXTlut tlut,
                                         void* data, GXTexMapID texId
 #if RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER
-                                        , GXTexFilter filter
+                                        ,
+                                        GXTexFilter filter
 #endif
 ) {
 #if !RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER
@@ -2203,6 +2205,7 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, G
                  GX_CLAMP, GX_DISABLE, tlut);
   GXInitTexObjLOD(&texObj, filter, filter, 0.f, 0.f, 0.f, GX_DISABLE, GX_DISABLE, GX_ANISO_1);
   GXLoadTexObj(&texObj, texId);
+  IF_TARGET_PC(GXDestroyTexObj(&texObj));
   CTexture::InvalidateTexmap(texId);
   if (texId == GX_TEXMAP7) {
 #if RSTL_PRIME1
@@ -2210,7 +2213,6 @@ void CGraphics::LoadDolphinSpareTexture(int width, int height, GXCITexFmt fmt, G
 #else
     GXInvalidateTexRegion(&mTexRegionsCI[0]);
 #endif
-
   }
 }
 
@@ -2260,14 +2262,12 @@ CGraphics::CClippedScreenRect
 CGraphics::ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2, ETexelFormat fmt) {
   if (!p1.IsNonZero() || !p2.IsNonZero()) {
     return CClippedScreenRect();
-
   }
   if (p1.GetY() < GetProjectionState().GetNear() || p2.GetY() < GetProjectionState().GetNear()) {
     return CClippedScreenRect();
   }
   if (p1.GetY() > GetProjectionState().GetFar() || p2.GetY() > GetProjectionState().GetFar()) {
     return CClippedScreenRect();
-
   }
 
   CVector2i p1p = ProjectPoint(p1);
@@ -2376,12 +2376,10 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
   int left = minX & ~1;
   if (left >= vpLeft + vpWidth) {
     return CClippedScreenQuad();
-
   }
   int right = (minX + width + 2) & ~1;
   if (right <= vpLeft) {
     return CClippedScreenQuad();
-
   }
   left = rstl::max_val(left, vpLeft) & ~1;
   right = (rstl::min_val(right, vpLeft + vpWidth) + 1) & ~1;
@@ -2389,12 +2387,10 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
   int top = minY & ~1;
   if (top >= vpTop + vpHeight) {
     return CClippedScreenQuad();
-
   }
   int bottom = (minY + height2 + 2) & ~1;
   if (bottom <= vpTop) {
     return CClippedScreenQuad();
-
   }
   top = rstl::max_val(top, vpTop) & ~1;
   bottom = (rstl::min_val(bottom, vpTop + vpHeight) + 1) & ~1;
@@ -2431,7 +2427,6 @@ CGraphics::ClipScreenQuadFromMS(const CVector3f& p1, const CVector3f& p2, const 
                               mViewMatrix.TransposeMultiply(mModelMatrix * p2),
                               mViewMatrix.TransposeMultiply(mModelMatrix * p3),
                               mViewMatrix.TransposeMultiply(mModelMatrix * p4), fmt);
-
 }
 #endif
 
@@ -2587,22 +2582,26 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
 }
 
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
-
 #endif
 
-#if RSTL_KYOTO_GRAPHICS_ARENA
 CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys,
-                           bool progressive) {
-#else
-CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint fifoSize,
-                           void* fifoBase) {
-#endif
-  if (mGraphicsInitialized != true) {
 #if RSTL_KYOTO_GRAPHICS_ARENA
-    mGraphicsInitialized = CGraphics::Startup(osContext, progressive);
-#else
-    mGraphicsInitialized = CGraphics::Startup(osContext, fifoSize, fifoBase);
+                           bool progressive
+#elif !IS_TARGET_PC
+                           uint fifoSize, void* fifoBase
 #endif
+) {
+  if (mGraphicsInitialized != true) {
+
+    mGraphicsInitialized = CGraphics::Startup(osContext,
+#if RSTL_KYOTO_GRAPHICS_ARENA
+                                              progressive
+#elif !IS_TARGET_PC
+                                              fifoSize, fifoBase
+#else
+                                              0x10000, nullptr
+#endif
+    );
   }
 }
 
@@ -2620,6 +2619,7 @@ CGraphics::CRenderState::CRenderState() {
 
 void CGraphics::CRenderState::Flush() {}
 
+#if !IS_TARGET_PC
 int CGraphics::CRenderState::SetVtxState(const float* pos, const float* nrm, const uint* clr) {
   CGX::SetArray(GX_VA_POS, pos, 12);
   CGX::SetArray(GX_VA_NRM, nrm, 12);
@@ -2633,13 +2633,23 @@ int CGraphics::CRenderState::SetVtxState(const float* pos, const float* nrm, con
   }
   return result;
 }
+#endif
 
 void CGraphics::CRenderState::ResetFlushAll() {
   x0_ = 0;
+#if IS_TARGET_PC
+  CGX::SetArray(GX_VA_POS, nullptr, 12, 0, false);
+  CGX::SetArray(GX_VA_NRM, nullptr, 12, 0, false);
+  CGX::SetArray(GX_VA_CLR0, nullptr, 4, 0, false);
+  for (int i = 0; i < 8; i++) {
+    CGX::SetArray(static_cast< GXAttr >(GX_VA_TEX0 + i), nullptr, 8, 0, false);
+  }
+#else
   SetVtxState(nullptr, nullptr, nullptr);
   for (int i = 0; i < 8; i++) {
     CGX::SetArray(static_cast< GXAttr >(GX_VA_TEX0 + i), nullptr, 8);
   }
+#endif
   Flush();
 }
 

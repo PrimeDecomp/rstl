@@ -9,6 +9,11 @@
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "math.h"
 
+#if RSTL_PRIME1
+#define cosf(x) CCast::ToReal32(cos(x))
+#define sinf(x) CCast::ToReal32(sin(x))
+#endif
+
 static CUnitVector3f CreateNormal(const CVector3f& a, const CVector3f& b, const CVector3f& c) {
   return CVector3f::Cross(b - a, c - a);
 }
@@ -16,25 +21,16 @@ static CUnitVector3f CreateNormal(const CVector3f& a, const CVector3f& b, const 
 CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, float nearZ,
                                bool useFarPlane, float farZ) {
   float halfFov = fov / 2.f;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const float cosV = CCast::ToReal32(cos(halfFov));
-  const float sinV = CCast::ToReal32(sin(halfFov));
-#else
   const float cosV = cosf(halfFov);
   const float sinV = sinf(halfFov);
-#endif
 
   const float verticalLength = nearZ / cosV;
   const float height = verticalLength * sinV;
-  halfFov *= aspect;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const float cosH = CCast::ToReal32(cos(halfFov));
-  const float sinH = CCast::ToReal32(sin(halfFov));
-  float width = nearZ / cosH;
-  width *= sinH;
+#if IS_TARGET_PC
+  // TODO: should this just be NONMATCHING?
+  const float width = height * aspect;
 #else
+  halfFov *= aspect;
   const float cosH = cosf(halfFov);
   const float sinH = sinf(halfFov);
   const float horizontalLength = nearZ / cosH;
@@ -56,14 +52,9 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[2], worldCorners[1])));
 
   if (useFarPlane) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mPlanes.push_back(CPlane(farZ - mPlanes[0].GetConstant(), -mPlanes[0].GetNormal()));
-#else
     const CUnitVector3f normal = -mPlanes[0].GetNormal();
     float constant = farZ - mPlanes[0].GetConstant();
     mPlanes.push_back(CPlane(constant, normal));
-#endif
   }
 }
 
@@ -127,4 +118,3 @@ bool CFrustumPlanes::PointInFrustumPlanes(const CVector3f& point) const {
   }
   return true;
 }
-

@@ -1,40 +1,32 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CElementGen.hpp"
+
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/CRandom16.hpp"
-
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
-
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
-
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
-
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
 #include "Kyoto/Particles/CParticleGlobals.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
-#endif
-
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
-#if !RSTL_PRIME1
 #include "Kyoto/Particles/CSortedParticleSystem.hpp"
-#endif
 
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
 #include "Kyoto/Particles/CWarp.hpp"
@@ -46,20 +38,20 @@
 #include "rstl/single_ptr.hpp"
 
 #include "alloca.h"
-#if RSTL_PRIME1
 #include "math.h"
-#endif
-
 #include "dolphin/gx.h"
 
 #if RSTL_PRIME1
 #ifdef __MWERKS__
 #define frsqrte(x) static_cast< float >(__frsqrte(x))
-#else
-
+#elif CLANGD
 extern "C" float frsqrte(float);
-
+#else
+#include "dolphin/ppc_math.h"
 #endif
+#define INVERSE_SQRT(x) frsqrte(x)
+#else // RSTL_PRIME1
+#define INVERSE_SQRT(x) CMath::FastInvSqrtF(x)
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -72,6 +64,12 @@ extern "C" float frsqrte(float);
     GXPosition3f32(vec[0], vec[1], vec[2]);                                                        \
   }
 #else
+
+#define GXPositionVector3f(in)                                                                     \
+  {                                                                                                \
+    GXPosition3f32(in.GetX(), in.GetY(), in.GetZ());                                               \
+  }
+
 // Guessed names for the TU-local scale default and initialization guard.
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
 static const double skTickTime = 1.0 / 60.0;
@@ -2225,7 +2223,6 @@ void CElementGen::RenderParticles() {
     TToken< CTexture > tex = mLoadedGenDesc->mTEXR->GetValueTexture(partFrame);
     tex->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
 
@@ -2271,23 +2268,13 @@ void CElementGen::RenderParticles() {
 #endif
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static const GXVtxDescList sVtxDescList[] = {
-#else
-  static const GXVtxDescList skVtxDescList[] = {
-#endif
       {GX_VA_POS, GX_DIRECT},
       {GX_VA_CLR0, GX_DIRECT},
       {GX_VA_TEX0, GX_DIRECT},
       {GX_VA_NULL, GX_NONE},
   };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CGX::SetVtxDescv(sVtxDescList);
-#else
-  CGX::SetVtxDescv(skVtxDescList);
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -2457,12 +2444,7 @@ void CElementGen::RenderParticles() {
             systemCameraCopy *
             ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        uint color = particle.mColor.GetColor_u32();
-#else
-        uint color = CColor::Modulate(particle.mColor, mModuColor).GetColor_u32();
-#endif
+        uint color = IF_RSTL_PRIME1_ELSE(particle.mColor, CColor::Modulate(particle.mColor, mModuColor)).GetColor_u32();
 
         if (!constUVs) {
           int partFrame = mCurFrame - particle.mStartFrame - 1;
@@ -2635,30 +2617,14 @@ void CElementGen::RenderParticles() {
         float velMagSq = particle->mVel.MagSquared();
 
         if (velMagSq > canBeNormEps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          dir = particle->mVel * frsqrte(velMagSq);
-#else
-          dir = particle->mVel * CMath::FastInvSqrtF(velMagSq);
-#endif
+          dir = particle->mVel * INVERSE_SQRT(velMagSq);
         } else {
           const CVector3f& dv = particle->mPos - particle->mPrevPos;
           float dMagSq = dv.MagSquared();
           if (dMagSq > canBeNormEps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            CVector3f tmp = dv;
-            dir = tmp * frsqrte(dMagSq);
-#else
-            dir = dv * CMath::FastInvSqrtF(dMagSq);
-#endif
+            dir = dv * INVERSE_SQRT(dMagSq);
           } else {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            dir = CVector3f(0.f, 0.f, 1.f);
-#else
-            dir = CVector3f::Up();
-#endif
+            dir = IF_RSTL_PRIME1_ELSE(CVector3f(0.f, 0.f, 1.f), CVector3f::Up());
           }
         }
 
@@ -2673,13 +2639,7 @@ void CElementGen::RenderParticles() {
           float crMagSq = right.MagSquared();
 
           if (crMagSq > canBeNormEps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-            float invMag = frsqrte(crMagSq);
-#else
-            float invMag = CMath::FastInvSqrtF(crMagSq);
-#endif
-
+            float invMag = INVERSE_SQRT(crMagSq);
             float width = particle->mLineLengthOrSize * rota;
             right *= width * invMag;
           } else {
@@ -2687,13 +2647,7 @@ void CElementGen::RenderParticles() {
             float cr2MagSq = right.MagSquared();
 
             if (cr2MagSq > canBeNormEps) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-              float invMag = frsqrte(cr2MagSq);
-#else
-              float invMag = CMath::FastInvSqrtF(cr2MagSq);
-#endif
-
+              float invMag = INVERSE_SQRT(cr2MagSq);
               float width = particle->mLineLengthOrSize * rota;
               right *= width * invMag;
             }
@@ -2714,90 +2668,50 @@ void CElementGen::RenderParticles() {
 
           pos += right * 0.5f;
           pos += fore * 0.5f;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
           pos -= fore;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
           pos -= right;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
           pos += fore;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMax, uvs.yMin);
         } else {
           pos += right * 0.5f;
           pos += fore * 0.5f;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord1s16(0x0202);
 
           pos -= fore;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord1s16(0x0002);
 
           pos -= right;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord1s16(0x0000);
 
           pos += fore;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
           GXPositionVector3f(pos);
-#else
-          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
-#endif
 
           GXColor1u32(color);
           GXTexCoord1s16(0x0200);
@@ -2812,13 +2726,7 @@ void CElementGen::RenderParticles() {
 
       CVector3f mbspVec = (particle->mPos - particle->mPrevPos) * mbspFac;
       CVector3f vec = (particle->mPos - particle->mPrevPos) * mTimeDeltaScale + particle->mPrevPos;
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      CColor col = particle->mColor;
-#else
-      CColor col = CColor::Modulate(particle->mColor, mModuColor);
-#endif
+      CColor col = IF_RSTL_PRIME1_ELSE(particle->mColor, CColor::Modulate(particle->mColor, mModuColor));
 
       col.SetAlpha(col.GetAlpha() * mbspFac);
       uint color = col.GetColor_u32();
@@ -3046,25 +2954,15 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
                                                              CTexture::kCM_Repeat);
 #endif
   }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static const GXVtxDescList sVtxDescList[] = {
-#else
-  static const GXVtxDescList skVtxDescList[] = {
-#endif
       {GX_VA_POS, GX_DIRECT},
       {GX_VA_CLR0, GX_DIRECT},
       {GX_VA_TEX0, GX_DIRECT},
       {GX_VA_NULL, GX_NONE},
   };
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CGX::SetVtxDescv(sVtxDescList);
-
+#if RSTL_PRIME1
   int activeCount;
-#else
-  CGX::SetVtxDescv(skVtxDescList);
 #endif
   int nStages = 1;
 
@@ -3102,7 +3000,6 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
 #endif
 
   for (int i = 0; i < count; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     totalParticles += gens[i]->GetParticleCount();
 #else
@@ -3141,14 +3038,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
 
   for (int i = 0; i < count; ++i) {
     CElementGen* gen = gens[i];
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    int numParts = gen->GetParticleCount();
-    float timeDelta = gen->mTimeDeltaScale;
-#else
     const int numParts = gen->GetParticleCount();
     const float timeDelta = gen->GetTimeDeltaScale();
-#endif
     for (int j = 0; j < numParts; ++j) {
       CParticle& particle = gen->mParticles[static_cast< uint >(j)];
       if (particle.mEndFrame == -1) {
@@ -3190,14 +3081,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
 #endif
 
   for (int i = 0; i < activeCount; ++i) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CTexturedParticleListItem* readPtr = &sortItems[i];
-    ushort map = readPtr->mTexMapIdx;
-#else
     const CTexturedParticleListItem& item = sortItems[i];
     const ushort map = item.mTexMapIdx;
-#endif
 
     if (lastMap != map) {
       gen = gens[map];
@@ -3210,12 +3095,7 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       genDesc = gens[map]->mLoadedGenDesc;
 #endif
       if (!modulateAlpha) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        if (desc->mAAPH) {
-#else
         if (genDesc->mAAPH) {
-#endif
           CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
         } else {
           CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
@@ -3245,16 +3125,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       modulationColor = colors[map];
 #endif
     }
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    CParticle& particle = gen->mParticles[readPtr->mPartIdx];
-
-    int elapsed = emitterTime - particle.mStartFrame - 1;
-#else
     CParticle& particle = gen->mParticles[item.mPartIdx];
     const int elapsed = emitterTime - particle.mStartFrame - 1;
-#endif
 
     CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
     CParticleGlobals::UpdateParticleLifetimeTweenValues(elapsed);
@@ -3360,8 +3232,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     float negSinPlusCos = -sinT + cosT;
     float negCos = -cosT;
 
-    GXPosition3f32(sinPlusCos + readPtr->mViewPoint.GetX(), readPtr->mViewPoint.GetY(),
-                   cosMinusSin + readPtr->mViewPoint.GetZ());
+    GXPosition3f32(sinPlusCos + item.mViewPoint.GetX(), item.mViewPoint.GetY(),
+                   cosMinusSin + item.mViewPoint.GetZ());
 #else
       const CVector3f& vertex = position;
       if (!constantUV) {
@@ -3378,8 +3250,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     GXTexCoord2f32(uvs.xMax, uvs.yMax);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    GXPosition3f32(sinMinusCos + readPtr->mViewPoint.GetX(), readPtr->mViewPoint.GetY(),
-                   sinPlusCos + readPtr->mViewPoint.GetZ());
+    GXPosition3f32(sinMinusCos + item.mViewPoint.GetX(), item.mViewPoint.GetY(),
+                   sinPlusCos + item.mViewPoint.GetZ());
 #else
         position -= length;
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
@@ -3389,8 +3261,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     GXTexCoord2f32(uvs.xMin, uvs.yMax);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    GXPosition3f32(readPtr->mViewPoint.GetX() - sinPlusCos, readPtr->mViewPoint.GetY(),
-                   readPtr->mViewPoint.GetZ() - cosMinusSin);
+    GXPosition3f32(item.mViewPoint.GetX() - sinPlusCos, item.mViewPoint.GetY(),
+                   item.mViewPoint.GetZ() - cosMinusSin);
 #else
         position -= width;
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
@@ -3400,8 +3272,8 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     GXTexCoord2f32(uvs.xMin, uvs.yMin);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    GXPosition3f32(negSinPlusCos + readPtr->mViewPoint.GetX(), readPtr->mViewPoint.GetY(),
-                   (negCos - sinT) + readPtr->mViewPoint.GetZ());
+    GXPosition3f32(negSinPlusCos + item.mViewPoint.GetX(), item.mViewPoint.GetY(),
+                   (negCos - sinT) + item.mViewPoint.GetZ());
 #else
         position += length;
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
@@ -4898,4 +4770,3 @@ const CElementGen::CAdvancedValues* CElementGen::GetParticleAdditionalData(uint 
   return mEnableADV ? &mAdvValues[index] : nullptr;
 }
 #endif
-

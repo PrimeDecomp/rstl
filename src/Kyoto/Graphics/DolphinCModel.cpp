@@ -1,30 +1,41 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CModel.hpp"
+
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
+#include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
+#include "Kyoto/Graphics/CTexture.hpp"
+#include "Kyoto/Graphics/DolphinGPUMemory.hpp"
+#include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
-#include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-
-#include "Kyoto/Alloc/CMemory.hpp"
-#include "Kyoto/Basics/CBasics.hpp"
-#include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
+#include "Kyoto/Platform.h"
+#include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
+
+#include "dolphin/gx.h"
 #include "dolphin/gx/GXGeometry.h"
+#include "dolphin/os.h"
 #include "dolphin/os/OSCache.h"
 #include "dolphin/types.h"
 
-#include "Kyoto/Graphics/CTexture.hpp"
-#include "Kyoto/IObjectStore.hpp"
-#include "Kyoto/TToken.hpp"
-#include "dolphin/gx.h"
-#include "dolphin/os.h"
+#if defined(TARGET_PC)
+#include "Metaforce/CModelSectionReader.hpp"
+#include <borealis/log.hpp>
+#include <limits>
+
+namespace {
+constexpr borealis::Log Log{"CModel"};
+} // namespace
+#endif
 
 static bool sIsTextureTimeoutEnabled = true;
 uint CModel::sTotalMemory = 0;
@@ -63,12 +74,14 @@ private:
 
 } // namespace
 
+#if !defined(TARGET_PC)
 static uchar* MemoryFromPartData(uchar*& dataCur, int*& secSizeCur) {
   uchar* ret = *secSizeCur != 0 ? dataCur : nullptr;
   dataCur += *secSizeCur;
   secSizeCur++;
   return ret;
 }
+#endif
 
 #if !RSTL_PRIME1
 CModel::SShader::SShader(TModelData data, CModel* owner)
@@ -141,6 +154,59 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
 , mHasSkinMatrices(false)
 #endif
 {
+#if defined(TARGET_PC)
+  if (length < 0 || mData.null()) {
+    Log.fatal("Invalid CMDL resource");
+  }
+  mResourceSize = length;
+  CModelSectionReader reader({mData.get(), mResourceSize});
+  mMatSets.reserve(reader.GetMaterialSetCount());
+  for (uint i = 0; i < reader.GetMaterialSetCount(); ++i) {
+    mMatSets.push_back(SShader(reader.Next()));
+    auto& shader = mMatSets.back();
+    CCubeModel::MakeTexturesFromMats(shader.mData, shader.mTextures, store, true);
+  }
+
+  const auto positions = reader.Next();
+  const auto normals = reader.Next();
+  const auto colors = reader.Next();
+  const auto texCoords = reader.Next();
+  const auto packedTexCoords = (reader.GetFlags() & 4) ? reader.Next() : std::span< uchar >{};
+  const auto surfaceInfo = reader.Next();
+  const uint surfaceCount = ReadModelSurfaceCount(surfaceInfo, reader.GetRemainingSections());
+
+  uint materialCount = std::numeric_limits< uint >::max();
+  for (const auto& shader : mMatSets) {
+    const uint count = ValidateModelMaterials(shader.mData);
+    if (count < materialCount) {
+      materialCount = count;
+    }
+  }
+
+  std::vector< TModelData > surfaces;
+  surfaces.reserve(surfaceCount);
+  for (uint i = 0; i < surfaceCount; ++i) {
+    const auto surface = reader.Next();
+    CCubeSurface::ReadData(surface, nullptr, materialCount);
+    surfaces.emplace_back(surface);
+  }
+
+  const auto arrays = PrepareModelArrays(positions, normals, colors, texCoords, packedTexCoords,
+                                         (reader.GetFlags() & 2) != 0);
+  mModelInstance =
+      rs_new CCubeModel(surfaces, &mMatSets.front().mTextures, mMatSets.front().mData, arrays,
+                        reader.GetBounds(), (reader.GetFlags() >> 1) & 1, true, -1);
+  size_t memory = mResourceSize + sizeof(CModel) + sizeof(CCubeModel) +
+                  mMatSets.capacity() * sizeof(SShader) + mModelInstance->GetSurfaceStorageSize();
+  for (const auto& shader : mMatSets) {
+    memory += shader.mTextures.capacity() * sizeof(TCachedToken< CTexture >);
+  }
+  if (memory > std::numeric_limits< uint >::max()) {
+    Log.fatal("CMDL memory accounting overflow");
+  }
+  mDataLen = memory;
+#else
+
 #if RSTL_PRIME1
   uint sectionSizeStart = 0x2c;
 #endif
@@ -215,13 +281,16 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
       &mSurfaces, &mMatSets.front().mTextures, mMatSets.front().mData, positions, normals,
       vtxColors, floatUvs, shortUvs, *reinterpret_cast< const CAABox* >(dataPtr + 0xc),
       visorFlags ? 1 : 0, true, -1);
+#endif
 #if RSTL_PRIME1
   sThisFrameList = this;
   if (mNext != nullptr) {
     mNext->mPrev = this;
   }
 #endif
+#if !defined(TARGET_PC)
   mDataLen += mSurfaces.size() * 4;
+#endif
   AddToTotal(mDataLen);
   DCFlushRange(mData.get(), length);
 }
@@ -264,11 +333,15 @@ void* CModel::SetupSkinMatrices() const {
     normal[i][2] = invXpose[i][2];
   }
   DCFlushRange(matrices, 0x54);
-  CGX::SetArray(GX_POS_MTX_ARRAY, &matrices->mModelView, sizeof(SSkinMatrices));
-  CGX::SetArray(GX_NRM_MTX_ARRAY, normal, sizeof(SSkinMatrices));
+  CGX::SetArray(GX_POS_MTX_ARRAY, &matrices->mModelView,
+                sizeof(SSkinMatrices) //
+                IF_TARGET_PC(sizeof(SSkinMatrices), true));
+  CGX::SetArray(GX_NRM_MTX_ARRAY, normal,
+                sizeof(SSkinMatrices) //
+                IF_TARGET_PC(sizeof(SSkinMatrices) - offsetof(SSkinMatrices, mNormal), true));
   for (int i = 1; i < 10; ++i) {
     GXLoadPosMtxIndx(0, i * 3);
-    GXLoadNrmMtxIndx3x3(0, i * 3);
+    CGX::LoadNrmMtxIndx3x3(0, i * 3);
   }
   return matrices;
 }
@@ -279,11 +352,7 @@ void CModel::Draw(const CModelFlags& flags) const {
   PreDrawModel(flags);
 #endif
   if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
-#if RSTL_PRIME1
-    mModelInstance->DrawNormal(nullptr, nullptr, kSS_All);
-#else
-    mModelInstance->DrawNormal(kSS_All);
-#endif
+    mModelInstance->DrawNormal(IF_RSTL_PRIME1(TModelPositions(), TModelNormals(), ) kSS_All);
   }
 #if RSTL_PRIME1
   PreDrawModel(flags);
@@ -309,11 +378,7 @@ void CModel::DrawUnsortedParts(const CModelFlags& flags) const {
   PreDrawModel(flags);
 #endif
   if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
-#if RSTL_PRIME1
-    mModelInstance->DrawNormal(nullptr, nullptr, kSS_Unsorted);
-#else
-    mModelInstance->DrawNormal(kSS_Unsorted);
-#endif
+    mModelInstance->DrawNormal(IF_RSTL_PRIME1(TModelPositions(), TModelNormals(), ) kSS_Unsorted);
   }
 #if RSTL_PRIME1
   PreDrawModel(flags);
@@ -328,11 +393,7 @@ void CModel::DrawSortedParts(const CModelFlags& flags) const {
   PreDrawModel(flags);
 #endif
   if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
-#if RSTL_PRIME1
-    mModelInstance->DrawNormal(nullptr, nullptr, kSS_Sorted);
-#else
-    mModelInstance->DrawNormal(kSS_Sorted);
-#endif
+    mModelInstance->DrawNormal(IF_RSTL_PRIME1(TModelPositions(), TModelNormals(), ) kSS_Sorted);
   }
 #if RSTL_PRIME1
   PreDrawModel(flags);
@@ -342,7 +403,8 @@ void CModel::DrawSortedParts(const CModelFlags& flags) const {
   mModelInstance->DrawAlpha(flags);
 }
 
-void CModel::Draw(const float* positions, const float* normals, const CModelFlags& flags) const {
+void CModel::Draw(TModelPositions positions, TModelNormals normals,
+                  const CModelFlags& flags) const {
   if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
     mModelInstance->DrawNormal(positions, normals, kSS_All);
   }
@@ -527,7 +589,7 @@ void CModel::DisableTextureTimeout() { sIsTextureTimeoutEnabled = false; }
 
 void CModel::EnableTextureTimeout() { sIsTextureTimeoutEnabled = true; }
 
-uint CModel::GetDataSize() const { return mDataLen; }
+uint CModel::GetDataSize() const { return IF_TARGET_PC_OR(mResourceSize, mDataLen); }
 
 rstl::auto_ptr< uchar > CModel::GetData() { return rstl::auto_ptr< uchar >(mData.get()); }
 
@@ -576,11 +638,7 @@ void CModel::RemapData(uchar* data) {
   RemapPointer(uvs, offset);
   RemapPointer(packedUvs, offset);
   for (int i = 0; i < mSurfaces.size(); ++i) {
-#if RSTL_PRIME1
-    RemapPointer(mSurfaces[i], offset);
-#else
-    RemapPointer(mSurfaces[i].mData, offset);
-#endif
+    RemapPointer(IF_RSTL_PRIME1_ELSE(mSurfaces[i], mSurfaces[i].mData), offset);
   }
 
   mModelInstance =
@@ -611,6 +669,14 @@ void CModel::UnlockTextures() {
 
   mInitialTextureLocksReleased = true;
   for (int i = 0; i < mMatSets.size(); ++i) {
+    if (IS_TARGET_PC) {
+      // It might be loaded already
+      // TODO verify this
+      if (mModelInstance->GetTexturesPtr() == &mMatSets[i].mTextures) {
+        mModelInstance->UnlockTextures();
+        continue;
+      }
+    }
     mMatSets[i].UnlockTextures();
   }
 }
