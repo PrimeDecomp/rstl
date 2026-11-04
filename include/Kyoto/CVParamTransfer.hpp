@@ -33,9 +33,9 @@ public:
   static CVParamTransfer Null() { return CVParamTransfer(); }
 
   const IVParamObj& operator*() const { return *mObj; }
-#if !RSTL_PRIME1
   const rstl::rc_ptr< IVParamObj >& GetObj() const { return mObj; }
 
+#if !RSTL_PRIME1
 private:
 #endif
 
