@@ -15,7 +15,7 @@
 
 class CCECharacterInfo {
 public:
-  typedef rstl::vector< rstl::pair< rstl::string, rstl::vector< CEffectComponent > > > TEffectList;
+  typedef rstl::vector< CEffectComponent > CEffectComponents;
   class CParticleResData {
   public:
     CParticleResData(CInputStream& in, ushort tableCount);
@@ -51,14 +51,19 @@ public:
   uint GetDefaultAnimation() const { return mDefaultAnimation; }
   const CPASDatabase& GetPASDatabase() const { return mPasDatabase; }
   const CParticleResData& GetParticleResData() const;
-  const TEffectList& GetEffects() const { return mEffects; }
   const rstl::vector< uint >& GetAnimationIndexList() const;
+  // Guessed name
+  const rstl::vector< rstl::pair< int, rstl::string > >& GetAnimationInfo() const {
+    return mAnimInfo;
+  }
   const rstl::vector< rstl::pair< rstl::string, CAABox > >& GetAnimBBoxList() const {
     return mAabbs;
   }
   const rstl::vector< rstl::pair< uint, CAABox > >& GetAnimBoundsById() const {
     return mAnimBoundsById;
   }
+  typedef rstl::vector< rstl::pair< rstl::string, CEffectComponents > > TEffectList;
+  const TEffectList& GetEffects() const { return mEffects; }
 
 private:
   ushort mTableCount;
