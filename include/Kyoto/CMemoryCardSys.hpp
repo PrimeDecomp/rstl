@@ -8,6 +8,7 @@
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"
 #include "Kyoto/TToken.hpp"
+#include "Kyoto/Platform.h"
 
 #include "dolphin/card.h"
 #include "rstl/optional_object.hpp"
@@ -15,7 +16,7 @@
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
 
-#define RSTL_CARD_SAVE_BLOCKS (!RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00)
+#define RSTL_CARD_SAVE_BLOCKS (RSTL_VERSION >= RSTL_GM8P_00)
 
 #if !RSTL_CARD_SAVE_BLOCKS
 typedef rstl::vector< uchar, rstl::aligned_allocator > TCardFileBuffer;
@@ -72,7 +73,7 @@ class CMemoryCardSys {
 public:
   enum EMemoryCardPort { kCS_SlotA, kCS_SlotB };
 
-#if RSTL_PRIME1 && RSTL_VERSION == RSTL_GM8EAB_00
+#if RSTL_VERSION == RSTL_GM8EAB_00
   struct CCardFileInfo {
     CARDFileInfo mFileInfo;
   };
@@ -182,7 +183,7 @@ public:
   CMemoryCardSys();
   ~CMemoryCardSys();
 
-#if RSTL_PRIME1 && RSTL_VERSION == RSTL_GM8EAB_00
+#if RSTL_VERSION == RSTL_GM8EAB_00
   ECardResult MountCard(EMemoryCardPort port);
   ECardResult UnmountCard(EMemoryCardPort port);
   ECardResult FormatCard(EMemoryCardPort port);
@@ -216,7 +217,7 @@ public:
   static TCardWorkArea& WorkAreaVector(EMemoryCardPort port);
   static char* AllocCardWorkArea(EMemoryCardPort port);
   static void FreeCardWorkArea(EMemoryCardPort port);
-  inline void Initialize();
+  inline void Initialize(IF_TARGET_PC(const char* game, const char* maker));
 
   static bool mIsCardBusy;
 #endif
@@ -228,7 +229,7 @@ private:
   static TCardWorkArea mWorkAreaB;
 };
 
-#if RSTL_VERSION != RSTL_GM8EAB_00 || !RSTL_PRIME1
+#if RSTL_VERSION != RSTL_GM8EAB_00
 NESTED_CHECK_SIZEOF(CMemoryCardSys, CCardFileInfo, RSTL_CARD_SAVE_BLOCKS ? 0x16c : 0x114)
 
 #if !RSTL_CARD_SAVE_BLOCKS
@@ -241,7 +242,7 @@ inline CMemoryStreamOut CMemoryCardSys::CCardFileInfo::BeginMemoryOut(uint sz) {
   return CMemoryStreamOut(mSaveBuffer.data(), sz);
 }
 #endif
-#endif
+#endif // RSTL_VERSION != RSTL_GM8EAB_00
 
 struct SMemoryCardFileInfo {
   CARDFileInfo mFileInfo;

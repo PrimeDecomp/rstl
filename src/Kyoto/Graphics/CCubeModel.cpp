@@ -1,6 +1,6 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
+#include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
@@ -9,6 +9,7 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
+#include "Kyoto/Platform.h"
 
 #include "dolphin/gx/GXVert.h"
 
@@ -16,9 +17,13 @@
 
 #if RSTL_PRIME1
 static bool sDrawingOccluders = false;
+
+#define GET_MATERIAL_FROM_SURFACE(surface) GetMaterialByIndex(surface.GetMaterialIndex())
 #else
 // Guessed name; bits 0x200 and 0x8000 reject material flags.
 static uint sSkippedMaterialFlags = 0x8200;
+
+#define GET_MATERIAL_FROM_SURFACE(surface) GetMaterial(surface)
 #endif
 
 static bool sDrawingWireframe = false;
@@ -29,17 +34,20 @@ inline uint GetMaterialOffset(const uchar* materialData, const int idx) {
   return CBasics::SwapBytes(*reinterpret_cast< const uint* >(materialData - 4));
 }
 
-CCubeModel::CCubeModel(
-#if RSTL_PRIME1
-    rstl::vector< void* >* surfaces,
+#if IS_TARGET_PC
+CCubeModel::CCubeModel(std::span< const TModelData > surfaces,
+                       rstl::vector< TCachedToken< CTexture > >* textures, TModelData materialData,
+                       const SModelArrays& arrays, const CAABox& bounds, const uchar visorFlags,
+                       const bool texturesLoaded, const uint idx)
+: mInstance(materialData, arrays)
 #else
-    rstl::vector< CCubeSurface >* surfaces,
-#endif
-    rstl::vector< TCachedToken< CTexture > >* textures, const void* materialData,
-    const void* positions, const void* normals, const void* colors, const void* uvs,
-    const void* compressedUvs, const CAABox& bounds, const uchar visorFlags,
-    const bool texturesLoaded, const uint idx)
+CCubeModel::CCubeModel(SurfaceList* surfaces, rstl::vector< TCachedToken< CTexture > >* textures,
+                       const void* materialData, const void* positions, const void* normals,
+                       const void* colors, const void* uvs, const void* compressedUvs,
+                       const CAABox& bounds, const uchar visorFlags, const bool texturesLoaded,
+                       const uint idx)
 : mInstance(*surfaces, materialData, positions, normals, colors, uvs, compressedUvs)
+#endif
 , mTextures(textures)
 , mBounds(bounds)
 , mFirstUnsorted(nullptr)
@@ -60,61 +68,71 @@ CCubeModel::CCubeModel(
 #if !RSTL_PRIME1
   CacheMaterialData();
 #endif
-#if RSTL_PRIME1
-  rstl::vector< void* >& surf = mInstance.Surfaces();
-  for (AUTO(it, surf.begin()); it != surf.end(); ++it) {
-    CCubeSurface::SSurfaceData* data = static_cast< CCubeSurface::SSurfaceData* >(*it);
-#else
-  rstl::vector< CCubeSurface >& surf = mInstance.Surfaces();
-  for (rstl::vector< CCubeSurface >::iterator it = surf.begin(); it != surf.end(); ++it) {
-    const CCubeSurface::SSurfaceData* data = it->mData;
-#endif
 
+#if defined(TARGET_PC)
+  const uint materialCount = ValidateModelMaterials(materialData);
+  mSurfaces.reserve(surfaces.size());
+  for (auto data : surfaces) {
+    mSurfaces.push_back(CCubeSurface::ReadData(data, this, materialCount));
+  }
+  for (int i = mSurfaces.size(); i > 0; --i) {
+    auto& data = mSurfaces[i - 1];
+    auto& first = GetMaterialByIndex(data.mMaterialIndex).IsFlagSet(kStateFlag_DepthSorting)
+                      ? mFirstSorted
+                      : mFirstUnsorted;
+    data.mNextSurface = first.mRawdata;
+    first = CCubeSurface(&data);
+  }
+#else
+  SurfaceList& surf = mInstance.Surfaces();
+
+  for (AUTO(it, surf.begin()); it != surf.end(); ++it) {
+    AUTO(data, IF_RSTL_PRIME1_ELSE(static_cast< CCubeSurface::SSurfaceData* >(*it), it->mData));
     data->mParent = this;
   }
 
   for (int i = surf.size(); i > 0; i--) {
+    RSTL_ECHOES_CONST SurfaceListType& surface = surf[i - 1];
 #if RSTL_PRIME1
-    void*& data = surf[i - 1];
-    uint materialIndex = static_cast< CCubeSurface::SSurfaceData* >(data)->mMaterialIndex;
+    uint materialIndex = static_cast< CCubeSurface::SSurfaceData* >(surface)->mMaterialIndex;
     if (GetMaterialByIndex(materialIndex).IsFlagSet(kStateFlag_DepthSorting)) {
-      static_cast< CCubeSurface::SSurfaceData* >(data)->mNextSurface = mFirstSorted.mRawdata;
-      mFirstSorted.mRawdata = static_cast< uchar* >(data);
+      static_cast< CCubeSurface::SSurfaceData* >(surface)->mNextSurface = mFirstSorted.mRawdata;
+      mFirstSorted.mRawdata = static_cast< uchar* >(surface);
+    }
 #else
-    const CCubeSurface& surface = surf[i - 1];
     if (GetMaterial(surface).IsFlagSet(kStateFlag_DepthSorting)) {
       surface.mData->mNextSurface = mFirstSorted.mData;
       mFirstSorted = surface;
+    }
 #endif
-
-    } else {
+    else {
 #if RSTL_PRIME1
-      static_cast< CCubeSurface::SSurfaceData* >(data)->mNextSurface = mFirstUnsorted.mRawdata;
-      mFirstUnsorted.mRawdata = static_cast< uchar* >(data);
+      static_cast< CCubeSurface::SSurfaceData* >(surface)->mNextSurface = mFirstUnsorted.mRawdata;
+      mFirstUnsorted.mRawdata = static_cast< uchar* >(surface);
 #else
       surface.mData->mNextSurface = mFirstUnsorted.mData;
       mFirstUnsorted = surface;
 #endif
-
     }
   }
+#endif
 }
 
-void CCubeModel::MakeTexturesFromMats(const void* data,
+void CCubeModel::MakeTexturesFromMats(TModelData data,
                                       rstl::vector< TCachedToken< CTexture > >& textures,
                                       IObjectStore& store, const bool cache) {
-  const uint* textureIds = static_cast< const uint* >(data);
-  const uint textureCount = CBasics::SwapBytes(*static_cast< const int* >(data));
+#if defined(TARGET_PC)
+  ValidateModelMaterials(data);
+#endif
+  const uint* textureIds = static_cast< const uint* >(GetModelDataPointer(data));
+  const uint textureCount =
+      CBasics::SwapBytes(*static_cast< const int* >(GetModelDataPointer(data)));
   textureIds++;
   textures.reserve(textureCount);
 
   for (int i = 0; i < textureCount; i++) {
-#if RSTL_PRIME1
-    textures.push_back(store.GetObj(SObjectTag('TXTR', CBasics::SwapBytes(*textureIds))));
-#else
-    textures.push_back_unsafe(store.GetObj(SObjectTag('TXTR', CBasics::SwapBytes(*textureIds))));
-#endif
-
+    IF_RSTL_PRIME1_ELSE(textures.push_back, textures.push_back_unsafe)(
+        store.GetObj(SObjectTag('TXTR', CBasics::SwapBytes(*textureIds))));
     if (!cache) {
       textures.back().ForceCache();
     }
@@ -123,22 +141,33 @@ void CCubeModel::MakeTexturesFromMats(const void* data,
 }
 
 void CCubeModel::SetStaticArraysCurrent() const {
-  CGX::SetArray(GX_VA_CLR0, mInstance.GetColorPointer(), sizeof(CColor));
+  CGX::SetArray(GX_VA_CLR0, mInstance.GetColorPointer(),
+                sizeof(CColor) IF_TARGET_PC(, mInstance.GetArrays().colors.size(), false));
   const void* packed = mInstance.GetPackedTCPointer();
   const void* unpacked = mInstance.GetTCPointer();
   if (!packed) {
+    if (IS_TARGET_PC && sUsingPackedLightmaps) {
+      CCubeMaterial::ResetCachedMaterials();
+    }
     sUsingPackedLightmaps = false;
   }
 
   if (sUsingPackedLightmaps) {
-    CGX::SetArray(GX_VA_TEX0, packed, sizeof(ushort) * 2);
+    CGX::SetArray(
+        GX_VA_TEX0, packed,
+        sizeof(ushort) * 2 //
+            IF_TARGET_PC(, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN));
   } else {
-    CGX::SetArray(GX_VA_TEX0, unpacked, sizeof(CVector2f));
+    CGX::SetArray(GX_VA_TEX0, unpacked,
+                  sizeof(CVector2f) //
+                  IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
   }
 
   if (unpacked) {
     for (int i = 1; i <= GX_VA_TEX7 - GX_VA_TEX0; ++i) {
-      CGX::SetArray(static_cast< GXAttr >(i + GX_VA_TEX0), unpacked, sizeof(CVector2f));
+      CGX::SetArray(static_cast< GXAttr >(i + GX_VA_TEX0), unpacked,
+                    sizeof(CVector2f) //
+                    IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
     }
   }
 
@@ -146,33 +175,64 @@ void CCubeModel::SetStaticArraysCurrent() const {
 }
 
 void CCubeModel::SetArraysCurrent() const {
-  CGX::SetArray(GX_VA_POS, mInstance.GetVertexPointer(), sizeof(CVector3f));
+  CGX::SetArray(GX_VA_POS, mInstance.GetVertexPointer(),
+                sizeof(CVector3f) //
+                IF_TARGET_PC(, mInstance.GetArrays().positions.size(), TARGET_LITTLE_ENDIAN));
   const int stride = (mVisorFlags & 1) ? sizeof(short) * 3 : sizeof(CVector3f);
-  CGX::SetArray(GX_VA_NRM, mInstance.GetNormalPointer(), stride);
+  CGX::SetArray(GX_VA_NRM, mInstance.GetNormalPointer(),
+                stride //
+                    IF_TARGET_PC(, mInstance.GetArrays().normals.size(), TARGET_LITTLE_ENDIAN));
   SetStaticArraysCurrent();
 }
 
-void CCubeModel::SetSkinningArraysCurrent(const float* positions, const float* normals) const {
+void CCubeModel::SetSkinningArraysCurrent(TModelPositions positions, TModelNormals normals) const {
+#if defined(TARGET_PC)
+  const auto& arrays = mInstance.GetArrays();
+  if (positions.empty()) {
+    CGX::SetArray(GX_VA_POS, arrays.positions.data(), sizeof(CVector3f), arrays.positions.size(),
+                  TARGET_LITTLE_ENDIAN);
+  } else {
+    CGX::SetArray(GX_VA_POS, positions.data(), sizeof(CVector3f), positions.size_bytes(),
+                  TARGET_LITTLE_ENDIAN);
+  }
+  if (normals.empty()) {
+    const int stride = (mVisorFlags & 1) ? sizeof(short) * 3 : sizeof(CVector3f);
+    CGX::SetArray(GX_VA_NRM, arrays.normals.data(), stride, arrays.normals.size(),
+                  TARGET_LITTLE_ENDIAN);
+  } else {
+    CGX::SetArray(GX_VA_NRM, normals.data(), sizeof(CVector3f), normals.size_bytes(),
+                  TARGET_LITTLE_ENDIAN);
+  }
+#else
   CGraphics::sRenderState.SetVtxState(positions, normals,
                                       static_cast< const uint* >(mInstance.GetColorPointer()));
+#endif
   SetStaticArraysCurrent();
 }
 
 void CCubeModel::SetUsingPackedLightmaps(const bool use) const {
   sUsingPackedLightmaps = use;
   if (sUsingPackedLightmaps) {
-    CGX::SetArray(GX_VA_TEX0, mInstance.GetPackedTCPointer(), sizeof(ushort) * 2);
+    CGX::SetArray(
+        GX_VA_TEX0, mInstance.GetPackedTCPointer(),
+        sizeof(ushort) * 2 //
+            IF_TARGET_PC(, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN));
   } else {
-    CGX::SetArray(GX_VA_TEX0, mInstance.GetTCPointer(), sizeof(CVector2f));
+    CGX::SetArray(GX_VA_TEX0, mInstance.GetTCPointer(),
+                  sizeof(CVector2f) //
+                  IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
   }
 }
 
 #if RSTL_PRIME1
 CCubeMaterial CCubeModel::GetMaterialByIndex(const int idx) const {
+#if defined(TARGET_PC)
+  return CCubeMaterial(GetModelMaterial(mInstance.GetMaterialData(), idx).data());
+#else
   uint materialCount = 0;
   uint materialOffset = 0;
-  const uchar* materialData = static_cast< const uchar* >(mInstance.GetMaterialPointer()) +
-                              (mTextures->size() + 1) * 4;
+  const uchar* materialData =
+      static_cast< const uchar* >(mInstance.GetMaterialPointer()) + (mTextures->size() + 1) * 4;
   materialCount = *reinterpret_cast< const uint* >(materialData++);
   materialCount = CBasics::SwapBytes(materialCount);
   materialData++;
@@ -185,36 +245,31 @@ CCubeMaterial CCubeModel::GetMaterialByIndex(const int idx) const {
   materialData += (materialCount * 4);
   materialData += materialOffset;
   return CCubeMaterial(materialData);
+#endif
 }
 #endif
 
 void CCubeModel::DrawSurface(const CCubeSurface& surface, const CModelFlags& modelFlags) const {
-#if RSTL_PRIME1
-  const CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
-  if (material.IsFlagSet(kStateFlag_ShadowOccluderMesh) && !sDrawingOccluders) {
-#else
-  const CCubeMaterial material = GetMaterial(surface);
-  if (material.GetFlags() & sSkippedMaterialFlags) {
-#endif
-
+  const CCubeMaterial material = GET_MATERIAL_FROM_SURFACE(surface);
+  if (IF_RSTL_PRIME1_ELSE(material.IsFlagSet(kStateFlag_ShadowOccluderMesh) && !sDrawingOccluders,
+                          material.GetFlags() & sSkippedMaterialFlags)) {
     return;
   }
 
   material.SetCurrent(modelFlags, surface, *this);
-#if !RSTL_PRIME1
   CGX::CallDisplayList(surface.GetDisplayList(), surface.GetDisplayListSize());
 }
 
+#if !RSTL_PRIME1
 void CCubeModel::DrawSurfaceFlat(const CCubeSurface& surface) const {
   const CCubeMaterial material = GetMaterial(surface);
   if (material.GetFlags() & sSkippedMaterialFlags) {
     return;
   }
   CGX::SetVtxDescv_Compressed(material.GetVertexDesc());
-#endif
-
   CGX::CallDisplayList(surface.GetDisplayList(), surface.GetDisplayListSize());
 }
+#endif
 
 static inline const ushort proxy_to_uint(const uchar* data) {
   uchar bytes[2];
@@ -230,11 +285,7 @@ static inline const ushort proxy_to_uint(const uchar* data) {
 }
 
 void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
-#if RSTL_PRIME1
-  const CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
-#else
-  const CCubeMaterial material = GetMaterial(surface);
-#endif
+  const CCubeMaterial material = GET_MATERIAL_FROM_SURFACE(surface);
 
   uint vertexAttributes;
   static uint sLastDesc = 0;
@@ -265,9 +316,9 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
   CGX::SetNumTexGens(1);
   CGX::SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
 
-#if !RSTL_PRIME1
-  CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
-#endif
+  if (!RSTL_PRIME1) {
+    CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
+  }
 
   const int displayListSize = surface.GetDisplayListSize();
   const uchar* dispList = static_cast< const uchar* >(surface.GetDisplayList());
@@ -277,12 +328,7 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
       break;
     }
     bytesRead += 3;
-#if RSTL_PRIME1
-    ushort elementCount = proxy_to_uint(dispList + 1);
-#else
-    int elementCount = proxy_to_uint(dispList + 1);
-#endif
-
+    IF_RSTL_PRIME1_ELSE(ushort, int) elementCount = proxy_to_uint(dispList + 1);
     dispList += 3;
     if (elementCount < 3U) {
       break;
@@ -299,12 +345,10 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
     if (pType == GX_TRIANGLES) {
 #if RSTL_PRIME1
       elementCount -= 3;
-      for (int j = 0; j < elementCount; j += 3) {
 #else
       const ushort remaining = elementCount - 3;
-      for (int j = 0; j < remaining; j += 3) {
 #endif
-
+      for (int j = 0; j < IF_RSTL_PRIME1_ELSE(elementCount, remaining); j += 3) {
         CGX::Begin(GX_LINESTRIP, GX_VTXFMT0, 4);
         GXPosition1x16(proxy_to_uint(dispList));
         GXPosition1x16(proxy_to_uint(dispList + attrCountTimes2));
@@ -321,12 +365,7 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 #endif
 
       uint winding = 1;
-#if RSTL_PRIME1
-      for (int j = 0; j < elementCount; ++j) {
-#else
-      for (int j = 0; j < remaining; ++j) {
-#endif
-
+      for (int j = 0; j < IF_RSTL_PRIME1_ELSE(elementCount, remaining); ++j) {
         CGX::Begin(GX_LINESTRIP, GX_VTXFMT0, 3);
         const uchar* last = dispList - attrCountTimes2 * ((winding ^ 1) + 1);
         const uchar* first = dispList - attrCountTimes2 * (winding + 1);
@@ -349,12 +388,7 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 
       const uchar* indices = dispList - attrCountTimes2 * 3;
 
-#if RSTL_PRIME1
-      for (int j = 0; j < elementCount; ++j) {
-#else
-      for (int j = 0; j < remaining; ++j) {
-#endif
-
+      for (int j = 0; j < IF_RSTL_PRIME1_ELSE(elementCount, remaining); ++j) {
         const uchar* previous = dispList - attrCountTimes2;
         CGX::Begin(GX_LINESTRIP, GX_VTXFMT0, 3);
         GXPosition1x16(proxy_to_uint(previous));
@@ -468,32 +502,26 @@ void CCubeModel::DrawAlphaSurfaces(const CModelFlags& flags) const {
 }
 
 #if RSTL_PRIME1
-void CCubeModel::DrawFlat(const float* positions, const float* normals,
-                          ESurfaceSelection which) const {
+void CCubeModel::DrawFlat(TModelPositions positions, TModelNormals normals,
+                          ESurfaceSelection which) const
+#else
+void CCubeModel::DrawFlat(int which) const
+#endif
+{
+#if RSTL_PRIME1
   if (positions != nullptr) {
     SetSkinningArraysCurrent(positions, normals);
   } else {
-#else
-void CCubeModel::DrawFlat(int which) const {
-#endif
-
     SetArraysCurrent();
-#if RSTL_PRIME1
   }
+#else
+  SetArraysCurrent();
 #endif
-
   if (which != kSS_Sorted) {
     for (CCubeSurface surface = mFirstUnsorted; surface.IsValid();
          surface = surface.GetNextSurface()) {
-#if RSTL_PRIME1
-      CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
+      CCubeMaterial material = GET_MATERIAL_FROM_SURFACE(surface);
       CGX::SetVtxDescv_Compressed(material.GetVertexDescLwzx());
-#else
-      CCubeMaterial material = GetMaterial(surface);
-      CGX::SetVtxDescv_Compressed(CBasics::SwapBytes(
-          reinterpret_cast< const uint* >(material.GetData())[material.GetTextureCount() + 2]));
-#endif
-
       CGX::CallDisplayList(surface.GetDisplayList(), surface.GetDisplayListSize());
     }
   }
@@ -501,15 +529,8 @@ void CCubeModel::DrawFlat(int which) const {
   if (which != kSS_Unsorted) {
     for (CCubeSurface surface = mFirstSorted; surface.IsValid();
          surface = surface.GetNextSurface()) {
-#if RSTL_PRIME1
-      CCubeMaterial material = GetMaterialByIndex(surface.GetMaterialIndex());
+      CCubeMaterial material = GET_MATERIAL_FROM_SURFACE(surface);
       CGX::SetVtxDescv_Compressed(material.GetVertexDescLwzx());
-#else
-      CCubeMaterial material = GetMaterial(surface);
-      CGX::SetVtxDescv_Compressed(CBasics::SwapBytes(
-          reinterpret_cast< const uint* >(material.GetData())[material.GetTextureCount() + 2]));
-#endif
-
       CGX::CallDisplayList(surface.GetDisplayList(), surface.GetDisplayListSize());
     }
   }
@@ -522,11 +543,12 @@ void CCubeModel::Draw(const CModelFlags& flags) const {
 }
 
 #if RSTL_PRIME1
-void CCubeModel::Draw(const float* positions, const float* normals,
-                      const CModelFlags& flags) const {
+void CCubeModel::Draw(TModelPositions positions, TModelNormals normals,
+                      const CModelFlags& flags) const
 #else
-void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const {
+void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const
 #endif
+{
 
   CCubeMaterial::KillCachedViewDepState();
 #if RSTL_PRIME1
@@ -536,7 +558,6 @@ void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const {
   SetArraysCurrent();
   DrawSurfaces(mask, flags);
 #endif
-
 }
 
 void CCubeModel::DrawNormal(const CModelFlags& flags) const {
@@ -561,7 +582,6 @@ void CCubeModel::SetDrawingOccluders(const bool drawOccluders) {
     sSkippedMaterialFlags |= kStateFlag_ShadowOccluderMesh;
   }
 #endif
-
 }
 
 void CCubeModel::SetModelWireframe(const bool drawWireframe) { sDrawingWireframe = drawWireframe; }
@@ -576,25 +596,18 @@ void CCubeModel::UnlockTextures() const {
   mLoadTextures = false;
 }
 
-void CCubeModel::RemapMaterialData(const void* data,
+void CCubeModel::RemapMaterialData(TModelData data,
                                    rstl::vector< TCachedToken< CTexture > >* texture) {
-
   mInstance.SetMaterialPointer(data);
   mTextures = texture;
   mLoadTextures = false;
 #if !RSTL_PRIME1
   CacheMaterialData();
 #endif
-
 }
 
-#if RSTL_PRIME1
-void CCubeModel::DrawNormal(const float* positions, const float* normals,
-                            ESurfaceSelection which) const {
-#else
-void CCubeModel::DrawNormal(ESurfaceSelection which) const {
-#endif
-
+void CCubeModel::DrawNormal(IF_RSTL_PRIME1(TModelPositions positions, TModelNormals normals, )
+                                ESurfaceSelection which) const {
   CGX::SetNumIndStages(0);
   CGX::SetNumTevStages(1);
   CGX::SetNumTexGens(1);
@@ -609,8 +622,10 @@ void CCubeModel::DrawNormal(ESurfaceSelection which) const {
 #else
   CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
   DrawFlat(which);
+#endif
 }
 
+#if !RSTL_PRIME1
 void CCubeModel::CacheMaterialData() {
   const uint* data = static_cast< const uint* >(mInstance.GetMaterialPointer());
   data += mTextures->size() + 1;
@@ -618,7 +633,5 @@ void CCubeModel::CacheMaterialData() {
   mMaterialOffsets = data;
   data += materialCount;
   mMaterialData = reinterpret_cast< const uchar* >(data);
-#endif
-
 }
-
+#endif

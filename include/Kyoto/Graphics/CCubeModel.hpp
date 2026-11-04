@@ -29,10 +29,11 @@ enum ESurfaceSelection {
 class CCubeModel {
 public:
 #if RSTL_PRIME1
-  typedef rstl::vector< void* > SurfaceList;
+  typedef void* SurfaceListType;
 #else
-  typedef rstl::vector< CCubeSurface > SurfaceList;
+  typedef CCubeSurface SurfaceListType;
 #endif
+  typedef rstl::vector< SurfaceListType > SurfaceList;
 
   class ModelInstance {
   public:
@@ -188,13 +189,15 @@ private:
   rstl::vector< CCubeSurface::SSurfaceData > mSurfaces;
 #endif
 
-
   static bool sUsingPackedLightmaps;
 };
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CCubeModel, 0x50)
+#endif
 
+#if !RSTL_PRIME1
 inline CCubeMaterial CCubeModel::GetMaterialByIndex(int index) const {
+  // FIXME: needs a special variant for PC?
   const uint offset = index != 0 ? CBasics::SwapBytes(mMaterialOffsets[index - 1]) : 0;
   return CCubeMaterial(mMaterialData + offset);
 }

@@ -1,19 +1,16 @@
-#include "rstl/RstlVersions.h"
-#include "rstl/list.hpp" // IWYU pragma: keep
 #include "Kyoto/CResFactory.hpp" // IWYU pragma: keep
-#include "Kyoto/CDvdRequest.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
+#include "rstl/list.hpp"         // IWYU pragma: keep
 
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/Streams/CLZOSupport.hpp"
-
 #include "Kyoto/Streams/CZipSupport.hpp"
-#include "rstl/math.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
+
 #include "dolphin/os.h"
-#endif
+#include "rstl/RstlVersions.h"
+#include "rstl/math.hpp"
 
 #if RSTL_PRIME1
 #include "zlib.h"
@@ -29,12 +26,7 @@ CResFactory::CResFactory() {}
 CResFactory::~CResFactory() {}
 
 void CResFactory::AddToLoadList(const SLoadingData& data) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(pos, mLoadList.end());
-#else
-  LoadList::iterator pos = mLoadList.end();
-#endif
   if (data.mDvdReq->GetMediaType() == 0) {
     pos = mLoadList.begin();
     while (pos != mLoadList.end()) {
@@ -44,13 +36,7 @@ void CResFactory::AddToLoadList(const SLoadingData& data) {
       ++pos;
     }
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(it, mLoadList.insert(pos, data));
-#else
-  LoadList::iterator it = mLoadList.insert(pos, data);
-#endif
-
   mLoadMap.insert(rstl::pair< SObjectTag, LoadList::iterator >(data.mTag, it));
 }
 
@@ -67,22 +53,16 @@ CResFactory::LoadList::iterator CResFactory::FindInLoadList(const SObjectTag& ta
   return it->second;
 }
 
-#if !RSTL_PRIME1
 // Guessed; stands in for a function stripped from the link.
 static bool StrippedIsLoading(
     const rstl::map< SObjectTag, rstl::list< CResFactory::SLoadingData >::iterator >& map,
     const SObjectTag& tag) {
   return map.find(tag) != map.end();
 }
-#endif
 
+#if !defined(TARGET_PC)
 rstl::auto_ptr< IObj > CResFactory::Build(const SObjectTag& tag, const CVParamTransfer& params) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(it, FindInLoadList(tag));
-#else
-  LoadList::iterator it = FindInLoadList(tag);
-#endif
   if (it != mLoadList.end()) {
     IObj** target = it->mTarget;
     while (*target == nullptr) {
@@ -120,7 +100,6 @@ rstl::auto_ptr< IObj > CResFactory::BuildSync(const SObjectTag& tag,
 void CResFactory::BuildAsync(const SObjectTag& tag, const CVParamTransfer& params, IObj** target) {
   *target = nullptr;
   const uint size = ResourceSize(tag);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   char* buffer = static_cast< char* >(CMemory::Alloc(size, IAllocator::kHI_RoundUpLen));
   CDvdRequest* request = LoadResourceAsync(tag, buffer);
@@ -140,14 +119,10 @@ void CResFactory::BuildAsync(const SObjectTag& tag, const CVParamTransfer& param
                     params);
   AddToLoadList(data);
 }
+#endif
 
 void CResFactory::CancelBuild(const SObjectTag& tag) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(it, FindInLoadList(tag));
-#else
-  LoadList::iterator it = FindInLoadList(tag);
-#endif
   if (it != mLoadList.end()) {
     SLoadingData& data = *it;
     data.mDvdReq->PostCancelRequest();
@@ -156,64 +131,46 @@ void CResFactory::CancelBuild(const SObjectTag& tag) {
   }
 }
 
-void CResFactory::AsyncIdle(uint time
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-                            ,
-                            bool keepPumping
-#endif
-) {
-#if RSTL_PRIME1
+void CResFactory::AsyncIdle(uint time IF_NOT_RSTL_PRIME1(, bool keepPumping)) {
+  IF_RSTL_PRIME1(bool keepPumping);
   bool work = true;
-#endif
   CStopwatch timer;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   AUTO(it, mCancelledList.begin());
-#else
-  LoadList::iterator it = mCancelledList.begin();
-#endif
   while (it != mCancelledList.end()) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     AUTO(current, it);
-#else
-    LoadList::iterator current = it;
-#endif
     ++it;
     if (current->mDvdReq->IsComplete()) {
       mCancelledList.erase(current);
     }
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  while (work) {
-    work = false;
-    uint elapsed = timer.GetElapsedMicros();
-    AUTO(it, mLoadList.begin());
-    while (it != mLoadList.end() && elapsed < time) {
-      if (PumpResource(it, time - elapsed)) {
-        work = true;
-        break;
-      }
-      ++it;
-      elapsed = timer.GetElapsedMicros();
-    }
-  }
-#else
-  bool done = false;
-  while (!done && mLoadList.size() != 0) {
-    done = true;
-    const uint elapsed = timer.GetElapsedMicros();
-    if (elapsed < time && mLoadList.size() != 0) {
-      done = !PumpResource(mLoadList.begin(), time - elapsed);
-      if (keepPumping) {
-        done = false;
+  if (RSTL_PRIME1) {
+    while (work) {
+      work = false;
+      uint elapsed = timer.GetElapsedMicros();
+      AUTO(it, mLoadList.begin());
+      while (it != mLoadList.end() && elapsed < time) {
+        if (PumpResource(it, time - elapsed)) {
+          work = true;
+          break;
+        }
+        ++it;
+        elapsed = timer.GetElapsedMicros();
       }
     }
+  } else {
+    bool done = false;
+    while (!done && mLoadList.size() != 0) {
+      done = true;
+      const uint elapsed = timer.GetElapsedMicros();
+      if (elapsed < time && mLoadList.size() != 0) {
+        done = !PumpResource(mLoadList.begin(), time - elapsed);
+        if (keepPumping) {
+          done = false;
+        }
+      }
+    }
   }
-#endif
 }
 
 bool CResFactory::PumpResource(const LoadList::iterator& it, uint time) {
@@ -226,16 +183,9 @@ bool CResFactory::PumpResource(const LoadList::iterator& it, uint time) {
     EraseFromLoadList(it);
     *data.mTarget =
         mFactoryMgr
-            .MakeObjectFromMemory(data.mTag,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                  data.mBuffer.release(),
-#else
-                                  data.mBuffer,
-#endif
-                                  data.mSize,
-                                  data.mCompression != CResLoader::kCompressionType_Uncompressed,
-                                  data.mParams)
+            .MakeObjectFromMemory(
+                data.mTag, IF_RSTL_PRIME1_ELSE(data.mBuffer.release(), data.mBuffer), data.mSize,
+                data.mCompression != CResLoader::kCompressionType_Uncompressed, data.mParams)
             .release();
     return true;
   }
@@ -243,31 +193,23 @@ bool CResFactory::PumpResource(const LoadList::iterator& it, uint time) {
 }
 
 CResFactory::SLoadingData::SLoadingData(const SObjectTag& tag, CDvdRequest* request, IObj** target,
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-                                        void* buffer,
-#else
-                                        const rstl::auto_ptr< uchar >& buffer,
-#endif
-                                        int size, CResLoader::ECompressionType compression,
+                                        CFactoryMgr::MemoryBufferPtr buffer, int size,
+                                        CResLoader::ECompressionType compression,
                                         const CVParamTransfer& params)
 : mTag(tag)
 , mDvdReq(request)
 , mTarget(target)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mBuffer(static_cast< uchar* >(buffer))
-#else
-, mBuffer(buffer)
+, mBuffer(IF_RSTL_PRIME1_ELSE(static_cast< uchar* >(buffer), buffer))
+#if !RSTL_PRIME1
 , mCompressedPos(0)
 , mDecompressedPos(0)
 #endif
 , mSize(size)
 , mCompression(compression)
-, mParams(params) {}
+, mParams(params) {
+}
 
 CResFactory::SLoadingData::~SLoadingData() {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mZip.owner()) {
     inflateEnd(mZip.get());
@@ -287,14 +229,7 @@ bool CResFactory::SLoadingData::PumpDecompression(uint time) {
 
   uint* buffer = reinterpret_cast< uint* >(mBuffer.get());
   const uint length = CBasics::SwapBytes(*buffer);
-  if (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      (zip = mZip.get()) == nullptr
-#else
-      mDecompBuffer.null()
-#endif
-  ) {
+  if (IF_RSTL_PRIME1_ELSE((zip = mZip.get()) == nullptr, mDecompBuffer.null())) {
 #if RSTL_PRIME1
     zip = rs_new z_stream_s;
     zip->zalloc = CZipSupport::Alloc;
@@ -324,14 +259,8 @@ bool CResFactory::SLoadingData::PumpDecompression(uint time) {
   timeLimit = time;
 #endif
   uchar* compressed = reinterpret_cast< uchar* >(buffer + 1);
-  while (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      (time == 0 || timer.GetElapsedMicros() < time) && length != zip->total_out
-#else
-      (time == 0 || timer.GetElapsedMicros() < timeLimit) && length != mDecompressedPos
-#endif
-  ) {
+  while ((time == 0 || timer.GetElapsedMicros() < IF_RSTL_PRIME1_ELSE(time, timeLimit)) &&
+         length != IF_RSTL_PRIME1_ELSE(zip->total_out, mDecompressedPos)) {
 #if RSTL_PRIME1
     if (zip->avail_in == 0) {
       const int amount = rstl::min_val< int >(kDecompChunkSize, size - 4 - zip->total_in);
@@ -356,14 +285,7 @@ bool CResFactory::SLoadingData::PumpDecompression(uint time) {
 #endif
   }
 
-  if (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      length == zip->total_out
-#else
-      length == mDecompressedPos
-#endif
-  ) {
+  if (length == IF_RSTL_PRIME1_ELSE(zip->total_out, mDecompressedPos)) {
 #if RSTL_PRIME1
     inflateEnd(zip);
     mZip = rstl::auto_ptr< z_stream_s >();
@@ -378,4 +300,3 @@ bool CResFactory::SLoadingData::PumpDecompression(uint time) {
   }
   return false;
 }
-
