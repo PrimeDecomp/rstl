@@ -8,6 +8,7 @@
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"
 #include "Kyoto/TToken.hpp"
+#include "Kyoto/Platform.h"
 
 #include "dolphin/card.h"
 #include "rstl/optional_object.hpp"
@@ -216,7 +217,7 @@ public:
   static TCardWorkArea& WorkAreaVector(EMemoryCardPort port);
   static char* AllocCardWorkArea(EMemoryCardPort port);
   static void FreeCardWorkArea(EMemoryCardPort port);
-  inline void Initialize();
+  inline void Initialize(IF_TARGET_PC(const char* game, const char* maker));
 
   static bool mIsCardBusy;
 #endif

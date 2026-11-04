@@ -6,7 +6,6 @@
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/MemoryCopy.hpp"
-#include "Kyoto/Platform.h"
 
 #include "dolphin/os/OSCache.h"
 
@@ -571,12 +570,12 @@ CMemoryCardSys::CMemoryCardSys() {
   mIsCardSysExists = true;
 }
 
-void CMemoryCardSys::Initialize() {
+void CMemoryCardSys::Initialize(IF_TARGET_PC(const char* game, const char* maker)) {
   if (!mIsInitialized) {
 #if TARGET_PC
     CARDSetLoadType(CARD_RAWIMAGE);
     // CARDDetectDolphin(-1);
-    CARDInit("GM8E", "01"); // FIXME: Other ID
+    CARDInit(game, maker);
 #else
     CARDInit();
 #endif
