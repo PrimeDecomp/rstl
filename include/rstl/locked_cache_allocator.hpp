@@ -25,7 +25,10 @@ public:
   , mHeapAllocation(false)
   , mPreviousHeapAllocation(false)
   , mAllocationCount(0) {}
-  void Allocate(void*& out, int size); // Guessed name
+  // Guessed name and form. Only Allocate< void > is used. Being a template, its body is
+  // instantiated only once it is needed, after the callers that inline allocate().
+  template < typename T >
+  inline void Allocate(T*& out, int size);
 
   template < typename T >
   void allocate(T*& out, int count) {
