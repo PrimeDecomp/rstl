@@ -397,6 +397,8 @@
 #else
 #define RSTL_STRING_RANGE_CTOR_EOS 0
 #endif
+// The default constructor carries the (empty) pointer precondition.
+#define RSTL_STRING_DEFAULT_CTOR_PRECONDITION (RSTL_VERSION == RSTL_G2MEAB)
 // `~basic_string` carries the (empty) pointer precondition.
 #define RSTL_STRING_DTOR_PRECONDITION (RSTL_PRECONDITION_MACRO && RSTL_VERSION != RSTL_G2MEAB)
 // `internal_search` is declared `static inline` in the class.
@@ -506,7 +508,7 @@
 // `set` wraps a `red_black_tree` member (`inner`) and forwards to it, instead of deriving from it.
 #define RSTL_SET_INNER_TREE (RSTL_VERSION == RSTL_G2MEAB)
 // `~rc_ptr` carries the (empty) count precondition.
-#define RSTL_RC_PTR_DTOR_PRECONDITION 1
+#define RSTL_RC_PTR_DTOR_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 // `rc_ptr` accessors go through `GetPtr()` and `ReleaseData` deletes `mRefCount` directly.
 #define RSTL_RC_PTR_GET_PTR_ACCESS (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // `ncrc_ptr` has an explicit copy constructor (with preconditions).
