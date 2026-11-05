@@ -6,7 +6,7 @@ CToken::CToken(CObjectReference* ref) : mObjRef(ref), mLockHeld(false) {
   mObjRef->AddReference();
 }
 
-CToken::CToken(IObj* obj) : mObjRef(rs_new CObjectReference(obj)), mLockHeld(false) {
+CToken::CToken(IObj* obj) : mObjRef(rs_new_line(36) CObjectReference(obj)), mLockHeld(false) {
   mObjRef->AddReference();
   Lock();
 }

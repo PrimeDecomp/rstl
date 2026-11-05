@@ -1,11 +1,7 @@
 #ifndef _CDEPENDENCYGROUPTOKEN
 #define _CDEPENDENCYGROUPTOKEN
 #include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/TToken.hpp"
-#else
 #include "Kyoto/TToken.hpp"
-#endif
 #include "rstl/vector.hpp"
 
 class CDependencyGroup;

@@ -21,6 +21,14 @@ class CSimplePool : public IObjectStore {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       return a.GetId() < b.GetId();
+#elif RSTL_KYOTO_POOL_TAG_TYPE_TIEBREAK
+      if (a.id < b.id) {
+        return true;
+      }
+      if (a.id > b.id) {
+        return false;
+      }
+      return a.type < b.type;
 #else
       return a.id < b.id;
 #endif

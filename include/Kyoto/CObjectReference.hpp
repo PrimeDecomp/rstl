@@ -24,7 +24,7 @@ public:
 
   bool IsLoaded() const { return mObject != nullptr; }
 
-  void AddReference() { mRefCount++; }
+  void AddReference();
   int RemoveReference();
   void Lock();
   void Unlock();
@@ -33,6 +33,7 @@ public:
   void CancelLoad();
   bool IsLoading() const;
   const SObjectTag& GetObjectTag() const { return mObjTag; }
+  int GetReferenceCount() const { return mRefCount; } // Guessed name
 
 private:
 // TODO: verify that this Prime/Echoes difference is real
@@ -51,8 +52,11 @@ private:
   IObj* mObject;
   CVParamTransfer mParams;
 };
+#if !RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE
+inline void CObjectReference::AddReference() { mRefCount++; }
+#endif
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CObjectReference, 0x24)
+CHECK_SIZEOF(CObjectReference, RSTL_KYOTO_ASSET_ID_CLASS ? 0x30 : 0x24)
 #endif
 
 #endif // _COBJECTREFERENCE

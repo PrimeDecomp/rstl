@@ -1,7 +1,9 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CSimplePool.hpp"
-#include "Kyoto/CResFactory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/IFactory.hpp"
 
 CSimplePool::CSimplePool(IFactory& factory)
 // TODO: verify that this Prime/Echoes difference is real
@@ -11,12 +13,13 @@ CSimplePool::CSimplePool(IFactory& factory)
 : mFactory(&factory)
 #endif
 , mParamXfr(CVParamTransfer::Null()) {
-  mParamXfr = CVParamTransfer(rs_new TObjOwnerParam< IObjectStore* >(this));
+  mParamXfr = CVParamTransfer(rs_new_line(32) TObjOwnerParam< IObjectStore* >(this));
 }
 
 CSimplePool::~CSimplePool() {
   Flush();
   if (mResources.size() > 0) {
+    RS_DEBUGGER_PRINT("Error: Object store %x still contains referenced objects:\n");
     DebugDumpPool();
   }
 }
@@ -39,11 +42,24 @@ CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
   ResourceMap::iterator it = mResources.find(tag);
 #endif
   if (it != mResources.end()) {
-    return CToken(it->second);
+    CObjectReference* ref = it->second;
+    RS_VERIFY_THROW(
+        83, tag.GetType() == ref->GetObjectTag().GetType(), false,
+        CBasics::Stringize("Object tag types don't match in CSimplePool::GetObj. Type:%s\tID:%s",
+                           SObjectTag::Type2Text(tag.GetType()), tag.GetId().ToHexString().data()));
+    return CToken(ref);
   }
 
+  RS_VERIFY_THROW(91, mFactory->CanBuild(tag), false,
+                  CBasics::Stringize("Asset doesn't exist in .pak files. Type:%s\tID:%s",
+                                     SObjectTag::Type2Text(tag.GetType()),
+                                     tag.GetId().ToHexString().data()));
+  RS_VERIFY_THROW(95, mFactory != NULL, false,
+                  CBasics::Stringize("Missing factory for type:%s\tID:%s",
+                                     SObjectTag::Type2Text(tag.GetType()),
+                                     tag.GetId().ToHexString().data()));
   CObjectReference* ref =
-      rs_new CObjectReference(*this, rstl::auto_ptr< IObj >(nullptr), tag, xfer);
+      rs_new_line(97) CObjectReference(*this, rstl::auto_ptr< IObj >(nullptr), tag, xfer);
   RSTL_PRIME1_CONST ResourceMap::value_type item(tag, ref);
 
   mResources.insert(item);
@@ -56,6 +72,8 @@ CToken CSimplePool::GetObj(const char* name) { return CSimplePool::GetObj(name, 
 
 CToken CSimplePool::GetObj(const char* name, const CVParamTransfer& xfer) {
   const SObjectTag* tag = CSimplePool::GetFactory().GetResourceIdByName(name);
+  RS_VERIFY_THROW(121, tag != NULL, false,
+                  CBasics::Stringize("Can't find resource id for: %s\n", name));
   return CSimplePool::GetObj(*tag, xfer);
 }
 
@@ -97,6 +115,7 @@ bool CSimplePool::ObjectIsLive(const SObjectTag& tag) const {
 void CSimplePool::Flush() {}
 
 void CSimplePool::DebugDumpPool() const {
+  RS_DEBUGGER_PRINT("Object Store contents:\n");
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   AUTO(it, mResources.begin());
@@ -106,6 +125,9 @@ void CSimplePool::DebugDumpPool() const {
   for (; it != mResources.end(); ++it) {
 #if RSTL_PRIME1
     SObjectTag::Type2Text(it->first.GetType());
+#else
+    RS_DEBUGGER_PRINT("   Asset %s type %s\n", it->first.GetId().ToHexString().data(),
+                      SObjectTag::Type2Text(it->first.GetType()));
 #endif
   }
 }

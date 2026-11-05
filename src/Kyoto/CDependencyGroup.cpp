@@ -5,8 +5,8 @@
 #if RSTL_PRIME1
 #include "Kyoto/CResFactory.hpp"
 #elif RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/CFactoryMgr.hpp"
-#include "Corruption/Kyoto/IObjectStore.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CDependencyGroupToken.hpp"
 #else

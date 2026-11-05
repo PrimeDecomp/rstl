@@ -4,7 +4,7 @@
 #include "rstl/RstlVersions.h"
 // The prototype declares CAssetId before the stream (include order sets template emission order).
 #if RSTL_KYOTO_ASSET_ID_CLASS
-#include "Corruption/Kyoto/CAssetId.hpp"
+#include "Kyoto/CAssetId.hpp"
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/construct.hpp"

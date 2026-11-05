@@ -13,6 +13,9 @@ class IFactory;
 class IObjectStore {
 public:
   IObjectStore() {}
+#if RSTL_KYOTO_OBJECT_STORE_VIRTUAL_DTOR
+  virtual ~IObjectStore() = 0;
+#endif
   virtual CToken GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) = 0;
   virtual CToken GetObj(const SObjectTag& tag) = 0;
   virtual CToken GetObj(const char* name) = 0;
@@ -24,5 +27,8 @@ public:
   virtual void Flush() = 0;
   virtual void ObjectUnreferenced(const SObjectTag& tag) = 0;
 };
+#if RSTL_KYOTO_OBJECT_STORE_VIRTUAL_DTOR
+inline IObjectStore::~IObjectStore() {}
+#endif
 
 #endif // _IOBJECTSTORE
