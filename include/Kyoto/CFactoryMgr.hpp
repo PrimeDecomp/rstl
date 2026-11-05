@@ -15,8 +15,10 @@ class CInputStream;
 class CVParamTransfer;
 class SObjectTag;
 
+#if !RSTL_KYOTO_BUFFER_FACTORIES
 typedef RSTL_PRIME1_CONST CFactoryFnReturn (*FFactoryFunc)(const SObjectTag& tag, CInputStream& in,
                                                            const CVParamTransfer& xfer);
+#endif
 typedef RSTL_PRIME1_CONST CFactoryFnReturn (*FMemFactoryFunc)(
     const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer, int size,
     const CVParamTransfer& xfer);
@@ -34,12 +36,16 @@ public:
   CFactoryMgr();
   ~CFactoryMgr();
 
+#if !RSTL_KYOTO_BUFFER_FACTORIES
   void AddFactory(FourCC type, FFactoryFunc factory);
+#endif
   void AddFactory(FourCC type, FMemFactoryFunc factory);
 
+#if !RSTL_KYOTO_BUFFER_FACTORIES
   bool CanMakeMemory(const SObjectTag& tag) const;
   rstl::auto_ptr< IObj > MakeObject(const SObjectTag& tag, CInputStream& in,
                                     const CVParamTransfer& params);
+#endif
   rstl::auto_ptr< IObj > MakeObjectFromMemory(const SObjectTag& tag,
                                               MemoryBufferPtr buffer,
                                               int size, bool compressed,
@@ -49,6 +55,21 @@ public:
   static uint TypeIdxToFourCC(uint idx);
 
 private:
+#if RSTL_KYOTO_BUFFER_FACTORIES
+  rstl::map< int, FMemFactoryFunc > mFactories;
+};
+CHECK_SIZEOF(CFactoryMgr, 0x14)
+
+CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                     int size, const CVParamTransfer& xfer);
+
+CFactoryFnReturn FSaveWorldFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                   int size, const CVParamTransfer& xfer);
+
+CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
+                                         const rstl::auto_ptr< uchar >& buffer, int size,
+                                         const CVParamTransfer& xfer);
+#else
   rstl::map< int, FFactoryFunc > mFactories;
   rstl::map< int, FMemFactoryFunc > mMemFactories;
 };
@@ -59,5 +80,6 @@ RSTL_PRIME1_CONST CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CI
 
 RSTL_PRIME1_CONST CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
                                                            const CVParamTransfer& xfer);
+#endif
 
 #endif // _CFACTORYMGR

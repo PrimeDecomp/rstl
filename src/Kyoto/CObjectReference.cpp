@@ -2,7 +2,7 @@
 #include "Kyoto/CObjectReference.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 
-#include "Kyoto/CResFactory.hpp"
+#include "Kyoto/IFactory.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/IObjectStore.hpp"
 
@@ -21,7 +21,7 @@ CObjectReference::CObjectReference(const rstl::auto_ptr< IObj >& obj)
 , mLockCount(0)
 , mLoading(false)
 #if !RSTL_PRIME1
-, mObjTag(kInvalidAssetId, kInvalidAssetId)
+, mObjTag(0xFFFFFFFF, kInvalidAssetId)
 #endif
 , mObjectStore(nullptr)
 , mObject(obj.release())
@@ -101,4 +101,8 @@ void CObjectReference::Unlock() {
 }
 
 bool CObjectReference::IsLoading() const { return mLoading && mObject == nullptr; }
+
+#if RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE
+void CObjectReference::AddReference() { ++mRefCount; }
+#endif
 

@@ -611,17 +611,36 @@
 #define RSTL_KYOTO_CAST_REAL32_INT (RSTL_VERSION != RSTL_G2MEAB)
 // CCast::ToUint32(int) (prototype only).
 #define RSTL_KYOTO_CAST_UINT32_INT (RSTL_VERSION == RSTL_G2MEAB)
-// CAssetId is the prototype's class (Corruption/Kyoto/CAssetId.hpp, read from the stream by its
-// own constructor) instead of a `uint`.
+// CAssetId is the prototype's class (Kyoto/CAssetId.hpp, read from the stream by its own
+// constructor) instead of a `uint`.
 #define RSTL_KYOTO_ASSET_ID_CLASS (RSTL_VERSION == RSTL_G2MEAB)
 // SObjectTag is declared trivially constructible for rstl containers (Echoes and the prototype).
 // Prime instead gives it a user-declared assignment operator.
 #define RSTL_KYOTO_OBJECT_TAG_TRIVIAL (!RSTL_PRIME1)
 // SObjectTag has a user-declared copy constructor (Prime and the prototype).
 #define RSTL_KYOTO_OBJECT_TAG_COPY_CTOR (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// IObjectStore declares a pure virtual destructor ahead of its other virtual functions (the
+// prototype); Prime's and Echoes' object stores have none.
+#define RSTL_KYOTO_OBJECT_STORE_VIRTUAL_DTOR (RSTL_VERSION == RSTL_G2MEAB)
+// CObjectReference::AddReference is an out-of-line function (the prototype); Prime and Echoes
+// define it inline.
+#define RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
+// CSimplePool's resource map orders tags by id and then by type (the prototype); Prime and Echoes
+// compare the id alone.
+#define RSTL_KYOTO_POOL_TAG_TYPE_TIEBREAK (RSTL_VERSION == RSTL_G2MEAB)
+// CSimplePool::GetObj copies the found reference into a local `ref` before asserting on it, so the
+// assertion text names `ref` (the prototype); Prime and Echoes name `it->second`.
+#define RSTL_KYOTO_POOL_REFERENCE_LOCAL (RSTL_VERSION == RSTL_G2MEAB)
 // Resource factories receive the loaded buffer and its size and build their own CMemoryInStream
 // (prototype); otherwise they receive a CInputStream.
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_VERSION == RSTL_G2MEAB)
+// TObjOwnerParam::GetData returns the held value by const reference (the prototype; Prime does too
+// and also takes its constructor argument by const reference); Echoes returns a copy.
+#define RSTL_KYOTO_PARAM_DATA_REFERENCE (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
+// IObj and CObjOwnerDerivedFromIObjUntyped declare their destructors inline in the class (the
+// prototype), so each unit emits a weak IObj destructor; elsewhere they are pure virtual with an
+// inline definition after the class.
+#define RSTL_KYOTO_IOBJ_INLINE_DTOR (RSTL_VERSION == RSTL_G2MEAB)
 // CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).
 #define RSTL_KYOTO_DEPENDENCY_GROUP_TOKEN (!RSTL_PRIME1)
 // Echoes' CDependencyGroup forms: ReadFromStream reads the tag type with `Get< FourCC >()` (its

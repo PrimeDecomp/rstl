@@ -18,7 +18,11 @@ public:
   const T& operator*() const { return GetData(); }
 #else
   TObjOwnerParam(T data) : mData(data) {}
+#if RSTL_KYOTO_PARAM_DATA_REFERENCE
+  const T& GetData() const { return mData; }
+#else
   T GetData() const { return static_cast<T>(mData); }
+#endif
 #endif
 
 private:

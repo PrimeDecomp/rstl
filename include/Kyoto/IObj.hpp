@@ -12,14 +12,24 @@ extern const SObjectTag gkInvalidObjectTag;
 
 class IObj {
 public:
+#if RSTL_KYOTO_IOBJ_INLINE_DTOR
+  virtual ~IObj() {}
+#else
   virtual ~IObj() = 0;
+#endif
 };
 
+#if !RSTL_KYOTO_IOBJ_INLINE_DTOR
 inline IObj::~IObj() {}
+#endif
 
 class CObjOwnerDerivedFromIObjUntyped : public IObj {
 public:
+#if RSTL_KYOTO_IOBJ_INLINE_DTOR
+  ~CObjOwnerDerivedFromIObjUntyped() {}
+#else
   virtual ~CObjOwnerDerivedFromIObjUntyped() = 0;
+#endif
   template < typename T >
   CObjOwnerDerivedFromIObjUntyped(T* obj) : m_objPtr(obj) {}
   template < typename T >
@@ -31,7 +41,15 @@ protected:
   void* m_objPtr;
 };
 
+#if !RSTL_KYOTO_IOBJ_INLINE_DTOR
 inline CObjOwnerDerivedFromIObjUntyped::~CObjOwnerDerivedFromIObjUntyped() {}
+#endif
+
+// The source file name its allocation tags report; a unit built from a source that spells it
+// differently defines this before including the header.
+#ifndef RS_TTOKEN_FILE
+#define RS_TTOKEN_FILE "TToken.h"
+#endif
 
 template < typename T >
 class TObjOwnerDerivedFromIObj : public CObjOwnerDerivedFromIObjUntyped {
@@ -51,10 +69,12 @@ public:
   typedef rstl::auto_ptr< TObjOwnerDerivedFromIObj< T > > TOwnerPtr;
 #endif
 
-  static TOwnerPtr GetNewDerivedObject(T* obj) { return rs_new TObjOwnerDerivedFromIObj< T >(obj); }
+  static TOwnerPtr GetNewDerivedObject(T* obj) {
+    return rs_new_line_in(RS_TTOKEN_FILE, 76) TObjOwnerDerivedFromIObj< T >(obj);
+  }
 
   static TOwnerPtr GetNewDerivedObject(const rstl::auto_ptr< T >& obj) {
-    return rs_new TObjOwnerDerivedFromIObj< T >(obj);
+    return rs_new_line_in(RS_TTOKEN_FILE, 70) TObjOwnerDerivedFromIObj< T >(obj);
   }
 
 private:

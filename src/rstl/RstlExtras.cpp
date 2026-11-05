@@ -4,7 +4,7 @@
 #include "rstl/StringExtras.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
-#include "Corruption/Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "rstl/vector.hpp"
 

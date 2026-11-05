@@ -178,7 +178,7 @@ private:
   T* mItem;
 };
 
-#if !RSTL_PRIME1
+#if RSTL_RANGE_DESTRUCTION_CHECKS
 namespace rstl {
 template < typename T >
 struct range_destruction_checks< TCachedToken< T > > {
