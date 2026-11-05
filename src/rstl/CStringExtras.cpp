@@ -247,10 +247,8 @@ rstl::vector< rstl::string > CStringExtras::TokenizeString(const rstl::string& s
 }
 
 #if RSTL_STRING_LIST_FACTORY
-KYOTO_START_GAME_NAMESPACE
 CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const CVParamTransfer&) {
   return rs_new rstl::vector< rstl::string >(in);
 }
-KYOTO_END_GAME_NAMESPACE
 #endif
 #endif // !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS

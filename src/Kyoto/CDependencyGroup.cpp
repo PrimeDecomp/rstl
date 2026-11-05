@@ -54,8 +54,6 @@ int CDependencyGroup::GetCountForResType(FourCC type) const {
   return ret;
 }
 
-KYOTO_START_GAME_NAMESPACE
-
 #if RSTL_KYOTO_BUFFER_FACTORIES
 CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
                                          const rstl::auto_ptr< uchar >& buffer, int size,
@@ -120,5 +118,3 @@ bool CDependencyGroupToken::IsLoaded() const {
   return loaded;
 }
 #endif
-
-KYOTO_END_GAME_NAMESPACE
