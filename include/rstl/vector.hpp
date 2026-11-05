@@ -585,17 +585,13 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
 }
 
 template < typename T, typename Alloc >
-#if RSTL_VECTOR_INLINE_DECLS
 inline
-#endif
 typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator it) {
   return erase(it, it + 1);
 }
 
 template < typename T, typename Alloc >
-#if RSTL_VECTOR_INLINE_DECLS
 inline
-#endif
 typename vector< T, Alloc >::iterator vector< T, Alloc >::erase(iterator first, iterator last) {
   destroy(first, last);
 
