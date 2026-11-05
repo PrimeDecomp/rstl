@@ -26,6 +26,19 @@ public:
 
   static CAdvancementDeltas Blend(const CAdvancementDeltas& a, const CAdvancementDeltas& b,
                                   const float t);
+  // Guessed names
+  static CAdvancementDeltas InterpolateTranslationOnly(const CAdvancementDeltas& a,
+                                                       const CAdvancementDeltas& b,
+                                                       const float startWeight,
+                                                       const float endWeight);
+  static CAdvancementDeltas InterpolateRotationOnly(const CAdvancementDeltas& a,
+                                                    const CAdvancementDeltas& b,
+                                                    const float startWeight,
+                                                    const float endWeight);
+  static CAdvancementDeltas BlendTranslationOnly(const CAdvancementDeltas& a,
+                                                 const CAdvancementDeltas& b, const float t);
+  static CAdvancementDeltas BlendRotationOnly(const CAdvancementDeltas& a,
+                                              const CAdvancementDeltas& b, const float t);
 
   CVector3f mPosDelta;
   CQuaternion mRotDelta;

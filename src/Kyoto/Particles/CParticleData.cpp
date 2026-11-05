@@ -3,6 +3,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 
+#if !RSTL_KYOTO_PARTICLE_DATA_PROTOTYPE
 CParticleData::CParticleData(CInputStream& in)
 : mDuration(in.Get(TGetType(mDuration)))
 , mParticle(in)
@@ -21,4 +22,4 @@ CParticleData::CParticleData(CInputStream& in)
 , mParentMode(EParentedMode(in.Get< uint >()))
 #endif
 {}
-
+#endif

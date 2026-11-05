@@ -32,7 +32,7 @@ public:
   static CQuaternion ShortestRotationArcClamped(const CVector3f&, const CVector3f&,
                                                 const CRelAngle&);
 
-  bool IsValidQuaternion(float epsilon) const;
+  bool IsValidQuaternion(float epsilon = 0.01f) const;
   static CQuaternion Slerp(const CQuaternion& a, const CQuaternion& b, float t);
   static CQuaternion SlerpLocal(const CQuaternion& from, const CQuaternion& to, float t);
   CRelAngle AngleFrom(const CQuaternion& other) const;
