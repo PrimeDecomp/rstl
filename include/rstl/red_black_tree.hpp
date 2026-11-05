@@ -20,6 +20,11 @@ struct tree_key_argument { // Guessed name
 };
 
 template <>
+struct tree_key_argument< int > {
+  typedef int type;
+};
+
+template <>
 struct tree_key_argument< uint > {
   typedef uint type;
 };

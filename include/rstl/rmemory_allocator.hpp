@@ -137,9 +137,9 @@ struct aligned_allocator {
   }
 #elif RSTL_ALLOCATOR_LEGACY_SPELLING
   template < typename T >
-  static void allocate(T*& output, int count) {
-    const int size = count * sizeof(T);
-    output = size == 0 ? 0 : static_cast< T* >(CMemory::Alloc(size, IAllocator::kHI_RoundUpLen));
+  static void allocate(T*& output, int size) {
+    size *= sizeof(T);
+    output = size == 0 ? 0 : static_cast< T* >(rs_aligned_new_line_in("aligned_allocator.h", 37, size));
   }
 #else
   template < typename T >
