@@ -2169,12 +2169,7 @@ void CElementGen::RenderParticles() {
 
   bool hasModuColor = mModuColor.GetColor_u32() != 0xFFFFFFFF;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CTransform4f systemViewCopy(CGraphics::GetViewMatrix());
-#else
-  CTransform4f systemViewCopy = CGraphics::GetViewMatrix();
-#endif
 
   CTransform4f systemModelMatrix(systemViewCopy);
   systemModelMatrix.SetTranslation(CVector3f::Zero());
@@ -2190,7 +2185,6 @@ void CElementGen::RenderParticles() {
 
   CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool constUVs = true;
 #else
@@ -2203,7 +2197,6 @@ void CElementGen::RenderParticles() {
   uvs.yMin = 0.f;
   uvs.yMax = 1.f;
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool noRota = mLoadedGenDesc->mROTA == nullptr;
 #else
@@ -2254,12 +2247,12 @@ void CElementGen::RenderParticles() {
         break;
       }
       if (scale == CTevCombiners::kTS_Scale1) {
-        CGraphics::SetTevOp(kTS_Stage0, CGraphics::EnvModulate());
+        CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
       } else {
         SetParticleTevScale(scale);
       }
     } else {
-      CGraphics::SetTevOp(kTS_Stage0, CGraphics::EnvModulate());
+      CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
     }
 #endif
 
@@ -2280,7 +2273,6 @@ void CElementGen::RenderParticles() {
   };
   CGX::SetVtxDescv(sVtxDescList);
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   GXTevStageID nextStage;
   if (hasModuColor) {
@@ -2351,7 +2343,6 @@ void CElementGen::RenderParticles() {
     GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
   }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int particleCount = mParticles.size();
   int mbspVal = rstl::max_val(1, mMBSP);
@@ -2491,50 +2482,26 @@ void CElementGen::RenderParticles() {
             float negSinPlusCos = -sinT + cosT;
             float negCosMinusSin = -cosT - sinT;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(sinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            cosMinusSin + viewPoint.GetZ());
-#else
-            float vpX = viewPoint.GetX();
-            float vpY = viewPoint.GetY();
-            float vpZ = viewPoint.GetZ();
-
-            GXPosition3f32(sinPlusCos + vpX, vpY, cosMinusSin + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(sinMinusCos + viewPoint.GetX(), viewPoint.GetY(),
                            sinPlusCos + viewPoint.GetZ());
-#else
-            GXPosition3f32(sinMinusCos + vpX, vpY, sinPlusCos + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(viewPoint.GetX() - sinPlusCos, viewPoint.GetY(),
                            viewPoint.GetZ() - cosMinusSin);
-#else
-            GXPosition3f32(vpX - sinPlusCos, vpY, vpZ - cosMinusSin);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(negSinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            negCosMinusSin + viewPoint.GetZ());
-#else
-            GXPosition3f32(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMin);
@@ -2594,8 +2561,8 @@ void CElementGen::RenderParticles() {
       }
     } else {
       // ORNT
-      RSTL_PRIME1_CONST CVector3f fwd = systemViewCopy.GetForward();
-      RSTL_PRIME1_CONST CVector3f origin = systemViewCopy.GetTranslation();
+      const CVector3f fwd = systemViewCopy.GetForward();
+      const CVector3f origin = systemViewCopy.GetTranslation();
 
       float canBeNormEps = FLT_EPSILON;
 #if RSTL_PRIME1
@@ -2784,50 +2751,26 @@ void CElementGen::RenderParticles() {
             float sinMinusCos = sinT - cosT;
             float cosMinusSin = cosT - sinT;
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(sinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            cosMinusSin + viewPoint.GetZ());
-#else
-            float vpX = viewPoint.GetX();
-            float vpY = viewPoint.GetY();
-            float vpZ = viewPoint.GetZ();
-
-            GXPosition3f32(sinPlusCos + vpX, vpY, cosMinusSin + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(sinMinusCos + viewPoint.GetX(), viewPoint.GetY(),
                            sinPlusCos + viewPoint.GetZ());
-#else
-            GXPosition3f32(sinMinusCos + vpX, vpY, sinPlusCos + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(viewPoint.GetX() - sinPlusCos, viewPoint.GetY(),
                            viewPoint.GetZ() - cosMinusSin);
-#else
-            GXPosition3f32(vpX - sinPlusCos, vpY, vpZ - cosMinusSin);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
             GXPosition3f32(negSinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            negCosMinusSin + viewPoint.GetZ());
-#else
-            GXPosition3f32(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ);
-#endif
 
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMin);
