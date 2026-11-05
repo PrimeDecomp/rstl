@@ -395,7 +395,7 @@ void CSkinnedModel::Calculate(const CPoseAsTransforms& pose,
   alignedVertSize = ((vertSize + 31) & ~31u);
   totalSize = alignedVertSize + alignedNormSize;
 
-  if (IS_TARGET_PC) {
+  #if IS_TARGET_PC
     mSkinRules->InitLockedCacheState(**mModel);
     mSkinRules->BuildAccumulatedTransforms(pose, **mLayoutInfo);
     mSkinRules->BuildPoints(verts);
@@ -404,7 +404,7 @@ void CSkinnedModel::Calculate(const CPoseAsTransforms& pose,
             ? reinterpret_cast< float* >(reinterpret_cast< uchar* >(verts) + alignedVertSize)
             : mNormalWorkspace.get();
     mSkinRules->BuildNormals(normals);
-  } else {
+  #else
     DCFlushRange(verts, totalSize);
     BOOL interruptState = OSDisableInterrupts();
     volatile void* pipe = GXRedirectWriteGatherPipe(verts);
@@ -422,7 +422,7 @@ void CSkinnedModel::Calculate(const CPoseAsTransforms& pose,
     mSkinRules->BuildNormals(pipe);
     GXRestoreWriteGatherPipe();
     OSRestoreInterrupts(interruptState);
-  }
+  #endif
 
   if (morphEffect.valid()) {
     (*morphEffect)

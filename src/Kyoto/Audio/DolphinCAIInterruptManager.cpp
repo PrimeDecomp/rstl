@@ -40,9 +40,7 @@ void CAIInterruptManager::InstallAICallback() {
 }
 
 void CAIInterruptManager::AICallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
-  if (!IS_TARGET_PC) {
-    sOldDMACallback();
-  }
+  IF_NOT_TARGET_PC(sOldDMACallback());
 
   for (int i = 0; i < sCallbacks.size(); ++i) {
     sCallbacks[i](IF_TARGET_PC(output, frames, rate, channels));

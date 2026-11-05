@@ -102,7 +102,7 @@ private:
   static rstl::list< SAramDMARequest* > mActiveDMAs;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  static const int kInvalidAlloc;
+  static const ptrdiff_t kInvalidAlloc;
 #else
   static const uint kFreeChunk;
 #endif

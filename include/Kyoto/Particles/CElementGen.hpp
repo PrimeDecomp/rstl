@@ -279,10 +279,8 @@ public:
 
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
   int GetMaxParticles() const { return mMAXP; }
-#if !RSTL_PRIME1
   double GetCurrentTime() const { return mCurSeconds; } // Guessed name
   float GetTimeDeltaScale() const { return mTimeDeltaScale; } // Guessed name
-#endif
   bool IsIndirectTextured() const;
   void SetExternalVar(int index, float val);
 

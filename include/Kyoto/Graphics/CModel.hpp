@@ -75,7 +75,7 @@ public:
 
   void DrawUnsortedParts(const CModelFlags& flags) const;
   void DrawSortedParts(const CModelFlags& flags) const;
-  void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
+  void Draw(TModelPositions positions, TModelNormals normals, const CModelFlags& flags) const;
   void DolphinDrawFlat(EDrawFlatFlags flags) const;
   void PreDrawModel(const CModelFlags& flags) const;
 
@@ -94,9 +94,9 @@ public:
   void UpdateLastFrame() const;
   void VerifyCurrentShader(int shader) const;
 
+  rstl::auto_ptr< uchar > GetData();
 #if !defined(TARGET_PC)
   // Retail buffer relocation methods; names are inferred from their implementations.
-  rstl::auto_ptr< uchar > GetData();
   void RemapData(uchar* data);
 #endif
   uint GetDataSize() const;

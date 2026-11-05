@@ -15,6 +15,11 @@
 #include "dolphin/os.h"
 #include "stdint.h"
 
+#if IS_TARGET_PC
+#include <algorithm>
+#include "Metaforce/Audio.hpp"
+#endif
+
 #if RSTL_PRIME1
 enum { kRSFBufferSize = 0x20000 };
 #else

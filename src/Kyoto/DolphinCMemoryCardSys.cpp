@@ -565,8 +565,8 @@ void CardStat::SetCommentAddr(int addr) { CARDSetCommentAddress(&mStat, addr); }
 void CMemoryCardSys::CCardFileInfo::SetComment(const rstl::string& comment) { mComment = comment; }
 #endif
 
-CMemoryCardSys::CMemoryCardSys() {
-  Initialize();
+CMemoryCardSys::CMemoryCardSys(IF_TARGET_PC(const char* game, const char* maker)) {
+  Initialize(IF_TARGET_PC(game, maker));
   mIsCardSysExists = true;
 }
 

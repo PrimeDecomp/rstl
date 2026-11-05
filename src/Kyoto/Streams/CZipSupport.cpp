@@ -3,13 +3,9 @@
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 
-#if RSTL_KYOTO_ZIP_TYPES_DECLARED
-#include "Kyoto/Streams/ZipTypes.hpp"
-#else
 #include <zlib.h>
 
 static const char* hack() { return ZLIB_VERSION; }
-#endif
 
 void* CZipSupport::Alloc(void* ptr1, uint w1, uint w2) { return rs_new_line(19) uchar[w1 * w2]; }
 

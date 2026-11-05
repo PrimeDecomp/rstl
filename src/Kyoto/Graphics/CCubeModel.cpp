@@ -509,7 +509,7 @@ void CCubeModel::DrawFlat(int which) const
 #endif
 {
 #if RSTL_PRIME1
-  if (positions != nullptr) {
+  if (IF_TARGET_PC_OR(true, positions != nullptr)) {
     SetSkinningArraysCurrent(positions, normals);
   } else {
     SetArraysCurrent();

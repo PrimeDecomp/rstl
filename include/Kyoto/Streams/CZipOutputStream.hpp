@@ -7,11 +7,7 @@
 
 #include "rstl/auto_ptr.hpp"
 
-#include "Kyoto/Streams/ZipTypes.hpp"
-#if RSTL_KYOTO_ZIP_TYPES_DECLARED
-#else
 #include <zlib.h>
-#endif
 
 class CZipOutputStream : public COutputStream {
 public:

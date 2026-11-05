@@ -51,11 +51,11 @@ public:
     , mColors(colors)
     , mTexCoords(uvs)
     , mPackedTexCoords(packedTexCoords) {}
-#endif
 
     SurfaceList& Surfaces() { return mSurfacePtrs; }
     const SurfaceList& Surfaces() const { return mSurfacePtrs; }
     const SurfaceList& GetSurfaces() const { return mSurfacePtrs; }
+#endif
 
     const void* GetMaterialPointer() const { return GetModelDataPointer(mMaterialData); }
     TModelData GetMaterialData() const { return mMaterialData; }
@@ -124,7 +124,7 @@ public:
 
   void Draw(const CModelFlags& flags) const;
   void Draw(u64 mask, const CModelFlags& flags) const;
-  void Draw(const float* positions, const float* normals, const CModelFlags& flags) const;
+  void Draw(TModelPositions positions, TModelNormals normals, const CModelFlags& flags) const;
   void DrawNormal(const CModelFlags& flags) const;
   void DrawNormal(ESurfaceSelection which) const;
   void DrawNormal(TModelPositions positions, TModelNormals normals, ESurfaceSelection which) const;

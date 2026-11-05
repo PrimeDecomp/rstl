@@ -10,9 +10,7 @@
 
 #include "limits.h"
 
-#if RSTL_PRIME1
-#include "GameVersions.h"
-#else
+#if !RSTL_PRIME1
 #ifndef TARGET_PC
 struct GXData {
   ushort cpSRreg;
@@ -35,13 +33,9 @@ static const uint sAlwaysAlphaCompare = CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 0) |
                                         CGX::MaskAndShiftLeft(GX_ALWAYS, 7, 14);
 #endif
 
-#if RSTL_PRIME1
 #if NONMATCHING
 // Doesn't need to be so big
 static GXVtxDescList sVtxDescList[12];
-#else
-static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
-#endif
 #else
 static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 #endif
@@ -773,4 +767,3 @@ void CGX::update_fog(uint flags) {
 
   }
 }
-

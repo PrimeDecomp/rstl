@@ -1,19 +1,12 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 
-#include "Kyoto/Alloc/CMemorySys.hpp"
-
-#include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-
+#include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
+#include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
-#include "dolphin/gx/GXEnum.h"
-#endif
-
-#include "dolphin/gx/GXTexture.h"
-#include "dolphin/os/OSCache.h"
+#include "dolphin/gx.h"
+#include "dolphin/os.h"
 
 uint CGraphicsPalette::sCurrentFrameCount = 0;
 
@@ -69,15 +62,19 @@ CGraphicsPalette::CGraphicsPalette(CInputStream& in)
 }
 
 CGraphicsPalette::~CGraphicsPalette() {
+#if defined(TARGET_PC)
+  GXDestroyTlutObj(&mTlutObj);
+  CFrameDelayedKiller::ScheduleDeletion(CFrameDelayedKiller::kWhichFrame_NextFrame,
+                                        mEntries.release());
+#else
   const uint frameDiff = sCurrentFrameCount - mFrameLoaded;
-
   if (frameDiff < 2) {
     CFrameDelayedKiller::ScheduleDeletion(frameDiff > 0
                                               ? CFrameDelayedKiller::kWhichFrame_ThisFrame
                                               : CFrameDelayedKiller::kWhichFrame_NextFrame,
                                           mEntries.release());
-
   }
+#endif
 }
 
 void CGraphicsPalette::Load() const {
@@ -85,10 +82,21 @@ void CGraphicsPalette::Load() const {
   mFrameLoaded = sCurrentFrameCount;
 }
 
+#if defined(TARGET_PC)
+void* CGraphicsPalette::Lock() {
+  // AuroraGXSync();
+  mLocked = true;
+  return mEntries.get();
+}
+#endif
+
 void CGraphicsPalette::UnLock() {
   DCStoreRange(mEntries.get(), mEntryCount * sizeof(ushort));
+#if defined(TARGET_PC)
+  GXInitTlutObjData(&mTlutObj, mEntries.get());
+#else
   GXInitTlutObj(&mTlutObj, mEntries.get(), format_to_format(mFmt), mEntryCount);
+#endif
   DCFlushRange(mEntries.get(), mEntryCount * sizeof(ushort));
   mLocked = false;
 }
-

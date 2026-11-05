@@ -1,7 +1,3 @@
-extern "C" {
-#include <dolphin/os/OSArena.h>
-}
-
 #include "Kyoto/Basics/COsContext.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"

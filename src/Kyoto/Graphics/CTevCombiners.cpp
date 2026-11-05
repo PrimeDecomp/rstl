@@ -1,34 +1,29 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CColor.hpp"
-
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#define kMaxPasses 2
-#else
 #include "dolphin/gx/GXTev.h"
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-bool CTevCombiners::sValidPasses[2] = {false, false};
-#else
 namespace {
 const int kMaxPasses = 2;
 }
+#if RSTL_PRIME1
+bool CTevCombiners::sValidPasses[kMaxPasses] = {false, false};
 #endif
+
 
 int CTevCombiners::sNextUniquePass = 0;
 const CTevCombiners::AlphaVar CTevCombiners::skAlphaOne(kAS_Konst);
 const CTevCombiners::ColorVar CTevCombiners::skColorOne(kCS_One);
 const CTevCombiners::CTevPass
-    CTevCombiners::kEnvPassthru(ColorPass(ColorVar(kCS_Zero), ColorVar(kCS_Zero),
+    // Extra parentheses around the first argument avoid the most vexing parse (MSVC would
+    // otherwise treat this as a function declaration).
+    CTevCombiners::kEnvPassthru(ColorPass((ColorVar(kCS_Zero)), ColorVar(kCS_Zero),
                                           ColorVar(kCS_Zero), ColorVar(kCS_RasterColor)),
-                                AlphaPass(AlphaVar(kAS_Zero), AlphaVar(kAS_Zero),
+                                AlphaPass((AlphaVar(kAS_Zero)), AlphaVar(kAS_Zero),
                                           AlphaVar(kAS_Zero), AlphaVar(kAS_RasterAlpha)));
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -159,4 +154,3 @@ void CTevCombiners::ResetStates() {
   sNumEnabledPasses = 1;
   CGX::SetNumTevStages(1);
 }
-

@@ -284,6 +284,8 @@ CDvdFile::CDvdFile(const char* filename)
 , mOffset(0)
 , mSize(0)
 , mFilename(filename, -1) {
+  const char* decodedName = DecodeARAMFile(filename);
+  mFileEntry = DVDConvertPathToEntrynum(const_cast< char* >(decodedName));
 #if defined(TARGET_PC)
   DVDFileInfo fileInfo{};
   if (mFileEntry != -1 && DVDFastOpen(mFileEntry, &fileInfo)) {
@@ -292,8 +294,6 @@ CDvdFile::CDvdFile(const char* filename)
     mARAMAllocated = filename != decodedName;
   }
 #else
-  const char* decodedName = DecodeARAMFile(filename);
-  mFileEntry = DVDConvertPathToEntrynum(const_cast< char* >(decodedName));
   DVDFileInfo fileInfo;
   if (mFileEntry != -1) {
     DVDFastOpen(mFileEntry, &fileInfo);
@@ -351,7 +351,7 @@ CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, i
 #if defined(TARGET_PC)
   CalcFileOffset(offset, origin);
   auto request = std::make_unique< CRealDvdRequest >();
-  DVDFileInfo* info = request->FileInfo();
+  DVDFileInfo* info = &request->FileInfo();
   if (mFileEntry == -1 || !DVDFastOpen(mFileEntry, info)) {
     Log.fatal("Unable to open DVD file");
   }
@@ -392,7 +392,7 @@ void CDvdFile::CloseFile() {
   }
 
   StallForARAMFile();
-  CARAMManager::Free(mARAMBuffer);
+  IF_NOT_TARGET_PC(CARAMManager::Free(mARAMBuffer));
 }
 
 bool CDvdFile::FileExists(const char* filename) {
