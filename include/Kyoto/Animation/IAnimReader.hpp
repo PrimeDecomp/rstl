@@ -55,11 +55,7 @@ public:
   CAnimTreeEffectiveContribution(float cweight, const rstl::string& name,
                                  const CSteadyStateAnimInfo& ssInfo, const CCharAnimTime& remTime,
                                  u32 dbIdx)
-  : mContributionWeight(cweight)
-  , mName(name)
-  , mSsInfo(ssInfo)
-  , mRemTime(remTime)
-  , mDbIdx(dbIdx) {}
+  : mContributionWeight(cweight), mName(name), mSsInfo(ssInfo), mRemTime(remTime), mDbIdx(dbIdx) {}
 
   float GetContributionWeight() const { return mContributionWeight; }
   const rstl::string& GetPrimitiveName() const { return mName; }
@@ -127,7 +123,9 @@ public:
 
   virtual rstl::ownership_transfer< IAnimReader > VClone() const = 0;
   virtual rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VSimplified();
-  rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified();
+  rstl::optional_object< rstl::ownership_transfer< IAnimReader > > Simplified() {
+    return VSimplified();
+  }
   virtual void VSetPhase(float phase) = 0;
   virtual SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const;
@@ -150,9 +148,9 @@ public:
 
   uint GetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
                        uint iterator, int additive) const;
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-
   bool HasOffset(const CSegId& seg) const { return VHasOffset(seg); }
   CVector3f GetOffset(const CSegId& seg) const { return VGetOffset(seg); }
   CQuaternion GetRotation(const CSegId& seg) const { return VGetRotation(seg); }
@@ -176,11 +174,5 @@ public:
 };
 DECLARE_FULL_SIZE_FOR(IAnimReader, 0x4)
 CHECK_SIZEOF(IAnimReader, IAnimReader_FULL_SIZE)
-
-#if !RSTL_PRIME1
-inline rstl::optional_object< rstl::ownership_transfer< IAnimReader > > IAnimReader::Simplified() {
-  return VSimplified();
-}
-#endif
 
 #endif // _IANIMREADER
