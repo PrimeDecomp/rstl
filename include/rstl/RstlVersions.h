@@ -669,6 +669,10 @@
 // CRandom16::Float draws a 28-bit value from the seed directly and GetRandomNumber asserts that a
 // generator is set (prototype only).
 #define RSTL_KYOTO_RANDOM16_PROTOTYPE (RSTL_VERSION == RSTL_G2MEAB)
+// CFrustumPlanes passes the far plane's constant straight to the CPlane constructor in the
+// prototype; Echoes G2ME01, G2MP01 and G2MJ01 keep it in a local first. Only MWCC's register
+// choice differs (the prototype is 95.6-99.8% the other way, Echoes fails the link hash).
+#define RSTL_KYOTO_FRUSTUM_FAR_CONSTANT_INLINE (RSTL_VERSION == RSTL_G2MEAB)
 // CLinearAnimationTimeScale::CFunctionDescription members are const in the prototype only.
 #if RSTL_VERSION == RSTL_G2MEAB
 #define RSTL_KYOTO_TIMESCALE_CONST const

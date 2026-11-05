@@ -57,7 +57,12 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
 
   if (useFarPlane) {
     const CUnitVector3f normal = Negated(mPlanes[0].GetNormal());
+#if RSTL_KYOTO_FRUSTUM_FAR_CONSTANT_INLINE
     mPlanes.push_back(CPlane(farZ - mPlanes[0].GetConstant(), normal));
+#else
+    float constant = farZ - mPlanes[0].GetConstant();
+    mPlanes.push_back(CPlane(constant, normal));
+#endif
   }
 }
 
