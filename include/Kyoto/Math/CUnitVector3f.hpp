@@ -50,7 +50,9 @@ public:
 #endif
 
   CUnitVector3f(const CVector3f& vec);
+#if !RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM
   CUnitVector3f operator-() const { return CUnitVector3f(-GetX(), -GetY(), -GetZ()); }
+#endif
 
 #if !RSTL_PRIME1
   // Views the unit vector as a plain CVector3f, selecting CVector3f's operators over the
@@ -65,6 +67,12 @@ public:
 };
 
 CHECK_CHILD_SIZEOF(CUnitVector3f, CVector3f, 0x0)
+
+#if RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM
+inline CUnitVector3f operator-(const CUnitVector3f& vec) {
+  return CUnitVector3f(-vec.GetX(), -vec.GetY(), -vec.GetZ(), CUnitVector3f::kN_No);
+}
+#endif
 
 inline const CUnitVector3f& CVector3f::Up() { return sUpVector; }
 inline const CUnitVector3f& CVector3f::Down() { return sDownVector; }

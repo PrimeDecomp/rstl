@@ -18,6 +18,10 @@ static CUnitVector3f CreateNormal(const CVector3f& a, const CVector3f& b, const 
   return CVector3f::Cross(b - a, c - a);
 }
 
+static inline CUnitVector3f Negated(const CUnitVector3f& v) {
+  return CUnitVector3f(-v.GetX(), -v.GetY(), -v.GetZ());
+}
+
 CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, float nearZ,
                                bool useFarPlane, float farZ) {
   float halfFov = fov / 2.f;
@@ -52,9 +56,8 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[2], worldCorners[1])));
 
   if (useFarPlane) {
-    const CUnitVector3f normal = -mPlanes[0].GetNormal();
-    float constant = farZ - mPlanes[0].GetConstant();
-    mPlanes.push_back(CPlane(constant, normal));
+    const CUnitVector3f normal = Negated(mPlanes[0].GetNormal());
+    mPlanes.push_back(CPlane(farZ - mPlanes[0].GetConstant(), normal));
   }
 }
 

@@ -681,9 +681,6 @@
 #define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_VERSION == RSTL_G2MEAB)
 // CVector2f defines IsNotInf and IsNormalizable (prototype only).
 #define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_VERSION == RSTL_G2MEAB)
-// CVector3i's const operator[] returns a reference in Echoes (CBarrierChunkGrid's `dims[0]` binds it
-// to a vector constructor argument); Prime and the prototype return by value.
-#define RSTL_KYOTO_VECTOR3I_INDEX_REFERENCE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
 // CVector3f has the component-wise operator* (Prime and the prototype; Echoes has none).
 #define RSTL_KYOTO_VECTOR3F_ELEMENTWISE_MULTIPLY (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).
