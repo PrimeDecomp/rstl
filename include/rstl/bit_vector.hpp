@@ -229,11 +229,14 @@ bit_vector< Alloc >::bit_vector(int count, bool value) : mSize(0) {
 
 template < typename Alloc >
 typename bit_vector< Alloc >::iterator bit_vector< Alloc >::begin() {
+  RSTL_PRECONDITION(mSize >= 0);
+  RSTL_PRECONDITION(mData.size() >= 0);
   return iterator(mData.begin(), 0, 0);
 }
 
 template < typename Alloc >
 typename bit_vector< Alloc >::iterator bit_vector< Alloc >::end() {
+  RSTL_PRECONDITION(mSize >= 0);
   return iterator(mData.begin(), mSize, 0);
 }
 

@@ -26,6 +26,10 @@ public:
 #else
   optional_object(const optional_object& other) : m_valid(other.m_valid) {
 #endif
+#if RSTL_OPTIONAL_COPY_PRECONDITION
+    RSTL_PRECONDITION(this != &other);
+    RSTL_PRECONDITION(m_data != nullptr);
+#endif
     if (other.valid()) {
       construct< T >(m_data, other.data());
     }
@@ -123,6 +127,9 @@ private:
 #endif
 
   void assign(const T& item) {
+#if RSTL_OPTIONAL_ASSIGN_PRECONDITION
+    RSTL_PRECONDITION(m_valid == true || m_valid == false);
+#endif
     if (!m_valid) {
       if (optional_object_value_policy< T >::value) {
         optional_object_value_policy< T >::construct_element(m_data, item);

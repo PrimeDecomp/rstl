@@ -137,6 +137,8 @@
 // The range algorithms check `begin <= end` (and `n >= 0`) first; `destroy(begin, end)` then calls
 // `destroy_impl`, and `uninitialized_copy` has a pointer overload without the checks.
 #define RSTL_RANGE_PRECONDITIONS RSTL_ECHOES
+// The prototype's pointer overload of `uninitialized_copy` also checks `begin <= end`.
+#define RSTL_POINTER_COPY_PRECONDITION (RSTL_CORRUPTION)
 // `destroy(T*, T*)` is a separate overload over pointer ranges.
 #define RSTL_POINTER_RANGE_OVERLOADS (RSTL_ECHOES || RSTL_VERSION >= RSTL_R3IJ)
 // `destroy(begin, end)` over iterators tests `begin != end` before looping (pointer ranges do not).
@@ -218,6 +220,9 @@
 #define RSTL_VECTOR_CONST_LOCALS (RSTL_VERSION >= RSTL_GM8P_00)
 // `insert_into` destroys the moved-from element through a `T* const item` local.
 #define RSTL_VECTOR_INSERT_CONST_ITEM (RSTL_VERSION < RSTL_G2ME)
+// The default-allocator-argument `vector(int, fill_type, const Alloc&)` carries the (empty) allocation
+// precondition after allocating (it counts toward the inline size at 128).
+#define RSTL_VECTOR_FILL_CTOR_PRECONDITION (RSTL_CORRUPTION)
 // `vector(int)` sets the count and leaves the elements uninitialized.
 #define RSTL_VECTOR_UNINITIALIZED_COUNT_CTOR RSTL_ECHOES
 // `vector(int, const T&)` is one constructor with a defaulted allocator argument.
@@ -399,6 +404,8 @@
 #else
 #define RSTL_STRING_RANGE_CTOR_EOS 0
 #endif
+// The default constructor carries the (empty) pointer precondition.
+#define RSTL_STRING_DEFAULT_CTOR_PRECONDITION (RSTL_CORRUPTION)
 // `~basic_string` carries the (empty) pointer precondition.
 #define RSTL_STRING_DTOR_PRECONDITION (RSTL_PRECONDITION_MACRO && !RSTL_CORRUPTION)
 // `internal_search` is declared `static inline` in the class.
@@ -438,7 +445,7 @@
 // The copy constructor placement-constructs each element through `construction_policy`.
 #define RSTL_RESERVED_VECTOR_POLICY_COPY (RSTL_CORRUPTION)
 // The const `operator[]` carries the index precondition.
-#define RSTL_RESERVED_VECTOR_CONST_INDEX_PRECONDITION                                                (RSTL_PRECONDITION_MACRO && !RSTL_CORRUPTION)
+#define RSTL_RESERVED_VECTOR_CONST_INDEX_PRECONDITION (RSTL_PRECONDITION_MACRO)
 // `destroy_elements` takes a plain `T*` and destroys `&ptr[i]` (the others use `T* const` and
 // `destroy(ptr + i)`).
 #define RSTL_RESERVED_VECTOR_DESTROY_INDEXED (RSTL_CORRUPTION)
@@ -447,11 +454,13 @@
 #define RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION (RSTL_CORRUPTION)
 // `listpool` is the full reconstructed container instead of the declaration-only stub.
 #define RSTL_LISTPOOL_FULL (RSTL_CORRUPTION)
+// `reserved_vector(int, fill_type)` carries the (empty) `count <= N` precondition.
+#define RSTL_RESERVED_VECTOR_FILL_PRECONDITION (RSTL_CORRUPTION)
 // `list::node` is a plain `uchar` item array without alignment or constructor, and
 // `do_insert_before` reads `n->mPrev` directly.
 #define RSTL_LIST_NODE_PLAIN (RSTL_CORRUPTION)
 // `create_node` and the out-of-class `erase(start, end)` carry the (empty) precondition statements.
-#define RSTL_LIST_PRECONDITIONS (!RSTL_CORRUPTION)
+#define RSTL_LIST_PRECONDITIONS 1
 // `list::remove_if` is defined in the class body (over nodes) even though the rest is out of class.
 #define RSTL_LIST_REMOVE_IF_IN_CLASS (RSTL_CORRUPTION)
 // `list::exchange` is a plain (not `inline`) member that links nodes through `mPrev` / `mNext`.
@@ -495,8 +504,10 @@
 #define RSTL_RBTREE_NODE_ALIGNED (!RSTL_CORRUPTION)
 // `find_node` returns the ternary directly instead of through a `result` local.
 #define RSTL_RBTREE_DIRECT_FIND_RETURN (RSTL_CORRUPTION)
+// `find_lower_bound` / `find_upper_bound` start with the (empty) root precondition.
+#define RSTL_RBTREE_BOUND_PRECONDITION (RSTL_CORRUPTION)
 // `create_node` carries the (empty) allocation precondition.
-#define RSTL_RBTREE_CREATE_PRECONDITION (!RSTL_CORRUPTION)
+#define RSTL_RBTREE_CREATE_PRECONDITION 1
 // The out-of-line members are defined in the prototype's own order (`copy_from`,
 // `free_node_and_sub_nodes`, `insert_into`), reach the children through `get_left()` /
 // `get_right()` and name the multi-flag template parameter `U`.
@@ -521,6 +532,10 @@
 // Keep the accessor in the prototype: direct member access inlines away native
 // CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_CORRUPTION)
+// The `optional_object` copy constructor starts with two (empty) precondition statements.
+#define RSTL_OPTIONAL_COPY_PRECONDITION (RSTL_CORRUPTION)
+// `optional_object::assign` starts with an (empty) precondition statement.
+#define RSTL_OPTIONAL_ASSIGN_PRECONDITION (RSTL_CORRUPTION)
 // `optional_object` stores a plain `uchar` array followed by `bool m_valid ATTRIBUTE_ALIGN(4)`.
 #define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_CORRUPTION)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
