@@ -433,6 +433,7 @@ struct optional_object_value_policy {
 #if RSTL_DESTROY_VIA_IMPL
 template < typename T >
 RSTL_CONSTRUCT_INLINE void destroy_impl(T* in) {
+  RSTL_PRECONDITION(in != nullptr);
   if (is_trivially_destructible< T >::value) {
     return;
   }
@@ -594,6 +595,9 @@ static inline T uninitialized_copy(It begin, It end, T out) {
 #if RSTL_RANGE_PRECONDITIONS
 template < typename S, typename T >
 static inline T uninitialized_copy(S* begin, S* end, T out) {
+#if RSTL_POINTER_COPY_PRECONDITION
+  RSTL_PRECONDITION(begin <= end);
+#endif
   T tmp = out;
   S* cur = begin;
   for (; cur != end; ++cur, ++tmp) {

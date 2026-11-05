@@ -173,7 +173,11 @@ public:
 
   struct literal_t {};
 
+#if RSTL_STRING_DEFAULT_CTOR_PRECONDITION
+  basic_string() : mPtr(&mNull), mCow(nullptr), mSize(0) { RSTL_PRECONDITION(mPtr != nullptr); }
+#else
   basic_string() : mPtr(&mNull), mCow(nullptr), mSize(0) {}
+#endif
 
   basic_string(literal_t, const _CharTp* data) {
     mPtr = data;

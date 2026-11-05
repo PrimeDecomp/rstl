@@ -331,6 +331,9 @@ public:
 private:
   node* find_lower_bound(const T& key) const {
     node* n = mHeader.get_root();
+#if RSTL_RBTREE_BOUND_PRECONDITION
+    RSTL_PRECONDITION(n != nullptr || mCount == 0);
+#endif
     node* result = nullptr;
     while (n != nullptr) {
       if (!mCmp(mSelector(*n->get_value()), key)) {
@@ -345,6 +348,9 @@ private:
 
   node* find_upper_bound(const T& key) const {
     node* n = mHeader.get_root();
+#if RSTL_RBTREE_BOUND_PRECONDITION
+    RSTL_PRECONDITION(n != nullptr || mCount == 0);
+#endif
     node* result = nullptr;
     while (n != nullptr) {
       if (mCmp(key, mSelector(*n->get_value()))) {
