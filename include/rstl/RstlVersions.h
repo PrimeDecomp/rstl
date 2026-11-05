@@ -467,7 +467,7 @@
 // `push_back_unsafe` checks too, with a `push_back_checked` wrapper).
 #define RSTL_VECTOR_VERIFIED_PUSH_BACK (RSTL_VERSION == RSTL_G2MEAB)
 // Trees, pointers and optional values.
-// `red_black_tree` declares `tree_key_argument` (`const T&`, but `uint` by value) and takes its
+// `red_black_tree` declares `tree_key_argument` (`const T&`, but `int` and `uint` by value) and takes its
 // lookup keys through it.
 #define RSTL_RBTREE_KEY_ARGUMENT_TRAITS (RSTL_VERSION == RSTL_G2MEAB)
 #if RSTL_RBTREE_KEY_ARGUMENT_TRAITS
