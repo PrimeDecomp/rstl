@@ -664,6 +664,8 @@
 // CPlane declares trivial destruction and reserved_vector push construction (prototype); Echoes
 // declares trivial construction.
 #define RSTL_KYOTO_PLANE_PUSH_CONSTRUCTION (RSTL_VERSION == RSTL_G2MEAB)
+// CNUQuaternion declares trivial construction for rstl containers (prototype only).
+#define RSTL_KYOTO_NUQUATERNION_TRIVIAL_CONSTRUCTION (RSTL_VERSION == RSTL_G2MEAB)
 // CVector2f defines IsNotInf and IsNormalizable (prototype only).
 #define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_VERSION == RSTL_G2MEAB)
 // CVector3f has the component-wise operator* (Prime and the prototype; Echoes has none).
