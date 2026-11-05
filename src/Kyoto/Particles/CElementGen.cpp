@@ -37,7 +37,11 @@
 #include "rstl/math.hpp"
 #include "rstl/single_ptr.hpp"
 
+#if defined(TARGET_PC) && defined(_MSC_VER)
+#include <malloc.h>
+#else
 #include <alloca.h>
+#endif
 #include "math.h"
 #include "dolphin/gx.h"
 
