@@ -1,8 +1,6 @@
 #ifndef _PORTALPLANE
 #define _PORTALPLANE
 
-#include "EchoesNamespace.h"
-
 class CPlane;
 class CTransform4f;
 

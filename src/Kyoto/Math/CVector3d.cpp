@@ -18,6 +18,22 @@ CVector3d::CVector3d(double x, double y, double z) : mX(x), mY(y), mZ(z) {}
 CVector3d::CVector3d(const CVector3f& other)
 : mX(other.GetX()), mY(other.GetY()), mZ(other.GetZ()) {}
 
+#if RSTL_KYOTO_VECTOR3D_COMPOUND
+CVector3d& CVector3d::operator+=(const CVector3d& other) {
+  mX += other.mX;
+  mY += other.mY;
+  mZ += other.mZ;
+  return *this;
+}
+
+CVector3d& CVector3d::operator*=(double scale) {
+  mX *= scale;
+  mY *= scale;
+  mZ *= scale;
+  return *this;
+}
+#endif
+
 double CVector3d::Magnitude() const {
   double ret = mX * mX;
   ret += mY * mY;
@@ -94,6 +110,16 @@ CVector3d operator-(const CVector3d& lhs, const CVector3d& rhs) {
 CVector3d operator-(const CVector3d& v) { return CVector3d(-v.GetX(), -v.GetY(), -v.GetZ()); }
 #endif
 
+#if RSTL_KYOTO_VECTOR3D_COMPOUND
+bool operator==(const CVector3d& lhs, const CVector3d& rhs) {
+  return lhs.GetX() == rhs.GetX() && lhs.GetY() == rhs.GetY() && lhs.GetZ() == rhs.GetZ();
+}
+
+CVector3d operator*(const CVector3d& lhs, double rhs) {
+  return CVector3d(lhs.GetX() * rhs, lhs.GetY() * rhs, lhs.GetZ() * rhs);
+}
+#endif
+
 CVector3d operator*(double lhs, const CVector3d& rhs) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -105,4 +131,3 @@ CVector3d operator*(double lhs, const CVector3d& rhs) {
   return CVector3d(x, y, z);
 #endif
 }
-

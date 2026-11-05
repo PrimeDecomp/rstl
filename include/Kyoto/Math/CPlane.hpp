@@ -59,8 +59,12 @@ inline CPlane::CPlane(const float constant, const CUnitVector3f& normal)
 #pragma cpp_extensions reset
 #endif
 
-#if !RSTL_PRIME1
-
+#if RSTL_KYOTO_PLANE_PUSH_CONSTRUCTION
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CPlane)
+RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(CPlane)
+} // namespace rstl
+#elif !RSTL_PRIME1
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPlane)
 } // namespace rstl
