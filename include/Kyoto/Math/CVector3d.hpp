@@ -12,6 +12,8 @@ public:
   CVector3d(const CVector3f& other);
   double Magnitude() const;
   double MagSquared() const;
+  CVector3d& operator*=(double scale);
+  CVector3d& operator+=(const CVector3d& other);
 
   CVector3d AsNormalized() const;
   CVector3f AsCVector3f() const;
@@ -59,6 +61,12 @@ CVector3d operator-(const CVector3d& lhs, const CVector3d& rhs);
 CVector3d operator-(const CVector3d& other);
 
 CVector3d operator*(double lhs, const CVector3d& rhs);
+// Declaring these changes overload resolution in Prime (CVector3f converts to CVector3d), so they
+// stay guarded.
+#if RSTL_KYOTO_VECTOR3D_COMPOUND
+CVector3d operator*(const CVector3d& lhs, double rhs);
+bool operator==(const CVector3d& lhs, const CVector3d& rhs);
+#endif
 
 #if !RSTL_PRIME1
 namespace rstl {

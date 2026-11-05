@@ -41,13 +41,31 @@ void CVector3f::PutTo(COutputStream& out) const {
 }
 
 CVector3f CVector3f::Slerp(const CVector3f& a, const CVector3f& b, const CRelAngle& angle) {
+#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+  CVector3f axb = CVector3f::Cross(a, b);
+  if (!axb.IsNormalizable()) {
+    return a;
+  }
+  axb.Normalize();
+#else
   CVector3f axb = CVector3f::Cross(a, b).AsNormalized();
+#endif
   CVector3f crs = CVector3f::Cross(axb, a);
   float asin = sine(angle);
   float acos = cosine(angle);
   return acos * a + asin * crs;
 }
 
+#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+float CVector3f::Normalize() {
+  const float mag = Magnitude();
+  const float invMag = 1.f / mag;
+  mX *= invMag;
+  mY *= invMag;
+  mZ *= invMag;
+  return mag;
+}
+#else
 CVector3f& CVector3f::Normalize() {
   float mag = 1.f / Magnitude();
   mX *= mag;
@@ -55,6 +73,7 @@ CVector3f& CVector3f::Normalize() {
   mZ *= mag;
   return *this;
 }
+#endif
 
 float CVector3f::Magnitude() const {
   float mag = mX * mX;

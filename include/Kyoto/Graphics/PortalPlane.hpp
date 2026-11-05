@@ -1,7 +1,6 @@
 #ifndef _PORTALPLANE
 #define _PORTALPLANE
 
-
 class CPlane;
 class CTransform4f;
 

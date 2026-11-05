@@ -41,7 +41,11 @@ public:
   }
 
   static CVector3f Slerp(const CVector3f& a, const CVector3f& b, const CRelAngle& angle);
+#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+  float Normalize();
+#else
   CVector3f& Normalize();
+#endif
   float Magnitude() const;
   CVector3f AsNormalized() const;
   bool IsNotInf() const;
@@ -57,15 +61,7 @@ public:
     return CVector3f(x, y, z);
   }
   inline float MagSquared() const { return GetX() * GetX() + GetY() * GetY() + GetZ() * GetZ(); }
-  static CVector3f Cross(const CVector3f& lhs, const CVector3f& rhs) {
-    float lX = lhs.GetX();
-    float lY = lhs.GetY();
-    float lZ = lhs.GetZ();
-    float rX = rhs.GetX();
-    float rY = rhs.GetY();
-    float rZ = rhs.GetZ();
-    return CVector3f(lY * rZ - rY * lZ, lZ * rX - rZ * lX, lX * rY - rX * lY);
-  }
+  static CVector3f Cross(const CVector3f& lhs, const CVector3f& rhs);
 
   float& operator[](EDimX dim) { return mX; }
   float& operator[](EDimY dim) { return mY; }
@@ -104,7 +100,7 @@ public:
     mZ -= other.mZ;
     return *this;
   }
-  CVector3f& operator*=(const float v) {
+  CVector3f& operator*=(RSTL_KYOTO_VECTOR_SCALAR_CONST float v) {
     mX *= v;
     mY *= v;
     mZ *= v;
@@ -170,12 +166,32 @@ protected:
 DECLARE_FULL_SIZE_FOR(CVector3f, 0xc)
 CHECK_SIZEOF(CVector3f, CVector3f_FULL_SIZE)
 
+#if !RSTL_KYOTO_VECTOR3F_OUT_OF_LINE_CROSS
+inline CVector3f CVector3f::Cross(const CVector3f& lhs, const CVector3f& rhs) {
+  float lX = lhs.GetX();
+  float lY = lhs.GetY();
+  float lZ = lhs.GetZ();
+  float rX = rhs.GetX();
+  float rY = rhs.GetY();
+  float rZ = rhs.GetZ();
+  return CVector3f(lY * rZ - rY * lZ, lZ * rX - rZ * lX, lX * rY - rX * lY);
+}
+#endif
+
+// Guessed name
+template < typename T >
+T MakeUniformScale(float scale) {
+  return T(scale, scale, scale);
+}
+
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CVector3f)
+#if RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES
 RSTL_DECLARE_RESERVED_VECTOR_PUSH_CONSTRUCTION(CVector3f)
 RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(CVector3f)
 RSTL_DECLARE_VECTOR_CONSTRUCTION(CVector3f)
+#endif
 } // namespace rstl
 #endif
 
@@ -221,24 +237,28 @@ inline CVector3f operator+(const CVector3f& lhs, const CVector3f& rhs) {
   return CVector3f(x, y, z);
 }
 
-#if RSTL_PRIME1
+#if RSTL_KYOTO_VECTOR3F_ELEMENTWISE_MULTIPLY
 inline CVector3f operator*(const CVector3f& lhs, const CVector3f& rhs) {
+#if RSTL_PRIME1
   CVector3f ret(lhs);
   ret.mX *= rhs.mX;
   ret.mY *= rhs.mY;
   ret.mZ *= rhs.mZ;
   return ret;
+#else
+  return CVector3f(lhs.GetX() * rhs.GetX(), lhs.GetY() * rhs.GetY(), lhs.GetZ() * rhs.GetZ());
+#endif
 }
 #endif
 
-inline CVector3f operator*(const CVector3f& vec, const float f) {
+inline CVector3f operator*(const CVector3f& vec, RSTL_KYOTO_VECTOR_SCALAR_CONST float f) {
   float x = vec.GetX() * f;
   float y = vec.GetY() * f;
   float z = vec.GetZ() * f;
   return CVector3f(x, y, z);
 }
 
-inline CVector3f operator*(const float f, const CVector3f& vec) {
+inline CVector3f operator*(RSTL_KYOTO_VECTOR_SCALAR_CONST float f, const CVector3f& vec) {
   float x = f * vec.GetX();
   float y = f * vec.GetY();
   float z = f * vec.GetZ();

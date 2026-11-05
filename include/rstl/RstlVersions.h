@@ -559,6 +559,13 @@
 #else
 #define RSTL_PRIME1_CONST
 #endif
+// By-value `const` scalar parameters of the CVector3f scalar operators and CUnitVector3f's
+// component constructor: Prime and Echoes declare them; the prototype does not.
+#if RSTL_VERSION == RSTL_G2MEAB
+#define RSTL_KYOTO_VECTOR_SCALAR_CONST
+#else
+#define RSTL_KYOTO_VECTOR_SCALAR_CONST const
+#endif
 // Echoes-only `const` member functions and Prime-only `inline` declarations where MWCC codegen
 // depends on them (CModel::SShader::UnlockTextures, CGX::apply_fog).
 #if RSTL_PRIME1
@@ -641,6 +648,26 @@
 // CTri declares its copy constructor, which is defined out of line (in the prototype's
 // CIceImpact translation unit); Prime and Echoes use the implicit one.
 #define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_VERSION == RSTL_G2MEAB)
+// CUnitVector3f takes one normalization flag enum with both values and tests it at run time (the
+// prototype); Echoes has a separate single-value enum and overload per choice.
+#define RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3d has compound assignment, scalar multiplication and equality operators (prototype only).
+#define RSTL_KYOTO_VECTOR3D_COMPOUND (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3f::Normalize returns the original magnitude and Slerp returns its first argument when the
+// cross product cannot be normalized (the prototype); Prime and Echoes return the vector itself.
+#define RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3f::Cross is defined outside the header (prototype); Prime and Echoes inline it.
+#define RSTL_KYOTO_VECTOR3F_OUT_OF_LINE_CROSS (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3f declares reserved_vector/optional/vector construction policies (Echoes; the prototype
+// declares only trivial construction).
+#define RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
+// CPlane declares trivial destruction and reserved_vector push construction (prototype); Echoes
+// declares trivial construction.
+#define RSTL_KYOTO_PLANE_PUSH_CONSTRUCTION (RSTL_VERSION == RSTL_G2MEAB)
+// CVector2f defines IsNotInf and IsNormalizable (prototype only).
+#define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3f has the component-wise operator* (Prime and the prototype; Echoes has none).
+#define RSTL_KYOTO_VECTOR3F_ELEMENTWISE_MULTIPLY (RSTL_PRIME1 || RSTL_VERSION == RSTL_G2MEAB)
 // CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).
 #define RSTL_KYOTO_DEPENDENCY_GROUP_TOKEN (!RSTL_PRIME1)
 // Echoes' CDependencyGroup forms: ReadFromStream reads the tag type with `Get< FourCC >()` (its

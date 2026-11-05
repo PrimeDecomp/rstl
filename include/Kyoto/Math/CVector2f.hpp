@@ -39,6 +39,7 @@ public:
   CVector2f& Normalize();
 
   float Magnitude() const;
+  bool IsNotInf() const; // Guessed name
   bool IsNormalizable() const;
   float MagSquared() const;
   CVector2f AsNormalized() const;
