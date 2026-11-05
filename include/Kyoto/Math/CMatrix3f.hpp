@@ -50,7 +50,15 @@ public:
 
   CMatrix3f Orthonormalized() const;
   float Determinant() const;
-  CMatrix3f Inverse() const;
+  CMatrix3f Inverse() const {
+    const float detScale = 1.f / Determinant();
+    return CMatrix3f((m11 * m22 - m12 * m21) * detScale, (-(m01 * m22 - m02 * m21)) * detScale,
+                     (m01 * m12 - m02 * m11) * detScale, (-(m10 * m22 - m12 * m20)) * detScale,
+                     (m00 * m22 - m02 * m20) * detScale, (-(m00 * m12 - m02 * m10)) * detScale,
+                     (m10 * m21 - m11 * m20) * detScale, (-(m00 * m21 - m01 * m20)) * detScale,
+                     (m00 * m11 - m01 * m10) * detScale);
+  }
+
   CMatrix3f GetTranspose() const { return CMatrix3f(m00, m10, m20, m01, m11, m21, m02, m12, m22); }
   CVector3f TransposeMultiply(const CVector3f& vec) const;
 
