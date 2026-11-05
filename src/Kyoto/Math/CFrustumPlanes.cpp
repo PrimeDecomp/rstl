@@ -52,16 +52,9 @@ CFrustumPlanes::CFrustumPlanes(const CTransform4f& xf, float fov, float aspect, 
   mPlanes.push_back(CPlane(pos, CreateNormal(CVector3f::Zero(), worldCorners[2], worldCorners[1])));
 
   if (useFarPlane) {
-#if RSTL_KYOTO_FRUSTUM_FAR_PLANE_COMPONENTS
-    const CPlane& nearPlane = mPlanes[0];
-    const CUnitVector3f& normal = nearPlane.GetNormal();
-    mPlanes.push_back(CPlane(farZ - nearPlane.GetConstant(),
-                             CUnitVector3f(-normal.GetX(), -normal.GetY(), -normal.GetZ())));
-#else
     const CUnitVector3f normal = -mPlanes[0].GetNormal();
     float constant = farZ - mPlanes[0].GetConstant();
     mPlanes.push_back(CPlane(constant, normal));
-#endif
   }
 }
 

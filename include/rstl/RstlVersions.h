@@ -669,10 +669,6 @@
 // CRandom16::Float draws a 28-bit value from the seed directly and GetRandomNumber asserts that a
 // generator is set (prototype only).
 #define RSTL_KYOTO_RANDOM16_PROTOTYPE (RSTL_VERSION == RSTL_G2MEAB)
-// CFrustumPlanes builds the far plane from negated normal components in the prototype; the negated
-// unit vector does not match there (96.8%), and the component form changes the link hash of Echoes
-// G2ME01, G2MP01 and G2MJ01. Prime builds either way.
-#define RSTL_KYOTO_FRUSTUM_FAR_PLANE_COMPONENTS (RSTL_VERSION == RSTL_G2MEAB)
 // CLinearAnimationTimeScale::CFunctionDescription members are const in the prototype only.
 #if RSTL_VERSION == RSTL_G2MEAB
 #define RSTL_KYOTO_TIMESCALE_CONST const
