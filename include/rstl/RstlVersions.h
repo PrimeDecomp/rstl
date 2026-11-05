@@ -638,6 +638,9 @@
 // prototype), so each unit emits a weak IObj destructor; elsewhere they are pure virtual with an
 // inline definition after the class.
 #define RSTL_KYOTO_IOBJ_INLINE_DTOR (RSTL_VERSION == RSTL_G2MEAB)
+// CTri declares its copy constructor, which is defined out of line (in the prototype's
+// CIceImpact translation unit); Prime and Echoes use the implicit one.
+#define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_VERSION == RSTL_G2MEAB)
 // CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).
 #define RSTL_KYOTO_DEPENDENCY_GROUP_TOKEN (!RSTL_PRIME1)
 // Echoes' CDependencyGroup forms: ReadFromStream reads the tag type with `Get< FourCC >()` (its

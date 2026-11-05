@@ -10,6 +10,9 @@
 class CTri {
 public:
   CTri(const CVector3f& a, const CVector3f& b, const CVector3f& c);
+#if RSTL_KYOTO_TRI_OUT_OF_LINE_COPY
+  CTri(const CTri& other);
+#endif
 
   const CPlane& GetPlane() const { return mPlane; }
   const CVector3f& GetPointA() const { return mA; }

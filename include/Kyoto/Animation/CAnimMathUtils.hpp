@@ -3,10 +3,6 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CMath.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-#include "EchoesNamespace.h"
-#endif
 
 class CQuaternion;
 

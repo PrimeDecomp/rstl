@@ -3,10 +3,6 @@
 #include "rstl/RstlVersions.h"
 
 #include "types.h"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-#include "EchoesNamespace.h"
-#endif
 
 namespace pas {
 enum ELocomotionType {
