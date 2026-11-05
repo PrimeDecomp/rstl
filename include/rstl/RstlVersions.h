@@ -628,9 +628,6 @@
 // CSimplePool's resource map orders tags by id and then by type (the prototype); Prime and Echoes
 // compare the id alone.
 #define RSTL_KYOTO_POOL_TAG_TYPE_TIEBREAK (RSTL_VERSION == RSTL_G2MEAB)
-// CSimplePool::GetObj copies the found reference into a local `ref` before asserting on it, so the
-// assertion text names `ref` (the prototype); Prime and Echoes name `it->second`.
-#define RSTL_KYOTO_POOL_REFERENCE_LOCAL (RSTL_VERSION == RSTL_G2MEAB)
 // Resource factories receive the loaded buffer and its size and build their own CMemoryInStream
 // (prototype); otherwise they receive a CInputStream.
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_VERSION == RSTL_G2MEAB)

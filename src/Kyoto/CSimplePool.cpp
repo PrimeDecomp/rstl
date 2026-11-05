@@ -4,9 +4,6 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/IFactory.hpp"
-#if RSTL_KYOTO_ASSET_ID_CLASS
-#include "Kyoto/CAssetId.hpp"
-#endif
 
 CSimplePool::CSimplePool(IFactory& factory)
 // TODO: verify that this Prime/Echoes difference is real
@@ -37,14 +34,6 @@ void CSimplePool::ObjectUnreferenced(const SObjectTag& tag) {
   mResources.erase(it);
 }
 
-// The assertion text spells the reference expression, so the expression is passed as an argument
-// (macro arguments expand before the condition is stringized).
-#define POOL_VERIFY_TAG_TYPE(reference) \
-  RS_VERIFY_THROW( \
-      83, tag.GetType() == reference->GetObjectTag().GetType(), false, \
-      CBasics::Stringize("Object tag types don't match in CSimplePool::GetObj. Type:%s\tID:%s", \
-                         SObjectTag::Type2Text(tag.GetType()), tag.GetId().ToHexString().data()))
-
 CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -53,22 +42,20 @@ CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
   ResourceMap::iterator it = mResources.find(tag);
 #endif
   if (it != mResources.end()) {
-#if RSTL_KYOTO_POOL_REFERENCE_LOCAL
     CObjectReference* ref = it->second;
-    POOL_VERIFY_TAG_TYPE(ref);
+    RS_VERIFY_THROW(
+        83, tag.GetType() == ref->GetObjectTag().GetType(), false,
+        CBasics::Stringize("Object tag types don't match in CSimplePool::GetObj. Type:%s\tID:%s",
+                           SObjectTag::Type2Text(tag.GetType()), tag.GetId().ToHexString().data()));
     return CToken(ref);
-#else
-    POOL_VERIFY_TAG_TYPE(it->second);
-    return CToken(it->second);
-#endif
   }
 
   RS_VERIFY_THROW(91, mFactory->CanBuild(tag), false,
-                  CBasics::Stringize("Asset doesn't exist in .pak files. Type:%s	ID:%s",
+                  CBasics::Stringize("Asset doesn't exist in .pak files. Type:%s\tID:%s",
                                      SObjectTag::Type2Text(tag.GetType()),
                                      tag.GetId().ToHexString().data()));
   RS_VERIFY_THROW(95, mFactory != NULL, false,
-                  CBasics::Stringize("Missing factory for type:%s	ID:%s",
+                  CBasics::Stringize("Missing factory for type:%s\tID:%s",
                                      SObjectTag::Type2Text(tag.GetType()),
                                      tag.GetId().ToHexString().data()));
   CObjectReference* ref =
