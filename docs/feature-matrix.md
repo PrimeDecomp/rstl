@@ -1,6 +1,6 @@
 | Feature | G2ME | G2MP | G2MEAB |
 | --- | --- | --- | --- |
-| `RSTL_ECHOES_ERA` | 1 | 1 | 1 |
+| `RSTL_ECHOES` | 1 | 1 | 1 |
 | `RSTL_PRIME1` | 0 | 0 | 0 |
 | `RSTL_TRILOGY_ECHOES` | 0 | 0 | 0 |
 | `RSTL_STREAM_READ_INT32` | 1 | 1 | 1 |

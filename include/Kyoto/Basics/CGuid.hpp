@@ -14,7 +14,7 @@ class COutputStream;
 // found, it is CObjectId.
 class CGuid {
 public:
-#if RSTL_VERSION == RSTL_G2MEAB
+#if RSTL_CORRUPTION
   // Guessed names. The fields used when generating the prototype's sixteen-byte identifier.
   struct SGuidData {
     uint mData1;
@@ -41,7 +41,7 @@ public:
   // Guessed name. The all zero guid, parsed at startup.
   static CGuid sDefault;
 
-#if RSTL_VERSION == RSTL_G2MEAB
+#if RSTL_CORRUPTION
   // Guessed names. Byte formatting and structured generation views; the native record is four-byte aligned.
   union {
     uint mData[4];
