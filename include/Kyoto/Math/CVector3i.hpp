@@ -8,7 +8,11 @@
 class CVector3i {
 public:
   CVector3i(int x, int y, int z);
+#if RSTL_KYOTO_VECTOR3I_INDEX_REFERENCE
+  const int& operator[](int index) const { return (&mX)[index]; }
+#else
   int operator[](int index) const { return (&mX)[index]; }
+#endif
 #if !RSTL_PRIME1
   int& operator[](int index) { return (&mX)[index]; }
 

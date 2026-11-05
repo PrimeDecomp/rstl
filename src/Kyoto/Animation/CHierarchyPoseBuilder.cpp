@@ -136,11 +136,6 @@ void CHierarchyPoseBuilder::BuildTransform(const CSegId& seg, CTransform4f& tran
 #endif
 
 uchar CLayoutDescription::GetNumSegments() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   return mLayoutToken->GetBodyPartSegIds().size();
-#else
-  return mLayoutToken->GetBodyPartSegIds().Size();
-#endif
 }
 
