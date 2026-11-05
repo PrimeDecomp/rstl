@@ -461,7 +461,7 @@
 #define RSTL_VECTOR_COUNT_CTOR_POSITIVE_CHECK (RSTL_VERSION == RSTL_G2MEAB)
 // `vector::resize_uninitialized` compares against `mCount` (in a braced block).
 #define RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK (RSTL_VERSION == RSTL_G2MEAB)
-// `vector::assign`, `insert` and `erase` are declared/defined `inline`.
+// `vector::assign` retains its legacy inline declaration.
 #define RSTL_VECTOR_INLINE_DECLS (RSTL_VERSION != RSTL_G2MEAB)
 // `vector::push_back` asserts through `verify_capacity_failed` instead of growing (and
 // `push_back_unsafe` checks too, with a `push_back_checked` wrapper).
