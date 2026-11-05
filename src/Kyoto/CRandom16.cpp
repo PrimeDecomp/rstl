@@ -1,4 +1,5 @@
 #include "Kyoto/CRandom16.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 
@@ -26,7 +27,12 @@ CGlobalRandom::~CGlobalRandom() {
   }
 }
 
-CRandom16* CRandom16::GetRandomNumber() { return gRandomNumber; }
+CRandom16* CRandom16::GetRandomNumber() {
+#if RSTL_KYOTO_RANDOM16_PROTOTYPE
+  RS_VERIFY_THROW(60, gRandomNumber != NULL, false, "CRandom16::gRandomNumber was set to NULL");
+#endif
+  return gRandomNumber;
+}
 
 void CRandom16::_SetRandomNumber(CRandom16* rnd) { gRandomNumber = rnd; }
 
@@ -46,9 +52,16 @@ int CRandom16::Next() {
 #if RSTL_KYOTO_CONST_SCALAR_RETURNS
 const float CRandom16::Float() {
   const float next = CCast::ToReal32(Next());
-#else
-float CRandom16::Float() {
-  const int next = Next();
-#endif
   return 1.52590222E-5f * next;
 }
+#else
+float CRandom16::Float() {
+#if RSTL_KYOTO_RANDOM16_PROTOTYPE
+  mSeed = (mSeed * 0x41c64e6d) + 0x00003039;
+  return 3.7252903e-9f * (mSeed & 0x0fffffff);
+#else
+  const int next = Next();
+  return 1.52590222E-5f * next;
+#endif
+}
+#endif

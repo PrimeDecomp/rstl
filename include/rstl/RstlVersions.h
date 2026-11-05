@@ -666,6 +666,22 @@
 #define RSTL_KYOTO_PLANE_PUSH_CONSTRUCTION (RSTL_VERSION == RSTL_G2MEAB)
 // CNUQuaternion declares trivial construction for rstl containers (prototype only).
 #define RSTL_KYOTO_NUQUATERNION_TRIVIAL_CONSTRUCTION (RSTL_VERSION == RSTL_G2MEAB)
+// CRandom16::Float draws a 28-bit value from the seed directly and GetRandomNumber asserts that a
+// generator is set (prototype only).
+#define RSTL_KYOTO_RANDOM16_PROTOTYPE (RSTL_VERSION == RSTL_G2MEAB)
+// CFrustumPlanes builds the far plane from negated normal components (prototype); Prime and Echoes
+// negate the unit vector.
+#define RSTL_KYOTO_FRUSTUM_FAR_PLANE_COMPONENTS (RSTL_VERSION == RSTL_G2MEAB)
+// CLinearAnimationTimeScale::CFunctionDescription members are const in the prototype only.
+#if RSTL_VERSION == RSTL_G2MEAB
+#define RSTL_KYOTO_TIMESCALE_CONST const
+#else
+#define RSTL_KYOTO_TIMESCALE_CONST
+#endif
+// CSphere defines its bounding boxes (prototype only).
+#define RSTL_KYOTO_SPHERE_BOUNDING_BOX (RSTL_VERSION == RSTL_G2MEAB)
+// CSegIdList's destructor is defined in CSegIdList.cpp (prototype); the others inline it.
+#define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_VERSION == RSTL_G2MEAB)
 // CVector2f defines IsNotInf and IsNormalizable (prototype only).
 #define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_VERSION == RSTL_G2MEAB)
 // CVector3f has the component-wise operator* (Prime and the prototype; Echoes has none).

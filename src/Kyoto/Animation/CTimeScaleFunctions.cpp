@@ -15,7 +15,7 @@ float CConstantAnimationTimeScale::VFindUpperLimit(const float& lowerLimit,
 }
 
 rstl::ownership_transfer< IVaryingAnimationTimeScale > CConstantAnimationTimeScale::VClone() const {
-  return rs_new CConstantAnimationTimeScale(mScale);
+  return rs_new_line(26) CConstantAnimationTimeScale(mScale);
 }
 
 rstl::ownership_transfer< IVaryingAnimationTimeScale >
@@ -74,14 +74,15 @@ float CLinearAnimationTimeScale::VFindUpperLimit(const float& lowerLimit, const 
 }
 
 rstl::ownership_transfer< IVaryingAnimationTimeScale > CLinearAnimationTimeScale::VClone() const {
-  return rs_new CLinearAnimationTimeScale(CCharAnimTime(mDesc.mT1), GetScale(mDesc, mDesc.mT1),
-                                          CCharAnimTime(mDesc.mT2), GetScale(mDesc, mDesc.mT2));
+  return rs_new_line(213)
+      CLinearAnimationTimeScale(CCharAnimTime(mDesc.mT1), GetScale(mDesc, mDesc.mT1),
+                                CCharAnimTime(mDesc.mT2), GetScale(mDesc, mDesc.mT2));
 }
 
 rstl::ownership_transfer< IVaryingAnimationTimeScale >
 CLinearAnimationTimeScale::VGetFunctionMirrored(const float& value) const {
   const CFunctionDescription mirrored = mDesc.FunctionMirroredAround(value);
-  return rs_new CLinearAnimationTimeScale(
-      CCharAnimTime(mirrored.mT1), GetScale(mirrored, mirrored.mT1), CCharAnimTime(mirrored.mT2),
-      GetScale(mirrored, mirrored.mT2));
+  return rs_new_line(221)
+      CLinearAnimationTimeScale(CCharAnimTime(mirrored.mT1), GetScale(mirrored, mirrored.mT1),
+                                CCharAnimTime(mirrored.mT2), GetScale(mirrored, mirrored.mT2));
 }

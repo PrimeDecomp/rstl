@@ -19,13 +19,14 @@ public:
 
   CSegIdList(CInputStream& in);
 
-  ~CSegIdList() {
-    CCharAnimMemoryMetrics::SubtractFromTotalSize(mList.capacity(),
-                                                CCharAnimMemoryMetrics::kASS_Two);
-  }
+  ~CSegIdList();
 
 #if !RSTL_PRIME1
   int Size() const { return mList.size(); } // Guessed name, alternate guess GetCount
+#endif
+#if RSTL_VERSION == RSTL_G2MEAB
+  // The prototype's assertion text spells the accessor size().
+  int size() const { return mList.size(); }
 #endif
 
   CSegId operator[](int idx) const { return mList[idx]; }
@@ -54,6 +55,12 @@ CHECK_SIZEOF(CSegIdList, 0xc)
 #else
 CHECK_SIZEOF(CSegIdList, 0x10)
 #endif
+#endif
+
+#if !RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR
+inline CSegIdList::~CSegIdList() {
+  CCharAnimMemoryMetrics::SubtractFromTotalSize(mList.capacity(), CCharAnimMemoryMetrics::kASS_Two);
+}
 #endif
 
 #endif // _CSEGIDLIST

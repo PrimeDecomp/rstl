@@ -83,10 +83,10 @@ private:
 #endif
     }
 
-    float mSlope;
-    float mYIntercept;
-    float mT1;
-    float mT2;
+    RSTL_KYOTO_TIMESCALE_CONST float mSlope;
+    RSTL_KYOTO_TIMESCALE_CONST float mYIntercept;
+    RSTL_KYOTO_TIMESCALE_CONST float mT1;
+    RSTL_KYOTO_TIMESCALE_CONST float mT2;
   };
 
   static float FindUpperLimitFromRoot(const CFunctionDescription& desc, const float& lowerLimit,
