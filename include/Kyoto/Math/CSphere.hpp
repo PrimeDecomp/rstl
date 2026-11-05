@@ -13,7 +13,7 @@ class CTransform4f;
 
 class CSphere {
 public:
-  CSphere(const CVector3f& pos, const float radius) : mCenter(pos), mRadius(radius) {}
+  CSphere(const CVector3f& pos, RSTL_KYOTO_VECTOR_SCALAR_CONST float radius) : mCenter(pos), mRadius(radius) {}
 #if !RSTL_PRIME1
   explicit CSphere(CInputStream& in) : mCenter(in), mRadius(in.ReadFloat()) {}
 #endif
