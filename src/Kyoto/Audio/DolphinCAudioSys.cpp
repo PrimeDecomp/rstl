@@ -452,10 +452,12 @@ void CAudioSys::SfxCtrl(const SND_VOICEID handle, uchar ctrl, uchar val) {
   sndFXCtrl(handle, ctrl, val);
 }
 
+#if !RSTL_PRIME1
 bool CAudioSys::SfxSetFilter(const SND_VOICEID handle, const uint filter, const uint param) {
   sndFXSetFilter(handle, filter, param);
   return true;
 }
+#endif
 
 int CAudioSys::TrkQueueTrack(const rstl::string& name, void (*callback)(u32),
                              const uint eventMask) {

@@ -180,7 +180,7 @@ public:
   };
 #endif
 
-  CMemoryCardSys();
+  CMemoryCardSys(IF_TARGET_PC(const char* game, const char* maker));
   ~CMemoryCardSys();
 
 #if RSTL_VERSION == RSTL_GM8EAB_00

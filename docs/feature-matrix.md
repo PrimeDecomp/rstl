@@ -216,7 +216,6 @@
 | `RSTL_KYOTO_VOLATILE_SHIFT_OFFSET` | 1 | 1 | 0 |
 | `RSTL_KYOTO_DEBUG_BUILD` | 0 | 0 | 1 |
 | `RSTL_KYOTO_PROTO_STREAM_HELPERS` | 0 | 0 | 1 |
-| `RSTL_KYOTO_ZIP_TYPES_DECLARED` | 0 | 0 | 1 |
 | `RSTL_KYOTO_ZIP_OUTPUT_FINISH` | 0 | 0 | 1 |
 | `RSTL_PRIME1_CONST` | (empty) | (empty) | (empty) |
 | `RSTL_RBTREE_ITERATOR_FLAG` | (empty) | (empty) | `, false` |

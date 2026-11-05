@@ -82,7 +82,9 @@ CPakFile::~CPakFile() {
     AsyncIdle();
   }
   CMemory::OffsetFakeStatics(-IF_PRIME1(GetFakeStaticSize(), mFakeStaticSize));
+#if !defined(TARGET_PC)
   CARAMManager::Free(mAramBase);
+#endif
 }
 
 void CPakFile::AsyncIdle() {
@@ -189,6 +191,7 @@ void CPakFile::DataLoad() {
 
   LoadResourceTable(in);
   mAsyncLoadPhase = kAP_Loaded;
+#if !defined(TARGET_PC)
   if (mWorldPak) {
     uint size = round_up_32(mResTableCount * sizeof(SResInfo));
     mAramBase = CARAMManager::Alloc(size);
@@ -196,6 +199,7 @@ void CPakFile::DataLoad() {
                                           CARAMManager::kDMAPrio_One);
     CARAMManager::WaitForDMACompletion(handle);
   }
+#endif
   mHeaderData = rstl::vector< uchar, rstl::aligned_allocator >();
 #if RSTL_PRIME1
   CMemory::OffsetFakeStatics(GetFakeStaticSize());
@@ -456,9 +460,11 @@ void CPakFile::EnsureWorldPakReady() {
     const uint size = (mResTableCount * sizeof(SResInfo) + 31) & ~31;
 #endif
 
+#if !defined(TARGET_PC)
     CARAMManager::WaitForDMACompletion(CARAMManager::DMAToMRAM(
         const_cast< void* >(mAramBase), IF_PRIME1(mResList.data(), resources.data()), size,
         CARAMManager::kDMAPrio_One));
+#endif
 #if !RSTL_PRIME1
     RebuildResourceLists(resources);
 #endif

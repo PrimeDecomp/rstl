@@ -37,7 +37,7 @@
 #include "rstl/math.hpp"
 #include "rstl/single_ptr.hpp"
 
-#include "alloca.h"
+#include <alloca.h>
 #include "math.h"
 #include "dolphin/gx.h"
 

@@ -2584,11 +2584,11 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
 #endif
 
-CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys,
+CGraphicsSys::CGraphicsSys(const COsContext& osContext IF_NOT_TARGET_PC(, const CMemorySys& memorySys)
 #if RSTL_KYOTO_GRAPHICS_ARENA
-                           bool progressive
+                           , bool progressive
 #elif !IS_TARGET_PC
-                           uint fifoSize, void* fifoBase
+                           , uint fifoSize, void* fifoBase
 #endif
 ) {
   if (mGraphicsInitialized != true) {

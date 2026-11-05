@@ -700,10 +700,6 @@
 // Out-of-line 64-bit bit stream reads and writes, low word first, that only the prototype's
 // units contain. Echoes' matching units end without them.
 #define RSTL_KYOTO_PROTO_STREAM_HELPERS (RSTL_VERSION == RSTL_G2MEAB)
-// The prototype declares its own zlib interface (Kyoto/Streams/ZipTypes.hpp, `struct z_stream`)
-// instead of including zlib's header (`typedef z_stream_s z_stream`). The type name is part of
-// the `auto_ptr< z_stream >` symbols, so this is not only an include path choice.
-#define RSTL_KYOTO_ZIP_TYPES_DECLARED (RSTL_VERSION == RSTL_G2MEAB)
 // `CZipOutputStream` has `Finish`, ends deflate in its destructor, checks deflate's result, and
 // finishes the stream before reporting the compressed size (out of line, with a `bool mFinished`).
 // Echoes' header still has Prime's form; neither Echoes copy has the source.

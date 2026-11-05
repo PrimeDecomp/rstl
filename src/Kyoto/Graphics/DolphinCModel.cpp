@@ -614,6 +614,7 @@ inline void RemapPointer(T*& pointer, uintptr_t offset) {
 }
 } // namespace
 
+#if !defined(TARGET_PC)
 void CModel::RemapData(uchar* data) {
   uintptr_t offset =
       reinterpret_cast< uintptr_t >(data) - reinterpret_cast< uintptr_t >(mData.release());
@@ -650,6 +651,7 @@ void CModel::RemapData(uchar* data) {
   UpdateLastFrame();
 #endif
 }
+#endif
 
 void CModel::UpdateLastFrame() const { mLastFrame = CGraphics::GetFrameCounter(); }
 

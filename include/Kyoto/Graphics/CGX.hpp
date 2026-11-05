@@ -115,7 +115,7 @@ public:
                           GXLightID lights, GXDiffuseFn diffFn, GXAttnFn attnFn);
   static void SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl);
   static void SetTevKColor(GXTevKColorID id, const GXColor& color);
-  static inline void SetTevKColor(GXTevKColorID id, const CColor& color);
+  static void SetTevKColor(GXTevKColorID id, const CColor& color);
 
   static void SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b, GXTevColorArg c,
                             GXTevColorArg d);

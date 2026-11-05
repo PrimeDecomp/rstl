@@ -60,7 +60,7 @@ uint CARAMManager::mPreInitializeAlloc = 16 * 1024;
 #if RSTL_PRIME1
 uint CARAMManager::mDMAUniqueID = 0;
 uint CARAMManager::mChunksAllocated = 0;
-const int CARAMManager::kInvalidAlloc = -1;
+const ptrdiff_t CARAMManager::kInvalidAlloc = -1;
 #else
 const uint CARAMManager::kFreeChunk = 0;
 #endif
@@ -375,4 +375,3 @@ bool CARAMManager::IsValidAlloc(const void* ptr) {
 
 const void* CARAMManager::GetInvalidAlloc() { return reinterpret_cast< const void* >(-1); }
 #endif
-
