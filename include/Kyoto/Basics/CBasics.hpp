@@ -78,8 +78,10 @@ inline float SwapBytes(float x) {
 // Big-endian targets read the bare operand: even an inline SwapBytes call changes code generation.
 #if TARGET_LITTLE_ENDIAN
 #define BE_SWAP(x) CBasics::SwapBytes(x)
+#define BE_SWAP_INPLACE(x) x = CBasics::SwapBytes(x)
 #else
 #define BE_SWAP(x) (x)
+#define BE_SWAP_INPLACE(x)
 #endif
 
 #endif // _CBASICS
