@@ -126,7 +126,7 @@ void CAnimTreeTweenBase::BlendSegStatementSet(const CSegIdList& list, CSegStatem
 #else
     GetSegStatementSet(mB, list, setB, time);
 #endif
-    int count = list.Size();
+    int count = list.size();
     for (int i = 0; i < count; ++i) {
       const CSegId& id = list[i];
 // TODO: verify that this Prime/Echoes difference is real
@@ -218,7 +218,7 @@ void CAnimTreeTweenBase::BlendSegData(const CCharLayoutInfo& layout, CJointData_
     mA->GetSegStatementSet(list, setA, time);
     CStackSegStatementSet setB;
     mB->GetSegStatementSet(list, setB, time);
-    int count = list.Size();
+    int count = list.size();
     for (int i = 0; i < count; ++i) {
       const CSegId& id = list[i];
       const CQuaternion& rotationA = setA.GetData(id).Orientation();

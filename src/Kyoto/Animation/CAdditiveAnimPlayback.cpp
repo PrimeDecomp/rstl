@@ -80,7 +80,7 @@ void CAdditiveAnimPlayback::AddToSegStatementSet(const CSegIdList& list,
   CStackSegStatementSet stackSegSet;
   mAnim->VGetSegStatementSet(list, stackSegSet);
 
-  const size_t count = list.Size();
+  const size_t count = list.size();
   for (size_t i = 0; i < count; ++i) {
     const CSegId seg = list[i];
     stackSegSet.Set(list[i], charInfo.GetFromParentUnrotated(seg));

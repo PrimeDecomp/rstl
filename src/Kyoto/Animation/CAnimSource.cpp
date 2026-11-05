@@ -447,7 +447,7 @@ void CAnimSource::GetSegStatementSet(const CSegIdList& list, CSegStatementSet& s
   }
   float weight = clamp_zero_to_one(remainder * inverseInterval);
   uint nextFrame = frame == mFrameCount - 1 ? 0 : frame + 1;
-  const int count = list.Size();
+  const int count = list.size();
   const float inverseWeight = 1.f - weight;
   for (int i = 0; i < count; ++i) {
     const CSegId& seg = list[i];

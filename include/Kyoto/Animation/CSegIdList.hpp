@@ -21,19 +21,13 @@ public:
 
   ~CSegIdList();
 
-#if !RSTL_PRIME1
-  int Size() const { return mList.size(); } // Guessed name, alternate guess GetCount
-#endif
-#if RSTL_VERSION == RSTL_G2MEAB
   // The prototype's assertion text spells the accessor size().
   int size() const { return mList.size(); }
-#endif
 
   CSegId operator[](int idx) const { return mList[idx]; }
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  size_type size() const { return mList.size(); }
   size_type Size() const { return mList.size(); } // Guessed name, alternate guess GetCount
   iterator begin() { return mList.begin(); }
 #endif

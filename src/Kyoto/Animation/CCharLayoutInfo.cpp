@@ -42,7 +42,7 @@ static void CopyNameMap(const rstl::map< rstl::string, CSegId >& names) {
 }
 
 void CCharLayoutInfo::InitializeLinearData() {
-  const int count = mSegIdList.Size();
+  const int count = mSegIdList.size();
   mLinearParents.reserve(count);
   mLinearReferenceStanceOffsets.reserve(count);
   mLinearParentOffsets.reserve(count);
