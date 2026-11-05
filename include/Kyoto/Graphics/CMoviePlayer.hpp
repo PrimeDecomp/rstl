@@ -82,9 +82,7 @@ public:
     , mAudio(static_cast< uchar* >(audio))
     , mAudioSamples(0)
     , mAudioSamplesConsumed(0) {}
-#if !RSTL_PRIME1
     ~CTHPTextureSet() {}
-#endif
 
     void* Y() { return mY.get(); }
 
