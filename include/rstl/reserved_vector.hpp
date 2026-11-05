@@ -170,6 +170,9 @@ public:
 #if !RSTL_PRECONDITION_MACRO
     RS_ASSERT(count <= N, "rstl precondition");
 #endif
+#if RSTL_RESERVED_VECTOR_FILL_PRECONDITION
+    RSTL_PRECONDITION(count <= N);
+#endif
     uninitialized_fill_n(data(), count, value);
   };
 #endif
@@ -181,6 +184,7 @@ public:
     RSTL_PRECONDITION(other.mCount <= N);
     RSTL_PRECONDITION(mCount == other.mCount);
     RSTL_PRECONDITION(other.data() != nullptr);
+    RSTL_PRECONDITION(data() != nullptr);
     const T* it = other.data();
     T* cur = data();
     for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {

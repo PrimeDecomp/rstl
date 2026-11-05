@@ -126,6 +126,9 @@ public:
 #else
     Alloc::allocate(mItems, mCount);
 #endif
+#if RSTL_VECTOR_FILL_CTOR_PRECONDITION
+    RSTL_PRECONDITION(mItems != nullptr);
+#endif
     uninitialized_fill_n(mItems, count, v);
   }
 #else
@@ -251,6 +254,7 @@ public:
     if (mCount >= mCapacity) {
       verify_capacity_failed();
     }
+    RSTL_PRECONDITION(mItems != nullptr);
     RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in);
   }
 
@@ -259,6 +263,7 @@ public:
       verify_capacity_failed();
     }
     T* items = mItems;
+    RSTL_PRECONDITION(items != nullptr);
     RSTL_VECTOR_CONSTRUCT(items + mCount++, in);
   }
 
