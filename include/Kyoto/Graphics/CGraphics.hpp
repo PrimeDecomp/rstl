@@ -517,7 +517,6 @@ public:
   // Screen Position
   static void GetScreenPosition(int* stretch, int* xOffset, int* yOffset);
   static void SetScreenPosition(int stretch, int xOffset, int yOffset);
-  static const CTevCombiners::CTevPass& EnvModulate() { return kEnvModulate; }
 
   static const CTevCombiners::CTevPass& kEnvPassthru;
   static CTevCombiners::CTevPass kEnvModulateConstColor;
