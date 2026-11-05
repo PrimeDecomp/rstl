@@ -4,6 +4,8 @@
 #include "types.h"
 
 #include "Kyoto/Math/CVector3f.hpp"
+#include "rstl/RstlVersions.h"
+#include "rstl/construct.hpp"
 
 class CMatrix3f;
 class CQuaternion;
@@ -32,5 +34,11 @@ CHECK_SIZEOF(CNUQuaternion, 0x10)
 
 CNUQuaternion operator*(float f, const CNUQuaternion&);
 CNUQuaternion operator*(const CNUQuaternion&, float f);
+
+#if RSTL_KYOTO_NUQUATERNION_TRIVIAL_CONSTRUCTION
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CNUQuaternion)
+} // namespace rstl
+#endif
 
 #endif // _CNUQUATERNION
