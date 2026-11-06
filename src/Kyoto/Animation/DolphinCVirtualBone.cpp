@@ -472,7 +472,6 @@ done:
 #endif
 }
 
-#if 1 || RSTL_VERSION >= RSTL_GM8E_02
 // Point skinning writes each float separately, including the original FIFO pacing.
 #ifdef __MWERKS__
 asm
@@ -586,7 +585,6 @@ done:
   PSMTXROMultS16VecArrayGathered(mtx, in, out, pointCount);
 #endif
 }
-#endif
 
 #else // RSTL_PRIME1
 static inline void CopyRow(float* dst, const float* src) {
