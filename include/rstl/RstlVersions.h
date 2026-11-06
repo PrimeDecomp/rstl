@@ -472,9 +472,9 @@
 // `bit_vector` uses compact `reference`/iterator records, out-of-line `at` / `operator[]`,
 // and explicit reserve/growth through its word vector.
 #define RSTL_BIT_VECTOR_COMPACT (RSTL_CORRUPTION)
-// `vector(int)` reserves when count > 0. Testing count > mCount changes the
-// prototype's CPFPointSearchState constructor; keep its existing form.
-#define RSTL_VECTOR_COUNT_CTOR_POSITIVE_CHECK (RSTL_CORRUPTION)
+// G2MEAB's vector(int) compares against the initialized mCount (CFoldySurface).
+// Preserve the existing positive-count check for the retail Corruption profiles.
+#define RSTL_VECTOR_COUNT_CTOR_POSITIVE_CHECK (RSTL_CORRUPTION && RSTL_VERSION != RSTL_G2MEAB)
 // `vector::resize_uninitialized` compares against `mCount` (in a braced block).
 #define RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK (RSTL_CORRUPTION)
 // `vector::assign` retains its legacy inline declaration.
