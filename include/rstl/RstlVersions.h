@@ -373,6 +373,10 @@
 // `destroy(T*)` and `destroy(begin, end)` forward to `destroy_impl` (which holds the trivial
 // destructor test and the range precondition) instead of `destruction_policy`.
 #define RSTL_DESTROY_VIA_IMPL (RSTL_CORRUPTION)
+// The prototype shares single-element destruction helpers between translation units. A
+// non-inline declaration gives MWCC these weak definitions; range helpers stay local.
+// Other builds retain their existing linkage until their callers are verified.
+#define RSTL_DESTROY_IMPL_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)
 // `uninitialized_copy_n` starts with the `n >= 0` precondition.
 #define RSTL_COPY_N_PRECONDITION (RSTL_CORRUPTION)
 // `find_if` takes its predicate by value.

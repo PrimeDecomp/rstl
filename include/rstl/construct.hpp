@@ -431,6 +431,11 @@ struct optional_object_value_policy {
   START_ECHOES_NAMESPACE
 
 #if RSTL_DESTROY_VIA_IMPL
+#if RSTL_DESTROY_IMPL_EXTERN_DECL
+template < typename T >
+void destroy_impl(T* in);
+#endif
+
 template < typename T >
 RSTL_CONSTRUCT_INLINE void destroy_impl(T* in) {
   RSTL_PRECONDITION(in != nullptr);
