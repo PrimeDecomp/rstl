@@ -251,7 +251,7 @@ public:
     node* n = mHeader.get_root();
     node* needle = nullptr;
     while (n != nullptr) {
-      if (!mCmp(mSelector(*n->get_value()), key)) {
+      if (mCmp(mSelector(*n->get_value()), key) == false) {
         needle = n;
         n = n->get_left();
       } else {
