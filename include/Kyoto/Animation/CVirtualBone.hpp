@@ -1,6 +1,7 @@
 #ifndef _CVIRTUALBONE
 #define _CVIRTUALBONE
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"

@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "rstl/list.hpp" // IWYU pragma: keep
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
 

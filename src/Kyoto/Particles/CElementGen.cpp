@@ -1,4 +1,5 @@
 #include "Kyoto/Particles/CElementGen.hpp"
+#include "rstl/macros.hpp"
 
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"

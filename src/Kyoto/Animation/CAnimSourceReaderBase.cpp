@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
 
 #include "Kyoto/Animation/CBoolPOINode.hpp"
