@@ -14,7 +14,8 @@ public:
   ~CStreamPreloadedToken();
 
   void operator=(const CStreamPreloadedToken& other);
-  bool IsReady() const;
+  bool IsReady() const; // Guessed name
+  bool IsLoaded() const { return IsReady(); }
   void Read(void* dest, int offset, int length) const;
   // Guessed name
   int GetReferenceCount() const;
