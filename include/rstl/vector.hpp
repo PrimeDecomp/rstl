@@ -227,7 +227,7 @@ public:
 #endif
     mCount = size;
   }
-#if RSTL_VECTOR_INLINE_DECLS
+#if RSTL_VECTOR_INLINE_DECLS || RSTL_VERSION == RSTL_G2MEAB
   inline
 #endif
   void assign(int size, typename type_traits< T >::vector_fill_type in = T());
