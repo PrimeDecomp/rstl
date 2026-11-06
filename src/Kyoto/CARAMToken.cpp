@@ -3,6 +3,8 @@
 
 #include "Kyoto/CARAMManager.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/CMemorySys.hpp"
 
 #include "rstl/construct.hpp"
@@ -37,7 +39,9 @@ CARAMToken::CARAMToken(void* ptr, uint len, int unk) {
     mAramPtr = CARAMManager::Alloc(mDataLen);
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
-    CARAMManager::IsValidAlloc(mAramPtr);
+    if (!CARAMManager::IsValidAlloc(mAramPtr)) {
+      RS_VERIFY_THROW(45, false, false, "Out of ARAM in CARAMToken::CARAMToken.");
+    }
 #endif
     mDmaHandle =
         CARAMManager::DMAToARAM(mMramPtr, (void*)mAramPtr, mDataLen, CARAMManager::kDMAPrio_One);
@@ -70,6 +74,8 @@ CARAMToken::~CARAMToken() {
 }
 
 void CARAMToken::PostConstruct(void* ptr, uint len, int unk) {
+  RS_VERIFY_THROW(89, mStatus == kStatus_Unowned, false,
+                  "Post construction must be from invalid state");
   MoveToList(kS_One);
   mMramPtr = ptr;
   mDataLen = len;
@@ -107,7 +113,7 @@ bool CARAMToken::LoadToMRAM() {
     break;
   }
   case kS_Zero: {
-    mMramPtr = CMemory::Alloc(mDataLen, IAllocator::kHI_RoundUpLen);
+    mMramPtr = rs_aligned_new_line(mDataLen, 139);
     DCInvalidateRange(mMramPtr, mDataLen);
     mDmaHandle =
         CARAMManager::DMAToMRAM((void*)mAramPtr, mMramPtr, mDataLen, CARAMManager::kDMAPrio_One);
@@ -115,6 +121,7 @@ bool CARAMToken::LoadToMRAM() {
     break;
   }
   default:
+    RS_VERIFY_THROW(149, false, false, "Invalid status for ARAM transfer");
     break;
   }
 
