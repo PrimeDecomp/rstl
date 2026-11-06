@@ -581,18 +581,12 @@
 #else
 #define RSTL_PRIME1_CONST
 #endif
-// By-value `const` scalar parameters that Prime and Echoes declare and the prototype does not.
+// By-value `const` scalar parameters (CVector3f scalar operators, CUnitVector3f's
+// component constructor, CLineInstruction): Prime and Echoes declare them; the prototype does not.
 #if RSTL_CORRUPTION
-#define RSTL_NON_PROTO_CONST
+#define RSTL_KYOTO_SCALAR_PARAM_CONST
 #else
-#define RSTL_NON_PROTO_CONST const
-#endif
-// By-value `const` scalar parameters of the CVector3f scalar operators and CUnitVector3f's
-// component constructor: Prime and Echoes declare them; the prototype does not.
-#if RSTL_CORRUPTION
-#define RSTL_KYOTO_VECTOR_SCALAR_CONST
-#else
-#define RSTL_KYOTO_VECTOR_SCALAR_CONST const
+#define RSTL_KYOTO_SCALAR_PARAM_CONST const
 #endif
 // Echoes-only `const` member functions and Prime-only `inline` declarations where MWCC codegen
 // depends on them (CModel::SShader::UnlockTextures, CGX::apply_fog).

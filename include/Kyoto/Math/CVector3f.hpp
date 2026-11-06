@@ -100,7 +100,7 @@ public:
     mZ -= other.mZ;
     return *this;
   }
-  CVector3f& operator*=(RSTL_KYOTO_VECTOR_SCALAR_CONST float v) {
+  CVector3f& operator*=(RSTL_KYOTO_SCALAR_PARAM_CONST float v) {
     mX *= v;
     mY *= v;
     mZ *= v;
@@ -251,14 +251,14 @@ inline CVector3f operator*(const CVector3f& lhs, const CVector3f& rhs) {
 }
 #endif
 
-inline CVector3f operator*(const CVector3f& vec, RSTL_KYOTO_VECTOR_SCALAR_CONST float f) {
+inline CVector3f operator*(const CVector3f& vec, RSTL_KYOTO_SCALAR_PARAM_CONST float f) {
   float x = vec.GetX() * f;
   float y = vec.GetY() * f;
   float z = vec.GetZ() * f;
   return CVector3f(x, y, z);
 }
 
-inline CVector3f operator*(RSTL_KYOTO_VECTOR_SCALAR_CONST float f, const CVector3f& vec) {
+inline CVector3f operator*(RSTL_KYOTO_SCALAR_PARAM_CONST float f, const CVector3f& vec) {
   float x = f * vec.GetX();
   float y = f * vec.GetY();
   float z = f * vec.GetZ();

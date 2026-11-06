@@ -26,8 +26,8 @@ public:
 #if !RSTL_PRIME1
   CUnitVector3f(CInputStream& in) : CVector3f(in) { Normalize(); }
 #endif
-  CUnitVector3f(RSTL_KYOTO_VECTOR_SCALAR_CONST float x, RSTL_KYOTO_VECTOR_SCALAR_CONST float y,
-                RSTL_KYOTO_VECTOR_SCALAR_CONST float z)
+  CUnitVector3f(RSTL_KYOTO_SCALAR_PARAM_CONST float x, RSTL_KYOTO_SCALAR_PARAM_CONST float y,
+                RSTL_KYOTO_SCALAR_PARAM_CONST float z)
   : CVector3f(x, y, z) {}
 #if RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM
   CUnitVector3f(float x, float y, float z, ENormalize normalize) : CVector3f(x, y, z) {
