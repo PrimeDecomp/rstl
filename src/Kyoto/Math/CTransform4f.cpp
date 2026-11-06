@@ -97,7 +97,7 @@ CTransform4f CTransform4f::RotateY(const CRelAngle& y) {
   );
 }
 
-#if RSTL_KYOTO_TRANSFORM4F_PROTOTYPE
+#if RSTL_KYOTO_TRANSFORM4F_POINT_ARRAY_EULER
 CTransform4f CTransform4f::FromEulerAngles(const float& x, const float& y, const float& z,
                                            const CVector3f& translation) {
   const float cosZ = cos(z);
@@ -124,8 +124,6 @@ CTransform4f CTransform4f::RotateZ(const CRelAngle& z) {
   );
 }
 
-// The prototype reads the matrix fields directly; Prime GM8E01_00/01/02 and GameCube Echoes read them
-// through the const-returning GetNN accessors (each fails the link hash the other way).
 #if RSTL_KYOTO_TRANSFORM4F_FIELD_READS
 #define ROTATE_LOCAL_ELEMENT(n) m##n
 #else
@@ -193,7 +191,7 @@ void CTransform4f::RotateLocalZ(const CRelAngle& z) {
   float _m01 = ROTATE_LOCAL_ELEMENT(01); _m01 *= sinAngle;
   float _m11 = ROTATE_LOCAL_ELEMENT(11); _m11 *= sinAngle;
   float _m21 = ROTATE_LOCAL_ELEMENT(21); _m21 *= sinAngle;
-  // clang-format off
+  // clang-format on
 
   m00 *= cosAngle;
   m10 *= cosAngle;
@@ -522,7 +520,7 @@ CVector3f CTransform4f::operator*(const CVector3f& vec) const {
 }
 #endif
 
-#if RSTL_KYOTO_TRANSFORM4F_PROTOTYPE
+#if RSTL_KYOTO_TRANSFORM4F_POINT_ARRAY_EULER
 void CTransform4f::TransformPointArray(const CVector3f* in, CVector3f* out, int count) const {
   if (count == 0) {
     return;
