@@ -71,7 +71,13 @@ private:
       new (mValue) P(value);
 #endif
     }
-    ~node() { reinterpret_cast< P* >(mValue)->~P(); }
+    ~node() {
+#if RSTL_CORRUPTION
+      rstl::destroy(reinterpret_cast< P* >(mValue));
+#else
+      reinterpret_cast< P* >(mValue)->~P();
+#endif
+    }
 
     P* get_value() { return reinterpret_cast< P* >(&mValue); }
     const P* get_value() const { return reinterpret_cast< const P* >(&mValue); }
