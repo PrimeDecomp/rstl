@@ -124,16 +124,24 @@ CTransform4f CTransform4f::RotateZ(const CRelAngle& z) {
   );
 }
 
+// The prototype reads the matrix fields directly; Prime GM8E01_00/01/02 and GameCube Echoes read them
+// through the const-returning GetNN accessors (each fails the link hash the other way).
+#if RSTL_KYOTO_TRANSFORM4F_FIELD_READS
+#define ROTATE_LOCAL_ELEMENT(n) m##n
+#else
+#define ROTATE_LOCAL_ELEMENT(n) Get##n()
+#endif
+
 void CTransform4f::RotateLocalX(const CRelAngle& x) {
   const float sinAngle = sin(x.AsRadians());
   const float cosAngle = cos(x.AsRadians());
   // clang-format off
-  float _m01 = m01; _m01 *= sinAngle;
-  float _m11 = m11; _m11 *= sinAngle;
-  float _m21 = m21; _m21 *= sinAngle;
-  float _m02 = m02; _m02 *= sinAngle;
-  float _m12 = m12; _m12 *= sinAngle;
-  float _m22 = m22; _m22 *= sinAngle;
+  float _m01 = ROTATE_LOCAL_ELEMENT(01); _m01 *= sinAngle;
+  float _m11 = ROTATE_LOCAL_ELEMENT(11); _m11 *= sinAngle;
+  float _m21 = ROTATE_LOCAL_ELEMENT(21); _m21 *= sinAngle;
+  float _m02 = ROTATE_LOCAL_ELEMENT(02); _m02 *= sinAngle;
+  float _m12 = ROTATE_LOCAL_ELEMENT(12); _m12 *= sinAngle;
+  float _m22 = ROTATE_LOCAL_ELEMENT(22); _m22 *= sinAngle;
   // clang-format on
   m01 *= cosAngle;
   m11 *= cosAngle;
@@ -153,12 +161,12 @@ void CTransform4f::RotateLocalY(const CRelAngle& y) {
   const float sinAngle = sin(y.AsRadians());
   const float cosAngle = cos(y.AsRadians());
   // clang-format off
-  float _m00 = m00; _m00 *= sinAngle;
-  float _m10 = m10; _m10 *= sinAngle;
-  float _m20 = m20; _m20 *= sinAngle;
-  float _m02 = m02; _m02 *= sinAngle;
-  float _m12 = m12; _m12 *= sinAngle;
-  float _m22 = m22; _m22 *= sinAngle;
+  float _m00 = ROTATE_LOCAL_ELEMENT(00); _m00 *= sinAngle;
+  float _m10 = ROTATE_LOCAL_ELEMENT(10); _m10 *= sinAngle;
+  float _m20 = ROTATE_LOCAL_ELEMENT(20); _m20 *= sinAngle;
+  float _m02 = ROTATE_LOCAL_ELEMENT(02); _m02 *= sinAngle;
+  float _m12 = ROTATE_LOCAL_ELEMENT(12); _m12 *= sinAngle;
+  float _m22 = ROTATE_LOCAL_ELEMENT(22); _m22 *= sinAngle;
   // clang-format on
 
   m00 *= cosAngle;
@@ -179,12 +187,12 @@ void CTransform4f::RotateLocalZ(const CRelAngle& z) {
   const float sinAngle = sin(z.AsRadians());
   const float cosAngle = cos(z.AsRadians());
   // clang-format off
-  float _m00 = m00; _m00 *= sinAngle;
-  float _m10 = m10; _m10 *= sinAngle;
-  float _m20 = m20; _m20 *= sinAngle;
-  float _m01 = m01; _m01 *= sinAngle;
-  float _m11 = m11; _m11 *= sinAngle;
-  float _m21 = m21; _m21 *= sinAngle;
+  float _m00 = ROTATE_LOCAL_ELEMENT(00); _m00 *= sinAngle;
+  float _m10 = ROTATE_LOCAL_ELEMENT(10); _m10 *= sinAngle;
+  float _m20 = ROTATE_LOCAL_ELEMENT(20); _m20 *= sinAngle;
+  float _m01 = ROTATE_LOCAL_ELEMENT(01); _m01 *= sinAngle;
+  float _m11 = ROTATE_LOCAL_ELEMENT(11); _m11 *= sinAngle;
+  float _m21 = ROTATE_LOCAL_ELEMENT(21); _m21 *= sinAngle;
   // clang-format off
 
   m00 *= cosAngle;
@@ -200,6 +208,7 @@ void CTransform4f::RotateLocalZ(const CRelAngle& z) {
   m11 -= _m10;
   m21 -= _m20;
 }
+#undef ROTATE_LOCAL_ELEMENT
 
 void CTransform4f::Orthonormalize() {
   const CVector3f xNorm = GetRight().AsNormalized();
