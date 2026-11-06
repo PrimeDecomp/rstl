@@ -239,11 +239,7 @@ int CDSPStreamManager::StartStreaming(const rstl::string& fileName, int volume, 
       path = fileName.substr(4, -1);
       if (CDvdFile::FileExists(path.data())) {
         stream.mPreload = CStreamPreloadedToken(path);
-#if RSTL_VERSION == RSTL_G2MEAB
-        if (!stream.mPreload->IsLoaded()) {
-#else
         if (!stream.mPreload->IsReady()) {
-#endif
           stream.mPreload = rstl::optional_object_null();
         }
       }

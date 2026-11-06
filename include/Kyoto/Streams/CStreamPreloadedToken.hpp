@@ -14,11 +14,8 @@ public:
   ~CStreamPreloadedToken();
 
   void operator=(const CStreamPreloadedToken& other);
-#if RSTL_VERSION == RSTL_G2MEAB
-  bool IsLoaded() const;
-#else
   bool IsReady() const; // Guessed name
-#endif
+  bool IsLoaded() const { return IsReady(); }
   void Read(void* dest, int offset, int length) const;
   // Guessed name
   int GetReferenceCount() const;

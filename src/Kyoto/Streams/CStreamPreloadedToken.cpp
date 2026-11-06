@@ -178,11 +178,7 @@ void CStreamPreloadedToken::operator=(const CStreamPreloadedToken& other) {
   }
 }
 
-#if RSTL_VERSION == RSTL_G2MEAB
-bool CStreamPreloadedToken::IsLoaded() const { return mData->IsReady(); }
-#else
 bool CStreamPreloadedToken::IsReady() const { return mData->IsReady(); }
-#endif
 
 void CStreamPreloadedToken::Read(void* dest, int offset, int length) const {
   mData->Read(dest, offset, length);
