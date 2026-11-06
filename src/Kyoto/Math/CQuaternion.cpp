@@ -451,10 +451,22 @@ CQuaternion CQuaternion::AxisAngle(const CUnitVector3f& axis, const CRelAngle& a
 #endif
 }
 
-#if RSTL_PRIME1
+#if RSTL_PRIME1 || RSTL_KYOTO_QUATERNION_VALID_DOUBLE
 bool CQuaternion::IsValidQuaternion(float epsilon) const {
+#if RSTL_KYOTO_QUATERNION_VALID_DOUBLE
+  if (!CMath::IsFinite(GetScalar()) || !CMath::IsFinite(AxisX()) || !CMath::IsFinite(AxisY()) ||
+      !CMath::IsFinite(AxisZ())) {
+    return false;
+  }
+  const double scalarSquared = double(GetScalar()) * GetScalar();
+  const double xSquared = double(AxisX()) * AxisX();
+  const double ySquared = double(AxisY()) * AxisY();
+  const double zSquared = double(AxisZ()) * AxisZ();
+  return CMath::IsEpsilon(scalarSquared + (xSquared + ySquared + zSquared), 1.f, epsilon);
+#else
   const float error = GetVector().MagSquared() + GetScalar() * GetScalar() - 1.f;
   return (error >= 0.f ? error : -error) < epsilon;
+#endif
 }
 #endif
 
