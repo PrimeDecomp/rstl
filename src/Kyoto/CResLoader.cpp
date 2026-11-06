@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/CResLoader.hpp"
 #include "Kyoto/CPakFile.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"

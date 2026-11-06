@@ -1,4 +1,5 @@
 #include "Kyoto/Graphics/CCubeModel.hpp"
+#include "rstl/macros.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #include "rstl/RstlVersions.h"
 

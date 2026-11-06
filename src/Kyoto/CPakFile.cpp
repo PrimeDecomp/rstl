@@ -1,4 +1,5 @@
 #include "Kyoto/CPakFile.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CARAMManager.hpp"

@@ -2,6 +2,7 @@
 #define _CALLFORMATSANIMSOURCE
 #include "rstl/RstlVersions.h"
 #include "types.h"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Animation/CAnimSource.hpp"
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"

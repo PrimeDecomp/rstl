@@ -609,7 +609,8 @@
 // Only the Corruption prototype's native variadic Stringize delegates to its va_list overload.
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_CORRUPTION)
 // Wii GXGetGPFifo copies the FIFO into an output object; GameCube returns a pointer.
-#define RSTL_KYOTO_FIFO_COPY (RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_KYOTO_FIFO_COPY                                                                       \
+  ((RSTL_VERSION >= RSTL_RM3E && RSTL_VERSION <= RSTL_RM3J) || RSTL_VERSION >= RSTL_R3IJ)
 // CBasics::ZeroMemory/CopyMemory (dcbz block fill and copy) are defined in CBasicsDolphin.cpp.
 // Prime Trilogy has its own, larger versions that are not reconstructed.
 #define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)

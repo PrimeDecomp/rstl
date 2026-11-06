@@ -1,4 +1,5 @@
 #include "Kyoto/CResFactory.hpp" // IWYU pragma: keep
+#include "rstl/macros.hpp"
 #include "rstl/list.hpp"         // IWYU pragma: keep
 
 #include "Kyoto/Alloc/CMemory.hpp"

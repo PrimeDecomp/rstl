@@ -1,4 +1,5 @@
 #include "Kyoto/Animation/CSkinnedModel.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"

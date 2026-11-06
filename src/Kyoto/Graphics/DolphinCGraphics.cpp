@@ -1,4 +1,5 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"

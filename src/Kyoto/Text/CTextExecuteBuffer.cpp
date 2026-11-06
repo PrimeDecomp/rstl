@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 
 #include "Kyoto/Math/CVector2i.hpp"

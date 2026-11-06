@@ -1,4 +1,5 @@
 #include "Kyoto/Graphics/CMoviePlayer.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/LockedCache.hpp"
 #include "Kyoto/Math/CVector3f.hpp"

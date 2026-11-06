@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Animation/CHierarchyPoseBuilder.hpp"
 
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"

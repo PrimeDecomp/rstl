@@ -1,4 +1,5 @@
 #include "Kyoto/Audio/CAudioSys.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Audio/CAudioGroupSet.hpp"
