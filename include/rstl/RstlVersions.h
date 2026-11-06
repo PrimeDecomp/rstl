@@ -193,7 +193,8 @@
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
 #define RSTL_INLINE_ITERATOR_HELPERS (RSTL_VERSION >= RSTL_G2ME)
 // `advance_iterator` is `inline`.
-#define RSTL_INLINE_ADVANCE_ITERATOR (RSTL_VERSION >= RSTL_G2ME && !RSTL_CORRUPTION)
+#define RSTL_INLINE_ADVANCE_ITERATOR                                                            \
+  (RSTL_VERSION >= RSTL_G2ME && (!RSTL_CORRUPTION || RSTL_VERSION == RSTL_G2MEAB))
 // `min_val` / `max_val` exist and take their arguments by value.
 #define RSTL_MIN_MAX_VAL (RSTL_VERSION >= RSTL_G2ME)
 // `pointer_iterator` `operator+` / `operator-` copy the iterator and use `+=` / `-=`.
@@ -463,6 +464,9 @@
 // `list::node` is a plain `uchar` item array without alignment or constructor, and
 // `do_insert_before` reads `n->mPrev` directly.
 #define RSTL_LIST_NODE_PLAIN (RSTL_CORRUPTION)
+// Node construction initializes the links through their setters.
+// G2MEAB retains the create_node call for instruction, DVD request and map-hint lists.
+#define RSTL_LIST_CREATE_NODE_SETTERS (RSTL_VERSION == RSTL_G2MEAB)
 // `create_node` and the out-of-class `erase(start, end)` carry the (empty) precondition statements.
 #define RSTL_LIST_PRECONDITIONS 1
 // `list::remove_if` is defined in the class body (over nodes) even though the rest is out of class.

@@ -155,8 +155,13 @@ public:
 #if RSTL_LIST_PRECONDITIONS
     RSTL_PRECONDITION(n != nullptr);
 #endif
+#if RSTL_LIST_CREATE_NODE_SETTERS
+    n->set_prev(prev);
+    n->set_next(next);
+#else
     n->mPrev = prev;
     n->mNext = next;
+#endif
     construct(n->get_value(), val);
 #else
     Alloc::allocate(n, 1);
