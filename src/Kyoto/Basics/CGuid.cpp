@@ -3,7 +3,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
 
-#if RSTL_VERSION == RSTL_G2MEAB
+#if RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/CRandom16.hpp"
@@ -17,7 +17,7 @@ CGuid::CGuid(CInputStream& in) { in.Get(mData, sizeof(mData)); }
 
 void CGuid::PutTo(COutputStream& out) const { out.DoPut(mData, sizeof(mData)); }
 
-#if RSTL_VERSION == RSTL_G2MEAB
+#if RSTL_CORRUPTION
 CGuid CGuid::sDefault(rstl::string_l("{00000000-0000-0000-0000-000000000000}"));
 
 CGuid::CGuid(const rstl::string& text) { ParseString(text); }
