@@ -25,7 +25,7 @@ public:
   , mImageBaseline(imageBaseline) {}
 #else
   CLineInstruction(int words, int width, int height, EJustification justification,
-                   EVerticalJustification verticalJustification, const bool imageBaseline);
+                   EVerticalJustification verticalJustification, RSTL_NON_PROTO_CONST bool imageBaseline);
 #endif
 
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;

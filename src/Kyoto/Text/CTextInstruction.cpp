@@ -1,5 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CTextInstruction.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CFontRenderState.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
@@ -7,7 +8,8 @@
 #include "Kyoto/Text/TextCommon.hpp"
 
 CTextInstruction* CTextInstruction::Create(const wchar_t* str, const int len) {
-  char* storage = rs_new char[len * sizeof(wchar_t) + sizeof(CTextInstruction) + sizeof(wchar_t)];
+  char* storage =
+      rs_new_line(24) char[len * sizeof(wchar_t) + sizeof(CTextInstruction) + sizeof(wchar_t)];
   return new (storage) CTextInstruction(str, len);
 }
 
@@ -37,8 +39,9 @@ void CTextInstruction::Invoke(CFontRenderState& state, CTextRenderBuffer* buffer
   }
 }
 
-CTextInstruction::CTextInstruction(const wchar_t* str, const int len) : mLength(len) {
-  for (int i = 0; i < len; ++i) {
+CTextInstruction::CTextInstruction(const wchar_t* str, const int length) : mLength(length) {
+  RS_VERIFY_THROW(54, length >= 0, false, "Invalid length!");
+  for (int i = 0; i < length; ++i) {
     mString[i] = str[i];
   }
 }

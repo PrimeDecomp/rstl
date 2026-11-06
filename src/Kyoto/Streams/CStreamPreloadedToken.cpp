@@ -5,7 +5,7 @@
 #include "Kyoto/CDvdRequest.hpp"
 #if RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CDvdFile.hpp"
-#include "Corruption/Kyoto/CDvdRequest.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"

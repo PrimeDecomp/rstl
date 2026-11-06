@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#include "Corruption/Kyoto/CDvdRequest.hpp"
+#include "Kyoto/CDvdRequest.hpp"
 #include "rstl/auto_ptr.hpp"
 
 class CDvdFile;

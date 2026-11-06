@@ -41,6 +41,20 @@ private:
 };
 CHECK_CHILD_SIZEOF(CRealDvdRequest, CDvdRequest, 0x3c)
 
+#if RSTL_CORRUPTION
+// Guessed name.
+class CDummyDvdRequest : public CDvdRequest {
+public:
+  CDummyDvdRequest() {}
+  ~CDummyDvdRequest();
+  void WaitUntilComplete() override;
+  bool IsComplete() override;
+  void PostCancelRequest() override;
+  int GetMediaType() const override;
+};
+CHECK_SIZEOF(CDummyDvdRequest, 0x4)
+#endif
+
 #if !defined(TARGET_PC)
 class CARAMDvdRequest : public CDvdRequest {
 public:
