@@ -1,27 +1,19 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
-#include "Kyoto/Animation/CVirtualBone.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
+#include "Kyoto/Animation/CVirtualBone.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
+#include "rstl/RstlVersions.h"
 
-#include "dolphin/mtx.h"
 #include "Kyoto/Basics/CBasics.hpp"
+#include "dolphin/mtx.h"
 
 #include "rstl/math.hpp"
 
 #include "string.h"
 
-
 static rstl::reserved_vector< SSkinWeighting, 3 > StreamInSkinWeighting(CInputStream& in) {
-#if RSTL_PRIME1
-  int weightCount = 0;
-#endif
   rstl::reserved_vector< SSkinWeighting, 3 > weights;
-#if RSTL_PRIME1
-  weightCount = in.ReadInt32();
-#else
   const int weightCount = in.Get< int >();
-#endif
   if (weightCount > weights.capacity()) {
     for (int i = 0; i < weights.capacity(); ++i) {
       weights.push_back(SSkinWeighting(in));
@@ -46,7 +38,8 @@ CVirtualBone::CVirtualBone(CInputStream& in)
 #else
 , mVertexCount(in.ReadInt32())
 #endif
-{}
+{
+}
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -220,19 +213,18 @@ void CVirtualBone::BuildFinalPosMatrix(
     ,
     CTransform4f& out
 #endif
-    ) const {
+) const {
+#if RSTL_PRIME1
+#define OUT_XF mXf
+#else
+#define OUT_XF out
+#endif
+
   switch (mWeights.size()) {
   case 1: {
     const CSegId id = mWeights[0].mId;
     const CMatrix3f& rotation = pose.GetTransformMinusOffset(id);
-    TransformFromMatrixDelta(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        &mXf,
-#else
-        &out,
-#endif
-        &rotation, &points[id.val()]);
+    TransformFromMatrixDelta(&OUT_XF, &rotation, &points[id.val()]);
     break;
   }
   case 2: {
@@ -242,14 +234,8 @@ void CVirtualBone::BuildFinalPosMatrix(
     const float weight1 = mWeights[1].mWeight;
     const CMatrix3f& rotation0 = pose.GetTransformMinusOffset(id0);
     const CMatrix3f& rotation1 = pose.GetTransformMinusOffset(id1);
-    Transform2FromMatrixData(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        &mXf,
-#else
-        &out,
-#endif
-        &rotation0, &points[id0.val()], weight0, &rotation1, &points[id1.val()], weight1);
+    Transform2FromMatrixData(&OUT_XF, &rotation0, &points[id0.val()], weight0, &rotation1,
+                             &points[id1.val()], weight1);
     break;
   }
   case 3: {
@@ -263,30 +249,17 @@ void CVirtualBone::BuildFinalPosMatrix(
     const CMatrix3f& rotation1 = pose.GetTransformMinusOffset(id1);
     CMatrix3f rotation(rotation0, weight0, rotation1, weight1);
     CVector3f offset = weight0 * points[id0.val()] + weight1 * points[id1.val()];
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     pose.AccumulateScaledTransform(id2, rotation, weight2);
 #else
     rotation.AddScaledMatrix(pose.GetTransformMinusOffset(id2), weight2);
 #endif
     offset += weight2 * points[id2.val()];
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mXf
-#else
-    out
-#endif
-        = CTransform4f(rotation, offset);
+    OUT_XF = CTransform4f(rotation, offset);
     break;
   }
   default:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    mXf
-#else
-    out
-#endif
-        = CTransform4f::Identity();
+    OUT_XF = CTransform4f::Identity();
     break;
   }
 }
@@ -303,7 +276,7 @@ void CVirtualBone::BuildAccumulatedTransform(
     ,
     CTransform4f& out
 #endif
-    ) const {
+) const {
   BuildFinalPosMatrix(pose, points
 #if !RSTL_PRIME1
                       ,
@@ -331,22 +304,26 @@ void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile 
 static CVector3f ReadVertex(const ushort* in, size_t index) {
   float values[3];
   memcpy(values, reinterpret_cast< const uchar* >(in) + index * sizeof(values), sizeof(values));
-  // FIXME: Don't swap on pc?
-  return CVector3f(CBasics::SwapBytes(values[0]), CBasics::SwapBytes(values[1]),
-                   CBasics::SwapBytes(values[2]));
+  if (IS_TARGET_PC) {
+    // PC model data is already in native byte order.
+    return CVector3f(values[0], values[1], values[2]);
+  } else {
+    return CVector3f(CBasics::SwapBytes(values[0]), CBasics::SwapBytes(values[1]),
+                     CBasics::SwapBytes(values[2]));
+  }
 }
 #endif
 
-#ifdef __MWERKS__
 void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCount) const {
+#ifdef __MWERKS__
   if (pointCount < 3) {
-    float* outF = const_cast< float* >(static_cast< volatile float* >(out));
+    float* dest = const_cast< float* >(static_cast< volatile float* >(out));
     const CVector3f* inV = reinterpret_cast< const CVector3f* >(in);
     for (int i = 0; i < pointCount; ++i) {
       CVector3f point = mXf * inV[i];
-      *outF = point.GetX();
-      *outF = point.GetY();
-      *outF = point.GetZ();
+      *dest = point.GetX();
+      *dest = point.GetY();
+      *dest = point.GetZ();
     }
   } else {
     ROMtx mtx;
@@ -357,9 +334,7 @@ void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCo
     PSMTXROMultS16VecArrayGathered(mtx, in, out, pointCount);
 #endif
   }
-}
 #else
-void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCount) const {
   volatile float* dest = static_cast< volatile float* >(out);
   for (int i = 0; i < pointCount; ++i) {
     const CVector3f value = mXf * ReadVertex(in, i);
@@ -367,11 +342,11 @@ void CVirtualBone::BuildPoints(const ushort* in, volatile void* out, int pointCo
     *dest++ = value.GetY();
     *dest++ = value.GetZ();
   }
-}
 #endif
+}
 
-#ifdef __MWERKS__
 void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normalCount) const {
+#ifdef __MWERKS__
   if (normalCount < 3) {
     float* outF = const_cast< float* >(static_cast< volatile float* >(out));
     const CVector3f* inV = reinterpret_cast< const CVector3f* >(in);
@@ -387,9 +362,7 @@ void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normal
     PSMTXReorder(TransformToMtx(xf), mtx);
     PSMTXROMultS16VecArrayGathered(mtx, in, out, normalCount);
   }
-}
 #else
-void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normalCount) const {
   volatile float* dest = static_cast< volatile float* >(out);
   for (int i = 0; i < normalCount; ++i) {
     const CVector3f value = mRotation * ReadVertex(in, i);
@@ -397,8 +370,8 @@ void CVirtualBone::BuildNormals(const ushort* in, volatile void* out, int normal
     *dest++ = value.GetY();
     *dest++ = value.GetZ();
   }
-}
 #endif
+}
 
 void CVirtualBone::BuildNormals(const CVector3f* in, CVector3f* out, int normalCount) const {
   for (int i = 0; i < normalCount; ++i) {
@@ -408,8 +381,11 @@ void CVirtualBone::BuildNormals(const CVector3f* in, CVector3f* out, int normalC
 
 // clang-format off
 #ifdef __MWERKS__
-asm void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
+asm 
+#endif
+void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
                                       size_t pointCount) {
+#ifdef __MWERKS__
   nofralloc
   xor r11, r11, r11
   addi r11, r11, 0x60
@@ -484,10 +460,7 @@ done:
   lfd f18, 0x28(r1)
   addi r1, r1, 0x40
   blr
-}
 #else
-void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
-                                     size_t pointCount) {
   volatile float* dest = static_cast< volatile float* >(out);
   for (size_t i = 0; i < pointCount; ++i) {
     const CVector3f value = ReadVertex(in, i);
@@ -496,13 +469,16 @@ void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* 
                 mtx[2][j] * value.GetZ() + mtx[3][j];
     }
   }
-}
 #endif
-#if RSTL_VERSION >= RSTL_GM8E_02
-#ifdef __MWERKS__
+}
+
 // Point skinning writes each float separately, including the original FIFO pacing.
-asm void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
+#ifdef __MWERKS__
+asm
+#endif
+void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
                                                 size_t pointCount) {
+#ifdef __MWERKS__
   nofralloc
   xor r11, r11, r11
   addi r11, r11, 0x60
@@ -605,15 +581,12 @@ done:
   lfd f19, 0x30(r1)
   addi r1, r1, 0x48
   blr
-}
 #else
-void PSMTXROMultS16VecArrayGatheredSingle(ROMtx mtx, const ushort* in, volatile void* out,
-                                            size_t pointCount) {
   PSMTXROMultS16VecArrayGathered(mtx, in, out, pointCount);
+#endif
 }
-#endif
-#endif
-#else
+
+#else // RSTL_PRIME1
 static inline void CopyRow(float* dst, const float* src) {
   *reinterpret_cast< double* >(dst) = *reinterpret_cast< const double* >(src);
   dst[2] = src[2];

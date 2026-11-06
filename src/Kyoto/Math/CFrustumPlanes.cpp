@@ -1,12 +1,12 @@
-#include "rstl/RstlVersions.h"
-#include "Kyoto/Basics/CCast.hpp"
-#include "Kyoto/Math/CPlane.hpp"
-
 #include "Kyoto/Math/CFrustumPlanes.hpp"
 
+#include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Math/CAABox.hpp"
+#include "Kyoto/Math/CPlane.hpp"
 #include "Kyoto/Math/CSphere.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
+#include "rstl/RstlVersions.h"
+
 #include "math.h"
 
 #if RSTL_PRIME1

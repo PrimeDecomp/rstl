@@ -379,12 +379,11 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride IF_TAR
   }
 #endif
 
-  GXSetArray(
-    attr, data, stride
 #if defined(TARGET_PC)
-    , size, le
-#endif // defined(TARGET_PC)
-  );
+  GXSetArray(attr, data, size, stride, le);
+#else
+  GXSetArray(attr, data, stride);
+#endif
 }
 
 #if RSTL_PRIME1

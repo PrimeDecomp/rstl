@@ -820,20 +820,6 @@
 // Echoes' header still has Prime's form; neither Echoes copy has the source.
 #define RSTL_KYOTO_ZIP_OUTPUT_FINISH (RSTL_CORRUPTION)
 
-#if defined(TARGET_PC)
-#define RSTL_DELETE_PTR(TYPE, PTR) pointer_deleter< TYPE >::destroy(PTR)
-#else
-#define RSTL_DELETE_PTR(TYPE, PTR) delete PTR
-#endif
-
-#if RSTL_PRIME1
-#define IF_RSTL_PRIME1(...) __VA_ARGS__
-#define IF_NOT_RSTL_PRIME1(...) 
-#define IF_RSTL_PRIME1_ELSE(A, B) A
-#else
-#define IF_RSTL_PRIME1(...)
-#define IF_NOT_RSTL_PRIME1(...) __VA_ARGS__
-#define IF_RSTL_PRIME1_ELSE(A, B) B
-#endif
+#include "Kyoto/Platform.h"
 
 #endif // _RSTL_VERSIONS_H

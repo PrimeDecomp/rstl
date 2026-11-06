@@ -166,6 +166,7 @@ struct aligned_allocator {
 };
 
 #if defined(TARGET_PC)
+
 template < typename T >
 struct pointer_deleter {
   static void destroy(T* ptr) {
@@ -181,6 +182,13 @@ struct pointer_deleter {
     }
   }
 };
+
+#define RSTL_DELETE_PTR(TYPE, PTR) pointer_deleter< TYPE >::destroy(PTR)
+
+#else
+
+#define RSTL_DELETE_PTR(TYPE, PTR) delete PTR
+
 #endif
 } // namespace rstl
 
