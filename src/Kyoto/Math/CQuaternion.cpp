@@ -457,6 +457,19 @@ bool CQuaternion::IsValidQuaternion(float epsilon) const {
   return (error >= 0.f ? error : -error) < epsilon;
 }
 #endif
+#if RSTL_KYOTO_QUATERNION_VALID_DOUBLE
+bool CQuaternion::IsValidQuaternion(float epsilon) const {
+  if (!CMath::IsFinite(GetScalar()) || !CMath::IsFinite(AxisX()) || !CMath::IsFinite(AxisY()) ||
+      !CMath::IsFinite(AxisZ())) {
+    return false;
+  }
+  const double scalarSquared = double(GetScalar()) * GetScalar();
+  const double xSquared = double(AxisX()) * AxisX();
+  const double ySquared = double(AxisY()) * AxisY();
+  const double zSquared = double(AxisZ()) * AxisZ();
+  return CMath::IsEpsilon(scalarSquared + (xSquared + ySquared + zSquared), 1.f, epsilon);
+}
+#endif
 
 CVector3f CQuaternion::Transform(const CVector3f& vector) const {
   const float scalar = -CVector3f::Dot(imaginary, vector);

@@ -102,6 +102,21 @@ public:
   const float Get21() const { return m21; }
   const float Get22() const { return m22; }
   const float Get23() const { return m23; }
+  void SetRight(const CVector3f& vec) {
+    m00 = vec.GetX();
+    m10 = vec.GetY();
+    m20 = vec.GetZ();
+  }
+  void SetForward(const CVector3f& vec) {
+    m01 = vec.GetX();
+    m11 = vec.GetY();
+    m21 = vec.GetZ();
+  }
+  void SetUp(const CVector3f& vec) {
+    m02 = vec.GetX();
+    m12 = vec.GetY();
+    m22 = vec.GetZ();
+  }
   const CVector3f GetColumn(EDimX dim) const { return CVector3f(m00, m10, m20); }
   void SetColumn(EDimX dim, const CVector3f& col) {
     m00 = col.GetX();
@@ -172,6 +187,9 @@ public:
   static CTransform4f RotateX(const CRelAngle&);
   // Guessed name
   static CTransform4f Shear(float xy, float xz, float yx, float yz, float zx, float zy);
+  void TransformPointArray(const CVector3f* in, CVector3f* out, int count) const;
+  static CTransform4f FromEulerAngles(const float& x, const float& y, const float& z,
+                                      const CVector3f& translation); // Guessed name
 
   static CTransform4f RotateY(const CRelAngle&);
   static CTransform4f RotateZ(const CRelAngle&);

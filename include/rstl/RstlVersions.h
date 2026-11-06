@@ -715,6 +715,13 @@
 // CVector3i's const operator[] returns a reference in Echoes (CBarrierChunkGrid's `dims[0]` binds it
 // to a vector constructor argument); Prime and the prototype return by value.
 #define RSTL_KYOTO_VECTOR3I_INDEX_REFERENCE (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CTransform4f defines TransformPointArray and FromEulerAngles (prototype only); Shear is Echoes
+// only. Both sets are declared in every build.
+#define RSTL_KYOTO_TRANSFORM4F_PROTOTYPE (RSTL_VERSION == RSTL_G2MEAB)
+#define RSTL_KYOTO_TRANSFORM4F_SHEAR (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
+// CQuaternion::IsValidQuaternion tests finiteness and the squared length in double (prototype);
+// Prime measures the squared length error in float; Echoes has no definition.
+#define RSTL_KYOTO_QUATERNION_VALID_DOUBLE (RSTL_VERSION == RSTL_G2MEAB)
 // CVector3f has the component-wise operator* (Prime and the prototype; Echoes has none).
 #define RSTL_KYOTO_VECTOR3F_ELEMENTWISE_MULTIPLY (RSTL_PRIME1 || RSTL_CORRUPTION)
 // CDependencyGroupToken is defined in CDependencyGroup.cpp (Echoes and the prototype).

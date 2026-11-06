@@ -70,7 +70,7 @@ CTransform4f CTransform4f::MakeRotationsBasedOnY(const CUnitVector3f& yRot) {
   return CTransform4f::FromColumns(xRot, yRot, CVector3f::Cross(xRot, yRot), CVector3f::Zero());
 }
 
-#if !RSTL_PRIME1
+#if RSTL_KYOTO_TRANSFORM4F_SHEAR
 CTransform4f CTransform4f::Shear(float xy, float xz, float yx, float yz, float zx, float zy) {
   return CTransform4f(1.f, xy, xz, 0.f, //
                       yx, 1.f, yz, 0.f, //
@@ -97,6 +97,24 @@ CTransform4f CTransform4f::RotateY(const CRelAngle& y) {
   );
 }
 
+#if RSTL_KYOTO_TRANSFORM4F_PROTOTYPE
+CTransform4f CTransform4f::FromEulerAngles(const float& x, const float& y, const float& z,
+                                           const CVector3f& translation) {
+  const float cosZ = cos(z);
+  const float sinZ = sin(z);
+  const float cosY = cos(y);
+  const float sinY = sin(y);
+  const float cosX = cos(x);
+  const float sinX = sin(x);
+  const float sinYSinZ = sinY * sinZ;
+  const float sinYCosZ = sinY * cosZ;
+  return CTransform4f(cosX * cosY, cosX * sinYSinZ - sinX * cosZ, cosX * sinYCosZ + sinX * sinZ,
+                      translation.GetX(), sinX * cosY, sinX * sinYSinZ + cosX * cosZ,
+                      sinX * sinYCosZ - cosX * sinZ, translation.GetY(), -sinY, cosY * sinZ,
+                      cosY * cosZ, translation.GetZ());
+}
+#endif
+
 CTransform4f CTransform4f::RotateZ(const CRelAngle& z) {
   const float sinAngle = sin(z.AsRadians());
   const float cosAngle = cos(z.AsRadians());
@@ -110,12 +128,12 @@ void CTransform4f::RotateLocalX(const CRelAngle& x) {
   const float sinAngle = sin(x.AsRadians());
   const float cosAngle = cos(x.AsRadians());
   // clang-format off
-  float _m01 = Get01(); _m01 *= sinAngle;
-  float _m11 = Get11(); _m11 *= sinAngle;
-  float _m21 = Get21(); _m21 *= sinAngle;
-  float _m02 = Get02(); _m02 *= sinAngle;
-  float _m12 = Get12(); _m12 *= sinAngle;
-  float _m22 = Get22(); _m22 *= sinAngle;
+  float _m01 = m01; _m01 *= sinAngle;
+  float _m11 = m11; _m11 *= sinAngle;
+  float _m21 = m21; _m21 *= sinAngle;
+  float _m02 = m02; _m02 *= sinAngle;
+  float _m12 = m12; _m12 *= sinAngle;
+  float _m22 = m22; _m22 *= sinAngle;
   // clang-format on
   m01 *= cosAngle;
   m11 *= cosAngle;
@@ -135,12 +153,12 @@ void CTransform4f::RotateLocalY(const CRelAngle& y) {
   const float sinAngle = sin(y.AsRadians());
   const float cosAngle = cos(y.AsRadians());
   // clang-format off
-  float _m00 = Get00(); _m00 *= sinAngle;
-  float _m10 = Get10(); _m10 *= sinAngle;
-  float _m20 = Get20(); _m20 *= sinAngle;
-  float _m02 = Get02(); _m02 *= sinAngle;
-  float _m12 = Get12(); _m12 *= sinAngle;
-  float _m22 = Get22(); _m22 *= sinAngle;
+  float _m00 = m00; _m00 *= sinAngle;
+  float _m10 = m10; _m10 *= sinAngle;
+  float _m20 = m20; _m20 *= sinAngle;
+  float _m02 = m02; _m02 *= sinAngle;
+  float _m12 = m12; _m12 *= sinAngle;
+  float _m22 = m22; _m22 *= sinAngle;
   // clang-format on
 
   m00 *= cosAngle;
@@ -161,12 +179,12 @@ void CTransform4f::RotateLocalZ(const CRelAngle& z) {
   const float sinAngle = sin(z.AsRadians());
   const float cosAngle = cos(z.AsRadians());
   // clang-format off
-  float _m00 = Get00(); _m00 *= sinAngle;
-  float _m10 = Get10(); _m10 *= sinAngle;
-  float _m20 = Get20(); _m20 *= sinAngle;
-  float _m01 = Get01(); _m01 *= sinAngle;
-  float _m11 = Get11(); _m11 *= sinAngle;
-  float _m21 = Get21(); _m21 *= sinAngle;
+  float _m00 = m00; _m00 *= sinAngle;
+  float _m10 = m10; _m10 *= sinAngle;
+  float _m20 = m20; _m20 *= sinAngle;
+  float _m01 = m01; _m01 *= sinAngle;
+  float _m11 = m11; _m11 *= sinAngle;
+  float _m21 = m21; _m21 *= sinAngle;
   // clang-format off
 
   m00 *= cosAngle;
@@ -492,6 +510,28 @@ CVector3f CTransform4f::operator*(const CVector3f& vec) const {
   return CVector3f(m00 * vec.GetX() + m01 * vec.GetY() + m02 * vec.GetZ() + m03,
                    m10 * vec.GetX() + m11 * vec.GetY() + m12 * vec.GetZ() + m13,
                    m20 * vec.GetX() + m21 * vec.GetY() + m22 * vec.GetZ() + m23);
+}
+#endif
+
+#if RSTL_KYOTO_TRANSFORM4F_PROTOTYPE
+void CTransform4f::TransformPointArray(const CVector3f* in, CVector3f* out, int count) const {
+  if (count == 0) {
+    return;
+  }
+  const float xx = m00, xy = m01, xz = m02, tx = m03;
+  const float yx = m10, yy = m11, yz = m12, ty = m13;
+  const float zx = m20, zy = m21, zz = m22, tz = m23;
+  int i = 0;
+  do {
+    const float x = in->GetX();
+    const float y = in->GetY();
+    const float z = in->GetZ();
+    *out = CVector3f(tx + (xx * x + xy * y + xz * z),
+                     ty + (yx * x + yy * y + yz * z),
+                     tz + (zx * x + zy * y + zz * z));
+    ++in;
+    ++out;
+  } while (++i < count);
 }
 #endif
 
