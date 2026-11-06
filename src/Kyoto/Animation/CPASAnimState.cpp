@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Animation/CPASAnimState.hpp"
 
 #include "Kyoto/CRandom16.hpp"

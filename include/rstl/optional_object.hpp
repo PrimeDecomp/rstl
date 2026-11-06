@@ -2,6 +2,7 @@
 #define _RSTL_OPTIONAL_OBJECT
 
 #include "types.h"
+#include "rstl/macros.hpp"
 
 #include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"

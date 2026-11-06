@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 
 #include "Kyoto/CFactoryFnReturn.hpp"

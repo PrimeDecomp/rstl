@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 
 #include "Kyoto/CFactoryFnReturn.hpp"

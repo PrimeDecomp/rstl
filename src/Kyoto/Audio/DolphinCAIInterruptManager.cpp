@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
 
 #include "Kyoto/Audio/CAudioSys.hpp"

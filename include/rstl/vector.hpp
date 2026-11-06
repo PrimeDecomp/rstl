@@ -352,13 +352,10 @@ protected:
 #if RSTL_VECTOR_VERIFIED_PUSH_BACK
   // Dolphin vector.h (line 482): no auto resize, asserts when the capacity is exhausted.
   void verify_capacity_failed() const {
-    CCallStack stack(0, "vector.h(482) : ", kUnknownType);
-    rs_log_assert_failure(&stack, "vector.h", 482, "Verify", "mSize < mCapacity",
-                          CBasics::Stringize("Auto vector resize is not supported on dolphin, "
-                                             "call reserve() yourself (capacity: %d)",
-                                             mCapacity));
-    rs_debugger_printf("Would have thrown exception: %s\n", "false");
-    rs_halt_cpu();
+    RS_VERIFY_FAILURE_IN("vector.h", 482, "mSize < mCapacity", "false",
+                         CBasics::Stringize("Auto vector resize is not supported on dolphin, "
+                                            "call reserve() yourself (capacity: %d)",
+                                            mCapacity));
   }
 #endif
 };

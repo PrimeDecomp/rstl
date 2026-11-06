@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 #include "Kyoto/Animation/CSequenceHelper.hpp"
 
 #include "Kyoto/Animation/CAnimTreeNode.hpp"

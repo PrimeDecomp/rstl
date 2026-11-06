@@ -3,6 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "types.h"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/auto_ptr.hpp"

@@ -1,4 +1,5 @@
 #include "Kyoto/Animation/CCharacterInfo.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/set.hpp"

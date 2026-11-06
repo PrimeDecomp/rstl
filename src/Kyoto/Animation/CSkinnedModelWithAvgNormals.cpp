@@ -1,4 +1,5 @@
 #include "rstl/list.hpp"
+#include "rstl/macros.hpp"
 
 #include "Kyoto/Animation/CSkinnedModel.hpp"
 
