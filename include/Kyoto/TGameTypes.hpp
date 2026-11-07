@@ -93,7 +93,7 @@ extern const uint kFirstPlayerIndex; // Unreferenced in Echoes' retail DOL.
 
 #endif
 
-#if RSTL_VERSION >= RSTL_G2ME
+#if !RSTL_PRIME1
 
 namespace rstl {
 
@@ -166,6 +166,6 @@ struct use_assignment_for_construction< pair< TUniqueId, float > > {
 };
 } // namespace rstl
 
-#endif // RSTL_VERSION >= RSTL_G2ME
+#endif // !RSTL_PRIME1
 
 #endif // _TGAMETYPES
