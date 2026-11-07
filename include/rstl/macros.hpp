@@ -4,6 +4,8 @@
 // Compiler helpers RSTL and Kyoto use. A game or SDK header may define the same macros; these only
 // fill in the ones it leaves out.
 
+#define ALIGN_UP(x, a) (((x) + (a - 1)) & ~(a - 1))
+
 #ifndef AUTO
 #if (defined(__cplusplus) && __cplusplus >= 201103L) || defined(__clang__)
 // Use C++11 auto keyword
