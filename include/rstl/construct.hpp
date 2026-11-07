@@ -363,14 +363,19 @@ struct vector_reserve_construction_policy {
   }
 };
 
+template < typename T, typename It >
+static inline void copy_constructed_elements(T* dest, It first, It last) {
+  for (; first != last; ++first, ++dest) {
+    construction_policy< T, true >::construct(dest, *first);
+  }
+}
+
 #define RSTL_DECLARE_VECTOR_RESERVE_CONSTRUCTION(...) \
   template <> struct vector_reserve_construction_policy< __VA_ARGS__ > { \
     enum { value = true }; \
     template < typename It > \
     static void copy(It first, It last, __VA_ARGS__* dest) { \
-      for (; first != last; ++first, ++dest) { \
-        construction_policy< __VA_ARGS__, true >::construct(dest, *first); \
-      } \
+      copy_constructed_elements(dest, first, last); \
     } \
   };
 
@@ -383,16 +388,6 @@ struct vector_assignment_construction_policy : vector_reserve_construction_polic
 #define RSTL_DECLARE_VECTOR_ASSIGNMENT_CONSTRUCTION(...) \
   template <> struct vector_assignment_construction_policy< __VA_ARGS__ > \
       : vector_reserve_construction_policy< __VA_ARGS__ > {};
-
-// Opt in when vector assignment constructs elements by plain assignment.
-template < typename T >
-struct vector_direct_assignment_policy {
-  enum { value = false };
-  template < typename It >
-  static void copy(T* dest, It first, It last) {
-    vector_reserve_construction_policy< T >::copy(first, last, dest);
-  }
-};
 
 // Guessed policy name. Whole-container copies retain the generic construct path.
 template < typename T >

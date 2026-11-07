@@ -572,10 +572,6 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
     mItems = nullptr;
   } else {
     reserve(other.size());
-    if (vector_direct_assignment_policy< T >::value) {
-      vector_direct_assignment_policy< T >::copy(data(), other.mItems,
-                                                 other.mItems + other.mCount);
-    } else
 #if RSTL_SCALAR_TRAITS
     if (vector_assignment_construction_policy< T >::value) {
       vector_assignment_construction_policy< T >::copy(other.mItems, other.mItems + other.mCount,
@@ -583,7 +579,11 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
     } else
 #endif
     {
-      uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+      if (vector_reserve_construction_policy< T >::value) {
+        copy_constructed_elements(data(), other.mItems, other.mItems + other.mCount);
+      } else {
+        uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+      }
     }
     mCount = other.mCount;
   }
