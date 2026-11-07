@@ -57,6 +57,8 @@
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 // Wii Echoes uses CBasics to zero the audio effect and defines the name methods out of line.
 #define RSTL_AUDIO_EFFECT_WII (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
+// Wii Echoes passes the input mix through while RSF decoding is muted.
+#define RSTL_RSF_AUDIO_MUTE_PASSTHROUGH (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
 #define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
