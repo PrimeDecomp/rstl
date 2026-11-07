@@ -20,10 +20,11 @@
 const uchar CFBStreamedAnimReaderTotals::kRotationValueCount = 4;
 const uchar CFBStreamedAnimReaderTotals::kOffsetValueCount = 4;
 
-// The target emits these CFBStreamedCompression members in this translation unit.
+#if RSTL_CFB_ANIMATION_DURATION_IN_READER
 CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
   return MainHeader().GetMaxTime();
 }
+#endif
 
 bool CFBStreamedCompression::HasScaleData() const {
   return GetPerChannelHeaderList(TimeHeader(MainHeader())).HasScaleData();

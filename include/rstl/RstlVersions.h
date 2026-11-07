@@ -59,6 +59,9 @@
 #define RSTL_AUDIO_EFFECT_WII (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // Wii Echoes passes the input mix through while RSF decoding is muted.
 #define RSTL_RSF_AUDIO_MUTE_PASSTHROUGH (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
+// GameCube Echoes emits the streamed compression duration method in the reader TU.
+#define RSTL_CFB_ANIMATION_DURATION_IN_READER \
+  (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
 #define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
