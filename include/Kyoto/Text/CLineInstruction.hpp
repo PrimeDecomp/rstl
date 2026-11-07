@@ -33,7 +33,7 @@ public:
 #if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
   bool IsLineInstruction() const override { return true; }
 #endif
-#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00
+#if RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR
   ~CLineInstruction() {}
 #endif
 
