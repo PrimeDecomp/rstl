@@ -819,6 +819,8 @@
 // finishes the stream before reporting the compressed size (out of line, with a `bool mFinished`).
 // Echoes' header still has Prime's form; neither Echoes copy has the source.
 #define RSTL_KYOTO_ZIP_OUTPUT_FINISH (RSTL_CORRUPTION)
+// Uses an uint for TUniqueID's data
+#define RSTL_KYOTO_UINT_UNIQUE_ID (RSTL_CORRUPTION)
 
 #include "Kyoto/Platform.h"
 
