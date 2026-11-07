@@ -1,10 +1,12 @@
 #include "Kyoto/TGameTypes.hpp"
+
 #include "Kyoto/Streams/CInputStream.hpp"
 
 const TEditorId kInvalidEditorId = TEditorId(-1);
 const TUniqueId kInvalidUniqueId = TUniqueId(-1, -1);
 const TAreaId kInvalidAreaId = TAreaId(-1);
 const TEditorId kUnkId = TEditorId(-1);
+const uint kInvalidPlayerIndex = uint(-1);
+const uint kFirstPlayerIndex = 0;
 
-TEditorId::TEditorId(CInputStream& in)
-: value(in.Get<uint>()) {}
+TEditorId::TEditorId(CInputStream& in) : value(in.Get< uint >()) {}
