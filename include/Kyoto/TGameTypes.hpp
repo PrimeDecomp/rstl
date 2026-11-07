@@ -61,6 +61,15 @@ private:
 };
 CHECK_SIZEOF(TUniqueId, 0x2)
 
+struct TLayerId {
+  explicit TLayerId(int value) : mValue(value) {}
+  int Value() const { return mValue; }
+
+private:
+  int mValue;
+};
+CHECK_SIZEOF(TLayerId, 0x4)
+
 typedef ushort TSfxId;
 const TSfxId InvalidSfxId = 0xFFFFu;
 
