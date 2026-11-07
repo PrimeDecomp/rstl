@@ -596,6 +596,8 @@
 #else
 #define RSTL_KYOTO_SCALAR_PARAM_CONST const
 #endif
+// The explicit destructor puts the line-instruction virtuals in native Wii emission order.
+#define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 // Echoes-only `const` member functions and Prime-only `inline` declarations where MWCC codegen
 // depends on them (CModel::SShader::UnlockTextures, CGX::apply_fog).
 #if RSTL_PRIME1
