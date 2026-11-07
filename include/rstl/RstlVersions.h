@@ -55,6 +55,8 @@
 // The Trilogy versions as built for Metroid Prime 2: Echoes. Its rstl is Echoes-era in the fill and
 // `reserved_vector` details the Wii Echoes binary shows, not the Prime Trilogy ones.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
+// Wii Echoes uses CBasics to zero the audio effect and defines the name methods out of line.
+#define RSTL_AUDIO_EFFECT_WII (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
 #define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)

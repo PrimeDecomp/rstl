@@ -2,6 +2,7 @@
 #define _AUDIOEFFECT
 
 #include "Kyoto/Audio/AEffect.hpp"
+#include "rstl/RstlVersions.h"
 
 class AEffEditor;
 
@@ -30,15 +31,15 @@ public:
 
   virtual void setProgram(long program) { mCurrentProgram = program; }
 
-  virtual void setProgramName(char* name) { *name = 0; }
+  virtual void setProgramName(char* name);
 
-  virtual void getProgramName(char* name) { *name = 0; }
+  virtual void getProgramName(char* name);
 
-  virtual void getParameterLabel(long index, char* label) { *label = 0; }
+  virtual void getParameterLabel(long index, char* label);
 
-  virtual void getParameterDisplay(long index, char* text) { *text = 0; }
+  virtual void getParameterDisplay(long index, char* text);
 
-  virtual void getParameterName(long index, char* name) { *name = 0; }
+  virtual void getParameterName(long index, char* name);
 
   virtual float getVu() { return 0.f; }
 
@@ -99,6 +100,15 @@ protected:
   long mBlockSize;
   AEffect mEffect;
 };
+
+#if !RSTL_AUDIO_EFFECT_WII
+inline void AudioEffect::setProgramName(char* name) { *name = 0; }
+inline void AudioEffect::getProgramName(char* name) { *name = 0; }
+inline void AudioEffect::getParameterLabel(long index, char* label) { *label = 0; }
+inline void AudioEffect::getParameterDisplay(long index, char* text) { *text = 0; }
+inline void AudioEffect::getParameterName(long index, char* name) { *name = 0; }
+#endif
+
 DECLARE_FULL_SIZE_FOR(AudioEffect, 0xb0)
 CHECK_SIZEOF(AudioEffect, AudioEffect_FULL_SIZE)
 
