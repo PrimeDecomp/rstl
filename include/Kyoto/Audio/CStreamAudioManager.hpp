@@ -46,6 +46,7 @@ public:
   static void StopSfx();
   static void SetMusicVolume(uint vol);
   static void SetSfxVolume(uint vol);
+  static int GetSfxVolume() { return mForegroundVolume; }
   static void SetMusicUnmute(bool unmute);
   static bool GetMusicUnmute() { return mEnable; }
   static bool GetSfxUnmute() { return mForegroundEnable; }
