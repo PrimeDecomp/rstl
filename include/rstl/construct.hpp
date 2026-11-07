@@ -384,6 +384,16 @@ struct vector_assignment_construction_policy : vector_reserve_construction_polic
   template <> struct vector_assignment_construction_policy< __VA_ARGS__ > \
       : vector_reserve_construction_policy< __VA_ARGS__ > {};
 
+// Opt in when vector assignment constructs elements by plain assignment.
+template < typename T >
+struct vector_direct_assignment_policy {
+  enum { value = false };
+  template < typename It >
+  static void copy(T* dest, It first, It last) {
+    vector_reserve_construction_policy< T >::copy(first, last, dest);
+  }
+};
+
 // Guessed policy name. Whole-container copies retain the generic construct path.
 template < typename T >
 struct reserved_vector_push_policy {
