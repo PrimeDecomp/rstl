@@ -74,11 +74,7 @@ private:
 };
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-inline
-#endif
-TAverage< T >::TAverage(int capacity, const T& value) {
+inline TAverage< T >::TAverage(int capacity, const T& value) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   this->resize(capacity, value);
