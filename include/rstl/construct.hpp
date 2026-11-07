@@ -363,14 +363,19 @@ struct vector_reserve_construction_policy {
   }
 };
 
+template < typename T, typename It >
+static inline void copy_constructed_elements(T* dest, It first, It last) {
+  for (; first != last; ++first, ++dest) {
+    construction_policy< T, true >::construct(dest, *first);
+  }
+}
+
 #define RSTL_DECLARE_VECTOR_RESERVE_CONSTRUCTION(...) \
   template <> struct vector_reserve_construction_policy< __VA_ARGS__ > { \
     enum { value = true }; \
     template < typename It > \
     static void copy(It first, It last, __VA_ARGS__* dest) { \
-      for (; first != last; ++first, ++dest) { \
-        construction_policy< __VA_ARGS__, true >::construct(dest, *first); \
-      } \
+      copy_constructed_elements(dest, first, last); \
     } \
   };
 

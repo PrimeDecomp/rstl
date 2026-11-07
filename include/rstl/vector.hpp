@@ -579,7 +579,11 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
     } else
 #endif
     {
-      uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+      if (vector_reserve_construction_policy< T >::value) {
+        copy_constructed_elements(data(), other.mItems, other.mItems + other.mCount);
+      } else {
+        uninitialized_copy(other.mItems, other.mItems + other.mCount, data());
+      }
     }
     mCount = other.mCount;
   }
