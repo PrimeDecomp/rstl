@@ -116,7 +116,7 @@ CFBStreamedCompression::~CFBStreamedCompression() {
 #endif
 }
 
-#if RSTL_PRIME1
+#if !RSTL_CFB_ANIMATION_DURATION_IN_READER
 CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
   return MainHeader().GetMaxTime();
 }

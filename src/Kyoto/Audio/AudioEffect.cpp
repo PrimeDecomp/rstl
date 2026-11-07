@@ -1,6 +1,7 @@
 #include "Kyoto/Audio/AudioEffect.hpp"
 #include "Kyoto/Audio/AEffEditor.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 
 #include "math.h"
 #include "stdio.h"
@@ -39,7 +40,11 @@ AudioEffect::AudioEffect(AudioMasterCallback audioMaster, long numPrograms, long
   mNumPrograms = numPrograms;
   mNumParameters = numParameters;
   mCurrentProgram = 0;
+#if RSTL_AUDIO_EFFECT_WII
+  CBasics::ZeroMemory(&mEffect, sizeof(mEffect));
+#else
   memset(&mEffect, 0, sizeof(mEffect));
+#endif
   mEffect.mMagic = 'VstP';
   mEffect.mDispatcher = dispatchEffectClass;
   mEffect.mProcess = processClass;
@@ -144,6 +149,18 @@ long AudioEffect::dispatcher(long opcode, long index, long value, void* ptr, flo
   }
   return result;
 }
+
+#if RSTL_AUDIO_EFFECT_WII
+void AudioEffect::setProgramName(char* name) { *name = 0; }
+
+void AudioEffect::getProgramName(char* name) { *name = 0; }
+
+void AudioEffect::getParameterLabel(long index, char* label) { *label = 0; }
+
+void AudioEffect::getParameterDisplay(long index, char* text) { *text = 0; }
+
+void AudioEffect::getParameterName(long index, char* name) { *name = 0; }
+#endif
 
 long AudioEffect::getMasterVersion() {
   long version = 1;

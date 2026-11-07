@@ -4,6 +4,7 @@
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Audio/CAudioSys.hpp"
 
 #include "Kyoto/CDvdFile.hpp"
@@ -27,6 +28,7 @@ enum { kRSFBufferSize = 0x4000 };
 #endif
 
 static CRSFAudio* sPlayingAudio = nullptr;
+static int sMuteCount = 0;
 
 CRSFAudio::CRSFAudio(const rstl::string& audioFile, const int loopStart, const int loopEnd)
 : mFilepath(audioFile)
@@ -179,6 +181,13 @@ void MixStereoToMono(short* buf, int numSamples);
 #endif
 
 void CRSFAudio::Decode(ushort* out, const ushort* in, const int numSamples) {
+#if RSTL_RSF_AUDIO_MUTE_PASSTHROUGH
+  if (sMuteCount > 0) {
+    CBasics::CopyMemory(out, in, 2 * numSamples * sizeof(*out));
+    return;
+  }
+#endif
+
   int curSamp = mCurSamp / 2;
   int loopEndSamp = mLoopEndSamp / 2;
   int loopStartSamp = mLoopStartSamp / 2;
@@ -313,3 +322,7 @@ void CRSFAudio::SetVolume(uchar vol) {
   }
   mVolume = CAudioSys::kVolumeTable[static_cast< uchar >(vol)];
 }
+
+void CRSFAudio::PushMute() { ++sMuteCount; }
+
+void CRSFAudio::PopMute() { --sMuteCount; }
