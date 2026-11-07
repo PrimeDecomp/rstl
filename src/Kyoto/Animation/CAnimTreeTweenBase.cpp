@@ -290,7 +290,8 @@ CAnimTreeTweenBase::VReverseSimplified() {
 
 void CAnimTreeTweenBase::VGetWeightedReaders(
     float weight, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
-  RSTL_ECHOES_CONST float blendWeight = GetBlendingWeight();
-  mA->VGetWeightedReaders(weight * (1.f - blendWeight), out);
+  const float blendWeight = GetBlendingWeight();
+  const float leftWeight = weight * (1.f - blendWeight);
+  mA->VGetWeightedReaders(leftWeight, out);
   mB->VGetWeightedReaders(weight * blendWeight, out);
 }
