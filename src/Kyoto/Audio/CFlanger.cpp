@@ -359,11 +359,10 @@ void CFlanger::ProcessSamples(float* input, float* output, float* delayWrite, fl
   while (--sampleFrames >= 0) {
     inputSample = *input++;
     delayedSample = *delayRead++;
-    mixedSample = inputSample;
     oldOutput = *output;
+    const float dryInput = inputSample;
     inputSample += delayedSample * feedback;
-    mixedSample *= dry;
-    mixedSample += delayedSample * wet;
+    mixedSample = delayedSample * wet + dryInput * dry;
     mixedSample *= volume;
     if (mixedSample > peak)
       peak = mixedSample;
@@ -496,10 +495,9 @@ void CFlanger::ProcessReplacingSamples(float* input, float* output, float* delay
   while (--sampleFrames >= 0) {
     inputSample = *input++;
     delayedSample = *delayRead++;
-    mixedSample = inputSample;
+    const float dryInput = inputSample;
     inputSample += delayedSample * feedback;
-    mixedSample *= dry;
-    mixedSample += delayedSample * wet;
+    mixedSample = delayedSample * wet + dryInput * dry;
     mixedSample *= volume;
     if (mixedSample > peak)
       peak = mixedSample;
