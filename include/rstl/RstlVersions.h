@@ -68,6 +68,12 @@
 // CParticleSwoosh.cpp ends with a function the retail link stripped; its weak
 // `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
 #define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+
+// Japanese and PAL GC Echoes and Wii Echoes normalize the direction before placing particles.
+#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE \
+  (!RSTL_PRIME1 && ((RSTL_VERSION >= RSTL_G2MP && RSTL_VERSION <= RSTL_G2MJ) || \
+                   RSTL_VERSION >= RSTL_R32J))
+
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
