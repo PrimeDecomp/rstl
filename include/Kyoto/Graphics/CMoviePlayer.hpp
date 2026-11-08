@@ -14,57 +14,27 @@
 #include "dolphin/thp/THPPlayer.h"
 #else
 
-typedef struct THPHeader {
-  char mMagic[4];
-  u32 mVersion;
-  u32 mBufferSize;
-  u32 mAudioMaxSamples;
-  f32 mFrameRate;
-  u32 mNumFrames;
-  u32 mFirstFrameSize;
-  u32 mMovieDataSize;
-  u32 mCompInfoDataOffsets;
-  u32 mOffsetDataOffsets;
-  u32 mMovieDataOffsets;
-  u32 mFinalFrameDataOffsets;
-} THPHeader;
-CHECK_SIZEOF(THPHeader, 0x30)
-
-typedef struct THPVideoInfo {
-  u32 mXSize;
-  u32 mYSize;
-  u32 mVideoType;
-} THPVideoInfo;
-CHECK_SIZEOF(THPVideoInfo, 0xC)
+#include "dolphin/thp.h"
 
 typedef struct THPVideoInfoOld {
-  u32 mXSize;
-  u32 mYSize;
+  u32 xSize;
+  u32 ySize;
 } THPVideoInfoOld;
-CHECK_SIZEOF(THPVideoInfoOld, 0x8)
-
-typedef struct THPAudioInfo {
-  u32 mSndChannels;
-  u32 mSndFrequency;
-  u32 mSndNumSamples;
-  u32 mSndNumTracks;
-} THPAudioInfo;
-CHECK_SIZEOF(THPAudioInfo, 0x10)
 
 typedef struct THPAudioInfoOld {
-  u32 mSndChannels;
-  u32 mSndFrequency;
-  u32 mSndNumSamples;
+  u32 sndChannels;
+  u32 sndFrequency;
+  u32 sndNumSamples;
 } THPAudioInfoOld;
-CHECK_SIZEOF(THPAudioInfoOld, 0xC)
-
-typedef struct THPFrameCompInfo {
-  u32 mNumComponents;
-  u8 mFrameComp[16];
-} THPFrameCompInfo;
-CHECK_SIZEOF(THPFrameCompInfo, 0x14)
 
 #endif
+
+CHECK_SIZEOF(THPHeader, 0x30)
+CHECK_SIZEOF(THPVideoInfo, 0xC)
+CHECK_SIZEOF(THPVideoInfoOld, 0x8)
+CHECK_SIZEOF(THPAudioInfo, 0x10)
+CHECK_SIZEOF(THPAudioInfoOld, 0xC)
+CHECK_SIZEOF(THPFrameCompInfo, 0x14)
 
 class CMoviePlayer {
 public:
