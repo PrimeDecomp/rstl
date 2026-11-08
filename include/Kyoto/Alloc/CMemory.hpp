@@ -25,7 +25,11 @@ public:
                      const CCallStack& callstack = CCallStack(-1, "\?\?(\?\?)"));
   static void Free(const void* ptr);
   static void SetOutOfMemoryCallback(IAllocator::FOutOfMemoryCb callback, const void* context);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  static IAllocator::SAllocatorMetrics GetMetrics();
+#else
   static IAllocator::SMetrics GetMetrics(bool unk1, bool unk2);
+#endif
   static void OffsetFakeStatics(int);
   // Guessed name and result.
   static int EnumAllocations(IAllocator::FEnumAllocationsCb callback, const void* context, bool b);

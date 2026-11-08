@@ -138,7 +138,11 @@ public:
   };
 
   typedef const bool (*FOutOfMemoryCb)(const void*, uint);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  typedef const bool (*FEnumAllocationsCb)(int heapIndex, const SAllocInfo& info, const void* ptr);
+#else
   typedef const bool (*FEnumAllocationsCb)(const SAllocInfo& info, const void* ptr);
+#endif
 
   virtual ~IAllocator();
 
@@ -154,8 +158,15 @@ public:
   virtual void SetOutOfMemoryCallback(FOutOfMemoryCb cb, const void* data) = 0;
   virtual int EnumAllocations(FEnumAllocationsCb func, const void* ptr, bool b) const = 0;
   virtual SAllocInfo GetAllocInfo(const void* ptr) const = 0;
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
   virtual void OffsetFakeStatics(int offset) = 0;
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+#endif
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  virtual SAllocatorMetrics GetMetrics() const = 0;
+  virtual int GetHeapCount() const = 0;
+  virtual SHeapMetrics GetHeapMetrics(int index, uint flags) const = 0;
+  virtual const char* GetHeapName(int index) const = 0;
+#elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
   virtual SMetrics GetMetrics(bool unk1, bool unk2) const = 0;
 #else
   virtual SMetrics GetMetrics() const = 0;

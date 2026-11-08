@@ -781,6 +781,14 @@
 // Prime's `GetMetrics()` takes no arguments (all Prime versions, including Trilogy).
 #define RSTL_KYOTO_ALLOCATOR_METRICS_RESET (!RSTL_PRIME1)
 
+// Wii allocators manage separate MEM1 and MEM2 heaps.
+#define RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS (RSTL_VERSION >= RSTL_RM3E)
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS || RSTL_PRIME1 || defined(PRIME2)
+#define RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS 1
+#else
+#define RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS 0
+#endif
+
 // Wii's small pool records the last allocation size and returns a block count from Free.
 #define RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS (RSTL_VERSION >= RSTL_RM3E)
 // `SMetrics` declares a copy constructor (Echoes defines it in CMemoryDrawEnum.cpp). The

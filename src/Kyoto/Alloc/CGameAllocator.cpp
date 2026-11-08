@@ -17,6 +17,7 @@
 #include <string.h>
 #endif
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 /* Here just to make sure the data section matches */
 #if RSTL_KYOTO_DEBUG_BUILD
 static const char* const string_NULL = "<NULL>";
@@ -587,10 +588,11 @@ IAllocator::SAllocInfo CGameAllocator::GetAllocInfo(const void* ptr) const {
 };
 
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-IAllocator::SMetrics CGameAllocator::GetMetrics(bool resetPeriodicPeak, bool resetPeak) const {
+IAllocator::SMetrics CGameAllocator::GetMetrics(bool resetPeriodicPeak, bool resetPeak) const
 #else
-IAllocator::SMetrics CGameAllocator::GetMetrics() const {
+IAllocator::SMetrics CGameAllocator::GetMetrics() const
 #endif
+{
   uint mediumAllocTotalAllocated = mMediumPool != nullptr ? mMediumPool->GetTotalEntries() * 32 : 0;
   uint mediumAllocBlocksAvailable =
       mMediumPool != nullptr ? mMediumPool->GetNumBlocksAvailable() : 0;
@@ -662,6 +664,8 @@ int CGameAllocator::EnumAllocations(FEnumAllocationsCb func, const void* ptr, bo
   return i;
 };
 
+#endif
+
 uint CGameAllocator::GetFreeBinEntryForSize(const uint size) {
   uint maxLen = 0x20;
   uint bin = 0;
@@ -678,6 +682,7 @@ uint CGameAllocator::GetFreeBinEntryForSize(const uint size) {
   return 0xf;
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void CGameAllocator::AddFreeEntryToFreeList(SGameMemInfo* info) {
   uint bin = GetFreeBinEntryForSize(info->GetLength());
   info->SetNextFree(mBins[bin]);
@@ -739,3 +744,4 @@ size_t CGameAllocator::GetLargestFreeChunk() const {
 #endif
 
 void CGameAllocator::OffsetFakeStatics(const int offset) { mFakeStatics += offset; }
+#endif

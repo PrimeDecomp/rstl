@@ -148,12 +148,19 @@ public:
   void SetOutOfMemoryCallback(FOutOfMemoryCb cb, const void* target) override;
   int EnumAllocations(FEnumAllocationsCb func, const void* ptr, bool b) const override;
   SAllocInfo GetAllocInfo(const void* ptr) const override;
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  SAllocatorMetrics GetMetrics() const override;
+  int GetHeapCount() const override;
+  SHeapMetrics GetHeapMetrics(int index, uint flags) const override;
+  const char* GetHeapName(int index) const override;
+#elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
   SMetrics GetMetrics(bool resetPeriodicPeak, bool resetPeak) const override;
 #else
   SMetrics GetMetrics() const override;
 #endif
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
   void OffsetFakeStatics(int offset) override;
+#endif
 
   static uint GetFreeBinEntryForSize(uint);
   void AddFreeEntryToFreeList(SGameMemInfo*);
@@ -162,6 +169,39 @@ public:
   size_t GetLargestFreeChunk() const;
 
 private:
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  struct SHeap { // Guessed name
+    SHeap();
+    SGameMemInfo* mFirst;
+    SGameMemInfo* mLast;
+    SGameMemInfo* mBins[16];
+    uint x48_;
+    uint x4c_;
+    SHeapMetrics mMetrics;
+  };
+
+  bool mInitialized;
+  mutable SHeap mHeaps[2];
+  FOutOfMemoryCb mOomCallback;
+  const void* mOomTarget;
+  CSmallAllocPool* mSmallAllocPool;
+  void* mSmallAllocMainData;
+  void* mSmallAllocBookKeeping;
+  bool mSmallAllocFailed;
+  int mSmallAllocRetryDelay;
+  CMediumAllocPool* mMediumPool;
+  void* mMediumPoolMem1;
+  void* mMediumPoolMem2;
+  bool mMediumAllocFailed;
+  uint mSmallHeapAllocations;
+  uint x140_;
+  uint mMem1HeapPhysicalAddress;
+  uint x148_;
+  uint mSmallPoolReservedBytes;
+  bool mAllowMem2Fallback : 1;
+  bool mGrowingMediumPool : 1;
+  bool mHandlingOutOfMemory : 1;
+#else
   SGameMemInfo** GetBinPtr(uint bin) { return &mBins[bin]; }
   uchar mInitialized; // Guessed name
   // Unresolved bytes; the target does not initialize these with mInitialized.
@@ -202,9 +242,14 @@ private:
   void* mPhysicalAddr;
   uint mFakeStatics;
   uint mSmallPoolReservedBytes; // Guessed name
+#endif
 };
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+CHECK_SIZEOF(CGameAllocator, 0x154)
+#else
 CHECK_SIZEOF(CGameAllocator, RSTL_KYOTO_ALLOCATOR_METRICS_RESET ? 0xc4 : 0xc0)
+#endif
 NESTED_CHECK_SIZEOF(CGameAllocator, SGameMemInfo, 0x20)
 
 #endif // _CGAMEALLOCATOR
