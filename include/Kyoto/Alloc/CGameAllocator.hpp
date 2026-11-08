@@ -139,7 +139,11 @@ public:
   uint FixupAllocPtrs(SGameMemInfo*, const uint, uint, EHint, const CCallStack&);
   void UpdateAllocDebugStats(unsigned int, unsigned int, unsigned int);
   bool Free(const void* ptr) override;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  void FreeNormalAllocation(const void* ptr);
+#else
   bool FreeNormalAllocation(const void* ptr);
+#endif
   void ReleaseAll() override;
   void* AllocSecondary(size_t size, EHint hint, EScope scope, EType type,
                        const CCallStack& cs) override;
@@ -163,20 +167,27 @@ public:
 #endif
 
   static uint GetFreeBinEntryForSize(uint);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  void AddFreeEntryToFreeList(SGameMemInfo*, int heapIndex);
+  void RemoveFreeEntryFromFreeList(SGameMemInfo*, int heapIndex);
+#else
   void AddFreeEntryToFreeList(SGameMemInfo*);
   void RemoveFreeEntryFromFreeList(SGameMemInfo*);
+#endif
   void DumpAllocations() const;
   size_t GetLargestFreeChunk() const;
 
 private:
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  int GetHeapIndex(const void* ptr) const; // Guessed name
+
   struct SHeap { // Guessed name
     SHeap();
     SGameMemInfo* mFirst;
     SGameMemInfo* mLast;
     SGameMemInfo* mBins[16];
-    uint x48_;
-    uint x4c_;
+    const void* mArenaStart;
+    const void* mArenaEnd;
     SHeapMetrics mMetrics;
   };
 
