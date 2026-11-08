@@ -72,9 +72,8 @@
 // Prime and US GameCube Echoes normalize the offset from the emitter origin.
 #define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
 
-// Japanese GameCube and Wii Echoes store a line-spacing override in CGuiTextSupport.
-#define RSTL_GUI_TEXT_LINE_SPACING \
-  (RSTL_VERSION == RSTL_G2MJ || (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J))
+// Japanese GameCube Echoes and later Prime 2 and Prime 3 builds use a line-spacing override.
+#define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.

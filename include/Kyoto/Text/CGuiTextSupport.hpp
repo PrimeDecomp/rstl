@@ -114,6 +114,7 @@ private:
 };
 
 CHECK_SIZEOF(CGuiTextProperties, 0x10)
-CHECK_SIZEOF(CGuiTextSupport, RSTL_GUI_TEXT_LINE_SPACING ? (RSTL_ECHOES ? 0xd0c : 0xcdc) : 0xd08)
+CHECK_SIZEOF(CGuiTextSupport,
+             RSTL_CORRUPTION ? 0xd18 : RSTL_GUI_TEXT_LINE_SPACING ? (RSTL_ECHOES ? 0xd0c : 0xcdc) : 0xd08)
 
 #endif // _CGUITEXTSUPPORT
