@@ -4,8 +4,14 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/CDvdRequest.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/math.hpp"
+#if RSTL_KYOTO_DVD_HOST_READS
+#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#endif
 
 #include "dolphin/arq.h"
 #include "dolphin/dvd.h"
@@ -144,12 +150,32 @@ void CDvdFile::PingARAMTransfer() {
 #if !RSTL_PRIME1
     aramFile->mGotDvdInterrupt = false;
 #endif
-    DVDFastOpen(mFileEntry, &aramFile->mInfo.mDvdFileInfo);
-    DVDReadAsync(&aramFile->mInfo.mDvdFileInfo, aramFile->mBuffers[aramFile->mBufferIndex].get(),
-                 length2, aramFile->mFileSize2, DVDARAMXferCallback);
-#if !RSTL_PRIME1
-    gDvdActivity = true;
+#if RSTL_KYOTO_DVD_HOST_READS
+    if (sPollingMode) {
+      int handle;
+      if (CBBASupport::BBAOpen(
+              (rstl::string_l("DolRoot:") + rstl::string(DecodeARAMFile(mFilename.data()), -1))
+                  .c_str(),
+              kBOM_Read, &handle) == 0) {
+        CBBASupport::BBASeek(handle, aramFile->mFileSize2, kBSO_Start);
+        CBBASupport::BBARead(handle, aramFile->mBuffers[aramFile->mBufferIndex].get(), length2);
+        CBBASupport::BBAClose(handle);
+        DVDARAMXferCallback(0, &aramFile->mInfo.mDvdFileInfo);
+      } else {
+        RS_VERIFY_THROW(233, false, false,
+                        CBasics::Stringize("BBA file %s open failed.\n", mFilename.data()));
+      }
+    } else
 #endif
+    {
+      DVDFastOpen(mFileEntry, &aramFile->mInfo.mDvdFileInfo);
+      DVDReadAsync(&aramFile->mInfo.mDvdFileInfo,
+                   aramFile->mBuffers[aramFile->mBufferIndex].get(), length2,
+                   aramFile->mFileSize2, DVDARAMXferCallback);
+#if !RSTL_PRIME1
+      gDvdActivity = true;
+#endif
+    }
     aramFile->mFileSize2 += length2;
     aramFile->mCurBufferLen -= length2;
 #if RSTL_PRIME1
@@ -169,9 +195,10 @@ void CDvdFile::TryARAMFile() {
       !CARAMManager::IsValidAlloc(mARAMBuffer)
 #endif
   ) {
+    RS_DEBUGGER_PRINT("WARNING: Couldn't cast %s (size %d) to ARAM\n", mFilename.data(), mSize);
     return;
   }
-  mARAMFile = rs_new CDvdFileARAM();
+  mARAMFile = rs_new_line(264) CDvdFileARAM();
   CDvdFileARAM* arfile = mARAMFile.get();
   arfile->mInfo.mDvdFile = this;
   arfile->mGotARAMInterrupt = true;
@@ -193,8 +220,10 @@ void CDvdFile::PushARAMFileLoad() {
     StartARAMFileLoad();
   } else {
     for (CDvdFile* p = file; p != nullptr; p = p->mARAMFile->mInfo.mNextfile) {
-      if (p->mARAMFile->mInfo.mNextfile == nullptr) {
-        p->mARAMFile->mInfo.mNextfile = this;
+      CDvdFileARAM* aram = p->mARAMFile.get();
+      RS_VERIFY_THROW(306, aram != NULL, false, "ARAM DVDFile list is broken in push!");
+      if (aram->mInfo.mNextfile == nullptr) {
+        aram->mInfo.mNextfile = this;
         break;
       }
     }
@@ -211,6 +240,7 @@ void CDvdFile::PopARAMFileLoad() {
   if (!sPollingMode) {
     enabled = OSDisableInterrupts();
   }
+  RS_VERIFY_THROW(342, this == sFirstARAM, false, "ARAM DvdFile list is broken in pop!");
   CDvdFile* file = mARAMFile->mInfo.mNextfile;
   mARAMPopped = true;
   sFirstARAM = file;
@@ -246,10 +276,8 @@ bool CDvdFile::IsARAMFileLoaded() {
 void CDvdFile::StartARAMFileLoad() {
 #if !defined(TARGET_PC)
   CDvdFileARAM* aramFile = mARAMFile.get();
-  aramFile->mBuffers.push_back(
-      static_cast< uchar* >(CMemory::Alloc(0x10000, IAllocator::kHI_RoundUpLen)));
-  aramFile->mBuffers.push_back(
-      static_cast< uchar* >(CMemory::Alloc(0x10000, IAllocator::kHI_RoundUpLen)));
+  aramFile->mBuffers.push_back(static_cast< uchar* >(rs_aligned_new_line(0x10000, 387)));
+  aramFile->mBuffers.push_back(static_cast< uchar* >(rs_aligned_new_line(0x10000, 388)));
 
   int len = rstl::min_val(mSize, 65536);
   aramFile->mCurBufferLen -= len;
@@ -269,6 +297,10 @@ void CDvdFile::StartARAMFileLoad() {
 
 void CDvdFile::StallForARAMFile() {
 #if !defined(TARGET_PC)
+  if (mARAMFile.get() != nullptr) {
+    RS_DEBUGGER_PRINT("Stalling for ARAM file load %s - BUG\n", mFilename.data());
+  }
+
   while (mARAMFile.get() != nullptr) {
     OSYieldThread();
   }
@@ -295,9 +327,12 @@ CDvdFile::CDvdFile(const char* filename)
   }
 #else
   DVDFileInfo fileInfo;
+  BOOL openOk = FALSE;
   if (mFileEntry != -1) {
-    DVDFastOpen(mFileEntry, &fileInfo);
+    openOk = DVDFastOpen(mFileEntry, &fileInfo);
   }
+  RS_VERIFY_THROW(453, openOk == TRUE, kDvdIoException_CantOpenFile,
+                  CBasics::Stringize("CDvdHalFile() can not find file : %s", decodedName));
 
   mSize = fileInfo.length;
   DVDClose(&fileInfo);
@@ -309,6 +344,8 @@ CDvdFile::CDvdFile(const char* filename)
 }
 
 CDvdFile::~CDvdFile() { CloseFile(); }
+
+void CDvdFile::BlockingRead(void* dest, uint len) { SyncSeekRead(dest, len, kSO_Cur, 0); }
 
 CDvdRequest* CDvdFile::SyncRead(void* dest, uint len) {
   return AsyncSeekRead(dest, len, kSO_Cur, 0);
@@ -363,14 +400,32 @@ CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, i
 #else
   StallForARAMFile();
   CalcFileOffset(offset, origin);
-  CDvdRequest* request;
+  CDvdRequest* request = nullptr;
   if (mARAMAllocated) {
     const int roundedLen = (len + 31) & ~31;
     DCFlushRange(dest, roundedLen);
-    request = rs_new CARAMDvdRequest(CARAMManager::DMAToMRAM(
+    request = rs_new_line(574) CARAMDvdRequest(CARAMManager::DMAToMRAM(
         mARAMBuffer + mOffset, dest, roundedLen, CARAMManager::kDMAPrio_One));
-  } else {
-    CRealDvdRequest* req = rs_new CRealDvdRequest();
+  }
+#if RSTL_KYOTO_DVD_HOST_READS
+  else if (sPollingMode) {
+    int handle;
+    if (CBBASupport::BBAOpen(
+            (rstl::string_l("DolRoot:") + rstl::string(DecodeARAMFile(mFilename.data()), -1))
+                .c_str(),
+            kBOM_Read, &handle) == 0) {
+      CBBASupport::BBASeek(handle, mOffset, kBSO_Start);
+      CBBASupport::BBARead(handle, dest, len);
+      CBBASupport::BBAClose(handle);
+      request = rs_new_line(590) CDummyDvdRequest();
+    } else {
+      RS_VERIFY_THROW(594, false, false,
+                      CBasics::Stringize("BBA file %s open failed.\n", mFilename.data()));
+    }
+  }
+#endif
+  else {
+    CRealDvdRequest* req = rs_new_line(600) CRealDvdRequest();
     DVDFileInfo* info = &req->FileInfo();
     DVDFastOpen(mFileEntry, info);
     DVDReadAsync(info, dest, (len + 31) & ~31, mOffset, internalCallback);
