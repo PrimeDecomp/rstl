@@ -777,6 +777,9 @@
 // tracks that peak, CMemory forwards GetMetrics and an allocation failure reports used/free bytes.
 // Prime's `GetMetrics()` takes no arguments (all Prime versions, including Trilogy).
 #define RSTL_KYOTO_ALLOCATOR_METRICS_RESET (!RSTL_PRIME1)
+
+// Wii's small pool records the last allocation size and returns a block count from Free.
+#define RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS (RSTL_VERSION >= RSTL_RM3E)
 // `SMetrics` declares a copy constructor (Echoes defines it in CMemoryDrawEnum.cpp). The
 // prototype's metrics are trivially copied.
 #define RSTL_KYOTO_METRICS_COPY_CTOR (!RSTL_PRIME1 && !RSTL_CORRUPTION)
