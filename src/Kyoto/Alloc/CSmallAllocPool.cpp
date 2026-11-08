@@ -1,4 +1,7 @@
 #include "Kyoto/Alloc/CSmallAllocPool.hpp"
+
+#include "Kyoto/Basics/CBasics.hpp"
+
 #include <string.h>
 
 CSmallAllocPool::CSmallAllocPool(uint len, void* mainData, void* bookKeeping)
@@ -13,7 +16,11 @@ CSmallAllocPool::CSmallAllocPool(uint len, void* mainData, void* bookKeeping)
 #endif
 , mNumBlocksAvailable(len)
 , mNumAllocs(0) {
+#if RSTL_KYOTO_BLOCK_MEMORY_FILL
+  CBasics::FillMemory(bookKeeping, 0, len / 2);
+#else
   memset(bookKeeping, 0, len / 2);
+#endif
 }
 
 void* CSmallAllocPool::FindFree(int len) {

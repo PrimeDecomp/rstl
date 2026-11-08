@@ -645,6 +645,9 @@
 // CBasics::ZeroMemory/CopyMemory (dcbz block fill and copy) are defined in CBasicsDolphin.cpp.
 // Prime Trilogy has its own, larger versions that are not reconstructed.
 #define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)
+
+// Prime and Echoes on Wii use a cache-block fill for nonzero bytes as well.
+#define RSTL_KYOTO_BLOCK_MEMORY_FILL (RSTL_VERSION >= RSTL_R3IJ)
 // PAL Prime and Echoes store OSGetLanguage() and reserve a graphics arena block in the
 // constructor (field layout changes from 0x10 on). PAL Prime reserves 0x23e000 bytes.
 #define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK                                                          \

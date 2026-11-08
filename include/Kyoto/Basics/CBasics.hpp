@@ -15,6 +15,9 @@ char* Stringize(const char* fmt, ...);
 // CBasics::Init in Prime Trilogy.
 void ZeroMemory(void* dst, uint size);
 void CopyMemory(void* dst, const void* src, uint size);
+#if RSTL_KYOTO_BLOCK_MEMORY_FILL
+void FillMemory(void* dst, uchar value, uint size); // Guessed name
+#endif
 
 // Convert between serialized big-endian values and host byte order.
 #if TARGET_LITTLE_ENDIAN
