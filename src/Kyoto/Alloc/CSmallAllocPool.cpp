@@ -1,4 +1,7 @@
 #include "Kyoto/Alloc/CSmallAllocPool.hpp"
+
+#include "Kyoto/Basics/CBasics.hpp"
+
 #include <string.h>
 
 CSmallAllocPool::CSmallAllocPool(uint len, void* mainData, void* bookKeeping)
@@ -8,9 +11,16 @@ CSmallAllocPool::CSmallAllocPool(uint len, void* mainData, void* bookKeeping)
 , mCachedBookKeepingOffset(NULL)
 , x10_(-1)
 , x14_(-1)
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+, mLastAllocBlockCount(0)
+#endif
 , mNumBlocksAvailable(len)
 , mNumAllocs(0) {
+#if RSTL_KYOTO_BLOCK_MEMORY_FILL
+  CBasics::FillMemory(bookKeeping, 0, len / 2);
+#else
   memset(bookKeeping, 0, len / 2);
+#endif
 }
 
 void* CSmallAllocPool::FindFree(int len) {
@@ -71,16 +81,24 @@ void* CSmallAllocPool::FindFree(int len) {
 void* CSmallAllocPool::Alloc(const uint size) {
   uint len = size >= 4 ? (size + (kAllocatorPointerSize - 1)) / kAllocatorPointerSize : 1;
 
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  len = (len + 1) & ~1u;
+#else
   if ((len & 1) != 0) {
     len += 1;
   }
+#endif
 
   uchar* freePtr = static_cast< uchar* >(FindFree(len));
   if (freePtr == nullptr) {
     return nullptr;
   }
 
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  uint sub = len - 2;
+#else
   int sub = len - 2;
+#endif
   uchar* bufPtr = GetPtrFromIndex(freePtr - static_cast< uchar* >(mBookKeeping));
   *freePtr = (len << 4) | 0xf;
   int blockSize = sub / 2;
@@ -92,11 +110,19 @@ void* CSmallAllocPool::Alloc(const uint size) {
 
   mNumBlocksAvailable -= len;
   ++mNumAllocs;
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  mLastAllocBlockCount = len;
+#endif
 
   return bufPtr;
 }
 
-bool CSmallAllocPool::Free(const void* ptr) {
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+int CSmallAllocPool::Free(const void* ptr)
+#else
+bool CSmallAllocPool::Free(const void* ptr)
+#endif
+{
   const int ptrIndex = GetIndexFromPtr(ptr);
   const int bitShift = (ptrIndex & 1) ? 0 : 4;
   const size_t entryIndex = static_cast< size_t >(ptrIndex) / 2;
@@ -104,7 +130,9 @@ bool CSmallAllocPool::Free(const void* ptr) {
 
   entryValue = (entryValue >> bitShift) & 0xF;
   mNumBlocksAvailable += entryValue;
+#if !RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
   int blocksToClear = entryValue;
+#endif
   mNumAllocs -= 1;
   x14_ = ptrIndex;
 
@@ -112,10 +140,17 @@ bool CSmallAllocPool::Free(const void* ptr) {
     x10_ = -1;
   }
 
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  int blocksToClear = entryValue;
+#endif
   for (uchar* bookkeepingPtr = static_cast< uchar* >(mBookKeeping) + entryIndex; blocksToClear != 0;
        ++bookkeepingPtr) {
     *bookkeepingPtr = 0;
     blocksToClear -= 2;
   }
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  return entryValue;
+#else
   return true;
+#endif
 }

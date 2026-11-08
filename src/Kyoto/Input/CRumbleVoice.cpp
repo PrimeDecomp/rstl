@@ -15,7 +15,7 @@ CRumbleVoice::CRumbleVoice()
           , rstl::rmemory_allocator()
 #endif
           )
-, mHandleIds(0)
+, mHandleIds(4, 0)
 , mUsedChannels(0)
 , mLastId(0) {}
 

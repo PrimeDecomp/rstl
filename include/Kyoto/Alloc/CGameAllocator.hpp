@@ -139,7 +139,11 @@ public:
   uint FixupAllocPtrs(SGameMemInfo*, const uint, uint, EHint, const CCallStack&);
   void UpdateAllocDebugStats(unsigned int, unsigned int, unsigned int);
   bool Free(const void* ptr) override;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  void FreeNormalAllocation(const void* ptr);
+#else
   bool FreeNormalAllocation(const void* ptr);
+#endif
   void ReleaseAll() override;
   void* AllocSecondary(size_t size, EHint hint, EScope scope, EType type,
                        const CCallStack& cs) override;
@@ -148,20 +152,67 @@ public:
   void SetOutOfMemoryCallback(FOutOfMemoryCb cb, const void* target) override;
   int EnumAllocations(FEnumAllocationsCb func, const void* ptr, bool b) const override;
   SAllocInfo GetAllocInfo(const void* ptr) const override;
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  SAllocatorMetrics GetMetrics() const override;
+  int GetHeapCount() const override;
+  SHeapMetrics GetHeapMetrics(int index, uint flags) const override;
+  const char* GetHeapName(int index) const override;
+#elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
   SMetrics GetMetrics(bool resetPeriodicPeak, bool resetPeak) const override;
 #else
   SMetrics GetMetrics() const override;
 #endif
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
   void OffsetFakeStatics(int offset) override;
+#endif
 
   static uint GetFreeBinEntryForSize(uint);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  void AddFreeEntryToFreeList(SGameMemInfo*, int heapIndex);
+  void RemoveFreeEntryFromFreeList(SGameMemInfo*, int heapIndex);
+#else
   void AddFreeEntryToFreeList(SGameMemInfo*);
   void RemoveFreeEntryFromFreeList(SGameMemInfo*);
+#endif
   void DumpAllocations() const;
   size_t GetLargestFreeChunk() const;
 
 private:
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  int GetHeapIndex(const void* ptr) const; // Guessed name
+
+  struct SHeap { // Guessed name
+    SHeap();
+    SGameMemInfo* mFirst;
+    SGameMemInfo* mLast;
+    SGameMemInfo* mBins[16];
+    const void* mArenaStart;
+    const void* mArenaEnd;
+    SHeapMetrics mMetrics;
+  };
+
+  bool mInitialized;
+  mutable SHeap mHeaps[2];
+  FOutOfMemoryCb mOomCallback;
+  const void* mOomTarget;
+  CSmallAllocPool* mSmallAllocPool;
+  void* mSmallAllocMainData;
+  void* mSmallAllocBookKeeping;
+  bool mSmallAllocFailed;
+  int mSmallAllocRetryDelay;
+  CMediumAllocPool* mMediumPool;
+  void* mMediumPoolMem1;
+  void* mMediumPoolMem2;
+  bool mMediumAllocFailed;
+  uint mSmallHeapAllocations;
+  uint x140_;
+  uint mMem1HeapPhysicalAddress;
+  uint x148_;
+  uint mSmallPoolReservedBytes;
+  bool mAllowMem2Fallback : 1;
+  bool mGrowingMediumPool : 1;
+  bool mHandlingOutOfMemory : 1;
+#else
   SGameMemInfo** GetBinPtr(uint bin) { return &mBins[bin]; }
   uchar mInitialized; // Guessed name
   // Unresolved bytes; the target does not initialize these with mInitialized.
@@ -202,9 +253,14 @@ private:
   void* mPhysicalAddr;
   uint mFakeStatics;
   uint mSmallPoolReservedBytes; // Guessed name
+#endif
 };
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+CHECK_SIZEOF(CGameAllocator, 0x154)
+#else
 CHECK_SIZEOF(CGameAllocator, RSTL_KYOTO_ALLOCATOR_METRICS_RESET ? 0xc4 : 0xc0)
+#endif
 NESTED_CHECK_SIZEOF(CGameAllocator, SGameMemInfo, 0x20)
 
 #endif // _CGAMEALLOCATOR

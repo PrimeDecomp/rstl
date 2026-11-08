@@ -17,6 +17,7 @@
 #include <string.h>
 #endif
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 /* Here just to make sure the data section matches */
 #if RSTL_KYOTO_DEBUG_BUILD
 static const char* const string_NULL = "<NULL>";
@@ -40,11 +41,14 @@ static inline U1 T_round_up(U2 val, int align) {
   return (val + (align - 1)) & ~(align - 1);
 }
 
+#endif
+
 CGameAllocator::SGameMemInfo* CGameAllocator::GetMemInfoFromBlockPtr(const void* ptr) const {
   return reinterpret_cast< SGameMemInfo* >(reinterpret_cast< uintptr_t >(ptr) -
                                            sizeof(SGameMemInfo));
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 CGameAllocator::CGameAllocator()
 : mInitialized(0)
 , mHeapSize(0)
@@ -472,7 +476,17 @@ bool CGameAllocator::Free(const void* ptr) {
   return FreeNormalAllocation(ptr);
 }
 
-bool CGameAllocator::FreeNormalAllocation(const void* p) {
+#endif
+
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void CGameAllocator::FreeNormalAllocation(const void* p)
+#else
+bool CGameAllocator::FreeNormalAllocation(const void* p)
+#endif
+{
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  const int heapIndex = GetHeapIndex(p);
+#endif
   SGameMemInfo* pMemInfo = GetMemInfoFromBlockPtr(p);
   size_t newLen = 0;
   const size_t infoLen = pMemInfo->mSize;
@@ -510,7 +524,11 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
   SGameMemInfo* next = pMemInfo->GetNext();
 
   if (prev && !prev->IsAllocated()) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+    RemoveFreeEntryFromFreeList(prev, heapIndex);
+#else
     RemoveFreeEntryFromFreeList(prev);
+#endif
     prev->SetNext(next);
     if (next) {
       next->SetPrev(prev);
@@ -521,7 +539,11 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
   }
 
   if (next && !next->IsAllocated() && next->GetNext()) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+    RemoveFreeEntryFromFreeList(next, heapIndex);
+#else
     RemoveFreeEntryFromFreeList(next);
+#endif
     pMemInfo->SetNext(next->GetNext());
     if (pMemInfo->GetNext()) {
       pMemInfo->GetNext()->SetPrev(pMemInfo);
@@ -532,19 +554,30 @@ bool CGameAllocator::FreeNormalAllocation(const void* p) {
   } else {
     pMemInfo->SetAllocated(false);
   }
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  AddFreeEntryToFreeList(pMemInfo, heapIndex);
+  SHeapMetrics& metrics = mHeaps[heapIndex].mMetrics;
+  --metrics.mCurrentHeapAllocations;
+  metrics.mRequestedHeapBytes -= infoLen;
+  metrics.mAllocatedHeapBytes -= (paddedSize + newLen);
+  metrics.mFreeHeapBytes += (paddedSize + newLen);
+#else
   AddFreeEntryToFreeList(pMemInfo);
-
   mCurrentHeapAllocations -= 1;
   mRequestedHeapBytes -= infoLen;
   mAllocatedHeapBytes -= (paddedSize + newLen);
   mFreeHeapBytes += (paddedSize + newLen);
+#endif
   if (infoLen <= 56) {
     mSmallHeapAllocations -= 1;
   }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   return true;
-};
+#endif
+}
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void CGameAllocator::ReleaseAll() {
   if (mMediumPool) {
     mMediumPool->ClearPuddles();
@@ -564,6 +597,8 @@ void CGameAllocator::ReleaseAll() {
   mFirst = nullptr;
   mLast = nullptr;
 };
+
+#endif
 
 void* CGameAllocator::AllocSecondary(size_t size, EHint hint, EScope scope, EType type,
                                      const CCallStack& callstack) {
@@ -586,11 +621,13 @@ IAllocator::SAllocInfo CGameAllocator::GetAllocInfo(const void* ptr) const {
                     info->mType);
 };
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-IAllocator::SMetrics CGameAllocator::GetMetrics(bool resetPeriodicPeak, bool resetPeak) const {
+IAllocator::SMetrics CGameAllocator::GetMetrics(bool resetPeriodicPeak, bool resetPeak) const
 #else
-IAllocator::SMetrics CGameAllocator::GetMetrics() const {
+IAllocator::SMetrics CGameAllocator::GetMetrics() const
 #endif
+{
   uint mediumAllocTotalAllocated = mMediumPool != nullptr ? mMediumPool->GetTotalEntries() * 32 : 0;
   uint mediumAllocBlocksAvailable =
       mMediumPool != nullptr ? mMediumPool->GetNumBlocksAvailable() : 0;
@@ -662,6 +699,8 @@ int CGameAllocator::EnumAllocations(FEnumAllocationsCb func, const void* ptr, bo
   return i;
 };
 
+#endif
+
 uint CGameAllocator::GetFreeBinEntryForSize(const uint size) {
   uint maxLen = 0x20;
   uint bin = 0;
@@ -678,21 +717,41 @@ uint CGameAllocator::GetFreeBinEntryForSize(const uint size) {
   return 0xf;
 }
 
-void CGameAllocator::AddFreeEntryToFreeList(SGameMemInfo* info) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void CGameAllocator::AddFreeEntryToFreeList(SGameMemInfo* info, int heapIndex)
+#else
+void CGameAllocator::AddFreeEntryToFreeList(SGameMemInfo* info)
+#endif
+{
   uint bin = GetFreeBinEntryForSize(info->GetLength());
-  info->SetNextFree(mBins[bin]);
-  mBins[bin] = info;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  SGameMemInfo** bins = mHeaps[heapIndex].mBins;
+#else
+  SGameMemInfo** bins = mBins;
+#endif
+  info->SetNextFree(bins[bin]);
+  bins[bin] = info;
 }
 
-void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo, int heapIndex)
+#else
+void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo)
+#endif
+{
   uint bin = GetFreeBinEntryForSize(memInfo->GetLength());
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  SGameMemInfo** bins = mHeaps[heapIndex].mBins;
+#else
+  SGameMemInfo** bins = mBins;
+#endif
   SGameMemInfo* curBin = nullptr;
-  SGameMemInfo* binIt = mBins[bin];
+  SGameMemInfo* binIt = bins[bin];
 
   while (binIt != nullptr) {
     if (binIt == memInfo) {
       if (curBin == nullptr) {
-        mBins[bin] = binIt->GetNextFree();
+        bins[bin] = binIt->GetNextFree();
       } else {
         curBin->SetNextFree(binIt->GetNextFree());
       }
@@ -704,6 +763,17 @@ void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo) {
   }
 }
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+int CGameAllocator::GetHeapIndex(const void* ptr) const {
+  if (ptr >= mHeaps[0].mArenaStart && ptr < mHeaps[0].mArenaEnd) {
+    return 0;
+  }
+  if (ptr >= mHeaps[1].mArenaStart && ptr < mHeaps[1].mArenaEnd) {
+    return 1;
+  }
+  return 0;
+}
+#else
 static inline bool DoWait(int v) { return (v % 4) == 0; }
 
 void CGameAllocator::DumpAllocations() const {
@@ -739,3 +809,4 @@ size_t CGameAllocator::GetLargestFreeChunk() const {
 #endif
 
 void CGameAllocator::OffsetFakeStatics(const int offset) { mFakeStatics += offset; }
+#endif

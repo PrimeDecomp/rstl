@@ -11,4 +11,21 @@ public:
   ~CInterruptGuard() { OSRestoreInterrupts(mEnabled); }
 };
 
+class CRestorableInterruptGuard {
+public:
+  CRestorableInterruptGuard() : mEnabled(OSDisableInterrupts()), mRestored(false) {}
+  ~CRestorableInterruptGuard() { Restore(); }
+
+  void Restore() {
+    if (!mRestored) {
+      OSRestoreInterrupts(mEnabled);
+      mRestored = true;
+    }
+  }
+
+private:
+  bool mEnabled;
+  bool mRestored;
+};
+
 #endif

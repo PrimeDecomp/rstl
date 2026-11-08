@@ -2,6 +2,7 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "Kyoto/Input/CFinalInput.hpp"
 #include "Kyoto/Input/CInputFilter.hpp"
 #include "Kyoto/Input/CRevolutionMotionProcessor.hpp"
@@ -9,25 +10,6 @@
 
 #include "dolphin/vi.h"
 #include "revolution/os.h"
-
-namespace {
-// Inferred RAII helper: the original stores the saved state and an explicit restore flag.
-class CInterruptGuard {
-public:
-  CInterruptGuard() : x0_enabled(OSDisableInterrupts()), x1_restored(false) {}
-  ~CInterruptGuard() { Restore(); }
-  void Restore() {
-    if (!x1_restored) {
-      OSRestoreInterrupts(x0_enabled);
-      x1_restored = true;
-    }
-  }
-
-private:
-  bool x0_enabled;
-  bool x1_restored;
-};
-} // namespace
 
 static CRevolutionController* sRevolutionController;
 static uint sButtonMasks[64] = {
@@ -75,7 +57,13 @@ CRevolutionController::CRevolutionController()
 , mPointerMaxDistance(4.f)
 , mPointerMinScale(1.3f)
 , mPointerMaxScale(1.f)
-, mAcceptAdditionalConnections(false) {
+#if RSTL_CONTROLLER_CHANNEL_LIMIT
+, mMaxControllers(1)
+#endif
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
+, mAcceptAdditionalConnections(false)
+#endif
+{
   sRevolutionController = this;
   Initialize();
 }
@@ -106,10 +94,19 @@ void CRevolutionController::QueueExtensionEvent(int channel, EExtensionEvent eve
   mPendingExtensionEvents[channel] = event;
 }
 
+#if RSTL_CONTROLLER_CHANNEL_LIMIT
+void CRevolutionController::SetMaxControllers(int count) {
+  mMaxControllers = CMath::Max(1, count);
+  if (mMaxControllers > 1 && !mAcceptAdditionalConnections) {
+    WPADSetAcceptConnection(true);
+  }
+}
+#endif
+
 void CRevolutionController::ProcessConnectionEvents() {
   rstl::reserved_vector< EConnectionEvent, 4 > connections(4);
   rstl::reserved_vector< EExtensionEvent, 4 > extensions(4);
-  CInterruptGuard interrupts;
+  CRestorableInterruptGuard interrupts;
   for (int i = 0; i < 4; ++i) {
     connections[i] = mPendingConnectionEvents[i];
     extensions[i] = mPendingExtensionEvents[i];
@@ -122,12 +119,13 @@ void CRevolutionController::ProcessConnectionEvents() {
     switch (connections[i]) {
     case kCE_Connected:
       InitializeController(i);
-      if (i == 0 && !mAcceptAdditionalConnections) {
+      if (GetMaxControllers() == 1 && i == 0 && !AcceptsAdditionalConnections()) {
         WPADSetAcceptConnection(false);
       }
       break;
     case kCE_Disconnected:
-      if (i == 0 && !mAcceptAdditionalConnections) {
+      if (((GetMaxControllers() == 1 && i == 0) || GetMaxControllers() == 4) &&
+          !AcceptsAdditionalConnections()) {
         WPADSetAcceptConnection(true);
       }
       break;
@@ -152,10 +150,10 @@ void CRevolutionController::Update(float dt) {
   KPADStatus samples[16];
   KPADUnifiedWpadStatus rawSamples[16];
   ProcessConnectionEvents();
-  for (int channel = 0; channel < 1; ++channel) {
+  for (int channel = 0; channel < kActiveChannelCount; ++channel) {
     if (mInput[channel].DeviceIsPresent()) {
       if (mControllerTypes[channel] != kDT_Unsupported) {
-        CInterruptGuard interrupts;
+        CRestorableInterruptGuard interrupts;
         const int count = KPADRead(channel, samples, 16);
         if (count != 0 && samples[0].wpad_err == WPAD_ERR_OK) {
           CBasics::CopyMemory(&mStatus[channel], samples, sizeof(KPADStatus));
@@ -865,7 +863,7 @@ void CRevolutionController::WpadInfoCallback(s32 channel, s32 result) {
 
 void CRevolutionController::WpadConnectCallback(s32 channel, s32 result) {
   if (sRevolutionController != nullptr) {
-    if (channel >= 1) {
+    if (channel >= sRevolutionController->GetMaxControllers()) {
       sRevolutionController->QueueConnectionEvent(channel, kCE_Rejected);
     } else {
       switch (result) {
@@ -891,7 +889,7 @@ void CRevolutionController::WpadConnectCallback(s32 channel, s32 result) {
 
 void CRevolutionController::WpadExtensionCallback(s32 channel, s32 extension) {
   if (sRevolutionController != nullptr) {
-    if (channel >= 1) {
+    if (channel >= kActiveChannelCount) {
       sRevolutionController->SetControllerType(channel, kDT_Wiimote);
     } else {
       switch (extension) {
@@ -923,6 +921,7 @@ void CRevolutionController::WpadExtensionCallback(s32 channel, s32 extension) {
   }
 }
 
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
 void CRevolutionController::SetAcceptAdditionalConnections(bool accept) {
   if (accept == mAcceptAdditionalConnections) {
     return;
@@ -932,6 +931,8 @@ void CRevolutionController::SetAcceptAdditionalConnections(bool accept) {
     WPADSetAcceptConnection(false);
   }
 }
+
+#endif
 
 void CRevolutionController::SetInput(const CControllerData& input, int channel) {
   mInput[channel] = input;

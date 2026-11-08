@@ -4,9 +4,14 @@
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CCallStack.hpp"
 #include "Kyoto/Alloc/CGameAllocator.hpp"
+#include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 
 #include "dolphin/os.h"
+
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void rs_reallyfatal_printf(const char* format, ...);
+#endif
 
 static CGameAllocator gGameAllocator;
 IAllocator* CMemory::mpAllocator = &gGameAllocator;
@@ -35,7 +40,12 @@ void CMemory::SetAllocator(COsContext& ctx, IAllocator& allocator) {
   }
 }
 
-static bool cmemory_enum_alloc_cb(const IAllocator::SAllocInfo& info, const void* ptr) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+static bool cmemory_enum_alloc_cb(int, const IAllocator::SAllocInfo& info, const void*)
+#else
+static bool cmemory_enum_alloc_cb(const IAllocator::SAllocInfo& info, const void* ptr)
+#endif
+{
   if (info.mIsAllocated && info.x9_ == 0) {
     ++gLeakCount;
     gLeakBytes += info.mLen;
@@ -46,11 +56,17 @@ static bool cmemory_enum_alloc_cb(const IAllocator::SAllocInfo& info, const void
 void CMemory::Shutdown() {
   CMemory::mInitialized = false;
 
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-  if (mpAllocator->GetMetrics(0, false).x8_ != 0) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  uint liveAllocations = 0;
+  for (int i = 0; i < mpAllocator->GetHeapCount(); ++i) {
+    liveAllocations += mpAllocator->GetHeapMetrics(i, 0).mCurrentHeapAllocations;
+  }
+#elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+  const uint liveAllocations = mpAllocator->GetMetrics(0, false).x8_;
 #else
-  if (mpAllocator->GetMetrics().x8_ != 0) {
+  const uint liveAllocations = mpAllocator->GetMetrics().x8_;
 #endif
+  if (liveAllocations != 0) {
     gLeakCount = 0;
     gLeakBytes = 0;
     mpAllocator->EnumAllocations((IAllocator::FEnumAllocationsCb)cmemory_enum_alloc_cb, nullptr,
@@ -61,10 +77,22 @@ void CMemory::Shutdown() {
 
 void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scope,
                      IAllocator::EType type, const CCallStack& callstack) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  CRestorableInterruptGuard interrupts;
+#else
   volatile bool enabled = OSDisableInterrupts();
+#endif
   void* ret = mpAllocator->Alloc(len, hint, scope, type, callstack);
   if (ret == nullptr) {
-#if RSTL_KYOTO_DEBUG_BUILD
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+    const IAllocator::SAllocatorMetrics metrics = mpAllocator->GetMetrics();
+    uint freeBytes = 0;
+    for (int i = 0; i < mpAllocator->GetHeapCount(); ++i) {
+      freeBytes += mpAllocator->GetHeapMetrics(i, 0).mFreeHeapBytes;
+    }
+    rs_reallyfatal_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len,
+                          metrics.mAllocatedHeapBytes, freeBytes);
+#elif RSTL_KYOTO_DEBUG_BUILD
     rs_debugger_printf("**************************************************\n");
     rs_debugger_printf("***************** Alloc Failed! ******************\n");
     rs_debugger_printf("Size:%d\n", len);
@@ -78,29 +106,41 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
     RS_VERIFY_THROW(239, false, kXCP_BadAlloc, "kXCP_BadAlloc");
   }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   OSRestoreInterrupts(enabled);
+#endif
   return ret;
 }
 
 void CMemory::Free(const void* ptr) {
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  CRestorableInterruptGuard interrupts;
+#else
   volatile bool enabled = OSDisableInterrupts();
+#endif
   if (ptr != nullptr && !mpAllocator->Free(ptr)) {
     RS_VERIFY_THROW(280, false, CMemory::kXCP_BadFree, "CMemory::kXCP_BadFree");
   }
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   OSRestoreInterrupts(enabled);
+#endif
 }
 
 void CMemory::SetOutOfMemoryCallback(IAllocator::FOutOfMemoryCb cb, const void* context) {
   mpAllocator->SetOutOfMemoryCallback(cb, context);
 }
 
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+IAllocator::SAllocatorMetrics CMemory::GetMetrics() { return mpAllocator->GetMetrics(); }
+#elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
 IAllocator::SMetrics CMemory::GetMetrics(bool unk1, bool unk2) {
   return mpAllocator->GetMetrics(unk1, unk2);
 }
 #endif
 
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
 void CMemory::OffsetFakeStatics(int offset) { mpAllocator->OffsetFakeStatics(offset); }
+#endif
 
 void* operator new(size_t sz, const char* fileAndLine, const char* type) {
   return CMemory::Alloc(sz, IAllocator::kHI_None, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,

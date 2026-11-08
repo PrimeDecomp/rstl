@@ -68,11 +68,8 @@ public:
   }
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   friend class CRevolutionController;
   friend class CFinalInput;
-#endif
 
   bool mConnected;
   bool mForceInputEvent;

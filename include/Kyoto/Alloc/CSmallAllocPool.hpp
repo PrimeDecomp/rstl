@@ -4,13 +4,18 @@
 #include <types.h>
 
 #include "Kyoto/Alloc/AllocatorCommon.hpp"
+#include "rstl/RstlVersions.h"
 
 class CSmallAllocPool {
 public:
   CSmallAllocPool(uint len, void* mainData, void* bookKeeping);
   void* FindFree(int len);
   void* Alloc(uint size);
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  int Free(const void* ptr);
+#else
   bool Free(const void* ptr);
+#endif
 
   bool PtrWithinPool(const void* ptr) const {
     return static_cast< uint >(
@@ -41,6 +46,9 @@ private:
   void* mCachedBookKeepingOffset;
   int x10_;
   int x14_;
+#if RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS
+  uint mLastAllocBlockCount;
+#endif
   uint mNumBlocksAvailable;
   uint mNumAllocs;
 };

@@ -77,6 +77,17 @@
 
 // Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
+// Wii builds starting with retail Corruption access the yellow color constant directly.
+#define RSTL_CCOLOR_INLINE_YELLOW (RSTL_VERSION >= RSTL_RM3E)
+// The Revolution controller interface starts with retail Corruption.
+#define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
+// Later controllers add acceptance and motion-activity slots.
+#define RSTL_CONTROLLER_EXTENDED_VIRTUALS (RSTL_VERSION >= RSTL_RM3P)
+#if defined(PRIME2) && RSTL_VERSION >= RSTL_R32J
+#define RSTL_CONTROLLER_CHANNEL_LIMIT 1
+#else
+#define RSTL_CONTROLLER_CHANNEL_LIMIT 0
+#endif
 
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
@@ -273,12 +284,8 @@
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
 // has `explicit reserved_vector(int)`.
 #define RSTL_RESERVED_VECTOR_TRAITS (RSTL_VERSION >= RSTL_R3IJ)
-// `explicit reserved_vector(int)` exists; the Corruption prototype default-constructs camera
-// behavior slots through it. Trilogy Echoes has none: `reserved_vector< int, N >(0)` fills N
-// elements (Echoes `CWeaponMgr::Add`), which a count constructor beside the by-value fill cannot do.
-// Metroid Prime uses it on every version, including the Trilogy.
-#define RSTL_RESERVED_VECTOR_COUNT_CTOR \
-  ((RSTL_RESERVED_VECTOR_TRAITS && !RSTL_TRILOGY_ECHOES) || RSTL_CORRUPTION)
+// Wii controllers use the count constructor. The Corruption prototype uses it for camera slots.
+#define RSTL_RESERVED_VECTOR_COUNT_CTOR (RSTL_RESERVED_VECTOR_TRAITS || RSTL_CORRUPTION)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
 #define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
 // `destroy_elements` checks the count (a release no-op that still counts toward the inline size)
@@ -326,7 +333,7 @@
 // --- Strings ---
 // `basic_string::mNull` is a `const` static initialized in the class and defined by the template,
 // instead of the explicit specializations in rstl_strings.cpp.
-#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_RM3E)
 // `basic_string::mNull` is a non-const static.
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
@@ -640,6 +647,9 @@
 // CBasics::ZeroMemory/CopyMemory (dcbz block fill and copy) are defined in CBasicsDolphin.cpp.
 // Prime Trilogy has its own, larger versions that are not reconstructed.
 #define RSTL_KYOTO_BLOCK_MEMORY_FUNCTIONS (!RSTL_PRIME1)
+
+// Prime and Echoes on Wii use a cache-block fill for nonzero bytes as well.
+#define RSTL_KYOTO_BLOCK_MEMORY_FILL (RSTL_VERSION >= RSTL_R3IJ)
 // PAL Prime and Echoes store OSGetLanguage() and reserve a graphics arena block in the
 // constructor (field layout changes from 0x10 on). PAL Prime reserves 0x23e000 bytes.
 #define RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK                                                          \
@@ -772,6 +782,17 @@
 // tracks that peak, CMemory forwards GetMetrics and an allocation failure reports used/free bytes.
 // Prime's `GetMetrics()` takes no arguments (all Prime versions, including Trilogy).
 #define RSTL_KYOTO_ALLOCATOR_METRICS_RESET (!RSTL_PRIME1)
+
+// Wii allocators manage separate MEM1 and MEM2 heaps.
+#define RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS (RSTL_VERSION >= RSTL_RM3E)
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS || RSTL_PRIME1 || defined(PRIME2)
+#define RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS 1
+#else
+#define RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS 0
+#endif
+
+// Wii's small pool records the last allocation size and returns a block count from Free.
+#define RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS (RSTL_VERSION >= RSTL_RM3E)
 // `SMetrics` declares a copy constructor (Echoes defines it in CMemoryDrawEnum.cpp). The
 // prototype's metrics are trivially copied.
 #define RSTL_KYOTO_METRICS_COPY_CTOR (!RSTL_PRIME1 && !RSTL_CORRUPTION)

@@ -39,7 +39,9 @@ const CColor& CColor::Green() { return sGreenColor; }
 #endif
 
 const CColor& CColor::Blue() { return sBlueColor; }
+#if !RSTL_CCOLOR_INLINE_YELLOW
 const CColor& CColor::Yellow() { return sYellowColor; }
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_R3IJ

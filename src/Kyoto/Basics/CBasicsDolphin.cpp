@@ -118,3 +118,53 @@ void CBasics::ZeroMemory(void* dst, uint size) {
   }
 }
 #endif
+
+#if RSTL_KYOTO_BLOCK_MEMORY_FILL
+static inline double RepeatedByte(uchar value) {
+  union {
+    uint words[2];
+    double block;
+  } pattern;
+  const uint word = value | (value << 8) | (value << 16) | (static_cast< uint >(value) << 24);
+  pattern.words[0] = word;
+  pattern.words[1] = word;
+  return pattern.block;
+}
+
+static inline void FillCacheBlocks(uchar* dst, uint size, uchar value) {
+  const double pattern = RepeatedByte(value);
+  while (size != 0) {
+    __dcbz(dst, 0);
+    size -= 32;
+    reinterpret_cast< double* >(dst)[0] = pattern;
+    reinterpret_cast< double* >(dst)[1] = pattern;
+    reinterpret_cast< double* >(dst)[2] = pattern;
+    reinterpret_cast< double* >(dst)[3] = pattern;
+    dst += 32;
+  }
+}
+
+void CBasics::FillMemory(void* dst, uchar value, uint size) {
+  uchar* out = static_cast< uchar* >(dst);
+  if (size < 32) {
+    memset(out, value, size);
+  } else if (((reinterpret_cast< uint >(out) | size) & 31) == 0) {
+    FillCacheBlocks(out, size, value);
+  } else {
+    uchar* aligned = reinterpret_cast< uchar* >((reinterpret_cast< uint >(out) + 31) & ~31);
+    int head = aligned - out;
+    if (head != 0) {
+      memset(out, value, head);
+    }
+    int blocks = (size - head) & ~31;
+    if (blocks != 0) {
+      FillCacheBlocks(aligned, blocks, value);
+    }
+    int tail = (int)size - head - blocks;
+    if (tail != 0) {
+      aligned += blocks;
+      memset(aligned, value, tail);
+    }
+  }
+}
+#endif

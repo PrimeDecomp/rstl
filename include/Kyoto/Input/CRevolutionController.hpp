@@ -24,19 +24,32 @@ public:
   EDeviceType GetControllerType(int channel) const override;
   void SetMotorEnabled(int channel, bool enabled) override;
   void SetMotorState(int channel, EMotorState state) override;
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
   void SetAcceptAdditionalConnections(bool accept) override;
+#endif
   CControllerData::EPointerState GetPointerState(int channel) const override;
   uint GetPointerValidFrameCount(int channel) const override;
   uint GetPointerInvalidFrameCount(int channel) const override;
   CVector2f GetPointerPosition(int channel) const override;
   void SetPointerRecenterMode(uint channel, EPointerRecenterMode mode) override;
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
   bool HasMotionActivity(uint channel) const override;
   virtual float GetMotionIdleTime(uint channel) const;
   virtual bool HasButtonActivity(uint channel) const;
   virtual float GetButtonIdleTime(uint channel) const;
   virtual bool IsControllerIdle(uint channel) const;
+#else
+  bool HasMotionActivity(uint channel) const;
+  float GetMotionIdleTime(uint channel) const;
+  bool HasButtonActivity(uint channel) const;
+  float GetButtonIdleTime(uint channel) const;
+  bool IsControllerIdle(uint channel) const;
+#endif
 
   CRevolutionController();
+#if RSTL_CONTROLLER_CHANNEL_LIMIT
+  void SetMaxControllers(int count);
+#endif
   bool Initialize();
   bool IsPointerValid(int channel) const;
   bool IsPointerDevicePresent(int channel) const;
@@ -66,7 +79,22 @@ private:
 
   void QueueConnectionEvent(int channel, EConnectionEvent event);
   void QueueExtensionEvent(int channel, EExtensionEvent event);
+  enum { kActiveChannelCount = RSTL_CONTROLLER_CHANNEL_LIMIT ? 4 : 1 };
   void ProcessConnectionEvents();
+  int GetMaxControllers() const {
+#if RSTL_CONTROLLER_CHANNEL_LIMIT
+    return mMaxControllers;
+#else
+    return 1;
+#endif
+  }
+  bool AcceptsAdditionalConnections() const {
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
+    return mAcceptAdditionalConnections;
+#else
+    return false;
+#endif
+  }
   void ApplyPointerDistanceScale(int channel);
   void UpdatePointerState(int channel);
   void ProcessControllerInput(int channel);
@@ -106,12 +134,15 @@ private:
   float mPointerMaxDistance;
   float mPointerMinScale;
   float mPointerMaxScale;
-  bool mAcceptAdditionalConnections;
-};
-#if RSTL_VERSION >= RSTL_R3MP_00
-CHECK_SIZEOF(CRevolutionController, 0xd40)
-#else
-CHECK_SIZEOF(CRevolutionController, 0xc90)
+#if RSTL_CONTROLLER_CHANNEL_LIMIT
+  int mMaxControllers;
 #endif
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
+  bool mAcceptAdditionalConnections;
+#endif
+};
+CHECK_SIZEOF(CRevolutionController, 0xc8c + 4 * (sizeof(KPADStatus) - 0x84) +
+                                         4 * RSTL_CONTROLLER_EXTENDED_VIRTUALS +
+                                         4 * RSTL_CONTROLLER_CHANNEL_LIMIT)
 
 #endif // _CREVOLUTIONCONTROLLER
