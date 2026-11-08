@@ -331,7 +331,7 @@
 // --- Strings ---
 // `basic_string::mNull` is a `const` static initialized in the class and defined by the template,
 // instead of the explicit specializations in rstl_strings.cpp.
-#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_RM3E)
 // `basic_string::mNull` is a non-const static.
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
