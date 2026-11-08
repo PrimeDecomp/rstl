@@ -620,9 +620,6 @@
 #define RSTL_ECHOES_CONST const
 #define RSTL_PRIME1_INLINE
 #endif
-// CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
-// The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
-#define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1
 // CStopwatch::Wait skips waits at or below FLT_EPSILON instead of waiting zero for |wait| < 1ms.
 #define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
 // GameCube Prime uses vsprintf; Echoes, Corruption's prototype and Wii Prime use vsnprintf.
