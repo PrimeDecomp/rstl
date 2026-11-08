@@ -1,6 +1,8 @@
 #ifndef _CGUITEXTSUPPORT
 #define _CGUITEXTSUPPORT
 
+#include "rstl/RstlVersions.h"
+
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CVector2i.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
@@ -42,6 +44,7 @@ public:
   void SetControlTXTRMap(const rstl::vector< rstl::pair< CAssetId, CAssetId > >* textureMap);
   void SetWordWrap(bool wordWrap);
   void SetImageBaseline(bool baseline);
+  void SetJustification(EJustification justification);
   void SetVerticalJustification(EVerticalJustification justification);
   void SetTypeWriteEffectOptions(bool enable, float fadeTime, float rate);
   void Update(float dt);
@@ -54,6 +57,7 @@ public:
   float GetCurTime() const { return mCurrentTime; }
   void SetCurTime(float time) { mCurrentTime = time; }
   float GetNumCharactersPrinted() const;
+  float GetNumCharsTotal() const;
   float GetCurrentAnimationOverAge() const;
   const rstl::wstring& GetText() const { return mText; }
   int GetTotalPageCount();
@@ -89,6 +93,9 @@ private:
   bool mImageBaseline;
   int mExtraCharacterSpacing;
   int mExtraLineSpacing;
+#if RSTL_GUI_TEXT_LINE_SPACING
+  float mLineSpacing;
+#endif
   int mExtentX;
   int mExtentY;
   float mCurrentTime;
@@ -107,6 +114,6 @@ private:
 };
 
 CHECK_SIZEOF(CGuiTextProperties, 0x10)
-CHECK_SIZEOF(CGuiTextSupport, 0xd08)
+CHECK_SIZEOF(CGuiTextSupport, RSTL_GUI_TEXT_LINE_SPACING ? (RSTL_ECHOES ? 0xd0c : 0xcdc) : 0xd08)
 
 #endif // _CGUITEXTSUPPORT
