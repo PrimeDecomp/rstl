@@ -111,6 +111,24 @@ jobs:
       - name: Prepare original files
         run: cp -av /orig/${{ matrix.version }}/ orig/
         
+      # Downloaded tools (dtk, objdiff, sjiswrap, wibo, compilers, binutils) are cached
+      # apart from the build, keyed only by the tool tags in configure.py, so a source
+      # change never invalidates them and a tag bump never needs a new build cache key.
+      # cache steps resolve paths from the workspace root, not the working-directory.
+      - name: Hash tool tags
+        id: tools-hash
+        run: echo "hash=$(grep _tag configure.py | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore tool cache
+        id: tool-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            game/build/tools
+            game/build/compilers
+            game/build/binutils
+          key: tools-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.tools-hash.outputs.hash }}
+
       # Restore cached files. --portable-build-ninja keeps paths in build.ninja and the
       # Ninja logs relative, so the cache can be shared between runners and workspaces.
       - name: Restore build cache
@@ -118,17 +136,22 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: |
-            build
-            .ninja_deps
-            .ninja_log
-          key: build-v4-${{ runner.os }}-${{ runner.arch }}-${{ matrix.version }}-${{ github.sha }}
-          restore-keys: build-v4-${{ runner.os }}-${{ runner.arch }}-${{ matrix.version }}-
+            game/build
+            !game/build/tools
+            !game/build/compilers
+            !game/build/binutils
+            game/.ninja_deps
+            game/.ninja_log
+          key: build-v5-${{ runner.os }}-${{ runner.arch }}-${{ matrix.version }}-${{ github.sha }}
+          restore-keys: build-v5-${{ runner.os }}-${{ runner.arch }}-${{ matrix.version }}-
 
       # Ninja rebuilds an output only when an input is newer than it. Checkout gives
       # every file the current time; files whose content matches the cached build get
       # an old fixed time instead, so only changed files are newer than cached objects.
       - name: Mark unchanged sources
         run: |
+          # Ninja downloads a tool again when download_tool.py is newer than it
+          touch -t 200001010000 tools/download_tool.py
           if [ ! -f build/sources.txt ]; then
             echo "No build/sources.txt in the restored cache; every file keeps its checkout time"
             exit 0
@@ -151,12 +174,25 @@ jobs:
           .venv/bin/python configure.py --portable-build-ninja $MAP_FLAG --version ${{ matrix.version }}
           mwcc-tools run ninja all_source progress build/${{ matrix.version }}/report.json
   
+      - name: Save tool cache
+        uses: actions/cache/save@v6
+        if: ${{ steps.tool-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: |
+            game/build/tools
+            game/build/compilers
+            game/build/binutils
+          key: ${{ steps.tool-cache.outputs.cache-primary-key }}
+
       - name: Save build cache
         uses: actions/cache/save@v6
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           path: |
-            build
-            .ninja_deps
-            .ninja_log
+            game/build
+            !game/build/tools
+            !game/build/compilers
+            !game/build/binutils
+            game/.ninja_deps
+            game/.ninja_log
           key: ${{ steps.cache.outputs.cache-primary-key }}
