@@ -72,6 +72,9 @@
 // Prime and US GameCube Echoes normalize the offset from the emitter origin.
 #define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
 
+// Japanese GameCube Echoes and later Prime 2 and Prime 3 builds use a line-spacing override.
+#define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
+
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
@@ -580,6 +583,8 @@
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
 // COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
 #define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_R3IJ)
+// Wii Prime and Echoes add a readiness slot and identify disc requests as media type 2.
+#define RSTL_KYOTO_DVD_REQUEST_WII_PORT (RSTL_VERSION >= RSTL_R3IJ)
 // The prototype and later contexts have a virtual destructor.
 #define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
 // Wii Echoes retains the system aspect ratio as a separate word after its language.

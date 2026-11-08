@@ -1,6 +1,7 @@
 #include "Kyoto/Text/CGuiTextSupport.hpp"
 
 #include "Kyoto/Graphics/CGraphics.hpp"
+#include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextParser.hpp"
@@ -31,6 +32,9 @@ CGuiTextSupport::CGuiTextSupport(CAssetId font, int extentX, int extentY,
 , mImageBaseline(false)
 , mExtraCharacterSpacing(0)
 , mExtraLineSpacing(0)
+#if RSTL_GUI_TEXT_LINE_SPACING
+, mLineSpacing(0.f)
+#endif
 , mExtentX(extentX)
 , mExtentY(extentY)
 , mCurrentTime(0.f)
@@ -117,6 +121,13 @@ void CGuiTextSupport::SetImageBaseline(bool baseline) {
   }
 }
 
+void CGuiTextSupport::SetJustification(EJustification justification) {
+  if (justification != mProperties.mJustification) {
+    mProperties.mJustification = justification;
+    ClearRenderBuffer();
+  }
+}
+
 void CGuiTextSupport::SetVerticalJustification(EVerticalJustification justification) {
   if (justification != mProperties.mVerticalJustification) {
     mProperties.mVerticalJustification = justification;
@@ -169,6 +180,11 @@ void CGuiTextSupport::CheckAndRebuildTextBuffer() const {
                           mOutlineColor.GetBlue(), mOutlineColor.GetAlpha());
   mExecuteBuffer.AddCharacterExtraSpace(mExtraCharacterSpacing);
   mExecuteBuffer.AddLineExtraSpace(mExtraLineSpacing);
+#if RSTL_GUI_TEXT_LINE_SPACING
+  if (!close_enough(mLineSpacing, 0.f)) {
+    mExecuteBuffer.AddLineSpacing(mLineSpacing);
+  }
+#endif
   rstl::wstring text;
   if (mFontId != kInvalidAssetId) {
     text = rstl::wstring(
@@ -262,6 +278,15 @@ float CGuiTextSupport::GetNumCharactersPrinted() const {
   return 0.f;
 }
 
+float CGuiTextSupport::GetNumCharsTotal() const {
+  if (const CTextRenderBuffer* buffer = GetCurrentPageRenderBuffer()) {
+    if (mTypewriterEnabled) {
+      return buffer->GetNumPrimitives();
+    }
+  }
+  return 0.f;
+}
+
 float CGuiTextSupport::GetCurrentAnimationOverAge() const {
   float time = 0.f;
   if (const CTextRenderBuffer* buffer = GetCurrentPageRenderBuffer()) {
@@ -349,3 +374,38 @@ void ScreenText::DrawString(const rstl::string& text, int x, int y,
   DrawExecuteBuffer(buffer);
 }
 
+void ScreenText::DrawString(const rstl::string& text, int x, int y,
+                            const TToken< CRasterFont >& font, const CColor& color, bool shadow) {
+  DrawString(CStringExtras::ConvertToUNICODE(text), x, y, font, color, shadow);
+}
+
+static inline void DrawStringPass(const rstl::wstring& text, int x, int y, const CViewport& viewport,
+                                  bool shadow, const TToken< CRasterFont >& font, const CColor& color) {
+  CTextExecuteBuffer buffer;
+  buffer.AddWordWrapping(true);
+  const int offset = shadow ? 1 : 0;
+  buffer.BeginBlock(x + offset, y + offset, viewport.mWidth - x, viewport.mHeight - y,
+                    false, kTD_Horizontal, kJustification_Left, kVerticalJustification_Center);
+  if (!shadow) {
+    buffer.AddColor(kCT_Main, CTextColor(color.GetRedu8(), color.GetGreenu8(), color.GetBlueu8(),
+                                         color.GetAlphau8()));
+  } else {
+    buffer.AddColor(kCT_Main, CTextColor(0, 0, 0, 255));
+  }
+  {
+    const TToken< CRasterFont > fontCopy = font;
+    buffer.AddFont(fontCopy);
+  }
+  buffer.AddString(text);
+  buffer.EndBlock();
+  ScreenText::DrawExecuteBuffer(buffer);
+}
+
+void ScreenText::DrawString(const rstl::wstring& text, int x, int y,
+                            const TToken< CRasterFont >& font, const CColor& color, bool shadow) {
+  const CViewport viewport = CGraphics::GetViewport();
+  if (shadow) {
+    DrawStringPass(text, x, y, viewport, true, font, color);
+  }
+  DrawStringPass(text, x, y, viewport, false, font, color);
+}

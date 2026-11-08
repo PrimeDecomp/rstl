@@ -28,9 +28,16 @@ bool CRealDvdRequest::IsComplete() {
   return ret;
 }
 
+bool CRealDvdRequest::IsReady() {
+  const s32 status = DVDGetCommandBlockStatus(&mFileInfo.cb);
+  return status == DVD_STATE_END || status == DVD_STATE_BUSY;
+}
+
 void CRealDvdRequest::PostCancelRequest() { DVDCancelAsync(&mFileInfo.cb, nullptr); }
 
-int CRealDvdRequest::GetMediaType() const { return 1; }
+int CRealDvdRequest::GetMediaType() const {
+  return RSTL_KYOTO_DVD_REQUEST_WII_PORT ? 2 : 1;
+}
 
 #if !defined(TARGET_PC)
 void CARAMDvdRequest::WaitUntilComplete() {
@@ -41,6 +48,8 @@ void CARAMDvdRequest::WaitUntilComplete() {
   CARAMManager::WaitForDMACompletion(mDmaReq);
   mDmaReq = CARAMManager::GetInvalidDMAHandle();
 }
+
+bool CARAMDvdRequest::IsReady() { return true; }
 
 bool CARAMDvdRequest::IsComplete() {
   if (mDmaReq != CARAMManager::GetInvalidDMAHandle()) {

@@ -9,7 +9,7 @@ class CDvdRequest {
 public:
   virtual ~CDvdRequest() = 0;           // 8
   virtual void WaitUntilComplete() = 0; // c
-#if !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
+#if RSTL_KYOTO_DVD_REQUEST_WII_PORT
   virtual bool IsReady() = 0; // Guessed name; native predicate is END or BUSY.
 #endif
   virtual bool IsComplete() = 0;        // GC 10, Wii 14
