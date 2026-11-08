@@ -264,6 +264,10 @@ private:
 #endif
 #endif
 
+#if RSTL_CCOLOR_INLINE_YELLOW
+inline const CColor& CColor::Yellow() { return sYellowColor; }
+#endif
+
 CHECK_SIZEOF(CColor, 0x4)
 
 // TODO: verify that this Prime/Echoes difference is real

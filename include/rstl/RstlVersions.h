@@ -77,6 +77,8 @@
 
 // Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
+// Wii builds starting with retail Corruption access the yellow color constant directly.
+#define RSTL_CCOLOR_INLINE_YELLOW (RSTL_VERSION >= RSTL_RM3E)
 // The Revolution controller interface starts with retail Corruption.
 #define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
 // Later controllers add acceptance and motion-activity slots.
