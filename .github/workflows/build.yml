@@ -148,7 +148,7 @@ jobs:
       # an old fixed time instead, so only changed files are newer than cached objects.
       - name: Mark unchanged sources
         run: |
-          # Ninja downloads a tool again when download_tool.py is newer than it
+          # Keep restored tools newer than their download rule
           touch -t 200001010000 tools/download_tool.py
           if [ ! -f build/sources.txt ]; then
             echo "No build/sources.txt in the restored cache; every file keeps its checkout time"
