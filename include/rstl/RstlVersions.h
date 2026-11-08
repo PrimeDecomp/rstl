@@ -75,6 +75,9 @@
 // Japanese GameCube Echoes and later Prime 2 and Prime 3 builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 
+// Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
+#define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
+
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)

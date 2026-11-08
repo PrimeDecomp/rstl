@@ -15,7 +15,7 @@ class CControllerData;
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ && defined(__MWERKS__)
+#if !RSTL_FINAL_INPUT_CONTROLLER_DATA && defined(__MWERKS__)
 #pragma cpp_extensions on
 #endif
 #else
@@ -26,7 +26,7 @@ class CControllerData;
 
 class CFinalInput {
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+#if !RSTL_PRIME1 || !RSTL_FINAL_INPUT_CONTROLLER_DATA
   static const float kInput_AnalogOnThreshhold;
   static const float kInput_AnalogTriggerOnThreshhold;
 #endif
@@ -54,6 +54,7 @@ public:
   static const float kPitchDigitalThreshold;
   static const float kPointerDigitalThreshold;
 
+  bool GetKnownDeviceIsPresent() const;
   bool CheckValidControl(int control) const;
   float GetAnalog(int control) const;
   float GetMotionAnalog(int control) const;
@@ -150,11 +151,11 @@ public:
               const CControllerGamepadData& data, RSTL_PRIME1_CONST float leftDiv,
               RSTL_PRIME1_CONST float rightDiv);
   CFinalInput(int channel, float dt, const COsContext& context);
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
+#if !RSTL_PRIME1 || !RSTL_FINAL_INPUT_CONTROLLER_DATA
   CFinalInput(const CFinalInput& other)
   : mDt(other.mDt)
   , mControllerIdx(other.mControllerIdx)
-#if !RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
   , mInputType(other.mInputType)
   , mControllerData(other.mControllerData)
 #else
@@ -200,11 +201,9 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
   uint GetInputType() const { return mInputType; }
   const CControllerData& GetControllerData() const { return mControllerData; }
-
-  bool GetKnownDeviceIsPresent() const;
 
   // For allowing the old code to compile
   float ALAUp() const;
@@ -511,12 +510,11 @@ private:
 
   float mDt;
   int mControllerIdx;
-#if !RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R32J
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
   // The native Wii record is a header followed by the complete device snapshot.
   uint mInputType; // Inferred meaning; native word at offset8.
   CControllerData mControllerData;
-#else
+#elif !RSTL_PRIME1
   float mAnaLeftX;
   float mAnaLeftY;
   float mAnaRightX;
@@ -575,15 +573,7 @@ private:
     };
     uchar btns4;
   };
-#endif
-#endif
-
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
-  uint mInputType;
-  CControllerData mControllerData;
 #else
-
   float mAnaLeftX;
   float mAnaLeftY;
   float mAnaRightX;
@@ -639,7 +629,6 @@ private:
     uchar btns3;
   };
 #endif
-#endif
 
 };
 #if !RSTL_PRIME1
@@ -649,18 +638,16 @@ private:
 #endif
 
 DECLARE_FULL_SIZE_FOR(CFinalInput,
-                      (RSTL_PRIME1 ? RSTL_VERSION >= RSTL_R3IJ : RSTL_VERSION >= RSTL_R32J)
-                          ? 0x218
-                          : (RSTL_PRIME1 ? 0x30 : 0x2c))
+                      RSTL_FINAL_INPUT_CONTROLLER_DATA ? 0x218 : (RSTL_PRIME1 ? 0x30 : 0x2c))
 CHECK_SIZEOF(CFinalInput, CFinalInput_FULL_SIZE)
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-#if RSTL_VERSION < RSTL_R3IJ && defined(__MWERKS__)
+#if !RSTL_FINAL_INPUT_CONTROLLER_DATA && defined(__MWERKS__)
 #pragma cpp_extensions reset
 #endif
 #else
-#if RSTL_VERSION >= RSTL_R32J
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
 // Recovered Wii bindings use the native input-query interface. Other legacy
 // entry points remain declared while their Wii callers are being recovered.
 inline bool CFinalInput::DLAUp() const {
