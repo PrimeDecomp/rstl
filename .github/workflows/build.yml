@@ -111,10 +111,8 @@ jobs:
       - name: Prepare original files
         run: cp -av /orig/${{ matrix.version }}/ orig/
         
-      # Downloaded tools (dtk, objdiff, sjiswrap, wibo, compilers, binutils) are cached
-      # apart from the build, keyed only by the tool tags in configure.py, so a source
-      # change never invalidates them and a tag bump never needs a new build cache key.
-      # cache steps resolve paths from the workspace root, not the working-directory.
+      # Tools are cached apart from the build, keyed by the tool tags in configure.py.
+      # Cache paths are relative to the workspace root, hence the game/ prefix.
       - name: Hash tool tags
         id: tools-hash
         run: echo "hash=$(grep _tag configure.py | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
