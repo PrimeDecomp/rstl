@@ -379,13 +379,19 @@ void ScreenText::DrawString(const rstl::string& text, int x, int y,
   DrawString(CStringExtras::ConvertToUNICODE(text), x, y, font, color, shadow);
 }
 
-static inline void DrawStringPass(const rstl::wstring& text, int x, int y, int width, int height,
-                                  const TToken< CRasterFont >& font, const CTextColor& color) {
+static inline void DrawStringPass(const rstl::wstring& text, int x, int y, const CViewport& viewport,
+                                  bool shadow, const TToken< CRasterFont >& font, const CColor& color) {
   CTextExecuteBuffer buffer;
   buffer.AddWordWrapping(true);
-  buffer.BeginBlock(x, y, width, height, false, kTD_Horizontal, kJustification_Left,
-                    kVerticalJustification_Center);
-  buffer.AddColor(kCT_Main, color);
+  const int offset = shadow ? 1 : 0;
+  buffer.BeginBlock(x + offset, y + offset, viewport.mWidth - x, viewport.mHeight - y,
+                    false, kTD_Horizontal, kJustification_Left, kVerticalJustification_Center);
+  if (!shadow) {
+    buffer.AddColor(kCT_Main, CTextColor(color.GetRedu8(), color.GetGreenu8(), color.GetBlueu8(),
+                                         color.GetAlphau8()));
+  } else {
+    buffer.AddColor(kCT_Main, CTextColor(0, 0, 0, 255));
+  }
   {
     const TToken< CRasterFont > fontCopy = font;
     buffer.AddFont(fontCopy);
@@ -398,12 +404,8 @@ static inline void DrawStringPass(const rstl::wstring& text, int x, int y, int w
 void ScreenText::DrawString(const rstl::wstring& text, int x, int y,
                             const TToken< CRasterFont >& font, const CColor& color, bool shadow) {
   const CViewport viewport = CGraphics::GetViewport();
-  const int width = viewport.mWidth - x;
-  const int height = viewport.mHeight - y;
   if (shadow) {
-    DrawStringPass(text, x + 1, y + 1, width, height, font, CTextColor(0, 0, 0, 255));
+    DrawStringPass(text, x, y, viewport, true, font, color);
   }
-  DrawStringPass(text, x, y, width, height, font,
-                 CTextColor(color.GetRedu8(), color.GetGreenu8(), color.GetBlueu8(), color.GetAlphau8()));
+  DrawStringPass(text, x, y, viewport, false, font, color);
 }
-
