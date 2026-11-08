@@ -413,7 +413,7 @@ void CPakFile::StashWorldPak() {
 
 #if !RSTL_PRIME1
 void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
-  rstl::reserved_vector< uint, 256 > bucketCounts(0);
+  rstl::reserved_vector< uint, 256 > bucketCounts(256, 0);
 
   const SResInfo emptyInfo = SResInfo(0, 'TXTR', 0, 0, 0, 0);
   mResList.clear();

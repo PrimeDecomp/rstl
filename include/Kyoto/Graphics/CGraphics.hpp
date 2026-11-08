@@ -179,11 +179,10 @@ struct CViewport {
 
 class CTexture;
 
-// TODO
-typedef struct {
+struct STextureCoordinate {
   float x;
   float y;
-} Vec2, *Vec2Ptr;
+};
 
 #if RSTL_PRIME1
 typedef bool TVideoModeFlag;
@@ -541,8 +540,8 @@ private:
 
   static VecPtr vtxBuffer;
   static VecPtr nrmBuffer;
-  static Vec2Ptr txtBuffer0;
-  static Vec2Ptr txtBuffer1;
+  static STextureCoordinate* txtBuffer0;
+  static STextureCoordinate* txtBuffer1;
   static uint* clrBuffer;
 
   static bool mJustReset;
@@ -551,8 +550,8 @@ private:
   static float mDepthNear;
   static VecPtr mpVtxBuffer;
   static VecPtr mpNrmBuffer;
-  static Vec2Ptr mpTxtBuffer0;
-  static Vec2Ptr mpTxtBuffer1;
+  static STextureCoordinate* mpTxtBuffer0;
+  static STextureCoordinate* mpTxtBuffer1;
   static uint* mpClrBuffer;
   static int mNumPrimitives;
   static int mFrameCounter;

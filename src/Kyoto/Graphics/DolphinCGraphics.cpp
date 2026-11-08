@@ -193,8 +193,8 @@ CTevCombiners::CTevPass CGraphics::kEnvModulateColorByAlpha(
 CGraphics::CRenderState CGraphics::sRenderState;
 VecPtr CGraphics::vtxBuffer;
 VecPtr CGraphics::nrmBuffer;
-Vec2Ptr CGraphics::txtBuffer0;
-Vec2Ptr CGraphics::txtBuffer1;
+STextureCoordinate* CGraphics::txtBuffer0;
+STextureCoordinate* CGraphics::txtBuffer1;
 uint* CGraphics::clrBuffer;
 
 bool CGraphics::mJustReset;
@@ -203,8 +203,8 @@ int CGraphics::mNumLightsActive;
 float CGraphics::mDepthNear;
 VecPtr CGraphics::mpVtxBuffer;
 VecPtr CGraphics::mpNrmBuffer;
-Vec2Ptr CGraphics::mpTxtBuffer0;
-Vec2Ptr CGraphics::mpTxtBuffer1;
+STextureCoordinate* CGraphics::mpTxtBuffer0;
+STextureCoordinate* CGraphics::mpTxtBuffer1;
 uint* CGraphics::mpClrBuffer;
 
 // Guessed name inherited from Prime; these unused fields are not yet identified.
@@ -222,8 +222,8 @@ CGXLightParams mLightParams[8];
 struct {
   Vec mPosition;
   Vec mNormal;
-  Vec2 mTexCoord0;
-  Vec2 mTexCoord1;
+  STextureCoordinate mTexCoord0;
+  STextureCoordinate mTexCoord1;
   uint mColor;
   ushort mTextureUsed;
   uchar mStreamFlags;
@@ -1641,9 +1641,9 @@ void CGraphics::DrawPrimitive(ERglPrimitive primitive, const float* pos, const C
   (NRM_BUFFER_ADDR(base) + ((STREAM_PRIM_BUFFER_SIZE + 1) * sizeof(float)))
 #endif
 #define TXT1_BUFFER_ADDR(base)                                                                     \
-  (TXT0_BUFFER_ADDR(base) + ((STREAM_PRIM_BUFFER_SIZE + 1) * sizeof(Vec2)))
+  (TXT0_BUFFER_ADDR(base) + ((STREAM_PRIM_BUFFER_SIZE + 1) * sizeof(STextureCoordinate)))
 #define CLR_BUFFER_ADDR(base)                                                                      \
-  (TXT1_BUFFER_ADDR(base) + ((STREAM_PRIM_BUFFER_SIZE + 1) * sizeof(Vec2)))
+  (TXT1_BUFFER_ADDR(base) + ((STREAM_PRIM_BUFFER_SIZE + 1) * sizeof(STextureCoordinate)))
 
 static const uchar kHasNormals = 1;
 static const uchar kHasColor = 2;
@@ -1657,8 +1657,8 @@ void CGraphics::StreamBegin(ERglPrimitive primitive) {
 #endif
   vtxBuffer = reinterpret_cast< VecPtr >(base);
   nrmBuffer = reinterpret_cast< VecPtr >(NRM_BUFFER_ADDR(base));
-  txtBuffer0 = reinterpret_cast< Vec2Ptr >(TXT0_BUFFER_ADDR(base));
-  txtBuffer1 = reinterpret_cast< Vec2Ptr >(TXT1_BUFFER_ADDR(base));
+  txtBuffer0 = reinterpret_cast< STextureCoordinate* >(TXT0_BUFFER_ADDR(base));
+  txtBuffer1 = reinterpret_cast< STextureCoordinate* >(TXT1_BUFFER_ADDR(base));
   clrBuffer = reinterpret_cast< uint* >(CLR_BUFFER_ADDR(base));
 
   ResetVertexDataStream(true);
@@ -1817,12 +1817,12 @@ void CGraphics::ResetVertexDataStream(bool initial) {
     if ((vtxDescr.mStreamFlags & kHasTexture) != 0) {
 
       ++mpTxtBuffer0;
-      memcpy(mpTxtBuffer0, &vtxDescr.mTexCoord0, sizeof(Vec2));
+      memcpy(mpTxtBuffer0, &vtxDescr.mTexCoord0, sizeof(STextureCoordinate));
 
       ++mpTxtBuffer0;
 
       ++mpTxtBuffer1;
-      memcpy(mpTxtBuffer1, &vtxDescr.mTexCoord1, sizeof(Vec2));
+      memcpy(mpTxtBuffer1, &vtxDescr.mTexCoord1, sizeof(STextureCoordinate));
 
       ++mpTxtBuffer1;
     }
@@ -2023,7 +2023,7 @@ void CGraphics::FullRender() {
       const Vec& vtx = vtxBuffer[i];
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
-      const Vec2& uv = txtBuffer0[i];
+      const STextureCoordinate& uv = txtBuffer0[i];
 
       GXTexCoord2f32(uv.x, uv.y);
     }
@@ -2036,7 +2036,7 @@ void CGraphics::FullRender() {
       const Vec& nrm = nrmBuffer[i];
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
-      const Vec2& uv = txtBuffer0[i];
+      const STextureCoordinate& uv = txtBuffer0[i];
 
       GXTexCoord2f32(uv.x, uv.y);
     }
@@ -2058,7 +2058,7 @@ void CGraphics::FullRender() {
 
       GXPosition3f32(vtx.x, vtx.y, vtx.z);
       GXColor1u32(clrBuffer[i]);
-      const Vec2& uv = txtBuffer0[i];
+      const STextureCoordinate& uv = txtBuffer0[i];
 
       GXTexCoord2f32(uv.x, uv.y);
     }
@@ -2072,7 +2072,7 @@ void CGraphics::FullRender() {
 
       GXNormal3f32(nrm.x, nrm.y, nrm.z);
       GXColor1u32(clrBuffer[i]);
-      const Vec2& uv = txtBuffer0[i];
+      const STextureCoordinate& uv = txtBuffer0[i];
 
       GXTexCoord2f32(uv.x, uv.y);
     }

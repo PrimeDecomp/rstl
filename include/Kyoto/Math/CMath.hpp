@@ -259,14 +259,12 @@ public:
     return FastFSel(diff, max, v);
   }
 #endif
-#if RSTL_PRIME1
   static float FastLimit(float v, float h) {
     float low = -h;
     float diff = low - v;
     float limited = FastFSel(diff, low, v);
     return FastFSel(limited - h, h, limited);
   }
-#endif
 
   // PowF__5CMathFff global
   // Rev2Deg__5CMathFf weak

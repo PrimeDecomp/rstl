@@ -114,7 +114,7 @@ void CRevolutionController::QueueExtensionEvent(int channel, EExtensionEvent eve
 
 #if RSTL_CONTROLLER_CHANNEL_LIMIT
 void CRevolutionController::SetMaxControllers(int count) {
-  mMaxControllers = CMath::Max(count, 1);
+  mMaxControllers = CMath::Max(1, count);
   if (mMaxControllers > 1 && !mAcceptAdditionalConnections) {
     WPADSetAcceptConnection(true);
   }
