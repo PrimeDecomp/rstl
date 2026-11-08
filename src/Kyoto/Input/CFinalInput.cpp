@@ -4,9 +4,7 @@
 #include "Kyoto/Input/CFinalInputInfo.hpp"
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
 
 const float CFinalInput::kAnalogAxisDigitalThreshold = 0.7f;
 const float CFinalInput::kRollDigitalThreshold = 0.5f;
@@ -292,7 +290,7 @@ CVector2f CFinalInput::GetPointerPosition() const {
                    mControllerData.GetAxis(7).GetAbsoluteValue());
 }
 
-#else
+#elif RSTL_PRIME1
 
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Input/CControllerGamepadData.hpp"
@@ -590,18 +588,14 @@ CFinalInput::CFinalInput(const CFinalInputInfo& info, float leftDiv, float right
   *this = ScaleAnalogueSticks(leftDiv, rightDiv);
 }
 
-#endif
 #else
 #include "Kyoto/Input/CControllerGamepadData.hpp"
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
-#endif
 
-#if !RSTL_PRIME1
 const float CFinalInput::kInput_AnalogOnThreshhold = 0.7f;
 const float CFinalInput::kInput_AnalogTriggerOnThreshhold = 0.05f;
 
-#if RSTL_VERSION < RSTL_R32J
 CFinalInput::CFinalInput()
 : mDt(0.f)
 , mControllerIdx(0)
@@ -803,8 +797,4 @@ CFinalInput::CFinalInput(int channel, float dt, const COsContext& ctx)
 , mB26_PDPLeft(ctx.GetOsKeyState(0x1b).JustPressed())
 , mB27_PStart(ctx.GetOsKeyState(5).JustPressed()) {}
 
-#else
-CFinalInput::CFinalInput(int channel, float dt, const CControllerData& data, uint inputType)
-: mDt(dt), mControllerIdx(channel), mInputType(inputType), mControllerData(data) {}
-#endif
 #endif

@@ -16,8 +16,6 @@
 // Guessed class name, from Prime's Wii controller snapshot reconstruction.
 class CControllerData {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   enum EPointerState {
     kPS_Tracking,
     kPS_RecentlyLost,
@@ -27,14 +25,11 @@ public:
 
   CControllerData();
   void SetSwingMask(int device, uint mask);
-#endif
 
   bool DeviceIsPresent() const { return mConnected; }
 
   bool GetForceInputEvent() const { return mForceInputEvent; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   EPointerState GetPointerState() const { return static_cast< EPointerState >(mPointerState); }
 
   uint GetPointerValidFrameCount() const { return mPointerValidFrameCount; }
@@ -71,7 +66,6 @@ public:
     CControllerButton* buttons = mSwingButtons.data();
     return buttons[button];
   }
-#endif
 
 private:
 // TODO: verify that this Prime/Echoes difference is real
