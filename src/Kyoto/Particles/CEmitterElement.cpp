@@ -165,18 +165,16 @@ bool CVEAngleSphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const
 
   CVector3f vec(-CMath::FastSinR(yBias) * CMath::FastCosR(xBias), CMath::FastSinR(xBias),
                 CMath::FastCosR(xBias) * CMath::FastCosR(yBias));
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1 && RSTL_VERSION == RSTL_G2MP
+#if RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE
   vec.Normalize();
   pPos = origin + (radius * vec);
-  mVelocityMag->GetValue(frame, mag);
-  pVel = mag * vec;
+  const CVector3f& dir = vec;
 #else
   pPos = origin + (radius * vec);
   CVector3f dir = (pPos - origin).AsNormalized();
+#endif
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * dir;
-#endif
 
   return false;
 }

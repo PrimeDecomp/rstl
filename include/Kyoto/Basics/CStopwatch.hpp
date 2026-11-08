@@ -38,12 +38,8 @@ public:
     mStartTime = mData.GetCPUCycles();
   }
   inline float GetElapsedTime() const {
-#if RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED
     float elapsed = mData.GetCPUCycles() - mStartTime;
     return elapsed * mData.GetTimerPeriod();
-#else
-    return (mData.GetCPUCycles() - mStartTime) * mData.GetTimerPeriod();
-#endif
   }
   inline s64 GetElapsedMicros() const {
     return (mData.GetCPUCycles() - mStartTime) / mData.GetTimerFreqO1M();

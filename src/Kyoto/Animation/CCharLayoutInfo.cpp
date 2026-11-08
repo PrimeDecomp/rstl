@@ -70,8 +70,9 @@ CSegId CCharLayoutInfo::GetSegIdFromString(const rstl::string& bone) const {
     return it->second;
   }
 #else
-  for (rstl::map< rstl::string, CSegId >::const_iterator it = mNameMap.begin();
-       it != mNameMap.end(); ++it) {
+  rstl::map< rstl::string, CSegId >::const_iterator it = mNameMap.begin();
+  const rstl::map< rstl::string, CSegId >::const_iterator end = mNameMap.end();
+  for (; it != end; ++it) {
     if (CStringExtras::CompareCaseInsensitive(it->first, bone) == 0) {
       return it->second;
     }

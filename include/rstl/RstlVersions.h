@@ -68,6 +68,10 @@
 // CParticleSwoosh.cpp ends with a function the retail link stripped; its weak
 // `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
 #define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+
+// Prime and US GameCube Echoes normalize the offset from the emitter origin.
+#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
+
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.
 #define RSTL_STREAM_READ_INT32 (!RSTL_PRIME1)
@@ -614,9 +618,6 @@
 #define RSTL_ECHOES_CONST const
 #define RSTL_PRIME1_INLINE
 #endif
-// CStopwatch::GetElapsedTime converts the elapsed cycles to a float local before scaling them.
-// The single expression changes Prime Trilogy's callers (CElementGen, CParticleSwoosh, CGraphics).
-#define RSTL_KYOTO_STOPWATCH_FLOAT_ELAPSED RSTL_PRIME1
 // CStopwatch::Wait skips waits at or below FLT_EPSILON instead of waiting zero for |wait| < 1ms.
 #define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
 // GameCube Prime uses vsprintf; Echoes, Corruption's prototype and Wii Prime use vsnprintf.
