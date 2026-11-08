@@ -298,15 +298,15 @@ bool CMoviePlayer::ContinueLoading() {
     if (mIndexLoad->mHeaderRequest->IsComplete()) {
       memcpy(&mHeader, buffer, sizeof(THPHeader));
       BE_SWAP_INPLACE(mHeader.version);
-      BE_SWAP_INPLACE(mHeader.bufferSize);
+      BE_SWAP_INPLACE(mHeader.bufSize);
       BE_SWAP_INPLACE(mHeader.audioMaxSamples);
       BE_SWAP_INPLACE(mHeader.frameRate);
       BE_SWAP_INPLACE(mHeader.numFrames);
       BE_SWAP_INPLACE(mHeader.firstFrameSize);
-      BE_SWAP_INPLACE(mHeader.ovieDataSize);
+      BE_SWAP_INPLACE(mHeader.movieDataSize);
       BE_SWAP_INPLACE(mHeader.compInfoDataOffsets);
       BE_SWAP_INPLACE(mHeader.offsetDataOffsets);
-      BE_SWAP_INPLACE(mHeader.ovieDataOffsets);
+      BE_SWAP_INPLACE(mHeader.movieDataOffsets);
       BE_SWAP_INPLACE(mHeader.finalFrameDataOffsets);
 #if !RSTL_PRIME1
       if (close_enough(mHeader.frameRate, 29.97f)) {
