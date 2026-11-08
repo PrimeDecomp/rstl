@@ -1,6 +1,7 @@
 #include "Kyoto/Graphics/CMoviePlayer.hpp"
 #include "rstl/macros.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 
@@ -40,6 +41,7 @@
 #include "math.h"
 #include "string.h"
 
+static const uint skTHPVersion = 0x11000;
 static int sNumReferences = 0;
 static CMoviePlayer* sAudioPlayer;
 #if !defined(TARGET_PC)
@@ -61,8 +63,7 @@ struct CMoviePlayer::SIndexLoad {
   ~SIndexLoad() {}
 #endif
 
-  SIndexLoad()
-  : mBuffer(static_cast< uchar* >(CMemory::Alloc(64, IAllocator::kHI_RoundUpLen))), mState(0) {}
+  SIndexLoad() : mBuffer(static_cast< uchar* >(rs_aligned_new_line(64, 277))), mState(0) {}
 };
 ATTRIBUTE_ALIGN_DECL(32, const unsigned char skInterlacePattern[32]) = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -194,6 +195,7 @@ static rstl::string SelectMoviePath(const char* path) {
     if (CDvdFile::FileExists(palName.data())) {
       return palName;
     }
+    RS_WARNING_DEBUGGER_PRINT("WARNING: No PAL version of %s\n", path);
   }
   return name;
 }
@@ -209,10 +211,10 @@ CMoviePlayer::CMoviePlayer(const char* path, const float preLoadSeconds, const b
 , mThpComponents()
 , mVideoInfo()
 , mAudioInfo()
-, mIndexLoad(rs_new SIndexLoad)
+, mIndexLoad(rs_new_line(367) SIndexLoad)
 #else
 : mDvdFile(SelectMoviePath(path).data())
-, mIndexLoad(rs_new SIndexLoad)
+, mIndexLoad(rs_new_line(367) SIndexLoad)
 #endif
 
 , mNextReadSize(0)
@@ -319,6 +321,12 @@ bool CMoviePlayer::ContinueLoading() {
         mIs60Hz = true;
       }
 #endif
+      // clang-format off
+      RS_VERIFY_THROW(449, !strcmp ( mHeader.magic,"THP" ), false, "Invalid THP header!");
+      // clang-format on
+      RS_VERIFY_THROW(450, mHeader.version == skTHPVersion, false,
+                      CBasics::Stringize("Invalid movie version!  Expected %x, got %x",
+                                         skTHPVersion, mHeader.version));
       mIndexLoad->mHeaderRequest =
           mDvdFile.AsyncSeekRead(buffer, 32, kSO_Begin, mHeader.compInfoDataOffsets);
       ++mIndexLoad->mState;
@@ -348,7 +356,9 @@ bool CMoviePlayer::ContinueLoading() {
           mHasAudio = true;
           break;
 
-        default:;
+        default:
+          RS_VERIFY_THROW(484, false, false, "Unknown component type!");
+          break;
         }
       }
       ++mIndexLoad->mState;
@@ -383,6 +393,9 @@ bool CMoviePlayer::ContinueLoading() {
       mAudioInfo.sndFrequency = CBasics::SwapBytes(static_cast< uint >(mAudioInfo.sndFrequency));
       mAudioInfo.sndNumSamples =
           CBasics::SwapBytes(static_cast< uint >(mAudioInfo.sndNumSamples));
+      RS_VERIFY_THROW(527, mAudioInfo.sndNumTracks <= 1, false,
+                      CBasics::Stringize("Can't support multiple audio tracks in movie %s",
+                                         mDvdFile.GetFilename().data()));
     }
   }
   default:;
@@ -431,18 +444,18 @@ void CMoviePlayer::InitializeTextures() {
   const uint uvSize = OSRoundUp32B(mVideoInfo.xSize * mVideoInfo.ySize / 4);
   const uint audioSize = mHeader.audioMaxSamples * 4;
   for (int i = 0; i < mTextures.capacity(); ++i) {
-    void* y = CMemory::Alloc(ySize, IAllocator::kHI_RoundUpLen);
-    void* u = CMemory::Alloc(uvSize, IAllocator::kHI_RoundUpLen);
-    void* v = CMemory::Alloc(uvSize, IAllocator::kHI_RoundUpLen);
-    void* audio = CMemory::Alloc(audioSize, IAllocator::kHI_RoundUpLen);
+    void* y = rs_aligned_new_line(ySize, 592);
+    void* u = rs_aligned_new_line(uvSize, 593);
+    void* v = rs_aligned_new_line(uvSize, 594);
+    void* audio = rs_aligned_new_line(audioSize, 595);
     DCFlushRangeNoSync(y, ySize);
     DCFlushRangeNoSync(u, uvSize);
     DCFlushRangeNoSync(v, uvSize);
     DCFlushRangeNoSync(audio, audioSize);
-#if RSTL_PRIME1
-    mTextures.push_back(CTHPTextureSet(y, u, v, audio));
-#else
+#if RSTL_KYOTO_MOVIE_TEXTURE_PUSH_UNSAFE
     mTextures.push_back_unsafe(CTHPTextureSet(y, u, v, audio));
+#else
+    mTextures.push_back(CTHPTextureSet(y, u, v, audio));
 #endif
   }
 
@@ -475,15 +488,16 @@ void CMoviePlayer::PostDVDReadRequestIfNeeded() {
         }
         usedPrefetch = true;
       } else {
+        RS_WARNING_PRINT("Movie warning: Mispredicted read!\n");
         mPrefetchRequest = nullptr;
         mPrefetchBuffer = nullptr;
         mPrefetchFrame = mHeader.numFrames;
       }
     }
     if (!usedPrefetch) {
-      mRequestBuffer = rstl::auto_ptr< uchar >(
-          static_cast< uchar* >(CMemory::Alloc(mNextReadSize, IAllocator::kHI_RoundUpLen)));
-      rstl::single_ptr< CRealDvdRequest > request(rs_new CRealDvdRequest);
+      mRequestBuffer =
+          rstl::auto_ptr< uchar >(static_cast< uchar* >(rs_aligned_new_line(mNextReadSize, 653)));
+      rstl::single_ptr< CRealDvdRequest > request(rs_new_line(655) CRealDvdRequest);
       DVDOpen(const_cast< char* >(mDvdFile.GetFilename().data()), &request->FileInfo());
       request->FileInfo().cb.userData = this;
       DVDReadAsyncPrio(&request->FileInfo(), mRequestBuffer.get(), mNextReadSize, mNextReadOff,
@@ -516,9 +530,8 @@ void CMoviePlayer::PrefetchNextFrame() {
   if (mPrefetchFrame != mHeader.numFrames) {
     mPrefetchSize = CBasics::SwapBytes(*reinterpret_cast< const uint* >(mRequestBuffer.get()));
     mPrefetchOff = mNextReadOff + mNextReadSize;
-    mPrefetchBuffer =
-        static_cast< uchar* >(CMemory::Alloc(mPrefetchSize, IAllocator::kHI_RoundUpLen));
-    rstl::single_ptr< CRealDvdRequest > request(rs_new CRealDvdRequest);
+    mPrefetchBuffer = static_cast< uchar* >(rs_aligned_new_line(mPrefetchSize, 721));
+    rstl::single_ptr< CRealDvdRequest > request(rs_new_line(722) CRealDvdRequest);
     DVDOpen(const_cast< char* >(mDvdFile.GetFilename().data()), &request->FileInfo());
     request->FileInfo().cb.userData = this;
     DVDReadAsyncPrio(&request->FileInfo(), mPrefetchBuffer.get(), mPrefetchSize, mPrefetchOff,
@@ -592,8 +605,11 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
   for (uint i = 0; i < mThpComponents.numComponents; ++i) {
     const uchar* data = dataStart;
     if (mThpComponents.frameComp[i] == 0) {
-      THPVideoDecode(const_cast< uchar* >(data), texture.Y(), texture.U(), texture.V(),
-                     alignedWork);
+      const int result = THPVideoDecode(const_cast< uchar* >(data), texture.Y(), texture.U(),
+                                        texture.V(), alignedWork);
+      if (result != 0) {
+        RS_WARNING_PRINT("Error decoding video: %d\n", result);
+      }
     } else if (mThpComponents.frameComp[i] == 1) {
       // Publish PCM and its counters together; the mixer may be reading this
       // slot while the game thread decodes the next video frame.
@@ -613,7 +629,15 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
     ++sizes;
   }
 
+#if RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS
+  if (mIs60Hz && offset > 33 * 1024) {
+    RS_WARNING_PRINT("BUG: 60fps Movie frame size > 33k (%d bytes)!\n", offset);
+  } else if (offset > 60 * 1024) {
+    RS_WARNING_PRINT("BUG: Movie frame size > 60k (%d bytes)!\n", offset);
+  }
+#else
   MOVIE_DEBUG_WARN(offset > 55 * 1024, "WARNING: Movie frame size > 55k! %d\n", offset);
+#endif
   RSTL_PRIME1_CONST int next = mDecodedTexSlot + 1;
 
   mDecodedTexSlot = next;
@@ -625,6 +649,8 @@ void CMoviePlayer::DecodeFromRead(const void* ptr) {
 #undef MOVIE_DEBUG_WARN
 
 void CMoviePlayer::Update(RSTL_PRIME1_CONST float dt) {
+  RS_VERIFY_THROW(870, !NeedsContinueLoading(), false,
+                  "Movie is being updated before it's fully loaded");
   if (mCurLoadFrame < mPreLoadFrames) {
     if (!mRequest.null() && mRequest->IsComplete()) {
       ReadCompleted();
@@ -789,13 +815,33 @@ void CMoviePlayer::SetPlayMode(const EPlayMode mode) {
 CMoviePlayer::EPlayMode CMoviePlayer::GetPlayMode() const { return mPlayMode; }
 #endif
 
-float CMoviePlayer::GetTotalSeconds() const { return mTotalSeconds; }
+float CMoviePlayer::GetTotalSeconds() const {
+  RS_VERIFY_THROW(1133, !NeedsContinueLoading(), false,
+                  "::GetTotalSeconds - Movie hasn't finished loading");
+  return mTotalSeconds;
+}
 
-float CMoviePlayer::GetPlayedSeconds() const { return mCurSeconds + mFrameRem; }
+float CMoviePlayer::GetPlayedSeconds() const {
+  RS_VERIFY_THROW(1140, !NeedsContinueLoading(), false,
+                  "::GeTPlayedSeconds - Movie hasn't finished loading");
+  return mCurSeconds + mFrameRem;
+}
 
-bool CMoviePlayer::GetIsFullyCached() const { return mRequestQueue.size() >= mPreLoadFrames; }
+float CMoviePlayer::GetCachedSeconds() const {
+  RS_VERIFY_THROW(1147, !NeedsContinueLoading(), false,
+                  "::GetCachedSeconds - Movie hasn't finished loading");
+  return mRequestQueue.size() / mHeader.frameRate;
+}
+
+bool CMoviePlayer::GetIsFullyCached() const {
+  RS_VERIFY_THROW(1154, !NeedsContinueLoading(), false,
+                  "::GetIsFullyCached - Movie hasn't finished loading");
+  return mRequestQueue.size() >= mPreLoadFrames;
+}
 
 bool CMoviePlayer::GetIsMovieFinishedPlaying() const {
+  RS_VERIFY_THROW(1161, !NeedsContinueLoading(), false,
+                  "::GetIsMovieFinishedPlaying - Movie hasn't finished loading");
   return !mLoop && mCurFrame == mHeader.numFrames;
 }
 
@@ -820,6 +866,7 @@ void CMoviePlayer::CancelReadRequests() {
 #endif
 
 void CMoviePlayer::Rewind() {
+  RS_VERIFY_THROW(1200, !NeedsContinueLoading(), false, "::Rewind - Movie hasn't finished loading");
 #if RSTL_PRIME1
   if (!mRequest.null()) {
     mRequest->PostCancelRequest();
@@ -995,9 +1042,17 @@ void CMoviePlayer::VerifyCallbackStatus() {
   }
 }
 
-uint CMoviePlayer::GetWidth() const { return mVideoInfo.xSize; }
+uint CMoviePlayer::GetWidth() const {
+  RS_VERIFY_THROW(1379, !NeedsContinueLoading(), false,
+                  "::GetWidth - Movie hasn't finished loading");
+  return mVideoInfo.xSize;
+}
 
-uint CMoviePlayer::GetHeight() const { return mVideoInfo.ySize; }
+uint CMoviePlayer::GetHeight() const {
+  RS_VERIFY_THROW(1388, !NeedsContinueLoading(), false,
+                  "::GetWidth - Movie hasn't finished loading");
+  return mVideoInfo.ySize;
+}
 
 void CMoviePlayer::SetAudioEnabled(RSTL_PRIME1_CONST bool enabled) {
   IF_TARGET_PC(const metaforce::AudioLockGuard lock);

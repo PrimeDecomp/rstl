@@ -99,9 +99,11 @@ public:
   void SetPlayMode(EPlayMode mode);
   float GetTotalSeconds() const;
   float GetPlayedSeconds() const;
+  float GetCachedSeconds() const;
   uint GetWidth() const;
   uint GetHeight() const;
   bool CanDrawVideo() const { return mIndexLoad.null(); }
+  bool NeedsContinueLoading() const { return !mIndexLoad.null(); }
   bool ContinueLoading();
   void Rewind();
   bool GetIsFullyCached() const;

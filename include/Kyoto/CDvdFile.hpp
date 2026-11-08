@@ -38,6 +38,7 @@ public:
   void StartARAMFileLoad();
   void StallForARAMFile();
   CDvdRequest* SyncRead(void* buf, uint len);
+  void BlockingRead(void* buf, uint len); // Guessed name
   void SyncSeekRead(void* buf, uint len, ESeekOrigin, int offset);
   CDvdRequest* AsyncSeekRead(void* buf, uint len, ESeekOrigin, int offset);
   void CloseFile();
