@@ -77,6 +77,15 @@
 
 // Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
+// The Revolution controller interface starts with retail Corruption.
+#define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
+// Later controllers add acceptance and motion-activity slots.
+#define RSTL_CONTROLLER_EXTENDED_VIRTUALS (RSTL_VERSION >= RSTL_RM3P)
+#if defined(PRIME2) && RSTL_VERSION >= RSTL_R32J
+#define RSTL_CONTROLLER_CHANNEL_LIMIT 1
+#else
+#define RSTL_CONTROLLER_CHANNEL_LIMIT 0
+#endif
 
 // The containers' stream constructors read their element counts with `CInputStream::ReadInt32`
 // instead of `Get(TGetType(0))`.

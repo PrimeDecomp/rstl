@@ -15,21 +15,24 @@ public:
   ~CDolphinController() override;
   void Poll() override;
   uint GetDeviceCount() const override;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
+#if RSTL_CONTROLLER_WII
   void Update(float dt) override;
   CControllerData& GetInput(uint channel) override;
   void SetInput(const CControllerData& input, int channel) override;
   EDeviceType GetControllerType(int channel) const override;
   void SetMotorEnabled(int channel, bool enabled) override;
   void SetMotorState(int channel, EMotorState state) override;
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
   void SetAcceptAdditionalConnections(bool accept) override;
+#endif
   CControllerData::EPointerState GetPointerState(int channel) const override;
   uint GetPointerValidFrameCount(int channel) const override;
   uint GetPointerInvalidFrameCount(int channel) const override;
   CVector2f GetPointerPosition(int channel) const override;
   void SetPointerRecenterMode(uint channel, EPointerRecenterMode mode) override;
+#if RSTL_CONTROLLER_EXTENDED_VIRTUALS
   bool HasMotionActivity(uint channel) const override;
+#endif
 #else
   CControllerGamepadData& GetGamepadData(int controller) override;
   uint GetControllerType(int) const override;
