@@ -9,6 +9,6 @@ void* GetLockedCacheAllocationBase();
 // Guessed names. These round the requested size, not the shared allocation cursor.
 void* AllocateLockedCache4(uint size);
 void* AllocateLockedCache32(uint size);
-void FreeLockedCache(void* ptr);
+void rs_lc_free(void* ptr);
 
 #endif // _LOCKEDCACHE

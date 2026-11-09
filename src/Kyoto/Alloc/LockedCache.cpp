@@ -39,7 +39,7 @@ void* AllocateLockedCache32(uint size) {
   return nullptr;
 }
 
-void FreeLockedCache(void* ptr) {
+void rs_lc_free(void* ptr) {
   --sAllocationCount;
   if (!sOutOfOrder) {
     if (sAllocations[sAllocationCount] == ptr) {

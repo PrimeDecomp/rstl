@@ -40,7 +40,7 @@ public:
       if (mHeapAllocation) {
         CMemory::Free(ptr);
       } else {
-        FreeLockedCache(ptr);
+        rs_lc_free(ptr);
       }
       --mAllocationCount;
       if (mAllocationCount != 0) {
