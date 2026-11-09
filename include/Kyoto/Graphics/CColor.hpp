@@ -264,6 +264,10 @@ private:
   static const CColor sPurpleColor;
   static const CColor sOrangeColor;
 };
+#if RSTL_CCOLOR_INLINE_GREY
+inline const CColor& CColor::Grey() { return sGreyColor; }
+#endif
+
 #if !RSTL_PRIME1
 #ifdef __MWERKS__
 #pragma cpp_extensions reset
