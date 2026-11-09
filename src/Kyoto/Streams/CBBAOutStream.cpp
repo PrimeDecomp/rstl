@@ -1,6 +1,6 @@
 #include "Kyoto/Streams/CBBAOutStream.hpp"
 
-#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#include "Kyoto/Network/CBBASupport.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 
@@ -9,7 +9,7 @@ CBBAOutStream::CBBAOutStream(const char* path, int bufferLength)
   int error = CBBASupport::BBAOpen(path, kBOM_Write, &mFile);
   if (error != kFE_OK) {
     RS_VERIFY_FAILURE_IN("CBBAOutStream.cpp", 15, "0", "kException_CannotOpen",
-                         CBasics::Stringize("Could not open file - '%s'\n", path))
+                         CBasics::Stringize("Could not open file - '%s'\n", path));
   }
 }
 
@@ -22,5 +22,5 @@ CBBAOutStream::~CBBAOutStream() {
 
 void CBBAOutStream::Write(const void* ptr, size_t len) {
   int error = CBBASupport::BBAWrite(mFile, ptr, len);
-  RS_VERIFY_THROW_DIRECT(29, (error == kFE_OK), false, "Couldn't write in CBBAOutStream::Write.")
+  RS_VERIFY_THROW_DIRECT(29, (error == kFE_OK), false, "Couldn't write in CBBAOutStream::Write.");
 }

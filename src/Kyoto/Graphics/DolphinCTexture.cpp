@@ -38,7 +38,7 @@
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 #ifdef ENABLE_BBA_TOOLS
-#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#include "Kyoto/Network/CBBASupport.hpp"
 #endif
 
 int CTexture::sCurrentFrameCount = 0;
