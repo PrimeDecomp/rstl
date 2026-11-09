@@ -35,7 +35,7 @@ CJointData_LinearStorage::CJointData_LinearStorage(int count, EAllocateFrom allo
 
 CJointData_LinearStorage::~CJointData_LinearStorage() {
   if (mAllocationType == kAF_Pool) {
-    FreeLockedCache(mStorage);
+    rs_lc_free(mStorage);
   } else if (mAllocationType == kAF_Heap) {
     CMemory::Free(mStorage);
   }
