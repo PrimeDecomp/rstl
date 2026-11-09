@@ -17,28 +17,17 @@
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector2i.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
+#include "rstl/auto_ptr.hpp"
 #include "rstl/reserved_vector.hpp"
 
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
 
+#include "Kyoto/Graphics/ERglFogMode.hpp"
+
 class COsContext;
-
-enum ERglFogMode {
-  kRFM_None = GX_FOG_NONE,
-
-  kRFM_PerspLin = GX_FOG_PERSP_LIN,
-  kRFM_PerspExp = GX_FOG_PERSP_EXP,
-  kRFM_PerspExp2 = GX_FOG_PERSP_EXP2,
-  kRFM_PerspRevExp = GX_FOG_PERSP_REVEXP,
-  kRFM_PerspRevExp2 = GX_FOG_PERSP_REVEXP2,
-
-  kRFM_OrthoLin = GX_FOG_ORTHO_LIN,
-  kRFM_OrthoExp = GX_FOG_ORTHO_EXP,
-  kRFM_OrthoExp2 = GX_FOG_ORTHO_EXP2,
-  kRFM_OrthoRevExp = GX_FOG_ORTHO_REVEXP,
-  kRFM_OrthoRevExp2 = GX_FOG_ORTHO_REVEXP2,
-};
+class IConnection;
+class TFunctor0;
 
 enum ERglTevStage {
   kTS_Stage0,
@@ -184,10 +173,10 @@ struct STextureCoordinate {
   float y;
 };
 
-#if RSTL_PRIME1
-typedef bool TVideoModeFlag;
-#else
+#if RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG
 typedef uchar TVideoModeFlag;
+#else
+typedef bool TVideoModeFlag;
 #endif
 
 class CGraphics {
@@ -316,6 +305,59 @@ public:
     rstl::reserved_vector< CVector2f, 4 > mTexCoords;
   };
 
+  // Guessed name
+  struct SAlphaContextState {
+    SAlphaContextState() : mAlphaUpdate(false), mDstAlphaEnable(false), mDstAlpha(0) {}
+
+    bool mAlphaUpdate;
+    bool mDstAlphaEnable;
+    uchar mDstAlpha;
+  };
+
+  // Guessed name
+  class CAlphaContextGuard {
+  public:
+    CAlphaContextGuard(int context);
+    ~CAlphaContextGuard();
+
+  private:
+    SAlphaContextState mState;
+    int mContext;
+  };
+
+  // Guessed name
+  class CAlphaContextsGuard {
+  public:
+    CAlphaContextsGuard();
+    ~CAlphaContextsGuard();
+
+  private:
+    rstl::reserved_vector< SAlphaContextState, 3 > mStates;
+    int mPreviousContext;
+  };
+
+  // Guessed name
+  struct SDrawSyncState {
+    bool IsTokenComplete(u64 token);
+    u64 IssueToken();
+    void Poll();
+
+    u64 mBase;
+    volatile ushort mIssued;
+    ushort mGotten;
+    bool mWrapped;
+  };
+
+  // Guessed name
+  struct SLightingState {
+    SLightingState(int mode, const CColor& color, uchar lights)
+    : mMode(mode), mColor(color), mLights(lights) {}
+
+    int mMode;
+    CColor mColor;
+    uchar mLights;
+  };
+
   static bool Startup(const COsContext& osContext); // PC-specific startup
   static bool Startup(const COsContext& osContext, uint fifoSize, void* fifoBase);
   static bool Startup(const COsContext& osContext, bool progressive);
@@ -347,12 +389,15 @@ public:
   static void SetClearColor(const CColor& color);
   static CColor GetClearColor();         // Guessed name.
   static int GetViewportTop(int bottom); // Guessed name.
+  static int GetViewportTopFromBottomAndHeight(int bottom, int height); // Guessed name
 
   static void SetDepthRange(float near, float far);
   static void FlushProjection();
   static void SetDefaultVtxAttrFmt();
   static CMatrix4f GetPerspectiveProjectionMatrix();
   static CMatrix4f CalculatePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
+  static CMatrix4f CalculateCenteredOrthographicMatrix(float width, float height, float znear,
+                                                       float zfar); // Guessed name
   static void ResetGfxStates();
   static void LoadDolphinSpareTexture(int width, int height, GXTexFmt fmt,
                                       RSTL_ECHOES_CONST void* data, GXTexMapID texId
@@ -460,9 +505,17 @@ public:
 
   static const CTransform4f& GetViewMatrix() { return mViewMatrix; }
   static const Mtx& GetCameraMtx() { return mCameraMtx; }
+  // Guessed name
+  static const CTransform4f& GetCameraTransform() {
+    return *reinterpret_cast< const CTransform4f* >(mCameraMtx);
+  }
 
   static const CTransform4f& GetModelMatrix() { return mModelMatrix; }
+#if RSTL_KYOTO_UCHAR_LIGHT_MASK
+  static uchar GetLightMask() { return mLightActive; }
+#else
   static uint GetLightMask() { return mLightActive; }
+#endif
 
   static void SetViewPointMatrix(const CTransform4f&);
   static void SetBrightness(float b) { mBrightness = b; }
@@ -479,6 +532,8 @@ public:
   static void SetFog(ERglFogMode mode, float startz, float endz, const CColor& color);
 
   static void SetModelMatrix(const CTransform4f& xf);
+  static void SetLightingMode(int mode);
+  static void SetLightingModeAndColor(int mode, CColor color);
   static void SetUseNormalMatrix(bool enabled);      // Guessed name
   static void SetUseStreamVertexDelay(bool enabled); // Guessed name
 
@@ -492,6 +547,20 @@ public:
 
   static void SetCullMode(ERglCullMode cullMode);
   static void SetTevStates(uchar);
+
+  // Guessed name
+  static int GetAlphaContext();
+  static SAlphaContextState& GetAlphaContextState(int context);
+  static void SelectAlphaContext(int context);
+  static void RestoreAlphaContextState(int context, const SAlphaContextState& state);
+  static void DisableAlphaUpdate(int context);
+  static void EnableDestinationAlpha(int context, uchar alpha);
+  static void DisableDestinationAlpha(int context);
+  static rstl::auto_ptr< IConnection > ConnectDrawDoneCallback(TFunctor0 callback);
+  static bool QueryCurrentDrawSyncToken(u64 token);
+  static u64 IssueCurrentDrawSyncToken();
+  static SLightingState CaptureLightingState();
+  static void RestoreLightingState(const SLightingState& state);
 
   static void SetUseVideoFilter(RSTL_PRIME1_CONST bool b);
 
@@ -527,6 +596,7 @@ public:
   static CTevCombiners::CTevPass kEnvModulateAlpha;
   static CTevCombiners::CTevPass kEnvModulateColor;
   static CTevCombiners::CTevPass kEnvModulateColorByAlpha;
+  static CTevCombiners::CTevPass kEnvAddPrevious; // Guessed name
   static CRenderState sRenderState;
 
   static const GXTexMapID kSpareBufferTexMapID;
@@ -537,6 +607,7 @@ private:
   static void FlushStream();
   static void FullRender();
   static void FullRenderWithVertexDelay(); // Guessed name
+  static void UpdateLightChannels();
 
   static VecPtr vtxBuffer;
   static VecPtr nrmBuffer;
@@ -563,6 +634,10 @@ private:
   static bool mInterruptLastFrameUsedAbove;
   static uchar mLightActive;
   static uchar mLightsWereOn;
+  static uchar mAlphaLightMask; // Guessed name
+  static int mLightingMode;
+  static CColor mLightingColor;
+  static int mCurrentAlphaContext; // Guessed name
   static void* mpFrameBuf1;
   static void* mpFrameBuf2;
   static void* mpCurrenFrameBuf;

@@ -19,18 +19,31 @@ class CDvdRequest;
 class CGraphicsPalette;
 
 enum ETexelFormat {
-  kTF_Invalid = -1,
-  kTF_I4 = 0,
-  kTF_I8 = 1,
-  kTF_IA4 = 2,
-  kTF_IA8 = 3,
-  kTF_C4 = 4,
-  kTF_C8 = 5,
-  kTF_C14X2 = 6,
-  kTF_RGB565 = 7,
-  kTF_RGB5A3 = 8,
-  kTF_RGBA8 = 9,
-  kTF_CMPR = 10,
+  kTexelFormat_Invalid = -1,
+  kTexelFormat_I4 = 0,
+  kTexelFormat_I8 = 1,
+  kTexelFormat_IA4 = 2,
+  kTexelFormat_IA8 = 3,
+  kTexelFormat_C4 = 4,
+  kTexelFormat_CI8 = 5,
+  kTexelFormat_C14X2 = 6,
+  kTexelFormat_RGB565 = 7,
+  kTexelFormat_RGB5A3 = 8,
+  kTexelFormat_RGBA8 = 9,
+  kTexelFormat_CMPR = 10,
+
+  kTF_Invalid = kTexelFormat_Invalid,
+  kTF_I4 = kTexelFormat_I4,
+  kTF_I8 = kTexelFormat_I8,
+  kTF_IA4 = kTexelFormat_IA4,
+  kTF_IA8 = kTexelFormat_IA8,
+  kTF_C4 = kTexelFormat_C4,
+  kTF_C8 = kTexelFormat_CI8,
+  kTF_C14X2 = kTexelFormat_C14X2,
+  kTF_RGB565 = kTexelFormat_RGB565,
+  kTF_RGB5A3 = kTexelFormat_RGB5A3,
+  kTF_RGBA8 = kTexelFormat_RGBA8,
+  kTF_CMPR = kTexelFormat_CMPR,
 };
 
 class CTexture {
@@ -51,6 +64,7 @@ public:
     void BeginReloadBitmapData(CResFactory& factory);
     void* TryBuildReloadedBitmapData(CResFactory& factory);
     int GetStatus() const { return mState; }
+    CAssetId GetTextureId() const { return mTextureId; } // Guessed name
     const bool GetShouldBeInARAM() const { return mShouldBeInARAM; }
 
   };
@@ -65,6 +79,10 @@ public:
   };
   enum EBlackKey {
     kBK_Zero,
+  };
+  // Guessed name
+  enum EBitmapState {
+    kBitmapState_Unloaded = 2,
   };
 
   CTexture(ETexelFormat fmt, short w, short h, int mips);
@@ -95,6 +113,7 @@ public:
 
   bool TryReloadBitmapData(CResFactory& factory) const;
   int GetBitmapDataStatus() const; // Guessed name.
+  EBitmapState GetBitmapState() const;
 
   bool LoadToMRAM() const;
   bool LoadToARAM() const;
@@ -108,7 +127,7 @@ public:
 
   static void InvalidateTexmap(GXTexMapID id);
   static bool IsCITextureFormat(ETexelFormat fmt) {
-    return fmt == kTF_C4 ? true : fmt == kTF_C8 ? true : fmt == kTF_C14X2 ? true : false;
+    return fmt == kTexelFormat_C4 ? true : fmt == kTexelFormat_CI8 ? true : fmt == kTexelFormat_C14X2 ? true : false;
   }
 
   static void SetMangleMipmaps(bool v) { sMangleMips = v; }
@@ -117,9 +136,15 @@ public:
   static int sCurrentFrameCount;
   static int sTotalAllocatedMemory;
   static bool sMangleMips;
+  static uint sTotalAllocatedSecondaryMemory; // Guessed name
+  static void SetBindCount(int count);        // Guessed name
+  static int GetBindCount();                  // Guessed name
+  static bool sReviewTextureSize;             // Guessed name
+  static bool sCapTextureSize;                // Guessed name
 
 private:
-  void InvalidateTexmaps() const; // Guessed name: clears cache entries for this texture.
+  void InvalidateTexmaps() const;         // Guessed name: clears cache entries for this texture.
+  void VerifyBitmapDataAvailable() const; // Guessed name
 
   ETexelFormat mTexelFormat;
   short mWidth;
@@ -136,6 +161,9 @@ private:
   mutable bool mCounted : 1;
   mutable bool mCanLoadObj : 1;
   uint mMemoryAllocated;
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+  uint mSecondaryMemoryAllocated; // Guessed name
+#endif
   rstl::single_ptr< CGraphicsPalette > mGraphicsPalette;
   mutable rstl::single_ptr< CDumpedBitmapDataReloader > mBitmapReloader;
   GXTexFmt mNativeFormat;
@@ -145,7 +173,7 @@ private:
   mutable CARAMToken mARAMToken;
   mutable uint mFrameAllocated;
 };
-CHECK_SIZEOF(CTexture, 0x68)
+CHECK_SIZEOF(CTexture, RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY ? 0x6c : 0x68)
 NESTED_CHECK_SIZEOF(CTexture, CDumpedBitmapDataReloader, RSTL_KYOTO_ASSET_ID_CLASS ? 0x28 : 0x1c)
 
 #if !defined(TARGET_PC)

@@ -782,6 +782,37 @@
 // CDvdFile reads host files over the BBA link when sPollingMode is set (Corruption). Earlier builds keep
 // the flag but read only from the disc.
 #define RSTL_KYOTO_DVD_HOST_READS (RSTL_CORRUPTION)
+// CTexture records the mip bytes it skips when capping a texture's size (Corruption).
+#define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
+// CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
+// tables and the vertex attribute sizes of each format (Corruption).
+#define RSTL_KYOTO_CGX_EXTENDED_STATE (RSTL_CORRUPTION)
+// CGX::LoadNrmMtxImm and CGX::SetTevSwapMode are out-of-line functions (Corruption). Earlier builds inline
+// the GX call.
+#define RSTL_KYOTO_CGX_OUTLINED_HELPERS (RSTL_CORRUPTION)
+// CGX::SetZMode takes GXBool flags (Corruption). Earlier builds take bool.
+#define RSTL_KYOTO_CGX_GXBOOL_ZMODE (RSTL_CORRUPTION)
+// CGX::apply_fog is defined in the class, so every includer emits its weak black constant (Corruption).
+// Earlier builds define it beside its callers.
+#define RSTL_KYOTO_CGX_CLASS_APPLY_FOG (RSTL_CORRUPTION)
+// CGX::CompareGXColors reads both colors through non-const pointers (Corruption), which changes the
+// code of its callers.
+#define RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE (RSTL_CORRUPTION)
+// CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
+// lighting as a CVector4f (Corruption).
+#define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)
+// CColor::WithAlphaOf multiplies the byte scale by the alpha (Echoes, including Echoes Trilogy). Prime and
+// Corruption multiply the alpha by the byte scale.
+#define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CGraphics::ConfigureVideoMode takes its progressive flag as a uchar (Echoes, including Echoes Trilogy).
+// Prime and Corruption take a bool.
+#define RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CGraphics::GetLightMask returns the active light mask as a uchar (Corruption). Earlier builds widen
+// it to uint.
+#define RSTL_KYOTO_UCHAR_LIGHT_MASK (RSTL_CORRUPTION)
+// CMath::Clamp takes its by-value arguments as const (Echoes, including Echoes Trilogy). Corruption's are
+// not const. Prime takes references.
+#define RSTL_KYOTO_CONST_CLAMP_ARGS (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
 // CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
