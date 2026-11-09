@@ -804,6 +804,27 @@
 // CGX::Begin and CGX::End follow CGX::CallDisplayList in CGX.cpp (Corruption). Earlier builds
 // have them after CGX::SetArray.
 #define RSTL_KYOTO_CGX_LATE_BEGIN_END (RSTL_CORRUPTION)
+// CGraphics drives its light channels from a lighting mode and color and tracks which lights
+// affect alpha (Corruption). Earlier builds enable channel 0 light by light.
+#define RSTL_KYOTO_GRAPHICS_LIGHTING_MODES (RSTL_CORRUPTION)
+// CGraphics issues GX draw-sync tokens, signals draw-done callbacks and keeps destination-alpha
+// contexts (Corruption).
+#define RSTL_KYOTO_GRAPHICS_DRAW_SYNC (RSTL_CORRUPTION)
+// CGraphics has the add-previous TEV pass, centered orthographic matrices and the viewport-top
+// helper that takes a height (Corruption).
+#define RSTL_KYOTO_GRAPHICS_EXTENDED_API (RSTL_CORRUPTION)
+// CGraphics::EndScene draws its black frame triangles in a separate function (Corruption).
+#define RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW (RSTL_CORRUPTION)
+// CGraphics clears to blue by default (Corruption). Earlier builds clear to black.
+#define RSTL_KYOTO_GRAPHICS_BLUE_CLEAR_COLOR (RSTL_CORRUPTION)
+// CGraphics::SetProgressiveMode switches without the long retrace waits (Corruption).
+#define RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH (RSTL_CORRUPTION)
+// CGraphics can render streamed primitives with a per-vertex delay (Echoes). The prototype's
+// FlushStream always renders directly and Prime has no delay.
+#define RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CGraphics::InitGraphicsFifo sets the fifo object's base again before its limits (Echoes PAL,
+// Corruption).
+#define RSTL_KYOTO_GRAPHICS_FIFO_REBASE (RSTL_VERSION == RSTL_G2MP || RSTL_CORRUPTION)
 // CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
 // lighting as a CVector4f (Corruption).
 #define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)

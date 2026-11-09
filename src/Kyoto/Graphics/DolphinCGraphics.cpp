@@ -1,18 +1,33 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "rstl/macros.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
+#if RSTL_PRIME1
 #include "Kyoto/Animation/CSkinnedModel.hpp"
+#endif
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
-#include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
+#if RSTL_KYOTO_CORRUPTION
+#include "Corruption/Kyoto/Graphics/CGraphicsSys.hpp"
+#include "Corruption/Kyoto/Graphics/GPUMemory.hpp"
+#include "Corruption/Kyoto/Math/CRelAngle.hpp"
+#else
+#include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
+#endif
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#include "Corruption/Kyoto/CSignal0.hpp"
+#include "Kyoto/Basics/CInterruptGuard.hpp"
+#include "rstl/optional_object.hpp"
+#endif
 #include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
 #include "rstl/math.hpp"
@@ -28,15 +43,17 @@ static bool sGXAborted;
 #endif
 
 bool CGraphicsSys::mGraphicsInitialized;
+#if !RSTL_KYOTO_GRAPHICS_DRAW_SYNC
 static CStopwatch sFPSTimer;
+#endif
 #if RSTL_PRIME1
 bool sIs50Hz = RSTL_VERSION == RSTL_GM8P_00;
 #endif
 #if RSTL_KYOTO_GRAPHICS_ARENA
 #if RSTL_PRIME1
 static uchar* sGraphicsArena;
-static int sGraphicsArenaSize;
-static uint sGraphicsArenaOffset;
+static int sTotalSize;
+static uint sAlloced;
 static void* sSpareFrameBuffer;
 static int sSpareFrameBufferSize;
 #else
@@ -188,7 +205,31 @@ CTevCombiners::CTevPass CGraphics::kEnvModulateColorByAlpha(
     CTevCombiners::kAS_PreviousAlpha
   )
 );
+#if RSTL_KYOTO_GRAPHICS_EXTENDED_API
+// Guessed name
+CTevCombiners::CTevPass CGraphics::kEnvAddPrevious(
+  CTevCombiners::ColorPass(
+    CTevCombiners::kCS_Zero,
+    CTevCombiners::kCS_PreviousColor,
+    CTevCombiners::kCS_One,
+    CTevCombiners::kCS_TextureColor
+  ),
+  CTevCombiners::AlphaPass(
+    CTevCombiners::kAS_PreviousAlpha,
+    CTevCombiners::kAS_Zero,
+    CTevCombiners::kAS_Zero,
+    CTevCombiners::kAS_TextureAlpha
+  )
+);
+#endif
 // clang-format on
+
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+static CStopwatch sFPSTimer;
+static rstl::optional_object< CGraphics::SDrawSyncState > sDrawSyncState;
+static TSignal0 sDrawDoneSignal;
+static CGraphics::SAlphaContextState sAlphaContexts[3];
+#endif
 
 CGraphics::CRenderState CGraphics::sRenderState;
 VecPtr CGraphics::vtxBuffer;
@@ -199,7 +240,9 @@ uint* CGraphics::clrBuffer;
 
 bool CGraphics::mJustReset;
 ERglCullMode CGraphics::mCullMode;
+#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
 int CGraphics::mNumLightsActive;
+#endif
 float CGraphics::mDepthNear;
 VecPtr CGraphics::mpVtxBuffer;
 VecPtr CGraphics::mpNrmBuffer;
@@ -207,6 +250,7 @@ STextureCoordinate* CGraphics::mpTxtBuffer0;
 STextureCoordinate* CGraphics::mpTxtBuffer1;
 uint* CGraphics::mpClrBuffer;
 
+#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
 // Guessed name inherited from Prime; these unused fields are not yet identified.
 struct CGXLightParams {
   int x0_;
@@ -218,6 +262,7 @@ struct CGXLightParams {
   CGXLightParams() : x0_(4), x4_(0), x8_(0), xc_(2), x10_(2) {}
 };
 CGXLightParams mLightParams[8];
+#endif
 
 struct {
   Vec mPosition;
@@ -235,7 +280,11 @@ CVector3f CGraphics::kDefaultDirectionVector(0.f, 1.f, 0.f);
 CGraphics::CProjectionState CGraphics::mProj(true, -1.f, 1.f, 1.f, -1.f, 1.f, 100.f);
 CTransform4f CGraphics::mViewMatrix = CTransform4f::Identity();
 CTransform4f CGraphics::mModelMatrix = CTransform4f::Identity();
+#if RSTL_KYOTO_GRAPHICS_BLUE_CLEAR_COLOR
+CColor CGraphics::mClearColor = CColor::Blue();
+#else
 CColor CGraphics::mClearColor = CColor::Black();
+#endif
 #if RSTL_PRIME1
 CVector3f CGraphics::mViewPoint(0.f, 0.f, 0.f);
 #endif
@@ -270,7 +319,13 @@ int CGraphics::mFlippingState;
 bool CGraphics::mLastFrameUsedAbove;
 bool CGraphics::mInterruptLastFrameUsedAbove;
 uchar CGraphics::mLightActive;
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+uchar CGraphics::mAlphaLightMask;
+int CGraphics::mLightingMode;
+CColor CGraphics::mLightingColor = CColor::Black();
+#else
 uchar CGraphics::mLightsWereOn;
+#endif
 void* CGraphics::mpFrameBuf1;
 void* CGraphics::mpFrameBuf2;
 void* CGraphics::mpCurrenFrameBuf;
@@ -300,9 +355,11 @@ int CGraphics::mScreenStretch;
 int CGraphics::mScreenPositionX;
 int CGraphics::mScreenPositionY;
 #if !RSTL_PRIME1
+#if RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY
 static bool sUseStreamVertexDelay;
-static int sGraphicsArenaSize;
-static int sGraphicsArenaOffset;
+#endif
+static int sTotalSize;
+static int sAlloced;
 static uchar* sGraphicsArena;
 #endif
 
@@ -313,6 +370,9 @@ ELightType CGraphics::mLightTypes[8] = {
 };
 
 const CTevCombiners::CTevPass& CGraphics::kEnvPassthru = CTevCombiners::kEnvPassthru;
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+int CGraphics::mCurrentAlphaContext = 1;
+#endif
 bool CGraphics::mIsBeginSceneClearFb = true;
 ERglEnum CGraphics::mDepthFunc = kE_LEqual;
 ERglPrimitive CGraphics::mCurrentPrimitive = kP_Points;
@@ -338,13 +398,17 @@ bool CGraphics::sIsPAL; // Guessed name; PAL TV format.
 
 const GXTexMapID CGraphics::kSpareBufferTexMapID = GX_TEXMAP7;
 
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+static void DispatchDrawDoneCallbacks() { sDrawDoneSignal.Emit(); }
+#endif
+
 #if RSTL_VERSION >= RSTL_GM8J_00
 void CGraphics::InitGraphicsFifo(GXFifoObj* obj, void* fifo, uint fifoSize) {
   GXFifoObj fifoObj;
   GXInitFifoBase(&fifoObj, fifo, fifoSize);
   GXSetCPUFifo(&fifoObj);
   GXSetGPFifo(&fifoObj);
-#if RSTL_VERSION == RSTL_G2MP
+#if RSTL_KYOTO_GRAPHICS_FIFO_REBASE
   GXInitFifoBase(obj, fifo, fifoSize);
 #endif
   GXInitFifoLimits(obj, fifoSize - 0x4000, fifoSize - 0x10000);
@@ -356,17 +420,22 @@ void CGraphics::InitGraphicsFifo(GXFifoObj* obj, void* fifo, uint fifoSize) {
 #if RSTL_KYOTO_GRAPHICS_ARENA
 static RSTL_PRIME1_INLINE void InitializeGraphicsArena(void* base, int size) {
   sGraphicsArena = static_cast< uchar* >(base);
-  sGraphicsArenaSize = size;
-  sGraphicsArenaOffset = 0;
+  sTotalSize = size;
+  sAlloced = 0;
 }
 
 static void* AllocateGraphicsArena(int size) {
-  void* ret = sGraphicsArena + sGraphicsArenaOffset;
-  sGraphicsArenaOffset += size;
+  RS_VERIFY_THROW_DIRECT(570, size == OSRoundUp32B( size ), false, "size is not 32B aligned");
+  RS_VERIFY_THROW_DIRECT(571, size + sAlloced <= sTotalSize, false,
+                         CBasics::Stringize("too much graphics zone memory alloced - total: %d, "
+                                            "size: %d, alloced: %d",
+                                            sTotalSize, size, sAlloced));
+  void* ret = sGraphicsArena + sAlloced;
+  sAlloced += size;
   return ret;
 }
 
-static RSTL_PRIME1_INLINE void ResetGraphicsArena() { sGraphicsArenaOffset = 0; }
+static RSTL_PRIME1_INLINE void ResetGraphicsArena() { sAlloced = 0; }
 
 static inline void SetGraphicsBuffer(void* buffer, int size) {
 #if RSTL_PRIME1
@@ -379,6 +448,9 @@ static inline void SetGraphicsBuffer(void* buffer, int size) {
 
 #if !RSTL_PRIME1
 bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
+#if RSTL_KYOTO_DEBUG_BUILD
+  OSReport("Initializing Graphics System\n");
+#endif
   InitializeGraphicsArena(osContext.GetArenaBlock(), osContext.GetArenaBlockSize());
   VIInit();
   VISetBlack(TRUE);
@@ -387,6 +459,9 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
   CGX::ResetGXStates();
   InitGraphicsVariables();
   ConfigureFrameBuffer();
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+  SelectAlphaContext(1);
+#endif
   for (int i = 0; i < ARRAY_SIZE(mTexRegions); ++i) {
     GXInitTexCacheRegion(&mTexRegions[i], false, 0x8000 * i, GX_TEXCACHE_32K, 0x80000 + 0x8000 * i,
                          GX_TEXCACHE_32K);
@@ -400,6 +475,17 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
   mpSpareBuffer = sSpareFrameBuffer;
 
   mSpareBufferTexCacheSize = 0x10000;
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+  CGraphics::SDrawSyncState syncState;
+  syncState.mBase = 0;
+  syncState.mIssued = 1;
+  syncState.mGotten = 0;
+  syncState.mWrapped = false;
+  GXDrawDone();
+  GXSetDrawSync(1);
+  sDrawSyncState = syncState;
+  GXSetDrawDoneCallback(DispatchDrawDoneCallbacks);
+#endif
   return true;
 }
 #endif
@@ -565,8 +651,8 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
 #if RSTL_KYOTO_GRAPHICS_ARENA
 bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
   sGraphicsArena = static_cast< uchar* >(osContext.GetArenaBlock());
-  sGraphicsArenaSize = osContext.GetArenaBlockSize();
-  sGraphicsArenaOffset = 0;
+  sTotalSize = osContext.GetArenaBlockSize();
+  sAlloced = 0;
   VIInit();
   VISetBlack(TRUE);
   ConfigureVideoMode(true, progressive);
@@ -686,6 +772,9 @@ void CGraphics::InitGraphicsVariables() {
 
 void CGraphics::Shutdown() {
   GXSetTexRegionCallback(mGXDefaultTexRegionCallback);
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+  GXSetDrawDoneCallback(nullptr);
+#endif
 #if RSTL_KYOTO_GRAPHICS_ARENA
   CFrameDelayedKiller::StallAndFlushAllAllocations();
   mpFrameBuf1 = nullptr;
@@ -708,6 +797,10 @@ void CGraphics::InitGraphicsDefaults() {
   FlushProjection();
   CTevCombiners::Init();
   DisableAllLights();
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  SetLightingMode(0);
+  UpdateLightChannels();
+#endif
   SetDefaultVtxAttrFmt();
 }
 
@@ -747,6 +840,103 @@ void CGraphics::ConfigureFrameBuffer(const COsContext& osContext) {
   InitGraphicsDefaults();
 }
 
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+void CGraphics::SetLightingMode(int mode) {
+  if (mode == 1) {
+    SetLightingModeAndColor(1, CColor(0u));
+  } else {
+    SetLightingModeAndColor(mode, CColor::Black());
+  }
+}
+
+void CGraphics::SetLightingModeAndColor(int mode, CColor color) {
+  if (mLightingMode == mode && color == mLightingColor) {
+    return;
+  }
+  mLightingMode = mode;
+  mLightingColor = color;
+  UpdateLightChannels();
+}
+
+void CGraphics::UpdateLightChannels() {
+  switch (mLightingMode) {
+  case 0: {
+    static const GXColor kColor = {0xFF, 0xFF, 0xFF, 0x00};
+    CGX::SetNumChans(1);
+    CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    CGX::SetChanCtrl(CGX::Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    CGX::SetChanMatColor(CGX::Channel0, kColor);
+    break;
+  }
+  case 3:
+    CGX::SetNumChans(1);
+    CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    CGX::SetChanCtrl(CGX::Channel2, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    break;
+  case 1: {
+    CGX::SetNumChans(1);
+    uint lights = mLightActive;
+    GXAttnFn attnFn = lights != 0 ? GX_AF_SPOT : GX_AF_NONE;
+    GXDiffuseFn diffFn = lights != 0 ? GX_DF_CLAMP : GX_DF_NONE;
+    CGX::SetChanCtrl(CGX::Channel0, lights != 0, GX_SRC_REG, GX_SRC_REG,
+                     static_cast< GXLightID >(lights), diffFn, attnFn);
+    uchar alphaLights = mLightActive & mAlphaLightMask;
+    attnFn = alphaLights != 0 ? GX_AF_SPOT : GX_AF_NONE;
+    diffFn = alphaLights != 0 ? GX_DF_CLAMP : GX_DF_NONE;
+    CGX::SetChanCtrl(CGX::Channel2, alphaLights != 0, GX_SRC_REG, GX_SRC_REG,
+                     static_cast< GXLightID >(alphaLights), diffFn, attnFn);
+    if (mLightActive != 0) {
+      CGX::SetChanAmbColor(CGX::Channel0, mLightingColor.GetGXColor());
+      GXColor color = CColor::White().GetGXColor();
+      if (alphaLights == 0) {
+        color.a = mLightingColor.GetAlphau8();
+      }
+      CGX::SetChanMatColor(CGX::Channel0, color);
+    } else {
+      CGX::SetChanMatColor(CGX::Channel0, mLightingColor.GetGXColor());
+    }
+    break;
+  }
+  case 2: {
+    CGX::SetNumChans(1);
+    uint lights = mLightActive;
+    if (lights != 0) {
+      CGX::SetChanCtrl(CGX::Channel0, true, GX_SRC_REG, GX_SRC_VTX,
+                       static_cast< GXLightID >(lights), GX_DF_CLAMP, GX_AF_SPOT);
+      CGX::SetChanAmbColor(CGX::Channel0, mLightingColor.GetGXColor());
+      CGX::SetChanMatColor(CGX::Channel0, CColor::White().GetGXColor());
+    } else {
+      CGX::SetChanCtrl(CGX::Channel0, true, GX_SRC_REG, GX_SRC_VTX,
+                       static_cast< GXLightID >(lights), GX_DF_NONE, GX_AF_NONE);
+      CGX::SetChanAmbColor(CGX::Channel0, mLightingColor.GetGXColor());
+    }
+    CGX::SetChanCtrl(CGX::Channel2, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    break;
+  }
+  case 4:
+    CGX::SetNumChans(1);
+    CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    CGX::SetChanCtrl(CGX::Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE,
+                     GX_AF_NONE);
+    CGX::SetChanMatColor(CGX::Channel0, mLightingColor.GetGXColor());
+    break;
+  }
+}
+
+void CGraphics::EnableLight(ERglLight light) {
+  int lightId = 1 << light;
+  if ((lightId & mLightActive) == 0) {
+    mLightActive |= lightId;
+    UpdateLightChannels();
+  }
+}
+#else
 void CGraphics::EnableLight(ERglLight light) {
   CGX::SetNumChans(1);
   int lightsWereOn = mLightActive;
@@ -760,6 +950,7 @@ void CGraphics::EnableLight(ERglLight light) {
   }
   mLightsWereOn = mLightActive;
 }
+#endif
 
 static inline GXLightID get_hw_light_index(ERglLight light) {
 #if RSTL_PRIME1
@@ -792,9 +983,24 @@ static inline GXLightID get_hw_light_index(ERglLight light) {
 
 void CGraphics::LoadLight(ERglLight light, const CLight& info) {
   GXLightID lightId = get_hw_light_index(light);
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  uchar previousAlphaMask = mAlphaLightMask;
+#endif
 
   CVector3f pos = info.GetPosition();
   CVector3f dir = info.GetDirection();
+
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  bool affectsAlpha = false;
+  if (info.IsColorProcessing() && info.GetProcessedColor().GetAlphau8() != 0) {
+    affectsAlpha = true;
+  }
+  if (affectsAlpha) {
+    mAlphaLightMask |= lightId;
+  } else {
+    mAlphaLightMask &= ~lightId;
+  }
+#endif
 
   switch (info.GetType()) {
 
@@ -826,7 +1032,7 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     break;
   }
   case kLT_Custom:
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_NO_HARD_HELPERS
   case kLT_Hard:
 #endif
   {
@@ -844,11 +1050,36 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     break;
   }
 
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  CColor color = info.GetProcessedColor();
+  GXInitLightColor(&mLightObj[light], color.GetGXColor());
+#else
   GXInitLightColor(&mLightObj[light], info.GetColor().GetGXColor());
+#endif
   GXLoadLightObjImm(&mLightObj[light], lightId);
   mLightTypes[light] = info.GetType();
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  if (previousAlphaMask != mAlphaLightMask) {
+    UpdateLightChannels();
+  }
+#endif
 }
 
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+void CGraphics::DisableAllLights() {
+  if (mLightActive != 0) {
+    mLightActive = 0;
+    UpdateLightChannels();
+  }
+}
+
+void CGraphics::SetLightState(uchar lights) {
+  if (mLightActive != lights) {
+    mLightActive = lights;
+    UpdateLightChannels();
+  }
+}
+#else
 void CGraphics::DisableAllLights() {
   mNumLightsActive = 0;
   mLightActive = 0;
@@ -883,6 +1114,7 @@ void CGraphics::SetLightState(uchar lights) {
   mLightActive = lights;
   mNumLightsActive = popcount8(lights);
 }
+#endif
 
 void CGraphics::SetViewMatrix() {
 #if RSTL_PRIME1
@@ -900,7 +1132,7 @@ void CGraphics::SetViewMatrix() {
     MTXConcat(mCameraMtx, mModelMatrix.GetCStyleMatrix(), mGxModelView);
 #endif
   }
-  GXLoadPosMtxImm(mGxModelView, GX_PNMTX0);
+  CGX::LoadPosMtxImm(mGxModelView, GX_PNMTX0);
 #if RSTL_PRIME1
   Mtx nrmMtx;
   MTXInvXpose(mGxModelView, nrmMtx);
@@ -908,7 +1140,7 @@ void CGraphics::SetViewMatrix() {
 #else
   if (mUseNormalMatrix) {
     MTXInvXpose(mGxModelView, mGxModelViewInvXpose);
-    GXLoadNrmMtxImm(mGxModelViewInvXpose, GX_PNMTX0);
+    CGX::LoadNrmMtxImm(mGxModelViewInvXpose, GX_PNMTX0);
   }
 #endif
 }
@@ -1143,6 +1375,41 @@ int CGraphics::GetViewportTop(int bottom) {
 }
 #endif
 
+#if RSTL_KYOTO_GRAPHICS_EXTENDED_API
+int CGraphics::GetViewportTopFromBottomAndHeight(int bottom, int height) {
+  return mRenderModeObj.efbHeight - (bottom + height);
+}
+
+// Guessed name.
+CMatrix4f CGraphics::CalculateCenteredOrthographicMatrix(float width, float height, float znear,
+                                                         float zfar) {
+  float right = width * 0.5f;
+  float left = -right;
+  float top = height * 0.5f;
+  float bottom = -top;
+  return CMatrix4f(
+      // clang-format off
+    2.f / (right - left),
+    0.f,
+    0.f,
+    -(right + left) / (right - left),
+    0.f,
+    0.f,
+    2.f / (top - bottom),
+    -(top + bottom) / (top - bottom),
+    0.f,
+    2.f / (zfar - znear),
+    0.f,
+    -(zfar + znear) / (zfar - znear),
+    0.f,
+    0.f,
+    0.f,
+    1.f
+      // clang-format on
+  );
+}
+#endif
+
 void CGraphics::SetScissor(int left, int bottom, int width, int height) {
   GXSetScissor(left, mRenderModeObj.efbHeight - (bottom + height), width, height);
 }
@@ -1262,6 +1529,34 @@ void CGraphics::VideoPostCallback(u32 retraceCount) {
   }
 }
 
+#if RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW
+// Guessed name
+static void DrawEndSceneTriangles(const CViewport& viewport) {
+  Mtx projection;
+  MTXOrtho(projection, viewport.mHeight / 2, -viewport.mHeight / 2, -viewport.mWidth / 2,
+           viewport.mWidth / 2, -1.f, -10.f);
+  GXSetProjection(projection, GX_ORTHOGRAPHIC);
+  Mtx model;
+  MTXIdentity(model);
+  CGX::LoadPosMtxImm(model, GX_PNMTX0);
+  CGX::SetZMode(true, GX_LEQUAL, false);
+  CGX::SetVtxDescv(skPosColorTexDirect);
+  CGX::Begin(GX_TRIANGLES, GX_VTXFMT0, 288);
+  for (int i = 96; i != 0; --i) {
+    GXPosition3f32(0.f, 1.f, 1.f);
+    GXColor1u32(0);
+    GXTexCoord2f32(0.f, 0.f);
+    GXPosition3f32(0.f, 0.f, 1.f);
+    GXColor1u32(0);
+    GXTexCoord2f32(0.f, 0.f);
+    GXPosition3f32(1.f, 0.f, 1.f);
+    GXColor1u32(0);
+    GXTexCoord2f32(0.f, 0.f);
+  }
+  CGX::End();
+}
+#endif
+
 void CGraphics::EndScene() {
 #if IS_TARGET_PC
   CGX::SetZMode(true, GX_LEQUAL, RSTL_PRIME1);
@@ -1289,6 +1584,7 @@ void CGraphics::EndScene() {
   const OSTime start = OSGetTime();
   if (sGXAborted) {
     GXAbortFrame();
+    RS_DEBUGGER_PRINT("*** GFX HANG *** Hang outside of EndScene\n");
   } else {
     CStopwatch waitTimer;
     while (numBreakPt > 0 && !aborted) {
@@ -1297,6 +1593,7 @@ void CGraphics::EndScene() {
         const bool interrupts = OSDisableInterrupts();
         GXAbortFrame();
         aborted = true;
+        RS_DEBUGGER_PRINT("*** GFX HANG *** Hang inside EndScene\n");
         OSRestoreInterrupts(interrupts);
       }
     }
@@ -1306,6 +1603,7 @@ void CGraphics::EndScene() {
     sFrameWaitFraction = (framePeriod - elapsedMs) / framePeriod;
   }
   if (aborted) {
+    RS_DEBUGGER_PRINT("*** GFX HANG *** Hang working around!\n");
     mNumBreakpointsWaiting = 0;
     aborted = false;
     mpFifoObj = GXInit(mpFifo, mFifoSize);
@@ -1313,10 +1611,14 @@ void CGraphics::EndScene() {
     SetDefaultVtxAttrFmt();
     CGX::ResetGXStatesFull();
     InitGraphicsVariables();
+    RS_DEBUGGER_PRINT("*** GFX HANG *** Hang worked around!\n");
   }
   ++mNumBreakpointsWaiting;
 #endif
 #if !RSTL_PRIME1
+#if RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW
+  DrawEndSceneTriangles(mViewport);
+#else
   // The original declares a 3x4 matrix here; MTXOrtho writes all four rows past its end.
   Mtx projection;
   MTXOrtho(projection, mViewport.mHeight / 2, -mViewport.mHeight / 2, -mViewport.mWidth / 2,
@@ -1340,6 +1642,7 @@ void CGraphics::EndScene() {
     GXTexCoord2f32(0.f, 0.f);
   }
   CGX::End();
+#endif
   CGX::SetZMode(true, GX_LEQUAL, true);
 #endif
 
@@ -1409,9 +1712,14 @@ void CGraphics::SetBlendMode(ERglBlendMode mode, ERglBlendFactor src, ERglBlendF
 
 void CGraphics::SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op,
                                 ERglAlphaFunc comp1, uchar ref1) {
+#if RSTL_CORRUPTION
+  CGX::SetAlphaCompare(static_cast< GXCompare >(comp0), ref0, static_cast< GXAlphaOp >(op),
+                       static_cast< GXCompare >(comp1), ref1);
+#else
   CGX::SetAlphaCompare(static_cast< GXCompare >(comp0), static_cast< uchar >(ref0),
                        static_cast< GXAlphaOp >(op), static_cast< GXCompare >(comp1),
                        static_cast< uchar >(ref1));
+#endif
 }
 
 void CGraphics::Render2D(const CTexture& tex, int x, int y, int w, int h, const CColor& col) {
@@ -1489,10 +1797,15 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
   // Save state + setup
   CGX::SetVtxDescv(skPosColorTexDirect);
 
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  SLightingState lightingState = CaptureLightingState();
+  SetLightingMode(0);
+#else
   mLightsWereOn = mLightActive;
   if (mLightActive != 0) {
     DisableAllLights();
   }
+#endif
   ERglCullMode cullMode = mCullMode;
   SetCullMode(kCM_None);
   if (tex != nullptr) {
@@ -1520,9 +1833,13 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
   CGX::End();
 
   // Restore state
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  RestoreLightingState(lightingState);
+#else
   if (mLightsWereOn != 0) {
     SetLightState(mLightsWereOn);
   }
+#endif
   FlushProjection();
   mIsGXModelMatrixIdentity = false;
   SetModelMatrix(mModelMatrix);
@@ -1530,6 +1847,7 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
 }
 #endif
 
+#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
 bool CGraphics::BeginRender2D(const CTexture& tex) {
   Mtx44 proj;
   MTXOrtho(proj, mViewport.mHeight / 2, -mViewport.mHeight / 2, -mViewport.mWidth / 2,
@@ -1614,6 +1932,7 @@ void CGraphics::DoRender2D(const CTexture& tex, int x, int y, int texX, int texY
   GXTexCoord2f32(s1, t0);
   CGX::End();
 }
+#endif
 #endif
 
 void CGraphics::DrawPrimitive(ERglPrimitive primitive, const float* pos, const CVector3f& normal,
@@ -1866,7 +2185,7 @@ void CGraphics::FlushStream() {
   *next = end;
   CGX::SetVtxDescv(descriptors);
   SetTevStates(vtxDescr.mStreamFlags);
-#if RSTL_PRIME1
+#if !RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY
   FullRender();
 #else
   if (sUseStreamVertexDelay) {
@@ -1908,6 +2227,35 @@ void CGraphics::SetTevStates(uchar flags) {
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
   CGX::SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY, false, GX_PTIDENTITY);
 
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+  switch (mLightingMode) {
+  case 0:
+    if ((flags & kHasColor) != 0) {
+      SetLightingModeAndColor(3, CColor::White());
+    }
+    break;
+  case 4:
+    if ((flags & kHasColor) != 0) {
+      SetLightingModeAndColor(3, mLightingColor);
+    }
+    break;
+  case 1:
+    if ((flags & kHasColor) != 0) {
+      SetLightingModeAndColor(2, mLightingColor);
+    }
+    break;
+  case 2:
+    if ((flags & kHasColor) == 0) {
+      SetLightingModeAndColor(1, mLightingColor);
+    }
+    break;
+  case 3:
+    if ((flags & kHasColor) == 0) {
+      SetLightingModeAndColor(4, mLightingColor);
+    }
+    break;
+  }
+#else
   uint light = mLightActive;
   GXAttnFn attnFn = GX_AF_NONE;
   if (light != 0) {
@@ -1920,8 +2268,22 @@ void CGraphics::SetTevStates(uchar flags) {
   CGX::SetChanCtrl(CGX::Channel0, light ? GX_ENABLE : GX_DISABLE, GX_SRC_REG,
                    (flags & kHasColor) ? GX_SRC_VTX : GX_SRC_REG, static_cast< GXLightID >(light),
                    diffFn, attnFn);
+#endif
 }
 
+#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+void CGraphics::RestoreLightingState(const SLightingState& state) {
+  SetLightingModeAndColor(state.mMode, state.mColor);
+  SetLightState(state.mLights);
+}
+
+CGraphics::SLightingState CGraphics::CaptureLightingState() {
+  SLightingState state(mLightingMode, mLightingColor, mLightActive);
+  return state;
+}
+#endif
+
+#if RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY
 void CGraphics::FullRenderWithVertexDelay() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
   switch (vtxDescr.mStreamFlags) {
@@ -1988,6 +2350,7 @@ void CGraphics::FullRenderWithVertexDelay() {
   }
   CGX::End();
 }
+#endif
 
 void CGraphics::FullRender() {
   CGX::Begin(static_cast< GXPrimitive >(mCurrentPrimitive), GX_VTXFMT0, mNumPrimitives);
@@ -2077,6 +2440,9 @@ void CGraphics::FullRender() {
       GXTexCoord2f32(uv.x, uv.y);
     }
     break;
+  default:
+    RS_VERIFY_THROW(3370, false, false, "Invalid flags passed in vtxDesc");
+    break;
   }
   CGX::End();
 }
@@ -2147,23 +2513,23 @@ void CGraphics::SetFog(ERglFogMode mode, float startz, float endz, const CColor&
 void CGraphics::ResetGfxStates() { sRenderState.Set(0); }
 
 void CGraphics::SetDefaultVtxAttrFmt() {
-  GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT1, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT2, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT1, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
-  GXSetVtxAttrFmt(GX_VTXFMT2, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
-  GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT1, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT2, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT1, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT2, GX_VA_TEX0, GX_TEX_ST, GX_U16, 15);
+  CGX::SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT1, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT2, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT1, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
+  CGX::SetVtxAttrFmt(GX_VTXFMT2, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
+  CGX::SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT1, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT2, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT1, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT2, GX_VA_TEX0, GX_TEX_ST, GX_U16, 15);
   for (int i = 1; i <= 7; ++i) {
     GXAttr attr = static_cast< GXAttr >(GX_VA_TEX0 + i);
-    GXSetVtxAttrFmt(GX_VTXFMT0, attr, GX_TEX_ST, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT1, attr, GX_TEX_ST, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT2, attr, GX_TEX_ST, GX_F32, 0);
+    CGX::SetVtxAttrFmt(GX_VTXFMT0, attr, GX_TEX_ST, GX_F32, 0);
+    CGX::SetVtxAttrFmt(GX_VTXFMT1, attr, GX_TEX_ST, GX_F32, 0);
+    CGX::SetVtxAttrFmt(GX_VTXFMT2, attr, GX_TEX_ST, GX_F32, 0);
   }
 }
 
@@ -2471,9 +2837,11 @@ void CGraphics::SetProgressiveMode(bool progressive) {
 #if !RSTL_KYOTO_PAL_VIDEO
   VIWaitForRetrace();
 #endif
+#if !RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH
   for (int i = 0; i < 10; ++i) {
     VIWaitForRetrace();
   }
+#endif
 #if RSTL_KYOTO_PAL_VIDEO
   ConfigureVideoMode(false, progressive);
   ConfigureFrameBuffer();
@@ -2504,9 +2872,11 @@ void CGraphics::SetProgressiveMode(bool progressive) {
   VIConfigure(&mRenderModeObj);
   VISetBlack(TRUE);
   VIFlush();
+#if !RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH
   for (int i = 0; i < 100; ++i) {
     VIWaitForRetrace();
   }
+#endif
   VISetBlack(FALSE);
   VIFlush();
   for (int i = 0; i < 2; ++i) {
@@ -2582,7 +2952,9 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
   }
 }
 
+#if RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
+#endif
 #endif
 
 CGraphicsSys::CGraphicsSys(const COsContext& osContext IF_NOT_TARGET_PC(, const CMemorySys& memorySys)
@@ -2612,6 +2984,146 @@ CGraphicsSys::~CGraphicsSys() {
     mGraphicsInitialized = false;
   }
 }
+
+#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+void CGraphics::SDrawSyncState::Poll() {
+  ushort gotten = GXReadDrawSync();
+  if (gotten < mGotten) {
+    mWrapped = false;
+  }
+  mGotten = gotten;
+}
+
+u64 CGraphics::SDrawSyncState::IssueToken() {
+  uint start = OSGetTime();
+  for (;;) {
+    uint now = OSGetTime();
+    if (static_cast< ushort >(mIssued + 1) != mGotten) {
+      break;
+    }
+    if (OSTicksToMilliseconds(now - start) > 500) {
+      CInterruptGuard guard;
+      ushort gotten = GXReadDrawSync();
+      RS_DEBUGGER_PRINT("******************************\n");
+      RS_DEBUGGER_PRINT("** HACKED BREAK At token: %u, Last gotten: %u last issued: %u\n", gotten,
+                        mGotten, mIssued);
+      RS_DEBUGGER_PRINT("******************************\n");
+      mBase += 0x10000;
+      start = now;
+      mWrapped = false;
+      mIssued = gotten;
+      mGotten = gotten;
+    }
+    Poll();
+  }
+  CInterruptGuard guard;
+  ushort next = mIssued + 1;
+  if (next < mIssued) {
+    mWrapped = true;
+    mBase += 0x10000;
+  }
+  mIssued = next;
+  GXSetDrawSync(next);
+  return mBase + static_cast< uint >(mIssued);
+}
+
+bool CGraphics::SDrawSyncState::IsTokenComplete(u64 token) {
+  CInterruptGuard guard;
+  Poll();
+  u64 current = mBase + mGotten;
+  if (mWrapped) {
+    current -= 0x10000;
+  }
+  return current >= token;
+}
+
+u64 CGraphics::IssueCurrentDrawSyncToken() { return sDrawSyncState.data().IssueToken(); }
+
+bool CGraphics::QueryCurrentDrawSyncToken(u64 token) {
+  return sDrawSyncState.data().IsTokenComplete(token);
+}
+
+rstl::auto_ptr< IConnection > CGraphics::ConnectDrawDoneCallback(TFunctor0 callback) {
+  return sDrawDoneSignal.Connect(callback);
+}
+
+void CGraphics::SelectAlphaContext(int context) {
+  if (sAlphaContexts[context].mAlphaUpdate != sAlphaContexts[mCurrentAlphaContext].mAlphaUpdate) {
+    GXSetAlphaUpdate(sAlphaContexts[context].mAlphaUpdate);
+  }
+  CGX::SetDstAlpha(sAlphaContexts[context].mDstAlphaEnable,
+                   sAlphaContexts[context].mDstAlphaEnable);
+  mCurrentAlphaContext = context;
+}
+
+int CGraphics::GetAlphaContext() { return mCurrentAlphaContext; }
+
+void CGraphics::DisableDestinationAlpha(int context) {
+  sAlphaContexts[context].mDstAlphaEnable = false;
+  if (mCurrentAlphaContext == context) {
+    CGX::SetDstAlpha(false, 0);
+    if (!sAlphaContexts[context].mAlphaUpdate) {
+      GXSetAlphaUpdate(true);
+      sAlphaContexts[context].mAlphaUpdate = true;
+    }
+  }
+}
+
+void CGraphics::EnableDestinationAlpha(int context, uchar alpha) {
+  sAlphaContexts[context].mDstAlphaEnable = true;
+  sAlphaContexts[context].mDstAlpha = alpha;
+  if (mCurrentAlphaContext == context) {
+    CGX::SetDstAlpha(true, alpha);
+    if (!sAlphaContexts[context].mAlphaUpdate) {
+      GXSetAlphaUpdate(true);
+      sAlphaContexts[context].mAlphaUpdate = true;
+    }
+  }
+}
+
+void CGraphics::DisableAlphaUpdate(int context) {
+  if (sAlphaContexts[context].mAlphaUpdate) {
+    sAlphaContexts[context].mAlphaUpdate = false;
+    if (mCurrentAlphaContext == context) {
+      GXSetAlphaUpdate(false);
+    }
+  }
+}
+
+CGraphics::SAlphaContextState& CGraphics::GetAlphaContextState(int context) {
+  return sAlphaContexts[context];
+}
+
+void CGraphics::RestoreAlphaContextState(int context, const SAlphaContextState& state) {
+  if (context == mCurrentAlphaContext) {
+    if (state.mAlphaUpdate != sAlphaContexts[context].mAlphaUpdate) {
+      GXSetAlphaUpdate(state.mAlphaUpdate);
+    }
+    CGX::SetDstAlpha(state.mDstAlphaEnable, state.mDstAlphaEnable);
+  }
+  sAlphaContexts[context] = state;
+}
+
+CGraphics::CAlphaContextGuard::CAlphaContextGuard(int context)
+: mState(GetAlphaContextState(context)), mContext(context) {}
+
+CGraphics::CAlphaContextGuard::~CAlphaContextGuard() { RestoreAlphaContextState(mContext, mState); }
+
+CGraphics::CAlphaContextsGuard::CAlphaContextsGuard() : mPreviousContext(GetAlphaContext()) {
+  for (int i = 0; i < 3; ++i) {
+    mStates.push_back(GetAlphaContextState(i));
+  }
+}
+
+CGraphics::CAlphaContextsGuard::~CAlphaContextsGuard() {
+  for (int i = 0; i < 3; ++i) {
+    RestoreAlphaContextState(i, mStates[i]);
+  }
+  if (mPreviousContext != GetAlphaContext()) {
+    SelectAlphaContext(mPreviousContext);
+  }
+}
+#endif
 
 CGraphics::CRenderState::CRenderState() {
   x0_ = 0;
