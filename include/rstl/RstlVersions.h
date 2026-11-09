@@ -779,9 +779,6 @@
 // CMoviePlayer::DecodeFromRead warns about 60fps frames over 33k and other frames over 60k (Corruption).
 // Earlier builds keep a single frame-size argument.
 #define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
-// CDvdFile reads host files over the BBA link when sPollingMode is set (Corruption). Earlier builds keep
-// the flag but read only from the disc.
-#define RSTL_KYOTO_DVD_HOST_READS (RSTL_CORRUPTION)
 // CTexture records the mip bytes it skips when capping a texture's size (Corruption).
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
 // CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
