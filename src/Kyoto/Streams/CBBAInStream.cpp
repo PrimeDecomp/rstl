@@ -1,6 +1,6 @@
 #include "Kyoto/Streams/CBBAInStream.hpp"
 
-#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#include "Kyoto/Network/CBBASupport.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
@@ -22,17 +22,17 @@ CInputStream::SBufferAndSize CBBAInStream::LoadFileBuffer(const char* path) {
   SHostFileGuard file;
   int error = CBBASupport::BBAOpen(path, kBOM_Read, &file.mHandle);
   RS_VERIFY_THROW_DIRECT(34, error == kFE_OK, false,
-                         CBasics::Stringize("Could not open BBA file - '%s'\n", path))
+                         CBasics::Stringize("Could not open BBA file - '%s'\n", path));
   int size = 0;
   error = CBBASupport::BBAGetFileSize(file.mHandle, &size);
   RS_VERIFY_THROW_DIRECT(38, error == kFE_OK, false,
-                         CBasics::Stringize("Could not get size of BBA file - '%s'\n", path))
+                         CBasics::Stringize("Could not get size of BBA file - '%s'\n", path));
   rstl::auto_ptr< uchar > data(static_cast< uchar* >(
       CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
                      CCallStack(-1, "CBBAInStream.cpp(39) : ", kUnknownType))));
   error = CBBASupport::BBARead(file.mHandle, data.get(), size);
   RS_VERIFY_THROW_DIRECT(42, error == kFE_OK, false,
-                         CBasics::Stringize("Could not read BBA file - '%s'\n", path))
+                         CBasics::Stringize("Could not read BBA file - '%s'\n", path));
   return SBufferAndSize(data.release(), size);
 }
 

@@ -11,6 +11,7 @@ public:
   static void* EnsureAllocation(int size);
   static void ReleaseAllocation();
   static void TickAllocations();
+  static uint GetPeakAllocatedAmount(); // Guessed name
 };
 
 #endif // _DOLPHINGPUMEMORY

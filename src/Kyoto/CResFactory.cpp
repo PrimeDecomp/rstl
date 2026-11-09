@@ -2,6 +2,7 @@
 #include "rstl/macros.hpp"
 #include "rstl/list.hpp"         // IWYU pragma: keep
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
@@ -19,8 +20,7 @@
 static const int kDecompChunkSize = 4096;
 #endif
 
-// Written by CMFGameLoader; its purpose is not yet identified.
-int gResFactoryUnknown = 2;
+int gResFactoryBuildLogMode = 2;
 
 CResFactory::CResFactory() {}
 
@@ -64,6 +64,20 @@ static bool StrippedIsLoading(
 #if !defined(TARGET_PC)
 rstl::auto_ptr< IObj > CResFactory::Build(const SObjectTag& tag, const CVParamTransfer& params) {
   AUTO(it, FindInLoadList(tag));
+#if RSTL_KYOTO_DEBUG_BUILD
+  if (gResFactoryBuildLogMode != 0) {
+    const bool inAram = mResLoader.ContainsResourceInAramPaks(tag);
+    if (!inAram || gResFactoryBuildLogMode == 2) {
+      RS_DEBUGGER_PRINT("Sync build of %s(%s) - %s\n", tag.GetId().ToHexString().c_str(),
+                        SObjectTag::Type2Text(tag.GetType()), inAram ? "ARAM" : "DVD(BUG!)");
+      if (!inAram) {
+        RS_WARNING_PRINT("BUG THIS!  DVD Sync build of %s(%s)\n", tag.GetId().ToHexString().c_str(),
+                         SObjectTag::Type2Text(tag.GetType()));
+      }
+    }
+  }
+#endif
+
   if (it != mLoadList.end()) {
     IObj** target = it->mTarget;
     while (*target == nullptr) {
@@ -77,6 +91,14 @@ rstl::auto_ptr< IObj > CResFactory::Build(const SObjectTag& tag, const CVParamTr
 
 rstl::auto_ptr< IObj > CResFactory::BuildSync(const SObjectTag& tag,
                                               const CVParamTransfer& params) {
+#if RSTL_KYOTO_BUFFER_FACTORIES
+  char* buffer;
+  int size;
+  mResLoader.LoadMemResourceSync(tag, &buffer, &size);
+  return mFactoryMgr.MakeObjectFromMemory(
+      tag, rstl::auto_ptr< uchar >(reinterpret_cast< uchar* >(buffer)), size,
+      mResLoader.GetResourceCompression(tag) == CResLoader::kCompressionType_Uncompressed, params);
+#else
   if (mFactoryMgr.CanMakeMemory(tag)) {
     char* buffer;
     int size;
@@ -96,6 +118,7 @@ rstl::auto_ptr< IObj > CResFactory::BuildSync(const SObjectTag& tag,
   rstl::auto_ptr< IObj > result = mFactoryMgr.MakeObject(tag, *in, params);
   delete in;
   return result;
+#endif
 }
 
 void CResFactory::BuildAsync(const SObjectTag& tag, const CVParamTransfer& params, IObj** target) {
@@ -106,7 +129,7 @@ void CResFactory::BuildAsync(const SObjectTag& tag, const CVParamTransfer& param
   CDvdRequest* request = LoadResourceAsync(tag, buffer);
 #else
   CBufferedDvdRequest* request = mResLoader.LoadResourceAsync(tag);
-  const bool ownsBuffer = request->OwnsBuffer();
+  const bool ownsBuffer = request->GetRequestOwnsMemory();
   rstl::auto_ptr< uchar > buffer;
   if (ownsBuffer) {
     buffer = request->GetBuffer();
@@ -186,7 +209,12 @@ bool CResFactory::PumpResource(const LoadList::iterator& it, uint time) {
         mFactoryMgr
             .MakeObjectFromMemory(
                 data.mTag, IF_RSTL_PRIME1_ELSE(data.mBuffer.release(), data.mBuffer), data.mSize,
-                data.mCompression != CResLoader::kCompressionType_Uncompressed, data.mParams)
+#if RSTL_KYOTO_BUFFER_FACTORIES
+                data.mCompression == CResLoader::kCompressionType_Uncompressed,
+#else
+                data.mCompression != CResLoader::kCompressionType_Uncompressed,
+#endif
+                data.mParams)
             .release();
     return true;
   }
@@ -249,8 +277,8 @@ bool CResFactory::SLoadingData::PumpDecompression(uint time) {
     zip->next_out = nullptr;
     mZip = rstl::auto_ptr< z_stream_s >(zip);
 #endif
-    mDecompBuffer = rstl::auto_ptr< uchar >(
-        static_cast< uchar* >(CMemory::Alloc(length, IAllocator::kHI_RoundUpLen)));
+    mDecompBuffer =
+        rstl::auto_ptr< uchar >(static_cast< uchar* >(rs_aligned_new_line(length, 463)));
   }
 
 // TODO: verify that this Prime/Echoes difference is real

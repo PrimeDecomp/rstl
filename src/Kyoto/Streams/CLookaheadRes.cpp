@@ -1,11 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_CORRUPTION
 #include "Kyoto/Streams/CLookaheadRes.hpp"
 
-#include "Corruption/Kyoto/CResLoader.hpp"
-#else
 #include "Kyoto/CResLoader.hpp"
-#endif
 
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"

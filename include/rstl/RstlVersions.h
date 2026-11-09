@@ -783,6 +783,35 @@
 #define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
 // CTexture can cap a texture's size as it loads, and records the mip bytes it skips (Corruption).
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
+// CGraphicsPalette can keep its entries in GPU memory, so GetPaletteData is out of line (Corruption).
+#define RSTL_KYOTO_PALETTE_GPU_MEMORY (RSTL_CORRUPTION)
+// CGraphicsPalette::UnLock stores the entries to memory before rebuilding its TLUT (Prime, Echoes).
+#define RSTL_KYOTO_PALETTE_UNLOCK_STORE_RANGE (!RSTL_CORRUPTION)
+// CPakFile::CResInfo copies through out-of-line members and is built only with a lookahead size
+// (Corruption). Earlier builds copy it bitwise and also have a five-argument constructor.
+#define RSTL_KYOTO_PAK_RES_INFO_COPY (RSTL_CORRUPTION)
+// CPakFile keeps a list of asset names after its bucket offsets (Corruption).
+#define RSTL_KYOTO_PAK_ASSET_NAMES (RSTL_CORRUPTION)
+// CPakFile reads the first 16 KB of a pak for its header (Corruption). Earlier builds read 8 KB.
+#define RSTL_KYOTO_PAK_LARGE_HEADER_READ (RSTL_CORRUPTION)
+// Asset type indices come from CAssetTypesList (Corruption). Earlier builds keep the type table in
+// CFactoryMgr (FourCCToTypeIdx, TypeIdxToFourCC).
+#define RSTL_KYOTO_ASSET_TYPES_LIST (RSTL_CORRUPTION)
+// CPakFile fills new resource tables with records holding the invalid asset ID (Corruption).
+// Echoes uses ID 0, or leaves the restored table uninitialized.
+#define RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO (RSTL_CORRUPTION)
+// CPakFile::RebuildResourceLists clears each bucket count before storing the bucket's end offset
+// (Corruption). Echoes stores the offset first.
+#define RSTL_KYOTO_PAK_BUCKET_RESET_BEFORE_OFFSET (RSTL_CORRUPTION)
+// CResLoader looks for network assets before the paks: FindResource returns nothing and
+// LoadMemResourceSync reports whether it loaded the resource (Corruption).
+#define RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS (RSTL_CORRUPTION)
+// CResFactory::GetResourceIdToNameList is defined in its header (Corruption). Echoes defines it in
+// CInGameTweakManager.cpp.
+#define RSTL_KYOTO_RES_FACTORY_INLINE_NAME_LIST (RSTL_CORRUPTION)
+// GPUMemory::EnsureAllocation marks itself as allocating once it has the memory (Corruption).
+// Echoes marks it before allocating.
+#define RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG (RSTL_CORRUPTION)
 // CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
 // tables and the vertex attribute sizes of each format (Corruption).
 #define RSTL_KYOTO_CGX_EXTENDED_STATE (RSTL_CORRUPTION)

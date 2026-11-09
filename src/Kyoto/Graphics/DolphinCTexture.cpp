@@ -7,13 +7,8 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/CResFactory.hpp"
-#include "Corruption/Kyoto/Graphics/CGraphicsPalette.hpp"
-#else
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#endif
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Platform.h"
 #include "Kyoto/SObjectTag.hpp"
@@ -38,7 +33,7 @@
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 #ifdef ENABLE_BBA_TOOLS
-#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#include "Kyoto/Network/CBBASupport.hpp"
 #endif
 
 int CTexture::sCurrentFrameCount = 0;

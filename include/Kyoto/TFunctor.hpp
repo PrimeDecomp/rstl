@@ -30,6 +30,22 @@ private:
   };
 };
 
+// Guessed name
+class TFunctor0 {
+public:
+  typedef void (*Functor)(const void* object, const void* method);
+
+  TFunctor0(Functor functor, const void* object, const void* method, int size)
+  : mFunctor(functor), mObject(object), mMethod(method, size) {}
+
+  void operator()() const { mFunctor(mObject, mMethod.GetMethodPointer()); }
+
+private:
+  Functor mFunctor;
+  const void* mObject;
+  CMethodPtrStore mMethod;
+};
+
 template < class Arg1 >
 class TFunctor1 {
 public:
@@ -46,6 +62,80 @@ private:
   Functor mFunctor;
   const void* mObject;
   CMethodPtrStore mMethod;
+};
+
+// Guessed name
+class TStaticCallback0 {
+public:
+  typedef void (*FunctionPtr)();
+
+  static void Function(const void* object, const void* method) {
+    FunctionPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    callback();
+  }
+};
+
+class TFunctor0FromFunction {
+public:
+  typedef void (*FunctionPtr)();
+
+  static TFunctor0 Make(FunctionPtr function) {
+    char functionData[sizeof(function)];
+    memcpy(functionData, &function, sizeof(function));
+    return TFunctor0(TStaticCallback0::Function, nullptr, functionData, sizeof(function));
+  }
+};
+
+template < typename P1 >
+class TStaticCallback1 {
+public:
+  typedef void (*FunctionPtr)(P1);
+
+  static void Function(const void* object, const void* method, P1 p1) {
+    FunctionPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    callback(p1);
+  }
+};
+
+template < typename P1 >
+class TFunctor1FromFunction {
+public:
+  typedef void (*FunctionPtr)(P1);
+
+  static TFunctor1< P1 > Make(FunctionPtr function) {
+    char functionData[sizeof(function)];
+    memcpy(functionData, &function, sizeof(function));
+    return TFunctor1< P1 >(TStaticCallback1< P1 >::Function, nullptr, functionData,
+                           sizeof(function));
+  }
+};
+
+// Guessed name
+template < class T >
+class TNonStaticCallback0 {
+public:
+  typedef void (T::*MethodPtr)();
+
+  static void Function(const void* object, const void* method) {
+    MethodPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    (static_cast< T* >(const_cast< void* >(object))->*callback)();
+  }
+};
+
+// Guessed name
+template < class T >
+class TFunctor0FromMethod {
+public:
+  typedef void (T::*MethodPtr)();
+
+  static TFunctor0 Make(T& object, MethodPtr method) {
+    char methodData[sizeof(method)];
+    memcpy(methodData, &method, sizeof(method));
+    return TFunctor0(TNonStaticCallback0< T >::Function, &object, methodData, sizeof(method));
+  }
 };
 
 // Prime-correlated names; the Echoes bridge forwards one argument through a member pointer.
@@ -116,6 +206,25 @@ private:
   CMethodPtrStore mMethod;
 };
 
+// Guessed name
+template < typename P1, typename P2 >
+class TStaticCallback2 {
+public:
+  typedef void (*FunctionPtr)(P1, P2);
+
+  static void Function(const void* object, const void* method, P1 p1, P2 p2) {
+    FunctionPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    callback(p1, p2);
+  }
+
+  static TFunctor2< P1, P2 > Make(FunctionPtr function) {
+    char methodData[sizeof(function)];
+    memcpy(methodData, &function, sizeof(function));
+    return TFunctor2< P1, P2 >(Function, nullptr, methodData, sizeof(function));
+  }
+};
+
 // Prime-correlated names; the Echoes bridge copies and invokes a native member pointer.
 template < class T, typename P1, typename P2 >
 class TNonStaticCallback2 {
@@ -184,19 +293,48 @@ private:
   const void* mObject;
   CMethodPtrStore mMethod;
 };
+// Guessed name
+template < typename P1, typename P2, typename P3 >
+class TStaticCallback3 {
+public:
+  typedef void (*FunctionPtr)(P1, P2, P3);
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  static void Function(const void* object, const void* method, P1 p1, P2 p2, P3 p3) {
+    FunctionPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    callback(p1, p2, p3);
+  }
+};
+
+template < typename P1, typename P2, typename P3 >
+class TFunctor3FromFunction {
+public:
+  typedef void (*FunctionPtr)(P1, P2, P3);
+
+  static TFunctor3< P1, P2, P3 > Make(FunctionPtr function) {
+    char functionData[sizeof(function)];
+    memcpy(functionData, &function, sizeof(function));
+    return TFunctor3< P1, P2, P3 >(TStaticCallback3< P1, P2, P3 >::Function, nullptr, functionData,
+                                   sizeof(function));
+  }
+};
+
 template < class T, typename P1, typename P2, typename P3 >
 class TNonStaticCallback3 {
 public:
   typedef void (T::*MethodPtr)(P1, P2, P3);
 
   static void Function(const void* object, const void* method, P1 p1, P2 p2, P3 p3) {
+#if RSTL_PRIME1
     const MethodPtr* m = static_cast< const MethodPtr* >(method);
     MethodPtr _m;
     memcpy(&_m, m, sizeof(_m));
     (static_cast< T* >(const_cast< void* >(object))->*_m)(p1, p2, p3);
+#else
+    MethodPtr callback;
+    memcpy(&callback, method, sizeof(callback));
+    (static_cast< T* >(const_cast< void* >(object))->*callback)(p1, p2, p3);
+#endif
   }
 };
 
@@ -206,17 +344,26 @@ public:
   typedef void (T::*MethodPtr)(P1, P2, P3);
 
   static TFunctor3< P1, P2, P3 > Make(T& object, MethodPtr method) {
+#if RSTL_PRIME1
     typedef TNonStaticCallback3< T, P1, P2, P3 > CallbackBridge;
     typedef typename TFunctor3< P1, P2, P3 >::Functor InternalFunctorPtr;
 
     InternalFunctorPtr bridgeFunc = CallbackBridge::Function;
+#endif
     char methodData[sizeof(method)];
     memcpy(methodData, &method, sizeof(method));
 
-    return TFunctor3< P1, P2, P3 >(bridgeFunc, &object, methodData, sizeof(method));
+    return TFunctor3< P1, P2, P3 >(
+#if RSTL_PRIME1
+        bridgeFunc,
+#else
+        TNonStaticCallback3< T, P1, P2, P3 >::Function,
+#endif
+        &object, methodData, sizeof(method));
   }
 };
 
+#if RSTL_PRIME1
 template < class Arg1, typename R >
 class TFunctor1R {
 public:

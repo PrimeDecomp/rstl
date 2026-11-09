@@ -25,7 +25,7 @@ public:
 #else
 #pragma pack(push, 1)
 #endif
-  struct SResInfo {
+  struct CResInfo {
     CAssetId mId;
 #if RSTL_PRIME1
     uchar mData[6];
@@ -33,10 +33,17 @@ public:
     uchar mData[7];
 #endif
 
-    SResInfo(uint id, uint fourCC, uint offset, uint size, uint flags);
-    SResInfo(uint id, uint fourCC, uint offset, uint size, uint flags, uint groupedSize);
+#if !RSTL_KYOTO_PAK_RES_INFO_COPY
+    CResInfo(CAssetId id, uint type, uint offset, uint size, uint flags);
+#endif
+    CResInfo(CAssetId id, uint type, uint offset, uint size, uint flags,
+             uint lookaheadAfterResourceSize);
+#if RSTL_KYOTO_PAK_RES_INFO_COPY
+    CResInfo(const CResInfo& other);
+    void operator=(const CResInfo& other);
+#endif
     // Guessed name: builds the key that lookups compare against.
-    static SResInfo SearchKey(CAssetId id) { return SResInfo(id, 'TXTR', 0, 0, 0, 0); }
+    static CResInfo SearchKey(CAssetId id) { return CResInfo(id, 'TXTR', 0, 0, 0, 0); }
 
     uint GetType() const;
     uint GetOffset() const;
@@ -46,14 +53,14 @@ public:
     uint GetLookaheadAfterResourceSize() const;
 
     CAssetId GetId() const { return mId; }
-    bool operator<(const SResInfo& other) const { return mId < other.mId; }
+    bool operator<(const CResInfo& other) const { return GetId() < other.GetId(); }
   };
 #pragma pack(pop)
 
 #if RSTL_PRIME1
-  typedef rstl::vector< SResInfo > ResListType;
+  typedef rstl::vector< CResInfo > ResListType;
 #else
-  typedef rstl::vector< SResInfo, rstl::aligned_allocator > ResListType;
+  typedef rstl::vector< CResInfo, rstl::aligned_allocator > ResListType;
 #endif
 
   CPakFile(const rstl::string& filename, RSTL_PRIME1_CONST bool buildDepList,
@@ -79,15 +86,22 @@ public:
   }
   const rstl::vector< CAssetId >* GetDepList() const;
   const SObjectTag* GetResIdByName(const char* name) const;
-  const SResInfo* GetResInfo(uint id) RSTL_PRIME1_CONST;
-  const SResInfo* GetResInfoForLoadDirectionless(uint id);
-  const SResInfo* GetResInfoForLoadPreferForward(uint id);
+  const CResInfo* GetResInfo(CAssetId id) RSTL_PRIME1_CONST;
+  const CResInfo* GetResInfoForLoadDirectionless(CAssetId id);
+  const CResInfo* GetResInfoForLoadPreferForward(CAssetId id);
   int GetFakeStaticSize() const;
 
 private:
+  static uint GetBucketForId(CAssetId id) { // Guessed name
+#if RSTL_KYOTO_ASSET_ID_CLASS
+    return static_cast< uint >(id.Value()) & 0xff;
+#else
+    return id & 0xff;
+#endif
+  }
   void UpdateFakeStaticSize();
   void
-  RebuildResourceLists(const rstl::vector< SResInfo, rstl::aligned_allocator >& sortedResources);
+  RebuildResourceLists(const rstl::vector< CResInfo, rstl::aligned_allocator >& sortedResources);
   void LoadResourceTable(CMemoryInStream& in);
   void Warmup();
   void InitialHeaderLoad();
@@ -109,24 +123,29 @@ private:
   int mFakeStaticSize;
 #endif
 #if !defined(TARGET_PC)
-  RSTL_ECHOES_CONST void* mAramBase;
+  RSTL_ECHOES_CONST void* mpARAMHeader;
 #endif // !defined(TARGET_PC)
 
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > mNameList;
   rstl::vector< CAssetId > mDepList;
-  ResListType mResList;
+  ResListType mResInfoBuckets;
 #if !RSTL_PRIME1
   rstl::vector< int > mBucketOffsets;
+#endif
+#if RSTL_KYOTO_PAK_ASSET_NAMES
+  rstl::vector< rstl::pair< CAssetId, rstl::string > > x98_names; // Guessed name
+#endif
+#if !RSTL_PRIME1
   mutable
 #endif
   int mCurrentSeek;
 };
-CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : 0x9c)
-NESTED_CHECK_SIZEOF(CPakFile, SResInfo, RSTL_PRIME1 ? 0xa : 0xb)
+CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : RSTL_KYOTO_PAK_ASSET_NAMES ? 0xac : 0x9c)
+NESTED_CHECK_SIZEOF(CPakFile, CResInfo, RSTL_PRIME1 ? 0xa : RSTL_KYOTO_ASSET_ID_CLASS ? 0xf : 0xb)
 
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_PAK_RES_INFO_COPY
 namespace rstl {
-RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPakFile::SResInfo)
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPakFile::CResInfo)
 }
 #endif
 

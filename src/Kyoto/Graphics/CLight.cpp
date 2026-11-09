@@ -3,7 +3,7 @@
 
 #include "Kyoto/Graphics/CLight.hpp"
 #if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
-#include "Corruption/Kyoto/Math/CVector4f.hpp"
+#include "Kyoto/Math/CVector4f.hpp"
 #endif
 
 #include "Kyoto/Math/CMath.hpp"

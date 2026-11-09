@@ -18,6 +18,7 @@ public:
   // CDvdRequest
   ~CBufferedDvdRequest();
   void WaitUntilComplete();
+  bool IsReady(); // Guessed name
   bool IsComplete();
   void PostCancelRequest();
   int GetMediaType() const;

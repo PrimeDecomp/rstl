@@ -10,7 +10,7 @@
 #include "Kyoto/Platform.h"
 #include "rstl/math.hpp"
 #ifdef ENABLE_BBA_TOOLS
-#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#include "Kyoto/Network/CBBASupport.hpp"
 #endif
 
 #include "dolphin/arq.h"
