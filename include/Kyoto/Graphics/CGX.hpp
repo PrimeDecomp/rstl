@@ -20,6 +20,12 @@ class CColor;
 #define CGX_STATE (CGX::sGXState)
 #endif
 
+#if RSTL_KYOTO_CGX_GXBOOL_ZMODE
+typedef GXBool TZModeFlag;
+#else
+typedef bool TZModeFlag;
+#endif
+
 class CGX {
 public:
   struct STevState {
@@ -31,6 +37,7 @@ public:
     uint mTevOrderFlags;
     uchar mKColorSel;
     uchar mKAlphaSel;
+    uchar mSwapMode; // Guessed name
 
     STevState();
 
@@ -59,17 +66,30 @@ public:
   };
 
   struct SGXState {
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+    const void* mArrayPtrs[17];
+    uchar mArrayStrides[17]; // Guessed name
+    uchar x55[3];
+    ushort mPrevChanCtrls[4];
+    ushort mChanCtrls[4];
+#else
     const void* mArrayPtrs[12];
     ushort mPrevChanCtrls[2];
     ushort mChanCtrls[2];
+#endif
     GXColor mChanAmbColors[2];
     GXColor mChanMatColors[2];
     uint mDescList;
     union {
       uchar mChanFlags;
       struct {
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+        uchar unused : 3;
+        uchar chansDirty : 4;
+#else
         uchar unused : 5;
         uchar chansDirty : 2;
+#endif
         uchar numDirty : 1;
       } mFlags;
     };
@@ -87,9 +107,15 @@ public:
     STexState mTexStates[8];
     uint mAlphaCompare;
     SFogParams mFogParams;
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+    uchar mTevSwapTables[4]; // Guessed name
+#endif
 #if !RSTL_PRIME1
     bool mDstAlphaEnabled;
     uchar mDstAlpha;
+#endif
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+    uint mVtxAttrSizes[8][GX_VA_MAX_ATTR]; // Guessed name
 #endif
 
     SGXState();
@@ -98,6 +124,8 @@ public:
   enum EChannelId {
     Channel0, // GX_COLOR0
     Channel1, // GX_COLOR1
+    Channel2, // GX_ALPHA0
+    Channel3, // GX_ALPHA1
   };
 
   static void SetNumChans(uchar num);
@@ -135,7 +163,7 @@ public:
                           GXChannelID color);
   static void SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlendFactor dstFac,
                            GXLogicOp op);
-  static void SetZMode(bool compareEnable, GXCompare func, bool updateEnable);
+  static void SetZMode(TZModeFlag compareEnable, GXCompare func, TZModeFlag updateEnable);
 
   static void SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                               uchar ref1);
@@ -191,9 +219,13 @@ public:
   static inline void LoadTexMtxImm(const float mtx[][4], unsigned long id, GXTexMtxType type) {
     GXLoadTexMtxImm(const_cast< MtxPtr >(mtx), id, type);
   }
-  static inline void LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
-    GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
-  }
+  static void LoadNrmMtxImm(const float mtx[][4], unsigned long id);
+  static void LoadPosMtxImm(const float mtx[][4], unsigned long id); // Guessed name
+  // Guessed name
+  static void SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count, GXCompType type, uchar frac);
+  // Guessed name
+  static void GetTexCoordGen(GXTexCoordID coord, GXTexGenType* type, GXTexGenSrc* source,
+                             int* matrixIndex, GXBool* normalize, GXPTTexMtx* postMatrix);
 
   static GXColor GetChanAmbColor(EChannelId channel);
   static const GXColor& GetTevKColor(GXTevKColorID id) { return CGX_STATE.mKColors[id]; }
@@ -205,7 +237,11 @@ public:
                      float* fogFarZ, GXColor* fogColor);
 
   static inline bool CompareGXColors(const GXColor& lhs, const GXColor& rhs) {
+#if RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE
+    return *(uint*)&lhs == *(uint*)&rhs;
+#else
     return *reinterpret_cast< const uint* >(&lhs) == *reinterpret_cast< const uint* >(&rhs);
+#endif
   }
   static inline void CopyGXColor(GXColor& dst, const GXColor& src) {
     *reinterpret_cast< uint* >(&dst) = *reinterpret_cast< const uint* >(&src);
@@ -224,9 +260,10 @@ public:
 
   static inline void SetAlphaUpdate(const bool update) { GXSetAlphaUpdate(update); }
 
-  static inline void SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
-    GXSetTevSwapMode(stage, rasSel, texSel);
-  }
+  static void SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel);
+  // Guessed name
+  static void SetTevSwapModeTable(GXTevSwapSel table, GXTevColorChan red, GXTevColorChan green,
+                                  GXTevColorChan blue, GXTevColorChan alpha);
 
 private:
   static void FlushChanCtrl(GXChannelID chan, ushort flags);
@@ -245,6 +282,27 @@ private:
 inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
   GXLoadNrmMtxIndx3x3(index, slot);
 }
+
+#if RSTL_KYOTO_CGX_HEADER_APPLY_FOG
+inline void CGX::apply_fog() {
+  static const GXColor black = {0, 0, 0, 0};
+  GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
+           CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
+           CGX_STATE.mFogParams.mFogFarZ,
+           (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
+                                                                 : CGX_STATE.mFogParams.mFogColor);
+}
+#endif
+
+#if !RSTL_KYOTO_CGX_OUTLINED_HELPERS
+inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
+  GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
+}
+
+inline void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
+  GXSetTevSwapMode(stage, rasSel, texSel);
+}
+#endif
 
 #if RSTL_PRIME1
 inline CGX::STevState::STevState()
@@ -283,7 +341,7 @@ inline CGX::STexState::STexState() : mCoordGen(0) {}
 #endif // TARGET_PC
 
 #else // RSTL_PRIME1
-NESTED_CHECK_SIZEOF(CGX, SGXState, 0x264)
+NESTED_CHECK_SIZEOF(CGX, SGXState, RSTL_KYOTO_CGX_EXTENDED_STATE ? 0x5d8 : 0x264)
 #endif
 
 #endif // _CGX

@@ -338,7 +338,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
   int bannerFormat;
   if (mBannerTex == kInvalidAssetId) {
     bannerFormat = CARD_STAT_BANNER_NONE;
-  } else if ((*mBannerTok)->GetTexelFormat() == kTF_RGB5A3) {
+  } else if ((*mBannerTok)->GetTexelFormat() == kTexelFormat_RGB5A3) {
     bannerFormat = CARD_STAT_BANNER_RGB5A3;
   } else {
     bannerFormat = CARD_STAT_BANNER_C8;
@@ -352,7 +352,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
   for (; i < count; ++i) {
 #endif
     int format = CARD_STAT_ICON_C8;
-    if (mIconToks[i].mTex->GetTexelFormat() == kTF_RGB5A3) {
+    if (mIconToks[i].mTex->GetTexelFormat() == kTexelFormat_RGB5A3) {
       format = CARD_STAT_ICON_RGB5A3;
     }
     stat.SetIconFormat(format, i);
@@ -371,9 +371,9 @@ void CMemoryCardSys::CCardFileInfo::WriteBannerData(COutputStream& out) {
     const CTexture& texture = ***mBannerTok;
     const ETexelFormat format = texture.GetTexelFormat();
     const void* data = texture.GetConstBitMapData(0);
-    const uint size = format == kTF_RGB5A3 ? 6144 : 3072;
+    const uint size = format == kTexelFormat_RGB5A3 ? 6144 : 3072;
     out.Put(data, size);
-    if (format == kTF_C8) {
+    if (format == kTexelFormat_CI8) {
       out.Put(texture.GetPalette()->GetPaletteData(), 512);
     }
   }
@@ -390,9 +390,9 @@ void CMemoryCardSys::CCardFileInfo::WriteIconData(COutputStream& out) {
     const CTexture& texture = **mIconToks[i].mTex;
     const ETexelFormat format = texture.GetTexelFormat();
     const void* data = texture.GetConstBitMapData(0);
-    const uint size = format == kTF_RGB5A3 ? 2048 : 1024;
+    const uint size = format == kTexelFormat_RGB5A3 ? 2048 : 1024;
     out.Put(data, size);
-    if (format == kTF_C8) {
+    if (format == kTexelFormat_CI8) {
       palette = texture.GetPalette()->GetPaletteData();
     }
   }
@@ -433,7 +433,7 @@ uint CMemoryCardSys::CCardFileInfo::CalculateTotalDataSize() {
 uint CMemoryCardSys::CCardFileInfo::CalculateBannerDataSize() {
   uint size = 68;
   if (mBannerTex != kInvalidAssetId) {
-    if ((*mBannerTok)->GetTexelFormat() == kTF_RGB5A3) {
+    if ((*mBannerTok)->GetTexelFormat() == kTexelFormat_RGB5A3) {
       size = 6212;
     } else {
       size = 3652;
@@ -441,7 +441,7 @@ uint CMemoryCardSys::CCardFileInfo::CalculateBannerDataSize() {
   }
   bool palette = false;
   for (int i = 0; i < mIconToks.size(); ++i) {
-    if (mIconToks[i].mTex->GetTexelFormat() == kTF_RGB5A3) {
+    if (mIconToks[i].mTex->GetTexelFormat() == kTexelFormat_RGB5A3) {
       size += 2048;
     } else {
       size += 1024;
@@ -751,7 +751,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
   int bannerFormat;
   if (mBannerTex == kInvalidAssetId) {
     bannerFormat = CARD_STAT_BANNER_NONE;
-  } else if ((*mBannerTok)->GetTexelFormat() == kTF_RGB5A3) {
+  } else if ((*mBannerTok)->GetTexelFormat() == kTexelFormat_RGB5A3) {
     bannerFormat = CARD_STAT_BANNER_RGB5A3;
   } else {
     bannerFormat = CARD_STAT_BANNER_C8;
@@ -760,7 +760,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::GetStatus(CardStat& stat) {
   int i = 0;
   for (; i < mIconToks.size(); ++i) {
     int format = CARD_STAT_ICON_C8;
-    if (mIconToks[i].mTex->GetTexelFormat() == kTF_RGB5A3) {
+    if (mIconToks[i].mTex->GetTexelFormat() == kTexelFormat_RGB5A3) {
       format = CARD_STAT_ICON_RGB5A3;
     }
     stat.SetIconFormat(format, i);

@@ -257,8 +257,8 @@ CGX_INLINE void CGX::SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlen
   }
 }
 
-CGX_INLINE void CGX::SetZMode(const bool compareEnable, GXCompare func,
-                              const bool updateEnable) {
+CGX_INLINE void CGX::SetZMode(const TZModeFlag compareEnable, GXCompare func,
+                              const TZModeFlag updateEnable) {
 
   uchar flags = MaskAndShiftLeft(compareEnable, 0xFF, 0) | MaskAndShiftLeft(updateEnable, 0xFF, 1) |
                 MaskAndShiftLeft(func, 0xFF, 2);

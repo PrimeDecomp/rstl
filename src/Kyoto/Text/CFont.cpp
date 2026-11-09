@@ -12,7 +12,7 @@ CTexture* CFont::mpTexture = nullptr;
 
 CFont::CFont(float scale) : mFontSize(scale * 16.f), mScale(scale) {
   if (sNumInstances++ == 0) {
-    mpTexture = rs_new CTexture(kTF_I8, 256, 256, 1);
+    mpTexture = rs_new CTexture(kTexelFormat_I8, 256, 256, 1);
     LinearToTile8(static_cast< uchar* >(mpTexture->Lock()), sSystemFont);
     mpTexture->UnLock();
   }

@@ -37,6 +37,7 @@ public:
                          float end, float slope);
   static float PhongBlob(float t, float exponent);
   static bool SolveQuadratic(float a, float b, float c, float& plus, float& minus);
+  static uint SolveQuadratic(float a, float b, float c, float* roots); // Guessed name
   // Reconstructed solver names; coefficients are ordered from constant to leading term.
   static uint SolveCubic(const float* coefficients, float* roots);
   static uint SolveQuartic(const float* coefficients, float* roots);
@@ -237,6 +238,8 @@ public:
   static bool IsEpsilon(float x, float y, float epsilon) { return AbsF(x - y) < epsilon; }
 
   static float FastMin(float a, float b) { return FastFSel(a - b, b, a); }
+  static bool IsWithinTolerance(float x, float y, float epsilon); // Guessed name
+  static bool IsNaN(float x) { return isnan(x); }
   static float FastMax(float a, float b) {
 #if RSTL_PRIME1
     a = FastFSel(a - b, a, b);

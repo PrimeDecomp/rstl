@@ -1745,7 +1745,7 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
 }
 
 CTexture* CreateTexture(int value) {
-  CTexture* texture = rs_new CTexture(kTF_RGBA8, 4, 4, 1);
+  CTexture* texture = rs_new CTexture(kTexelFormat_RGBA8, 4, 4, 1);
   int* data = static_cast< int* >(texture->Lock());
   for (int i = 1; i <= 16; ++i) {
     data[i - 1] = value;

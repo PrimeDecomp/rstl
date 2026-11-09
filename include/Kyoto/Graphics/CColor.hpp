@@ -140,9 +140,15 @@ public:
   }
 #endif
 
+  // Guessed name
+  CColor WithAlphaOf(uchar a) const {
+    CColor result(*this);
+    result.mA = a;
+    return result;
+  }
 #ifdef __MWERKS__
   CColor WithAlphaOf(float a) const {
-#if RSTL_PRIME1
+#if !RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST
     return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f));
 #else
     const float value = a;

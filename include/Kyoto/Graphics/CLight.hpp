@@ -6,6 +6,10 @@
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/construct.hpp"
 
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+class CVector4f;
+#endif
+
 enum ELightType {
   kLT_Spot = 0,
   kLT_Point = 1,
@@ -43,6 +47,9 @@ public:
   void SetDirection(const CVector3f& dir);
   const CVector3f& GetDirection() const { return mDir; }
   void SetColor(const CColor& col);
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  void SetColorProcessingMode(bool enable);
+#endif
   void SetAttenuation(float constant, float linear, float quadratic);
   void SetSpotCutoff(float cutoff); // Guessed name.
 
@@ -67,6 +74,10 @@ public:
   float GetIntensity() const;
   float GetRadius() const;
   const CColor& GetColor() const { return mColor; }
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  bool IsColorProcessing() const { return mColorProcessing; }         // Guessed name
+  const CColor& GetProcessedColor() const { return mProcessedColor; } // Guessed name
+#endif
 
   int GetPriority() const { return mPriority; }
   void SetPriority(uint priority) { mPriority = priority; }
@@ -77,7 +88,11 @@ public:
   void SetLightId(uint lightId) { mLightId = lightId; }
 #endif
 
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  CVector4f GetNormalIndependentLightingAtPoint(const CVector3f& point) const;
+#else
   CVector3f GetNormalIndependentLightingAtPoint(const CVector3f& point) const;
+#endif
 
   static CLight BuildDirectional(const CVector3f& dir, const CColor& color);
   static CLight BuildSpot(const CVector3f& pos, const CVector3f& dir, const CColor& color,
@@ -94,6 +109,9 @@ private:
   CVector3f mPos;
   CVector3f mDir;
   CColor mColor;
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  CColor mProcessedColor;
+#endif
   ELightType mType;
   float mSpotCutoff;
   float mDistC;
@@ -112,10 +130,13 @@ private:
 
   mutable float mCachedRadius;
   mutable float mCachedIntensity;
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  bool mColorProcessing : 1;
+#endif
   mutable bool mIntensityDirty : 1;
   mutable bool mRadiusDirty : 1;
 };
-CHECK_SIZEOF(CLight, 0x50)
+CHECK_SIZEOF(CLight, RSTL_KYOTO_LIGHT_COLOR_PROCESSING ? 0x54 : 0x50)
 
 #if !RSTL_PRIME1
 namespace rstl {
