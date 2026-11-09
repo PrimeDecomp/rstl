@@ -174,6 +174,7 @@ public:
   virtual ~CInputStream();
 
   float ReadFloat();
+  double ReadDouble();
   size_t ReadBytes(void* dest, size_t len);
   void Get(void* dest, unsigned long len);
   const void* Get(unsigned long len);

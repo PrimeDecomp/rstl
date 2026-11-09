@@ -12,6 +12,13 @@ class bit_vector {
 public:
   typedef Alloc allocator_type;
 
+  explicit bit_vector(CInputStream& in) : mSize(in.ReadInt32()), mData(in) {}
+
+  void PutTo(COutputStream& out) const {
+    out.Put(mSize);
+    mData.PutTo(out);
+  }
+
   bool operator[](int bit) const {
     const uint word = mData[bit / 32];
     return (word & (1 << (bit % 32))) != 0;
@@ -210,8 +217,6 @@ private:
     mSize += count;
   }
 #endif
-
-  void PutTo(COutputStream& out) const { mData.PutTo(out); }
 
 private:
 #endif

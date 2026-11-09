@@ -126,6 +126,18 @@ inline void coutput_stream_helper(const float& t, COutputStream& out) {
 }
 
 template <>
+inline void coutput_stream_helper(const u64& t, COutputStream& out) {
+  const u64 value = CBasics::SwapBytes(t);
+  out.Put(&value, sizeof(value));
+}
+
+template <>
+inline void coutput_stream_helper(const double& t, COutputStream& out) {
+  const double value = t;
+  out.Put(*reinterpret_cast< const u64* >(&value));
+}
+
+template <>
 inline void coutput_stream_helper(const signed char& t, COutputStream& out) {
   out.WriteChar(t);
 }

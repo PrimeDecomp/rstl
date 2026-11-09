@@ -75,6 +75,12 @@ float CInputStream::ReadFloat() {
   return f;
 }
 
+double CInputStream::ReadDouble() {
+  static double d;
+  *reinterpret_cast< u64* >(&d) = ReadInt64();
+  return d;
+}
+
 rstl::auto_ptr< uchar > CInputStream::ReleaseBuffer() {
   RS_VERIFY_THROW(111, mOwner, false, "Trying to take ownership of a stream not owned");
   RS_VERIFY_THROW(112, mpBufferStart == mpBufferAt.p8, false,
