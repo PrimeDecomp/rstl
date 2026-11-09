@@ -21,6 +21,20 @@ public:
     kDMAPrio_Six,
   };
 
+  struct SPoolStatistics { // Guessed name
+    SPoolStatistics(uint chunkSize, uint numChunks, uint freeChunks, uint peakChunks)
+    : mChunkSize(chunkSize)
+    , mNumChunks(numChunks)
+    , mFreeChunks(freeChunks)
+    , mPeakChunks(peakChunks) {}
+
+    uint mChunkSize;  // Guessed name
+    uint mNumChunks;  // Guessed name
+    uint mFreeChunks; // Guessed name
+    uint mPeakChunks; // Guessed name
+  };
+  static SPoolStatistics GetPoolAllocationStatistics(int pool);
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static uint GetAllocatedBytes() { return mChunksAllocated * mChunkSize; }
