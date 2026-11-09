@@ -91,7 +91,6 @@ public:
   bool ContainsResourceInAramPaks(const SObjectTag& tag) const; // Guessed name
 
   int GetPakCount() const;
-  CPakFile* GetPakFileByIndex(int idx) const; // Guessed name
   RSTL_ECHOES_CONST CPakFile* GetPakFile(int idx) const;
 #if !RSTL_PRIME1
   CPakFile* GetPakFile(int idx);

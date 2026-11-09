@@ -792,6 +792,17 @@
 #define RSTL_KYOTO_PAK_RES_INFO_COPY (RSTL_CORRUPTION)
 // CPakFile keeps a list of asset names after its bucket offsets (Corruption).
 #define RSTL_KYOTO_PAK_ASSET_NAMES (RSTL_CORRUPTION)
+// CPakFile reads the first 16 KB of a pak for its header (Corruption). Earlier builds read 8 KB.
+#define RSTL_KYOTO_PAK_LARGE_HEADER_READ (RSTL_CORRUPTION)
+// Asset type indices come from CAssetTypesList (Corruption). Earlier builds keep the type table in
+// CFactoryMgr (FourCCToTypeIdx, TypeIdxToFourCC).
+#define RSTL_KYOTO_ASSET_TYPES_LIST (RSTL_CORRUPTION)
+// CPakFile fills new resource tables with records holding the invalid asset ID (Corruption).
+// Echoes uses ID 0, or leaves the restored table uninitialized.
+#define RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO (RSTL_CORRUPTION)
+// CPakFile::RebuildResourceLists clears each bucket count before storing the bucket's end offset
+// (Corruption). Echoes stores the offset first.
+#define RSTL_KYOTO_PAK_BUCKET_RESET_BEFORE_OFFSET (RSTL_CORRUPTION)
 // CResLoader looks for network assets before the paks: FindResource returns nothing and
 // LoadMemResourceSync reports whether it loaded the resource (Corruption).
 #define RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS (RSTL_CORRUPTION)

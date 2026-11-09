@@ -1,8 +1,15 @@
+#define RSTL_INLINE_SWAP
 #include "Kyoto/CPakFile.hpp"
 #include "rstl/macros.hpp"
 
+#include "stdlib.h"
+#undef abs
+
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CARAMManager.hpp"
+#include "Kyoto/CAssetTypesList.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Platform.h"
@@ -14,6 +21,7 @@
 #include "rstl/reserved_vector.hpp"
 
 #include "stdio.h"
+#include "string.h"
 
 #if RSTL_PRIME1
 #define IF_PRIME1(A, B) A
@@ -23,22 +31,58 @@
 
 static inline int round_up_32(int val) { return (val + 31) & ~31; }
 
-CPakFile::CResInfo::CResInfo(uint id, uint fourCC, uint offset, uint size,
-                             uint flags IF_NOT_RSTL_PRIME1(, uint groupedSize))
+CPakFile::CResInfo::CResInfo(CAssetId id, uint type, uint offset, uint size,
+                             uint flags IF_NOT_RSTL_PRIME1(, uint lookaheadAfterResourceSize))
 : mId(id) {
-  const uint typeIdx = CFactoryMgr::FourCCToTypeIdx(fourCC);
-  mData[0] = static_cast< uchar >(typeIdx | (flags != 0 ? 0x80 : 0));
+#if RSTL_KYOTO_ASSET_TYPES_LIST
+  const uint typeIndex = CAssetTypesList::GetIndexForFourCC(type);
+#else
+  const uint typeIndex = CFactoryMgr::FourCCToTypeIdx(type);
+#endif
+  RS_VERIFY_THROW_DIRECT(
+      56, typeIndex != CAssetTypesList::kInvalid, false,
+      CBasics::Stringize("Unknown asset type %s in CPakFile::CResInfo::CResInfo.",
+                         SObjectTag::Type2Text(type)));
+  mData[0] = static_cast< uchar >(typeIndex | (flags != 0 ? 0x80 : 0));
   mData[1] = static_cast< uchar >(offset >> 5);
   mData[2] = static_cast< uchar >(offset >> 13);
   mData[3] = static_cast< uchar >((offset >> 21) | ((size << 2) & 0x80));
   mData[4] = static_cast< uchar >(size >> 6);
   mData[5] = static_cast< uchar >(size >> 14);
 #if !RSTL_PRIME1
-  mData[6] = static_cast< uchar >(groupedSize >> 5);
+  mData[6] = static_cast< uchar >(lookaheadAfterResourceSize >> 5);
 #endif
+  RS_VERIFY_THROW(79, type == GetType(), false,
+                  "Asset type out of range in CPakFile::CResInfo::CResInfo.");
+  RS_VERIFY_THROW(80, offset == GetOffset(), false,
+                  "Offset too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
+  RS_VERIFY_THROW(81, size == GetSize(), false,
+                  "Size too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
+  RS_VERIFY_THROW(
+      83, lookaheadAfterResourceSize == GetLookaheadAfterResourceSize(), false,
+      "Lookahead size too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
 }
 
-uint CPakFile::CResInfo::GetType() const { return CFactoryMgr::TypeIdxToFourCC(mData[0] & 0x7f); }
+#if RSTL_KYOTO_PAK_RES_INFO_COPY
+CPakFile::CResInfo::CResInfo(const CResInfo& other) : mId(other.mId) {
+  memcpy(mData, other.mData, sizeof(mData));
+}
+
+void CPakFile::CResInfo::operator=(const CResInfo& other) {
+  if (&other != this) {
+    mId = other.mId;
+    memcpy(mData, other.mData, sizeof(mData));
+  }
+}
+#endif
+
+uint CPakFile::CResInfo::GetType() const {
+#if RSTL_KYOTO_ASSET_TYPES_LIST
+  return CAssetTypesList::GetFourCCForIndex(mData[0] & 0x7f);
+#else
+  return CFactoryMgr::TypeIdxToFourCC(mData[0] & 0x7f);
+#endif
+}
 
 uint CPakFile::CResInfo::GetOffset() const {
   return ((mData[1] | (mData[2] << 8) | (mData[3] << 16)) & 0x7fffff) << 5;
@@ -55,6 +99,9 @@ uint CPakFile::CResInfo::GetLookaheadAfterResourceSize() const { return mData[6]
 
 void CPakFile::CResInfo::SetLookaheadAfterResourceSize(uint size) {
   mData[6] = static_cast< uchar >(size >> 5);
+  RS_VERIFY_THROW(153, size == GetLookaheadAfterResourceSize(), false,
+                  "Lookahead size too large or not 32 byte aligned in "
+                  "CPakFile::CResInfo::SetLookaheadAfterResourceSize.");
 }
 #endif
 
@@ -127,6 +174,7 @@ void CPakFile::AsyncIdle() {
       DataLoad();
       break;
     default:
+      RS_VERIFY_THROW_DIRECT(228, false, false, "Unknown loading state!");
       break;
     }
   }
@@ -134,7 +182,11 @@ void CPakFile::AsyncIdle() {
 }
 
 void CPakFile::Warmup() {
+#if RSTL_KYOTO_PAK_LARGE_HEADER_READ
+  const int length = rstl::min_val< int >(mFile.Length(), 16384);
+#else
   const int length = rstl::min_val< int >(mFile.Length(), 8192);
+#endif
   mHeaderData.resize(length);
   mDvdReq = rstl::auto_ptr< CDvdRequest >(mFile.SyncRead(&mHeaderData[0], length));
   mAsyncLoadPhase = kAP_InitialHeaderLoad;
@@ -155,6 +207,7 @@ void CPakFile::InitialHeaderLoad() {
     sprintf(buf, "%s: Incompatible pak file version -- Current version is %x, you're using %x",
             mFile.GetFilename().data(), 0x30005, version);
 #endif
+    RS_VERIFY_THROW_DIRECT(254, false, false, buf);
     return;
   }
 
@@ -175,7 +228,7 @@ void CPakFile::InitialHeaderLoad() {
   mAsyncLoadPhase = kAP_DataLoad;
 
   const int origSize = mHeaderData.size();
-  const uint resDataSize = mResTableCount * 20;
+  const uint resDataSize = mResTableCount * (sizeof(uint) * 4 + sizeof(CAssetId));
   const int newSize = (resDataSize + mResTableOffset + 31) & ~31;
   if (newSize > origSize) {
     mHeaderData.resize(newSize);
@@ -189,13 +242,16 @@ void CPakFile::InitialHeaderLoad() {
 void CPakFile::DataLoad() {
   mDvdReq = rstl::auto_ptr< CDvdRequest >();
   CMemoryInStream in(&mHeaderData[mResTableOffset], mHeaderData.size() - mResTableOffset);
-
+  RS_DEBUGGER_PRINT("%s: Loading %d resources (%d bytes)\n", mFile.GetFilename().data(),
+                    mResTableCount, mResTableCount * sizeof(CResInfo));
   LoadResourceTable(in);
   mAsyncLoadPhase = kAP_Loaded;
 #if !defined(TARGET_PC)
   if (mWorldPak) {
     uint size = round_up_32(mResTableCount * sizeof(CResInfo));
     mpARAMHeader = CARAMManager::Alloc(size);
+    RS_VERIFY_THROW_DIRECT(322, CARAMManager::IsValidAlloc(mpARAMHeader), false,
+                           "Out of ARAM in CPakFile::DataLoad().");
     uint handle = CARAMManager::DMAToARAM(mResInfoBuckets.data(), const_cast< void* >(mpARAMHeader), size,
                                           CARAMManager::kDMAPrio_One);
     CARAMManager::WaitForDMACompletion(handle);
@@ -223,13 +279,17 @@ void CPakFile::LoadResourceTable(CMemoryInStream& in) {
   }
   for (int i = 0; i < mResTableCount; ++i) {
     uint flags = in.Get< uint >();
-    uint fourCC = in.Get< uint >();
+    uint type = in.Get< uint >();
+#if RSTL_KYOTO_ASSET_ID_CLASS
+    const CAssetId id(in);
+#else
     uint id = in.Get< uint >();
+#endif
     uint size = in.Get< uint >();
     uint offset = in.Get< uint >();
 
-    IF_PRIME1(mResInfoBuckets.push_back,
-              sortedResources.push_back_unsafe)(CResInfo(id, fourCC, offset, size, flags));
+    IF_PRIME1(mResInfoBuckets.push_back, sortedResources.push_back_unsafe)(
+        CResInfo(id, type, offset, size, flags IF_NOT_RSTL_PRIME1(, 0)));
     if (mBuildDepList) {
       IF_PRIME1(mDepList.push_back, mDepList.push_back_unsafe)(id);
     }
@@ -262,14 +322,18 @@ void CPakFile::LoadResourceTable(CMemoryInStream& in) {
 }
 
 int CPakFile::GetFakeStaticSize() const {
-  return (mDepList.size() * sizeof(CAssetId) + mResInfoBuckets.size() * sizeof(CResInfo)
+  return
 #if !RSTL_PRIME1
-          + mResTableCount * sizeof(CResInfo) + mBucketOffsets.size() * sizeof(uint)
+      mResTableCount * sizeof(CResInfo) +
 #endif
-  );
+      mDepList.size() * sizeof(CAssetId) + mResInfoBuckets.size() * sizeof(CResInfo)
+#if !RSTL_PRIME1
+      + mBucketOffsets.size() * sizeof(uint)
+#endif
+      ;
 }
 
-const CPakFile::CResInfo* CPakFile::GetResInfo(uint id) RSTL_PRIME1_CONST {
+const CPakFile::CResInfo* CPakFile::GetResInfo(CAssetId id) RSTL_PRIME1_CONST {
   if (!IsCompletelyLoaded())
     return nullptr;
   if (mStashedInARAM)
@@ -278,7 +342,7 @@ const CPakFile::CResInfo* CPakFile::GetResInfo(uint id) RSTL_PRIME1_CONST {
 #if RSTL_PRIME1
   CResInfo key(id, 'TXTR', 0, 0, 0);
 #else
-  const uint bucket = id & 0xff;
+  const uint bucket = GetBucketForId(id);
   ResListType::const_iterator first = mResInfoBuckets.begin() + mBucketOffsets[bucket];
   ResListType::const_iterator last = mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
 #endif
@@ -298,13 +362,13 @@ const CPakFile::CResInfo* CPakFile::GetResInfo(uint id) RSTL_PRIME1_CONST {
   return &*it;
 }
 
-const CPakFile::CResInfo* CPakFile::GetResInfoForLoadDirectionless(uint id) {
+const CPakFile::CResInfo* CPakFile::GetResInfoForLoadDirectionless(CAssetId id) {
   if (mStashedInARAM)
     return nullptr;
 #if RSTL_PRIME1
   CResInfo key(id, 'TXTR', 0, 0, 0);
 #else
-  const uint bucket = id & 0xff;
+  const uint bucket = GetBucketForId(id);
   ResListType::const_iterator first = mResInfoBuckets.begin() + mBucketOffsets[bucket];
   ResListType::const_iterator last = mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
 #endif
@@ -337,13 +401,13 @@ const CPakFile::CResInfo* CPakFile::GetResInfoForLoadDirectionless(uint id) {
   return best;
 }
 
-const CPakFile::CResInfo* CPakFile::GetResInfoForLoadPreferForward(uint id) {
+const CPakFile::CResInfo* CPakFile::GetResInfoForLoadPreferForward(CAssetId id) {
   if (mStashedInARAM)
     return nullptr;
 #if RSTL_PRIME1
   CResInfo key(id, 'TXTR', 0, 0, 0);
 #else
-  const uint bucket = id & 0xff;
+  const uint bucket = GetBucketForId(id);
   ResListType::const_iterator first = mResInfoBuckets.begin() + mBucketOffsets[bucket];
   ResListType::const_iterator last = mResInfoBuckets.begin() + mBucketOffsets[bucket + 1];
 #endif
@@ -415,13 +479,26 @@ void CPakFile::StashWorldPak() {
 void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
   rstl::reserved_vector< uint, 256 > bucketCounts(256, 0);
 
-  const CResInfo emptyInfo = CResInfo(0, 'TXTR', 0, 0, 0, 0);
+#if RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO
+  const CResInfo defaultResInfo = CResInfo::SearchKey(kInvalidAssetId);
+#else
+  const CResInfo defaultResInfo = CResInfo(0, 'TXTR', 0, 0, 0, 0);
+#endif
   mResInfoBuckets.clear();
-  mResInfoBuckets.resize(mResTableCount, emptyInfo);
+  mResInfoBuckets.resize(mResTableCount, defaultResInfo);
   mBucketOffsets.clear();
   mBucketOffsets.reserve(257);
   for (ResListType::const_iterator it = sortedResources.begin(); it != sortedResources.end(); ++it)
-    ++bucketCounts[it->GetId() & 0xff];
+    ++bucketCounts[GetBucketForId(it->GetId())];
+#if RSTL_KYOTO_PAK_BUCKET_RESET_BEFORE_OFFSET
+  uint offset = 0;
+  mBucketOffsets.push_back_unsafe(offset);
+  for (int i = 0; i < 256; ++i) {
+    offset += bucketCounts[i];
+    bucketCounts[i] = 0;
+    mBucketOffsets.push_back_unsafe(offset);
+  }
+#else
   mBucketOffsets.push_back_unsafe(0);
   uint offset = 0;
   for (int i = 0; i < 256; ++i) {
@@ -429,13 +506,22 @@ void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
     mBucketOffsets.push_back_unsafe(offset);
     bucketCounts[i] = 0;
   }
+#endif
 
   for (ResListType::const_iterator it = sortedResources.begin(); it != sortedResources.end();
        ++it) {
-    const uint bucket = it->GetId() & 0xff;
-    mResInfoBuckets[mBucketOffsets[bucket] + bucketCounts[bucket]] = *it;
+    const uint bucket = GetBucketForId(it->GetId());
+    const uint index = mBucketOffsets[bucket] + bucketCounts[bucket];
+    mResInfoBuckets[index] = *it;
     ++bucketCounts[bucket];
   }
+
+#if RSTL_KYOTO_DEBUG_BUILD
+  for (int i = 0; i < mResInfoBuckets.size(); ++i) {
+    RS_VERIFY_THROW_DIRECT(699, defaultResInfo.GetId() != mResInfoBuckets[i].GetId(), false,
+                           "Bad CResInfo in pak");
+  }
+#endif
 }
 #endif
 
@@ -457,7 +543,12 @@ void CPakFile::EnsureWorldPakReady() {
     uint size = round_up_32(mResTableCount * sizeof(CResInfo));
 #else
     ResListType resources;
+#if RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO
+    const CResInfo defaultResInfo(kInvalidAssetId, 'TXTR', 0, 0, 0, 0);
+    resources.resize(mResTableCount, defaultResInfo);
+#else
     resources.resize_uninitialized(mResTableCount);
+#endif
     const uint size = (mResTableCount * sizeof(CResInfo) + 31) & ~31;
 #endif
 

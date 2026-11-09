@@ -92,11 +92,13 @@ public:
   int GetFakeStaticSize() const;
 
 private:
-#if RSTL_KYOTO_ASSET_ID_CLASS
   static uint GetBucketForId(CAssetId id) { // Guessed name
+#if RSTL_KYOTO_ASSET_ID_CLASS
     return static_cast< uint >(id.Value()) & 0xff;
-  }
+#else
+    return id & 0xff;
 #endif
+  }
   void UpdateFakeStaticSize();
   void
   RebuildResourceLists(const rstl::vector< CResInfo, rstl::aligned_allocator >& sortedResources);
