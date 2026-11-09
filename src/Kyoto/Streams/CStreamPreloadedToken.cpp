@@ -3,9 +3,6 @@
 
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/CDvdRequest.hpp"
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/CDvdFile.hpp"
-#endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/StringExtras.hpp"

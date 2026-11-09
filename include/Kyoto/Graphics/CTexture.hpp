@@ -146,7 +146,7 @@ private:
   mutable uint mFrameAllocated;
 };
 CHECK_SIZEOF(CTexture, 0x68)
-NESTED_CHECK_SIZEOF(CTexture, CDumpedBitmapDataReloader, 0x1c)
+NESTED_CHECK_SIZEOF(CTexture, CDumpedBitmapDataReloader, RSTL_KYOTO_ASSET_ID_CLASS ? 0x28 : 0x1c)
 
 #if !defined(TARGET_PC)
 inline void* CTexture::Lock() {

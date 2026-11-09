@@ -773,6 +773,12 @@
 // CDependencyGroup::ReadFromStream appends its reserved tags with push_back_unsafe (Echoes and the
 // prototype; Prime, including Prime Trilogy, uses push_back).
 #define RSTL_KYOTO_DEPENDENCY_PUSH_UNSAFE (!RSTL_PRIME1)
+// CMoviePlayer::InitializeTextures appends its texture sets with push_back_unsafe (Echoes, including
+// Echoes Trilogy). Prime, including Prime Trilogy, and the Corruption builds call push_back.
+#define RSTL_KYOTO_MOVIE_TEXTURE_PUSH_UNSAFE (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CMoviePlayer::DecodeFromRead warns about 60fps frames over 33k and other frames over 60k (Corruption).
+// Earlier builds keep a single frame-size argument.
+#define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
 // Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
 // CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
