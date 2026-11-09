@@ -14,17 +14,11 @@
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/Graphics/CGraphicsSys.hpp"
-#include "Corruption/Kyoto/Graphics/GPUMemory.hpp"
-#include "Corruption/Kyoto/Math/CRelAngle.hpp"
-#else
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
-#endif
 #if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
-#include "Corruption/Kyoto/CSignal0.hpp"
+#include "Kyoto/CSignal0.hpp"
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "rstl/optional_object.hpp"
 #endif

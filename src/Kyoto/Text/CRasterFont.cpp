@@ -220,7 +220,7 @@ void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, in
   }
 
   if (buffer != nullptr) {
-    CGraphicsPalette pal(kPF_RGB5A3, 4);
+    CGraphicsPalette pal(kPaletteFormat_RGB5A3, 4);
     ushort* data = reinterpret_cast< ushort* >(pal.Lock());
     data[0] = CBasics::SwapBytes(CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3());
     data[1] = CBasics::SwapBytes(CColor(options.GetPaletteEntry(0)).ToRGB5A3());

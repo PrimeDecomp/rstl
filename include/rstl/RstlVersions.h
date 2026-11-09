@@ -783,6 +783,13 @@
 #define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
 // CTexture can cap a texture's size as it loads, and records the mip bytes it skips (Corruption).
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
+// CGraphicsPalette can keep its entries in GPU memory, so GetPaletteData is out of line (Corruption).
+#define RSTL_KYOTO_PALETTE_GPU_MEMORY (RSTL_CORRUPTION)
+// CGraphicsPalette::UnLock stores the entries to memory before rebuilding its TLUT (Prime, Echoes).
+#define RSTL_KYOTO_PALETTE_UNLOCK_STORE_RANGE (!RSTL_CORRUPTION)
+// GPUMemory::EnsureAllocation marks itself as allocating once it has the memory (Corruption).
+// Echoes marks it before allocating.
+#define RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG (RSTL_CORRUPTION)
 // CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
 // tables and the vertex attribute sizes of each format (Corruption).
 #define RSTL_KYOTO_CGX_EXTENDED_STATE (RSTL_CORRUPTION)

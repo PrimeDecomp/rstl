@@ -1,7 +1,7 @@
 #include "Kyoto/Basics/CRenderProfileScope.hpp"
 
 #include "Kyoto/CFrameDelayedKiller.hpp"
-#include "Corruption/MetroidPrime/CScopedProfiler.hpp"
+#include "Kyoto/Basics/CScopedProfiler.hpp"
 
 TFunctor3< const char*, const CStopwatch&, const CStopwatch& > gRenderProfileCallback;
 

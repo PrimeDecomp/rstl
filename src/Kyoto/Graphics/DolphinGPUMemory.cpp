@@ -1,4 +1,7 @@
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
+#include "rstl/RstlVersions.h"
+
+#include "Kyoto/Alloc/Assert.hpp"
 
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
 
@@ -51,11 +54,16 @@ void* GPUMemory::EnsureAllocation(int size) {
     sInitialized = true;
   }
 
+  RS_VERIFY_THROW(103, !sWithinAllocation, false, "Trying to nest GPU allocations!");
+#if !RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG
   sWithinAllocation = true;
+#endif
   TickAllocations();
   int alignedSize = (size + 31) & ~31u;
   void* data = sBuffer->Alloc(alignedSize);
   if (data == nullptr && !sDumpedSpinLockMessage) {
+    RS_DEBUGGER_PRINT("Skinning Warning: Spin-locking while allocating, size:%d, allocated:%d\n",
+                      alignedSize, sBuffer->GetAllocatedAmount());
     sDumpedSpinLockMessage = true;
   }
 
@@ -78,6 +86,9 @@ void* GPUMemory::EnsureAllocation(int size) {
     }
   }
 
+#if RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG
+  sWithinAllocation = true;
+#endif
   sAllocations.push_back(SAllocation(data, alignedSize, sCurrentToken));
   if (data == sBufferBase) {
     GXInvalidateVtxCache();
@@ -86,6 +97,7 @@ void* GPUMemory::EnsureAllocation(int size) {
 }
 
 void GPUMemory::ReleaseAllocation() {
+  RS_VERIFY_THROW(164, sWithinAllocation, false, "Not within a skinning allocation!");
   sWithinAllocation = false;
   GXSetDrawSync(sCurrentToken);
   ++sCurrentToken;

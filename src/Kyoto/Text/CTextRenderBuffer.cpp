@@ -40,16 +40,16 @@ int CTextRenderBuffer::GetNextAvailablePalette() const {
   }
   if (mNextPalette < mPalettes.size()) {
     mPalettes[mNextPalette] = SFontPalette(
-        kFM_None, rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)));
+        kFM_None, rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)));
   } else {
     mPalettes.push_back(SFontPalette(
-        kFM_None, rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16)),
-        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 16))));
+        kFM_None, rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)),
+        rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16))));
   }
   return mNextPalette++;
 }
@@ -58,7 +58,7 @@ CGraphicsPalette* CTextRenderBuffer::GetNextAvailablePalette() const {
   if (mNextPalette >= 64) {
     mNextPalette = 0;
   } else {
-    mPalettes.push_back(rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPF_RGB5A3, 4)));
+    mPalettes.push_back(rstl::auto_ptr< CGraphicsPalette >(rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 4)));
   }
 
   ++mNextPalette;
@@ -73,12 +73,12 @@ void CTextRenderBuffer::GetNextAvailablePalette() const {
   }
   if (mNextPalette < mPalettes.size()) {
     mPalettes[mNextPalette] = SFontPalette(
-        kFM_None, rs_new CGraphicsPalette(kPF_RGB5A3, 16), rs_new CGraphicsPalette(kPF_RGB5A3, 16),
-        rs_new CGraphicsPalette(kPF_RGB5A3, 16), rs_new CGraphicsPalette(kPF_RGB5A3, 16));
+        kFM_None, rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16), rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+        rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16), rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16));
   } else {
     mPalettes.push_back(SFontPalette(
-        kFM_None, rs_new CGraphicsPalette(kPF_RGB5A3, 16), rs_new CGraphicsPalette(kPF_RGB5A3, 16),
-        rs_new CGraphicsPalette(kPF_RGB5A3, 16), rs_new CGraphicsPalette(kPF_RGB5A3, 16)));
+        kFM_None, rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16), rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+        rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16), rs_new CGraphicsPalette(kPaletteFormat_RGB5A3, 16)));
   }
   ++mNextPalette;
 }

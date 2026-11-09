@@ -9,7 +9,7 @@
 #include "Kyoto/CFrameDelayedKiller.hpp"
 #if RSTL_KYOTO_CORRUPTION
 #include "Corruption/Kyoto/CResFactory.hpp"
-#include "Corruption/Kyoto/Graphics/CGraphicsPalette.hpp"
+#include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #else
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
