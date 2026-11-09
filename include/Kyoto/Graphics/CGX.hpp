@@ -269,18 +269,7 @@ private:
   static void FlushChanCtrl(GXChannelID chan, ushort flags);
 
   static void update_fog(uint flags);
-#if RSTL_KYOTO_CGX_CLASS_APPLY_FOG
-  static void apply_fog() {
-    static const GXColor black = {0, 0, 0, 0};
-    GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
-             CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
-             CGX_STATE.mFogParams.mFogFarZ,
-             (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
-                                                                   : CGX_STATE.mFogParams.mFogColor);
-  }
-#else
   static RSTL_PRIME1_INLINE void apply_fog();
-#endif
 
 #if RSTL_CGX_STATE_POINTER
   static SGXState* gpGXState;
@@ -293,6 +282,17 @@ private:
 inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
   GXLoadNrmMtxIndx3x3(index, slot);
 }
+
+#if RSTL_KYOTO_CGX_HEADER_APPLY_FOG
+inline void CGX::apply_fog() {
+  static const GXColor black = {0, 0, 0, 0};
+  GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
+           CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
+           CGX_STATE.mFogParams.mFogFarZ,
+           (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
+                                                                 : CGX_STATE.mFogParams.mFogColor);
+}
+#endif
 
 #if !RSTL_KYOTO_CGX_OUTLINED_HELPERS
 inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {

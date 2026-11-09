@@ -789,9 +789,9 @@
 #define RSTL_KYOTO_CGX_OUTLINED_HELPERS (RSTL_CORRUPTION)
 // CGX::SetZMode takes GXBool flags (Corruption). Earlier builds take bool.
 #define RSTL_KYOTO_CGX_GXBOOL_ZMODE (RSTL_CORRUPTION)
-// CGX::apply_fog is defined in the class, so every includer emits its weak black constant (Corruption).
-// Earlier builds define it beside its callers.
-#define RSTL_KYOTO_CGX_CLASS_APPLY_FOG (RSTL_CORRUPTION)
+// CGX::apply_fog is defined in CGX.hpp, so every includer emits its weak black constant (Corruption).
+// Earlier builds define it beside its callers (CGX_Impl.hpp, CGX.cpp).
+#define RSTL_KYOTO_CGX_HEADER_APPLY_FOG (RSTL_CORRUPTION)
 // CGX::CompareGXColors reads both colors through non-const pointers (Corruption), which changes the
 // code of its callers.
 #define RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE (RSTL_CORRUPTION)
