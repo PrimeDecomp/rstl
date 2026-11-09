@@ -304,7 +304,7 @@ CDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag, char* extBuf) 
 #if !RSTL_PRIME1
 CBufferedDvdRequest* CResLoader::LoadResourceAsync(const SObjectTag& tag) {
   CPakFile* curPak = FindResourceForLoad(tag);
-  const CPakFile::SResInfo* info = mCachedResInfo;
+  const CPakFile::CResInfo* info = mCachedResInfo;
   GroupCacheList::iterator it =
       FindGroupCache(&curPak->DvdFile(), info->GetOffset(), info->GetSize());
   if (it == mGroupCaches.end()) {

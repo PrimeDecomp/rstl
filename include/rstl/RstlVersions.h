@@ -787,6 +787,17 @@
 #define RSTL_KYOTO_PALETTE_GPU_MEMORY (RSTL_CORRUPTION)
 // CGraphicsPalette::UnLock stores the entries to memory before rebuilding its TLUT (Prime, Echoes).
 #define RSTL_KYOTO_PALETTE_UNLOCK_STORE_RANGE (!RSTL_CORRUPTION)
+// CPakFile::CResInfo copies through out-of-line members and is built only with a lookahead size
+// (Corruption). Earlier builds copy it bitwise and also have a five-argument constructor.
+#define RSTL_KYOTO_PAK_RES_INFO_COPY (RSTL_CORRUPTION)
+// CPakFile keeps a list of asset names after its bucket offsets (Corruption).
+#define RSTL_KYOTO_PAK_ASSET_NAMES (RSTL_CORRUPTION)
+// CResLoader looks for network assets before the paks: FindResource returns nothing and
+// LoadMemResourceSync reports whether it loaded the resource (Corruption).
+#define RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS (RSTL_CORRUPTION)
+// CResFactory::GetResourceIdToNameList is defined in its header (Corruption). Echoes defines it in
+// CInGameTweakManager.cpp.
+#define RSTL_KYOTO_RES_FACTORY_INLINE_NAME_LIST (RSTL_CORRUPTION)
 // GPUMemory::EnsureAllocation marks itself as allocating once it has the memory (Corruption).
 // Echoes marks it before allocating.
 #define RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG (RSTL_CORRUPTION)

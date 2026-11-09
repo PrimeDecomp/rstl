@@ -14,27 +14,13 @@
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CResLoader.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/IFactory.hpp"
 
+#if RSTL_PRIME1
 struct z_stream_s;
 #endif
 
 class CDvdRequest;
-
-#if !RSTL_PRIME1
-class IFactory {
-public:
-  virtual ~IFactory() = 0;
-  virtual rstl::auto_ptr< IObj > Build(const SObjectTag&, const CVParamTransfer&) = 0;
-  virtual void BuildAsync(const SObjectTag&, const CVParamTransfer&, IObj**) = 0;
-  virtual void CancelBuild(const SObjectTag&) = 0;
-  virtual bool CanBuild(const SObjectTag&) = 0;
-  virtual const SObjectTag* GetResourceIdByName(const char* name) const = 0;
-};
-
-inline IFactory::~IFactory() {}
-#endif
 
 class CResFactory : public IFactory {
 public:
@@ -93,7 +79,7 @@ public:
 
   void AsyncIdle(uint time);
 #else
-  void AsyncIdle(uint time, const bool);
+  void AsyncIdle(uint time, RSTL_KYOTO_SCALAR_PARAM_CONST bool);
 #endif
 
   CResLoader& GetResLoader() { return mResLoader; }
@@ -128,9 +114,19 @@ private:
 };
 #if RSTL_PRIME1
 NESTED_CHECK_SIZEOF(CResFactory, SLoadingData, 0x38)
+#elif RSTL_KYOTO_ASSET_ID_CLASS
+NESTED_CHECK_SIZEOF(CResFactory, SLoadingData, 0x48)
 #endif
-CHECK_SIZEOF(CResFactory, RSTL_PRIME1 ? 0xc8 : 0xe0)
+CHECK_SIZEOF(CResFactory, RSTL_PRIME1 ? 0xc8 : RSTL_KYOTO_BUFFER_FACTORIES ? 0xd8 : 0xe0)
+
+#if RSTL_KYOTO_RES_FACTORY_INLINE_NAME_LIST
+inline rstl::vector< rstl::pair< rstl::string, SObjectTag > >
+CResFactory::GetResourceIdToNameList() const {
+  return mResLoader.GetResourceIdToNameList();
+}
+#endif
 
 extern CResFactory* gpResourceFactory;
+extern int gResFactoryBuildLogMode; // Guessed name
 
 #endif // _CRESFACTORY

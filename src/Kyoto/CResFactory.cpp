@@ -106,7 +106,7 @@ void CResFactory::BuildAsync(const SObjectTag& tag, const CVParamTransfer& param
   CDvdRequest* request = LoadResourceAsync(tag, buffer);
 #else
   CBufferedDvdRequest* request = mResLoader.LoadResourceAsync(tag);
-  const bool ownsBuffer = request->OwnsBuffer();
+  const bool ownsBuffer = request->GetRequestOwnsMemory();
   rstl::auto_ptr< uchar > buffer;
   if (ownsBuffer) {
     buffer = request->GetBuffer();

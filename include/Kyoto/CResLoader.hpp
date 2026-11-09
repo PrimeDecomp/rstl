@@ -19,76 +19,18 @@
 #include "Kyoto/CPakFile.hpp"
 #if !RSTL_PRIME1
 #include "Kyoto/IObjectStore.hpp"
+#include "Kyoto/Streams/CLookaheadRes.hpp"
 #endif
 
 class CDvdRequest;
-
-class CBufferedDvdRequest;
-
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
 class CInputStream;
 
-class CLookaheadRes;
-class CResLoader;
-
-// Echoes-only async read returned by CResLoader::LoadResourceAsync; it may own its destination
-// buffer or point into a CLookaheadRes. Name is a guess; methods live in the TU at 0x8034317C
-// (after CInputStream.cpp).
-class CBufferedDvdRequest : public CDvdRequest {
-public:
-  CBufferedDvdRequest(CLookaheadRes* cache, CDvdRequest* request, uchar* buffer);
-  ~CBufferedDvdRequest();
-  void WaitUntilComplete();
-  bool IsReady(); // Guessed name; implementation remains in the original Wii owner.
-  bool IsComplete();
-  void PostCancelRequest();
-  int GetMediaType() const;
-
-  bool OwnsBuffer() const { return mBuffer.owner(); }
-  uchar* GetBufferPtr() const { return mBuffer.get(); }
-  rstl::auto_ptr< uchar >& GetBuffer();
-
-private:
-  CLookaheadRes* mCache;
-  rstl::auto_ptr< CDvdRequest > mRequest;
-  rstl::auto_ptr< uchar > mBuffer;
-  int mMediaType;
-};
-CHECK_CHILD_SIZEOF(CBufferedDvdRequest, CDvdRequest, 0x18)
-
-// Echoes-only shared read of a run of grouped pak resources; requests for resources inside it
-// are served from its buffer. Name from a Corruption diagnostic; methods live in the same TU as
-// CBufferedDvdRequest.
-class CLookaheadRes {
-public:
-  CLookaheadRes(uchar* buffer, CDvdFile* file, uint offset, uint size,
-                const rstl::auto_ptr< CDvdRequest >& request, CResLoader* owner);
-  ~CLookaheadRes();
-
-  bool IsInvalid() const { return mInvalid; }
-  bool Contains(const CDvdFile* file, uint offset, uint size) const;
-  rstl::auto_ptr< CBufferedDvdRequest > MakeRequest(uint offset);
-  void RequestHasDied();
-  bool Cancel();
-
-private:
-  rstl::auto_ptr< uchar > mBuffer;
-  CDvdFile* mFile;
-  uint mOffset;
-  uint mSize;
-  uint mReferenceCount : 16;
-  uint mInvalid : 1;
-  rstl::auto_ptr< CDvdRequest > mRequest;
-  CResLoader* mOwner;
-};
-CHECK_SIZEOF(CLookaheadRes, 0x24)
-#endif
+class CBufferedDvdRequest;
 
 class CResLoader {
 public:
   typedef rstl::list< rstl::auto_ptr< CPakFile > > PakList;
-  typedef CPakFile::SResInfo ResInfo;
+  typedef CPakFile::CResInfo ResInfo;
 #if !RSTL_PRIME1
   typedef rstl::list< CLookaheadRes > GroupCacheList;
 #endif
@@ -106,7 +48,11 @@ public:
   CPakFile* FindResourceForLoad(const SObjectTag& tag);
   CPakFile* FindResourceForLoad(RSTL_PRIME1_CONST CAssetId asset);
 
+#if RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS
+  void FindResource(const SObjectTag& tag);
+#else
   CPakFile* FindResource(const SObjectTag& tag);
+#endif
   bool ResourceExists(CAssetId asset);
 
   void ClearCache();
@@ -126,7 +72,11 @@ public:
 
   CInputStream* LoadNewResourceSync(const SObjectTag& tag, char* extBuf);
   CInputStream* LoadResourceFromMemorySync(const SObjectTag& tag, const void* extBuf);
+#if RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS
+  bool LoadMemResourceSync(const SObjectTag& tag, char** extBuf, int* len);
+#else
   void LoadMemResourceSync(const SObjectTag& tag, char** extBuf, int* len);
+#endif
   CInputStream* LoadNewResourcePartSync(const SObjectTag& tag, int offset, int length,
                                         char* extBuf);
 
@@ -135,8 +85,13 @@ public:
   void RemovePakFile(const rstl::string&);
 
   rstl::vector< rstl::pair< rstl::string, SObjectTag > > GetResourceIdToNameList() const;
+  // Guessed name
+  const rstl::vector< rstl::pair< rstl::string, SObjectTag > >*
+  GetNameListForFile(const rstl::string& filePath) const;
+  bool ContainsResourceInAramPaks(const SObjectTag& tag) const; // Guessed name
 
   int GetPakCount() const;
+  CPakFile* GetPakFileByIndex(int idx) const; // Guessed name
   RSTL_ECHOES_CONST CPakFile* GetPakFile(int idx) const;
 #if !RSTL_PRIME1
   CPakFile* GetPakFile(int idx);
@@ -144,6 +99,11 @@ public:
 #endif
 
 private:
+#if RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS
+  // Guessed name
+  static CDvdRequest* ReadNetworkFileToBuffer(const char* filename, char** buffer, int offset,
+                                              int length);
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   GroupCacheList::iterator FindGroupCache(const CDvdFile* file, uint offset, uint size);
@@ -162,7 +122,7 @@ private:
   bool mForwardSeek;
 };
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CResLoader, 0x70)
+CHECK_SIZEOF(CResLoader, RSTL_KYOTO_ASSET_ID_CLASS ? 0x78 : 0x70)
 #endif
 
 #endif // _CRESLOADER

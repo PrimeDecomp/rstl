@@ -7,13 +7,8 @@
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
-#if RSTL_KYOTO_CORRUPTION
-#include "Corruption/Kyoto/CResFactory.hpp"
-#include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#else
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#endif
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Platform.h"
 #include "Kyoto/SObjectTag.hpp"
