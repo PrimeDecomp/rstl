@@ -24,7 +24,9 @@ const CColor& CColor::White() { return sWhiteColor; }
 #endif
 #endif
 
+#if !RSTL_CCOLOR_INLINE_GREY
 const CColor& CColor::Grey() { return sGreyColor; }
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_R3IJ
