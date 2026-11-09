@@ -2,6 +2,9 @@
 #include "float.h"
 
 #include "Kyoto/Graphics/CLight.hpp"
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+#include "Corruption/Kyoto/Math/CVector4f.hpp"
+#endif
 
 #include "Kyoto/Math/CMath.hpp"
 #include "rstl/math.hpp"
@@ -11,11 +14,24 @@ static const float gkEpsilon32 = FLT_EPSILON;
 const CVector3f CLight::kDefaultPosition(0.f, 0.f, 0.f);
 const CVector3f CLight::kDefaultDirection(0.f, -1.f, 0.f);
 
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+// Guessed name.
+static inline CColor ProcessColor(CColor color, bool enabled) {
+  if (enabled) {
+    return color;
+  }
+  return color.WithAlphaOf(uchar(0));
+}
+#endif
+
 CLight::CLight(ELightType type, const CVector3f& position, const CVector3f& direction,
                const CColor& color, float cutoff)
 : mPos(position)
 , mDir(direction)
 , mColor(color)
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+, mProcessedColor(color.WithAlphaOf(uchar(0)))
+#endif
 , mType(type)
 , mSpotCutoff(cutoff)
 , mDistC(0.f)
@@ -28,6 +44,9 @@ CLight::CLight(ELightType type, const CVector3f& position, const CVector3f& dire
 , mLightId(0)
 , mCachedRadius(0.f)
 , mCachedIntensity(0.f)
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+, mColorProcessing(false)
+#endif
 , mIntensityDirty(true)
 , mRadiusDirty(true) {}
 
@@ -44,6 +63,9 @@ CLight::CLight(ELightType type, const CVector3f& position, const CVector3f& dire
 : mPos(position)
 , mDir(direction)
 , mColor(color)
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+, mProcessedColor(color.WithAlphaOf(uchar(0)))
+#endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mType(kLT_Custom)
@@ -62,6 +84,9 @@ CLight::CLight(ELightType type, const CVector3f& position, const CVector3f& dire
 , mLightId(0)
 , mCachedRadius(0.f)
 , mCachedIntensity(0.f)
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+, mColorProcessing(false)
+#endif
 , mIntensityDirty(true)
 , mRadiusDirty(true) {}
 
@@ -94,7 +119,7 @@ CLight CLight::BuildCustom(const CVector3f& pos, const CVector3f& dir, const CCo
 
 }
 
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_NO_HARD_HELPERS
 CLight CLight::BuildHard(const CVector3f& pos, const CColor& color, float radius) {
   return CLight(kLT_Hard, pos, CVector3f::Up(), color, 0.0001f * radius, -0.0001f, 0.f, 1.f, 0.f,
                 0.f);
@@ -118,7 +143,15 @@ void CLight::SetAngleAttenuation(float constant, float linear, float quadratic) 
 }
 
 void CLight::SetColor(const CColor& col) {
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+  if (col == mColor) {
+    return;
+  }
   mColor = col;
+  mProcessedColor = ProcessColor(col, mColorProcessing);
+#else
+  mColor = col;
+#endif
   mRadiusDirty = true;
   mIntensityDirty = true;
 }
@@ -126,6 +159,18 @@ void CLight::SetColor(const CColor& col) {
 void CLight::SetPosition(const CVector3f& position) { mPos = position; }
 
 void CLight::SetDirection(const CVector3f& direction) { mDir = direction; }
+
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+void CLight::SetColorProcessingMode(bool enable) {
+  if (enable == mColorProcessing) {
+    return;
+  }
+  mColorProcessing = enable;
+  mProcessedColor = ProcessColor(mColor, mColorProcessing);
+  mRadiusDirty = true;
+  mIntensityDirty = true;
+}
+#endif
 
 #if !RSTL_PRIME1
 void CLight::SetSpotCutoff(float cutoff) {
@@ -144,14 +189,18 @@ float CLight::GetRadius() const {
 }
 
 float CLight::CalculateLightRadius() const {
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_NO_HARD_HELPERS
   if (mType == kLT_Hard) {
     return -mDistC / mDistL;
   }
 #endif
 
   if (mDistL < gkEpsilon32 && mDistQ < gkEpsilon32) {
+#if RSTL_KYOTO_LIGHT_NO_HARD_HELPERS
+    return 1.0e18f;
+#else
     return 3.0E36f;
+#endif
   }
 
   float intensity = GetIntensity();
@@ -182,7 +231,7 @@ float CLight::CalculateLightRadius() const {
 
   return ret;
 }
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_LATE_STRIPPED_HELPER
 // Guessed; stands in for a function stripped from the link.
 static CVector3f StrippedDown() { return CVector3f(0.f, -1.f, 0.f); }
 #endif
@@ -194,8 +243,16 @@ float CLight::GetIntensity() const {
     if (mType == kLT_Custom) {
       coef = mAngleC;
     }
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+    mCachedIntensity =
+        coef * (CCast::ToReal32(rstl::max_val(
+                    rstl::max_val(mProcessedColor.GetRedu8(), mProcessedColor.GetGreenu8()),
+                    rstl::max_val(mProcessedColor.GetBlueu8(), mProcessedColor.GetAlphau8()))) /
+                255.f);
+#else
     mCachedIntensity =
         coef * rstl::max_val(mColor.GetRed(), rstl::max_val(mColor.GetGreen(), mColor.GetBlue()));
+#endif
 
   }
   return mCachedIntensity;
@@ -209,8 +266,19 @@ static void StrippedFunc() {
 
 }
 
+#if RSTL_KYOTO_LIGHT_LATE_STRIPPED_HELPER
+// Guessed; stands in for a function stripped from the link.
+static CVector3f StrippedDown() { return CVector3f(0.f, -1.f, 0.f); }
+#endif
+
+#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+CVector4f CLight::GetNormalIndependentLightingAtPoint(const CVector3f& point) const {
+  CVector4f floatCol(mProcessedColor.GetRed(), mProcessedColor.GetGreen(),
+                     mProcessedColor.GetBlue(), mProcessedColor.GetAlpha());
+#else
 CVector3f CLight::GetNormalIndependentLightingAtPoint(const CVector3f& point) const {
   CVector3f floatCol(mColor.GetRed(), mColor.GetGreen(), mColor.GetBlue());
+#endif
   if (mType == kLT_LocalAmbient)
     return floatCol;
 

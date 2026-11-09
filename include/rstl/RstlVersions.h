@@ -798,9 +798,17 @@
 // CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
 // lighting as a CVector4f (Corruption).
 #define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)
+// CLight has no BuildHard and no hard-light radius case, and an unattenuated light's radius is 1e18
+// (Corruption, including retail). Earlier builds return 3e36 and give hard lights their own radius.
+#define RSTL_KYOTO_LIGHT_NO_HARD_HELPERS (RSTL_CORRUPTION)
+// CLight.cpp's stripped stand-in function follows GetIntensity, which orders its float constants
+// (Corruption). Echoes has it before GetIntensity.
+#define RSTL_KYOTO_LIGHT_LATE_STRIPPED_HELPER (RSTL_CORRUPTION)
 // CColor::WithAlphaOf multiplies the byte scale by the alpha (Trilogy). Earlier builds multiply the
 // alpha by the byte scale.
 #define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (RSTL_VERSION >= RSTL_R32J)
+// CColor::ToRGB5A3 widens its channels to uint (Corruption). Earlier builds keep them as uchar.
+#define RSTL_KYOTO_COLOR_UINT_RGB5A3_CHANNELS (RSTL_CORRUPTION)
 // CGraphics::ConfigureVideoMode takes its progressive flag as a uchar (from Prime PAL on). Corruption takes a
 // bool and passes the flag through unchanged.
 #define RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG (RSTL_VERSION >= RSTL_GM8P_00 && !RSTL_CORRUPTION)

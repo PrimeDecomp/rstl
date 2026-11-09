@@ -173,10 +173,15 @@ ushort CColor::ToRGB565() const {
 #endif
 
 ushort CColor::ToRGB5A3() const {
-  RSTL_ECHOES_CONST uchar r = GetRedu8();
-  RSTL_ECHOES_CONST uchar g = GetGreenu8();
-  RSTL_ECHOES_CONST uchar b = GetBlueu8();
-  RSTL_ECHOES_CONST uchar a = GetAlphau8();
+#if RSTL_KYOTO_COLOR_UINT_RGB5A3_CHANNELS
+  typedef uint TChannel;
+#else
+  typedef uchar TChannel;
+#endif
+  RSTL_ECHOES_CONST TChannel r = GetRedu8();
+  RSTL_ECHOES_CONST TChannel g = GetGreenu8();
+  RSTL_ECHOES_CONST TChannel b = GetBlueu8();
+  RSTL_ECHOES_CONST TChannel a = GetAlphau8();
 
   ushort ret = (1 << 15) | ((b & 0xf8) >> 3) | ((g & 0xf8) << 2) | ((r & 0xf8) << 7);
   if (a != 0xff) {

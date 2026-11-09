@@ -11,6 +11,7 @@
 #include "dolphin/os.h"
 #include "string.h"
 
+#if !RSTL_KYOTO_BUFFER_FACTORIES
 static const uint sTypeTable[] = {
     'CLSN',
     IF_NOT_RSTL_PRIME1('CSPP', ) //
@@ -60,11 +61,13 @@ static const uint sTypeTable[] = {
     'MAPU',
     'DUMB',
 };
+#endif
 
 CFactoryMgr::CFactoryMgr() {}
 
 CFactoryMgr::~CFactoryMgr() {}
 
+#if !RSTL_KYOTO_BUFFER_FACTORIES
 void CFactoryMgr::AddFactory(FourCC type, FFactoryFunc factory) {
   AUTO(it, mFactories.find(type));
   if (it != mFactories.end()) {
@@ -72,6 +75,7 @@ void CFactoryMgr::AddFactory(FourCC type, FFactoryFunc factory) {
   }
   mFactories.insert(rstl::pair< int, FFactoryFunc >(type, factory));
 }
+#endif
 
 void CFactoryMgr::AddFactory(FourCC type, FMemFactoryFunc factory) {
   AUTO(it, mMemFactories.find(type));
@@ -81,6 +85,29 @@ void CFactoryMgr::AddFactory(FourCC type, FMemFactoryFunc factory) {
   mMemFactories.insert(rstl::pair< int, FMemFactoryFunc >(type, factory));
 }
 
+#if RSTL_KYOTO_BUFFER_FACTORIES
+rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
+                                                         MemoryBufferPtr buffer, int size,
+                                                         bool uncompressed,
+                                                         const CVParamTransfer& params) {
+  FMemFactoryFunc factory = mMemFactories.find(tag.GetType())->second;
+  if (!uncompressed) {
+    rstl::auto_ptr< CInputStream > in(
+        rs_new_line(89) CMemoryInStream(buffer.get(), size, CMemoryInStream::kOS_NotOwned));
+    const uint length = in->ReadInt32();
+    CLZOInputStream lzo(in, size - in->GetReadPosition(), length);
+    rstl::auto_ptr< uchar > data = lzo.ReleaseBuffer();
+    return factory(tag, data, length, params).GetObjForTransfer();
+  }
+  rstl::auto_ptr< uchar > data(buffer);
+  if (!data.owner()) {
+    data = rstl::auto_ptr< uchar >(static_cast< uchar* >(rs_aligned_new_line(size, 111)));
+    memcpy(data.get(), buffer.get(), size);
+    DCStoreRange(data.get(), size);
+  }
+  return factory(tag, data, size, params).GetObjForTransfer();
+}
+#else
 bool CFactoryMgr::CanMakeMemory(const SObjectTag& tag) const {
   return mMemFactories.find(tag.GetType()) != mMemFactories.end();
 }
@@ -169,3 +196,4 @@ uint CFactoryMgr::FourCCToTypeIdx(uint fcc) {
   }
   return -1;
 }
+#endif

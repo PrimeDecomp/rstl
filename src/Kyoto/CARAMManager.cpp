@@ -1,6 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CARAMManager.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "rstl/math.hpp"
 #if !RSTL_PRIME1
@@ -21,17 +22,20 @@ public:
   , mMaxChunksAllocated(0)
   , mpBookKeepingMemory((uint*)CMemory::Alloc(numChunks * 4, IAllocator::kHI_None,
                                               IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
-                                              CCallStack(-1, "\?\?(\?\?)"))) {
+                                              rs_callstack_line(36))) {
     for (uint i = 0; i < mNumChunks; ++i) {
       mpBookKeepingMemory[i] = kFreeChunk;
     }
     CMemory::OffsetFakeStatics(mNumChunks * 4);
+    RS_DEBUGGER_PRINT("ARAM Pool Initialized - 0x%x start, %d chunks, %d size, %d total\n",
+                      mpARAMStart, mNumChunks, mChunkSize, mChunkSize * mNumChunks);
   }
   ~CAramPool();
 
   void* Alloc(uint len);
   uint FindFreeBlocks(uint start, uint end, uint count);
   bool Free(const void* ptr);
+  SPoolStatistics GetAllocationStatistics() const; // Guessed name
 
 private:
   u32 mpARAMStart;
@@ -210,12 +214,17 @@ bool CARAMManager::CAramPool::Free(const void* ptr)
 }
 
 #if !RSTL_PRIME1
+CARAMManager::SPoolStatistics CARAMManager::CAramPool::GetAllocationStatistics() const {
+  return SPoolStatistics(mChunkSize, mNumChunks, mNumChunks - mChunksAllocated,
+                         mMaxChunksAllocated);
+}
+
 bool CARAMManager::Initialize(uint chunkSize, uint size, uint secondChunkSize) {
   uint aramSize = ARGetSize() - mPreInitializeAlloc;
   uint numChunks = size / chunkSize;
   uint secondNumChunks = (aramSize - size) / secondChunkSize;
-  mPools[1] = rs_new CAramPool(chunkSize, numChunks);
-  mPools[0] = rs_new CAramPool(secondChunkSize, secondNumChunks);
+  mPools[1] = rs_new_line(262) CAramPool(chunkSize, numChunks);
+  mPools[0] = rs_new_line(263) CAramPool(secondChunkSize, secondNumChunks);
   mDMAUniqueID = 0;
   mbInitialized = true;
   return true;
@@ -247,7 +256,7 @@ CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priority) 
   DCFlushRange(src, len);
 #endif
 
-  SAramDMARequest* req = rs_new SAramDMARequest();
+  SAramDMARequest* req = rs_new_line(310) SAramDMARequest();
   req->mComplete = false;
   req->mUniqueID = mDMAUniqueID;
   mActiveDMAs.push_back(req);
@@ -268,9 +277,11 @@ CARAMManager::DMAToARAM(void* src, void* dest, uint len, EDMAPriority priority) 
   return req->mUniqueID;
 }
 
-int CARAMManager::DMAToMRAM(void* src, void* dest, uint len, EDMAPriority priority) {
-  DCInvalidateRange(dest, len);
-  SAramDMARequest* req = rs_new SAramDMARequest();
+int CARAMManager::DMAToMRAM(void* src, void* dest, uint size, EDMAPriority priority) {
+  RS_VERIFY_THROW_DIRECT(326, (size & ~31) == size, false,
+                         "size isn't a multiple of 32 in CARAMManager::DMAToARAM.");
+  DCInvalidateRange(dest, size);
+  SAramDMARequest* req = rs_new_line(332) SAramDMARequest();
   req->mComplete = false;
   req->mUniqueID = mDMAUniqueID;
   mActiveDMAs.push_back(req);
@@ -284,7 +295,7 @@ int CARAMManager::DMAToMRAM(void* src, void* dest, uint len, EDMAPriority priori
                  reinterpret_cast< u32 >(src),
                  reinterpret_cast< u32 >(dest),
 #endif
-                 len,
+                 size,
                  AramManagerDMACallback);
 
   GetAndIncrementUniqueID();
@@ -369,6 +380,10 @@ void CARAMManager::RefreshActiveDMAList() {
 void CARAMManager::CollectGarbage() { RefreshActiveDMAList(); }
 
 #if !RSTL_PRIME1
+CARAMManager::SPoolStatistics CARAMManager::GetPoolAllocationStatistics(int pool) {
+  return mPools[pool]->GetAllocationStatistics();
+}
+
 bool CARAMManager::IsValidAlloc(const void* ptr) {
   return reinterpret_cast< const void* >(-1) != ptr;
 }

@@ -87,14 +87,18 @@ __attribute__((weak)) void operator delete[](void* ptr) { CMemory::Free(ptr); }
 // so the original line numbers survive; the _in forms name an original file other than ours, such
 // as "rc_ptr.h"). Other builds allocate exactly as rs_new and rs_aligned_new do.
 #if RSTL_KYOTO_DEBUG_BUILD && defined(__MWERKS__)
+#define rs_callstack_line_in(file, line) CCallStack(-1, RS_SOURCE_POSITION(file, line), kUnknownType)
 #define rs_new_line_in(file, line) new (RS_SOURCE_POSITION(file, line), nullptr)
 #define rs_aligned_new_line_in(file, line, size)                                                   \
   CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,     \
-                 CCallStack(-1, RS_SOURCE_POSITION(file, line), kUnknownType))
+                 rs_callstack_line_in(file, line))
 #else
+#define rs_callstack_line_in(file, line) CCallStack(-1, "\?\?(\?\?)")
 #define rs_new_line_in(file, line) rs_new
 #define rs_aligned_new_line_in(file, line, size) rs_aligned_new(size)
 #endif
+// The call stack an explicit CMemory::Alloc records at a source position.
+#define rs_callstack_line(line) rs_callstack_line_in(__FILE__, line)
 #define rs_new_line(line) rs_new_line_in(__FILE__, line)
 #define rs_aligned_new_line(size, line) rs_aligned_new_line_in(__FILE__, line, size)
 
