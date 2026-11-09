@@ -779,7 +779,7 @@
 // CMoviePlayer::DecodeFromRead warns about 60fps frames over 33k and other frames over 60k (Corruption).
 // Earlier builds keep a single frame-size argument.
 #define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
-// CTexture records the mip bytes it skips when capping a texture's size (Corruption).
+// CTexture can cap a texture's size as it loads, and records the mip bytes it skips (Corruption).
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
 // CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
 // tables and the vertex attribute sizes of each format (Corruption).

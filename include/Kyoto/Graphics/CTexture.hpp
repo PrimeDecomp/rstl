@@ -67,7 +67,6 @@ public:
   enum EBlackKey {
     kBK_Zero,
   };
-  // Guessed name
   enum EBitmapState {
     kBitmapState_Unloaded = 2,
   };
@@ -99,7 +98,6 @@ public:
   void UnloadBitmapData(CAssetId textureId) const;
 
   bool TryReloadBitmapData(CResFactory& factory) const;
-  int GetBitmapDataStatus() const; // Guessed name.
   EBitmapState GetBitmapState() const;
 
   bool LoadToMRAM() const;
@@ -126,7 +124,6 @@ public:
   static uint sTotalAllocatedSecondaryMemory; // Guessed name
   static void SetBindCount(int count);        // Guessed name
   static int GetBindCount();                  // Guessed name
-  static bool sReviewTextureSize;             // Guessed name
   static bool sCapTextureSize;                // Guessed name
 
 private:

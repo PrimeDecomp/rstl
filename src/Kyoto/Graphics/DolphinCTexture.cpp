@@ -1,16 +1,27 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/IAllocator.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
+#if RSTL_KYOTO_CORRUPTION
+#include "Corruption/Kyoto/CResFactory.hpp"
+#include "Corruption/Kyoto/Graphics/CGraphicsPalette.hpp"
+#else
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
+#endif
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Platform.h"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
+#if RSTL_KYOTO_BUFFER_FACTORIES
+#include "Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#endif
 #include "rstl/RstlVersions.h"
 #include "rstl/single_ptr.hpp"
 
@@ -26,10 +37,22 @@
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
+#ifdef ENABLE_BBA_TOOLS
+#include "Corruption/Kyoto/Network/CBBASupport.hpp"
+#endif
 
 int CTexture::sCurrentFrameCount = 0;
 int CTexture::sTotalAllocatedMemory = 0;
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+uint CTexture::sTotalAllocatedSecondaryMemory = 0;
+#endif
 bool CTexture::sMangleMips = false;
+#if !RSTL_PRIME1
+static int sTextureLoadCount;
+#endif
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+bool CTexture::sCapTextureSize = false;
+#endif
 
 #define ROUND_UP_4(v) (((v) + 3) & ~3)
 
@@ -38,7 +61,6 @@ static const CTexture* sLoadedTextures[GX_MAX_TEXMAP];
 #else
 static uintptr_t sLoadedTextureStorage[GX_MAX_TEXMAP];
 static uintptr_t* sLoadedTextures = sLoadedTextureStorage;
-static uint sTextureLoadCount;
 #endif
 
 CTexture::CTexture(ETexelFormat fmt, const short w, const short h, int mips)
@@ -67,6 +89,9 @@ CTexture::CTexture(ETexelFormat fmt, const short w, const short h, int mips)
 #if NONMATCHING
 , mTexObj()
 #endif
+#endif
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+, mSecondaryMemoryAllocated(0)
 #endif
 
 , mNativeFormat(GX_TF_RGB565)
@@ -108,6 +133,9 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
 , mTexObj()
 #endif
 #endif
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+, mSecondaryMemoryAllocated(0)
+#endif
 
 , mNativeFormat(GX_TF_RGB565)
 , mNativeCIFormat(GX_TF_C8)
@@ -123,7 +151,7 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
   mNumMips = in.ReadInt32();
 
   if (IsCITextureFormat(mTexelFormat)) {
-    mGraphicsPalette = rs_new CGraphicsPalette(in);
+    mGraphicsPalette = rs_new_line(131) CGraphicsPalette(in);
 #if RSTL_PRIME1
     mCanLoadPalette = true;
 #endif
@@ -133,7 +161,34 @@ CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
   DEBUG_TOOLS_CALL(PrepareTextureLoad(in, mWidth, mHeight, mNumMips, mBitsPerPixel));
 #endif
 
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+  const int origWidth = mWidth;
+  const int origHeight = mHeight;
+  int skippedBytes;
+  const int bitsPerPixel = mBitsPerPixel;
+  if (sCapTextureSize) {
+    skippedBytes = 0;
+    while (mNumMips > 1 && mWidth * mHeight > 0x10000) {
+      skippedBytes += (bitsPerPixel * (mWidth * mHeight)) >> 3;
+      mWidth >>= 1;
+      mHeight >>= 1;
+      --mNumMips;
+    }
+  } else {
+    skippedBytes = 0;
+  }
+
+  mSecondaryMemoryAllocated = skippedBytes;
+  if (mSecondaryMemoryAllocated != 0) {
+    RS_WARNING_DEBUGGER_PRINT("Dynamically resizing texture from %dx%d to %dx%d\n", origWidth,
+                              origHeight, mWidth, mHeight);
+    in.ReadBytes(nullptr, mSecondaryMemoryAllocated);
+  }
+
+  InitBitmapBuffers(GetTexelFormat(), GetWidth(), GetHeight(), GetNumberOfMipMaps());
+#else
   InitBitmapBuffers(mTexelFormat, mWidth, mHeight, mNumMips);
+#endif
   int bufLen = 0;
   for (int i = 0; i < mNumMips;) {
     int width = ((GetWidth() >> i) + 3) & ~3;
@@ -217,6 +272,11 @@ void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
 
     void* ptr;
     if (IS_TARGET_PC || RSTL_PRIME1 || mCanLoadObj) {
+#if RSTL_KYOTO_DEBUG_BUILD
+      if (mARAMToken.GetStatus() == CARAMToken::kStatus_Unowned) {
+        VerifyBitmapDataAvailable();
+      }
+#endif
       IF_NOT_TARGET_PC(ptr = mARAMToken.GetMRAMSafe());
       CountMemory();
 
@@ -260,6 +320,9 @@ void CTexture::Load(GXTexMapID tex, EClampMode clamp) const {
 }
 
 void CTexture::LoadMipLevel(int mip, GXTexMapID tex, EClampMode clamp) const {
+  RS_VERIFY_THROW(313, mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned, false,
+                  "Cannot load a texture whose bitmap data has been dumped from memory!  "
+                  "Please bug this!");
   char* ptr = static_cast< char* >(mARAMToken.GetMRAMSafe());
 
   GXTexObj obj = mTexObj;
@@ -296,9 +359,18 @@ void CTexture::UnloadBitmapData(CAssetId textureId) const {
   if (IS_TARGET_PC) {
     return;
   }
+#ifdef ENABLE_BBA_TOOLS
+  if (kInvalidAssetId != CBBASupport::FindNetworkAsset(textureId).mTag.GetId()) {
+    RS_DEBUGGER_PRINT("Warning: Texture Asset id %s not unloaded because it is a network asset.\n",
+                      textureId.ToHexString().c_str());
+    return;
+  }
+#endif
+
   if (!mBitmapReloader.null()) {
     bool loadToARAM = mBitmapReloader->GetShouldBeInARAM();
-    mBitmapReloader = rs_new CDumpedBitmapDataReloader(textureId, mMemoryAllocated, loadToARAM);
+    mBitmapReloader =
+        rs_new_line(376) CDumpedBitmapDataReloader(textureId, mMemoryAllocated, loadToARAM);
 
   } else {
     bool complete = mARAMToken.GetStatus() == CARAMToken::kS_Zero ||
@@ -306,7 +378,8 @@ void CTexture::UnloadBitmapData(CAssetId textureId) const {
                     mARAMToken.GetStatus() == CARAMToken::kS_Five;
 
     mARAMToken = CARAMToken();
-    mBitmapReloader = rs_new CDumpedBitmapDataReloader(textureId, mMemoryAllocated, complete);
+    mBitmapReloader =
+        rs_new_line(385) CDumpedBitmapDataReloader(textureId, mMemoryAllocated, complete);
 #if !RSTL_PRIME1
     mCanLoadObj = true;
 #endif
@@ -343,28 +416,28 @@ bool CTexture::TryReloadBitmapData(CResFactory& factory) const {
   return false;
 }
 
-int CTexture::GetBitmapDataStatus() const {
+CTexture::EBitmapState CTexture::GetBitmapState() const {
   if (!mBitmapReloader.null()) {
     if (mBitmapReloader->GetStatus() == 0) {
-      return 2;
+      return kBitmapState_Unloaded;
     }
 
-    return 5;
+    return static_cast< EBitmapState >(5);
   }
 
   switch (mARAMToken.GetStatus()) {
   case CARAMToken::kS_Zero:
-    return 1;
+    return static_cast< EBitmapState >(1);
   case CARAMToken::kS_One:
-    return 0;
+    return static_cast< EBitmapState >(0);
   case CARAMToken::kS_Five:
   case CARAMToken::kS_Two:
-    return 3;
+    return static_cast< EBitmapState >(3);
   case CARAMToken::kS_Three:
   case CARAMToken::kS_Four:
-    return 4;
+    return static_cast< EBitmapState >(4);
   default:
-    return -1;
+    return static_cast< EBitmapState >(-1);
   }
 }
 
@@ -382,7 +455,7 @@ void CTexture::CDumpedBitmapDataReloader::BeginReloadBitmapData(CResFactory& fac
   }
   SObjectTag tag('TXTR', mTextureId);
   mResourceSize = factory.ResourceSize(tag);
-  mData = static_cast< uchar* >(CMemory::Alloc(mResourceSize, IAllocator::kHI_RoundUpLen));
+  mData = static_cast< uchar* >(rs_aligned_new_line(mResourceSize, 488));
   mRequest = factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mData.get()));
 
   mState = 1;
@@ -403,6 +476,10 @@ void* CTexture::CDumpedBitmapDataReloader::TryBuildReloadedBitmapData(CResFactor
     int w = in.ReadInt16();
     int h = in.ReadInt16();
     int numMips = in.ReadInt32();
+#elif RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+    short w = in.ReadUint16();
+    short h = in.ReadUint16();
+    char numMips = in.Get< uint >();
 #else
     const short w = in.Get< short >();
     const short h = in.ReadInt16();
@@ -410,6 +487,15 @@ void* CTexture::CDumpedBitmapDataReloader::TryBuildReloadedBitmapData(CResFactor
 #endif
 
     const int bitsPerPixel = TexelFormatBitsPerPixel(format);
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+    if (sCapTextureSize) {
+      while (numMips > 1 && w * h > 0x10000) {
+        w >>= 1;
+        --numMips;
+        h >>= 1;
+      }
+    }
+#endif
 
     if (IsCITextureFormat(format)) {
       CGraphicsPalette tmp(in);
@@ -428,7 +514,7 @@ void* CTexture::CDumpedBitmapDataReloader::TryBuildReloadedBitmapData(CResFactor
       bufLen += (page * bitsPerPixel) >> 3;
     }
 
-    void* ptr = CMemory::Alloc(mBitmapSize, IAllocator::kHI_RoundUpLen);
+    void* ptr = rs_aligned_new_line(mBitmapSize, 540);
 
     for (int off = 0, len = 0; off < bufLen; off += len) {
       len = bufLen - off;
@@ -577,8 +663,7 @@ void CTexture::InitBitmapBuffers(ETexelFormat fmt, short width, short height, in
   mCanLoadObj = true;
 #endif
 
-  mARAMToken.PostConstruct(CMemory::Alloc(mMemoryAllocated, IAllocator::kHI_RoundUpLen),
-                           mMemoryAllocated, 1);
+  mARAMToken.PostConstruct(rs_aligned_new_line(mMemoryAllocated, 732), mMemoryAllocated, 1);
   CountMemory();
 }
 
@@ -605,11 +690,18 @@ void CTexture::UnLock() {
   DCFlushRange(mARAMToken.GetMRAMSafe(), OSRoundUp32B(mMemoryAllocated));
 }
 
+#if RSTL_KYOTO_BUFFER_FACTORIES
+CFactoryFnReturn FTextureFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& data,
+                                 int length, const CVParamTransfer& xfer) {
+  CMemoryInStream in(data.get(), length);
+  return rs_new_line(750) CTexture(in, CTexture::kAM_Zero, CTexture::kBK_Zero);
+}
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn FTextureFactory(const SObjectTag& tag, CInputStream& in,
-
                                                    const CVParamTransfer& xfer) {
   return rs_new CTexture(in, CTexture::kAM_Zero, CTexture::kBK_Zero);
 }
+#endif
 
 const void* CTexture::GetConstBitMapData(const int mip) const {
   int offset = 0;
@@ -702,6 +794,9 @@ void CTexture::CountMemory() const {
 
   mCounted = true;
   sTotalAllocatedMemory += mMemoryAllocated;
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+  sTotalAllocatedSecondaryMemory += mSecondaryMemoryAllocated;
+#endif
 }
 
 void CTexture::UncountMemory() const {
@@ -715,6 +810,9 @@ void CTexture::UncountMemory() const {
 #endif
 
   sTotalAllocatedMemory -= mMemoryAllocated;
+#if RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY
+  sTotalAllocatedSecondaryMemory -= mSecondaryMemoryAllocated;
+#endif
 }
 
 void CTexture::InvalidateTexmap(GXTexMapID texmap) { sLoadedTextures[texmap] = 0; }
@@ -744,4 +842,24 @@ void CTexture::InvalidateTexmaps() const {
     }
   }
 }
+
+#if RSTL_KYOTO_DEBUG_BUILD
+void CTexture::VerifyBitmapDataAvailable() const {
+  if (mBitmapReloader.null()) {
+    RS_VERIFY_THROW(941, mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned, false,
+                    "Cannot load a texture whose bitmap data has been dumped from memory!  "
+                    "Please bug this!");
+  } else {
+    CAssetId textureId = mBitmapReloader->GetTextureId();
+    RS_VERIFY_THROW(947, mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned, false,
+                    CBasics::Stringize("Tried to load texture (id %s) whose bitmap data has "
+                                       "been dumped from memory!  Please bug this!",
+                                       textureId.ToHexString().c_str()));
+  }
+}
+#endif
+
+int CTexture::GetBindCount() { return sTextureLoadCount; }
+
+void CTexture::SetBindCount(int count) { sTextureLoadCount = count; }
 #endif
