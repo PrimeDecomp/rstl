@@ -55,12 +55,10 @@ public:
   static uint TypeIdxToFourCC(uint idx);
 
 private:
-#if RSTL_KYOTO_BUFFER_FACTORIES
-  rstl::map< int, FMemFactoryFunc > mFactories;
-#else
+#if !RSTL_KYOTO_BUFFER_FACTORIES
   rstl::map< int, FFactoryFunc > mFactories;
-  rstl::map< int, FMemFactoryFunc > mMemFactories;
 #endif
+  rstl::map< int, FMemFactoryFunc > mMemFactories;
 };
 CHECK_SIZEOF(CFactoryMgr, RSTL_KYOTO_BUFFER_FACTORIES ? 0x14 : 0x28)
 

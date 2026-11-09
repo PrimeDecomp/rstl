@@ -2,6 +2,7 @@
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #if RSTL_PRIME1
 #include "dolphin/gx/GXManage.h"
@@ -10,7 +11,7 @@
 
 #include "limits.h"
 
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_CGX_SDK_FOG_COLOR
 #ifndef TARGET_PC
 struct GXData {
   ushort cpSRreg;
@@ -43,7 +44,7 @@ static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 #if RSTL_PRIME1
 #define CGX_INLINE
 #define CGX_CPP
-#else
+#elif !RSTL_KYOTO_CGX_HEADER_APPLY_FOG
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
@@ -132,6 +133,28 @@ void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
     GXSetTevKColor(id, color);
   }
 }
+
+#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
+void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
+  STevState& state = CGX_STATE.mTevStates[stage];
+  const uchar flags = rasSel | (texSel << 2);
+  if (flags != state.mSwapMode) {
+    GXSetTevSwapMode(stage, rasSel, texSel);
+    state.mSwapMode = flags;
+  }
+}
+#endif
+
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+void CGX::SetTevSwapModeTable(GXTevSwapSel table, GXTevColorChan red, GXTevColorChan green,
+                              GXTevColorChan blue, GXTevColorChan alpha) {
+  const uchar flags = red | (green << 2) | (blue << 4) | (alpha << 6);
+  if (flags != CGX_STATE.mTevSwapTables[table]) {
+    GXSetTevSwapModeTable(table, red, green, blue, alpha);
+    CGX_STATE.mTevSwapTables[table] = flags;
+  }
+}
+#endif
 
 void CGX::SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b, GXTevColorArg c,
                         GXTevColorArg d) {
@@ -299,7 +322,11 @@ void CGX::SetTevDirect(GXTevStageID stageId) {
 void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src, GXTexMtx mtx,
                          GXBool normalize, GXPTTexMtx postMtx) {
   STexState& state = CGX_STATE.mTexStates[dstCoord];
+#if RSTL_KYOTO_CGX_ABSOLUTE_TEX_MTX
+  uint vm = mtx / 3;
+#else
   uint vm = (mtx - GX_TEXMTX0) / 3;
+#endif
   uint vp = postMtx - GX_PTTEXMTX0;
 #if NONMATCHING
   // Similarly to GXTexMtx, this should also be divided by 3
@@ -338,6 +365,16 @@ void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
   if (data == nullptr) {
     return;
   }
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  if (attr >= GX_VA_POS && attr < GX_VA_MAX_ATTR) {
+    uint idx = attr - GX_VA_POS;
+    if (CGX_STATE.mArrayPtrs[idx] == data && CGX_STATE.mArrayStrides[idx] == stride) {
+      return;
+    }
+    CGX_STATE.mArrayPtrs[idx] = data;
+    CGX_STATE.mArrayStrides[idx] = stride;
+  }
+#else
   if (attr >= GX_VA_POS && attr < GX_POS_MTX_ARRAY) {
     uint idx = attr - GX_VA_POS;
     if (CGX_STATE.mArrayPtrs[idx] == data) {
@@ -345,9 +382,11 @@ void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
     }
     CGX_STATE.mArrayPtrs[idx] = data;
   }
-  GXSetArray(attr, data, stride);
+#endif
+  GXSetArray(attr, const_cast< void* >(data), stride);
 }
 
+#if !RSTL_KYOTO_CGX_LATE_BEGIN_END
 void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
   if (CGX_STATE.mChanFlags != 0) {
     FlushState();
@@ -356,6 +395,7 @@ void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
 }
 
 void CGX::End() { GXEnd(); }
+#endif
 
 void CGX::SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
                  const GXColor& color) {
@@ -384,7 +424,11 @@ CGX::STevState::STevState()
 , mIndFlags(0)
 , mTevOrderFlags(UINT_MAX)
 , mKColorSel(UCHAR_MAX)
-, mKAlphaSel(UCHAR_MAX) {}
+, mKAlphaSel(UCHAR_MAX)
+#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
+, mSwapMode(UCHAR_MAX)
+#endif
+{}
 
 CGX::STexState::STexState() : mCoordGen(0) {}
 #endif
@@ -417,26 +461,63 @@ CGX::SGXState::SGXState()
   for (int i = 0; i < 4; ++i) {
     mKColors[i] = sGXClear;
   }
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  for (int i = 0; i < 4; ++i) {
+    mTevSwapTables[i] = UCHAR_MAX;
+  }
+#endif
   SetChanCtrl(Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   SetChanCtrl(Channel1, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  SetChanCtrl(Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  SetChanCtrl(Channel3, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  for (int fmt = 0; fmt < 8; ++fmt) {
+    for (int attr = 0; attr < GX_VA_MAX_ATTR; ++attr) {
+      mVtxAttrSizes[fmt][attr] = attr < GX_VA_POS ? 1 : 0;
+    }
+  }
+#endif
 }
 
 void CGX::ResetGXStates() {
   CGX_STATE.mDescList = 0;
 
   GXClearVtxDesc();
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  for (int i = 0; i < 17; i++) {
+    CGX_STATE.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
+    CGX_STATE.mArrayStrides[i] = 0;
+  }
+#else
   for (int i = 0; i < 12; i++) {
     CGX_STATE.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
   }
+#endif
   for (int i = 0; i < 8; i++) {
     CTexture::InvalidateTexmap(static_cast< GXTexMapID >(i));
   }
   for (int i = 0; i < 4; i++) {
     GXSetTevKColor(static_cast< GXTevKColorID >(i), CGX_STATE.mKColors[i]);
   }
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  SetChanCtrl(Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  SetChanCtrl(Channel1, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  SetChanCtrl(Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  SetChanCtrl(Channel3, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+  CGX_STATE.mChanFlags = UCHAR_MAX;
+  FlushState();
+
+  GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
+#endif
   GXSetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
   GXSetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
   GXSetTevSwapModeTable(GX_TEV_SWAP3, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_BLUE);
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
+  SetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
+  SetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
+  SetTevSwapModeTable(GX_TEV_SWAP3, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_BLUE);
+#endif
   SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
   GXSetCurrentMtx(GX_PNMTX0);
   SetNumIndStages(0);
@@ -445,6 +526,9 @@ void CGX::ResetGXStates() {
   }
   for (int i = 0; i < 16; i++) {
     SetTevDirect(static_cast< GXTevStageID >(i));
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+    SetTevSwapMode(static_cast< GXTevStageID >(i), GX_TEV_SWAP0, GX_TEV_SWAP0);
+#endif
   }
   for (int i = 0; i < 8; i++) {
     GXSetTexCoordScaleManually(static_cast< GXTexCoordID >(i), false, 0, 0);
@@ -455,6 +539,29 @@ void CGX::ResetGXStates() {
   GXSetMisc(GX_MT_XF_FLUSH, 8);
   GXSetDither(GX_FALSE);
 #endif
+#elif RSTL_KYOTO_CGX_EXTENDED_STATE
+  GXSetMisc(GX_MT_XF_FLUSH, 8);
+  GXSetDither(GX_TRUE);
+  GXSetDstAlpha(GX_FALSE, 0);
+
+  SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT1, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT2, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT1, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
+  SetVtxAttrFmt(GX_VTXFMT2, GX_VA_NRM, GX_NRM_XYZ, GX_S16, 14);
+  SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  SetVtxAttrFmt(GX_VTXFMT1, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  SetVtxAttrFmt(GX_VTXFMT2, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT1, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+  SetVtxAttrFmt(GX_VTXFMT2, GX_VA_TEX0, GX_TEX_ST, GX_U16, 15);
+  for (int i = 1; i <= 7; ++i) {
+    const GXAttr attr = static_cast< GXAttr >(GX_VA_TEX0 + i);
+    SetVtxAttrFmt(GX_VTXFMT0, attr, GX_TEX_ST, GX_F32, 0);
+    SetVtxAttrFmt(GX_VTXFMT1, attr, GX_TEX_ST, GX_F32, 0);
+    SetVtxAttrFmt(GX_VTXFMT2, attr, GX_TEX_ST, GX_F32, 0);
+  }
 #else
   GXSetMisc(GX_MT_XF_FLUSH, 8);
   GXSetDither(GX_FALSE);
@@ -496,6 +603,14 @@ void CGX::FlushState() {
     GXSetNumChans(CGX_STATE.mNumChans);
     CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+  for (int i = 0; i < 4; ++i) {
+    if (CGX_STATE.mChanFlags & (1 << (i + 1))) {
+      FlushChanCtrl(static_cast< GXChannelID >(GX_COLOR0 + i), CGX_STATE.mChanCtrls[i]);
+      CGX_STATE.mPrevChanCtrls[i] = CGX_STATE.mChanCtrls[i];
+    }
+  }
+#else
   if (CGX_STATE.mChanFlags & 2) {
 #if RSTL_PRIME1
     __SetChanCtrlCompressed(GX_COLOR0, CGX_STATE.mChanCtrls[0]);
@@ -512,6 +627,7 @@ void CGX::FlushState() {
 #endif
     CGX_STATE.mPrevChanCtrls[1] = CGX_STATE.mChanCtrls[1];
   }
+#endif
   CGX_STATE.mChanFlags = 0;
 }
 
@@ -693,10 +809,21 @@ void CGX::CallDisplayList(const void* ptr, size_t size) {
   if (CGX_STATE.mChanFlags != 0) {
     FlushState();
   }
-  GXCallDisplayList(ptr, size);
+  GXCallDisplayList(const_cast< void* >(ptr), size);
 }
 
-void CGX::SetDstAlpha(bool enable, const uchar alpha) {
+#if RSTL_KYOTO_CGX_LATE_BEGIN_END
+void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
+  if (CGX_STATE.mChanFlags != 0) {
+    FlushState();
+  }
+  GXBegin(prim, fmt, numVtx);
+}
+
+void CGX::End() { GXEnd(); }
+#endif
+
+void CGX::SetDstAlpha(bool enable, RSTL_KYOTO_SCALAR_PARAM_CONST uchar alpha) {
   if (!enable) {
     if (CGX_STATE.mDstAlphaEnabled) {
       CGX_STATE.mDstAlphaEnabled = false;
@@ -734,7 +861,144 @@ uchar CGX::GetNumTexGens() { return CGX_STATE.mNumTexGens; }
 
 uchar CGX::GetNumTevStages() { return CGX_STATE.mNumTevStages; }
 
-#ifndef TARGET_PC
+#if RSTL_KYOTO_CGX_EXTENDED_STATE
+void CGX::GetTexCoordGen(GXTexCoordID coord, GXTexGenType* type, GXTexGenSrc* source,
+                         int* matrixIndex, GXBool* normalize, GXPTTexMtx* postMatrix) {
+  const STexState& state = CGX_STATE.mTexStates[coord];
+  const uint flags = state.mCoordGen;
+  if (type != nullptr) {
+    *type = static_cast< GXTexGenType >(ShiftRightAndMask(flags, 0xF, 0));
+  }
+  if (source != nullptr) {
+    *source = static_cast< GXTexGenSrc >(ShiftRightAndMask(flags, 0x1F, 4));
+  }
+  if (matrixIndex != nullptr) {
+    *matrixIndex = ShiftRightAndMask(flags, 0x1F, 9);
+  }
+  if (normalize != nullptr) {
+    *normalize = ShiftRightAndMask(flags, 1, 14);
+  }
+  if (postMatrix != nullptr) {
+    *postMatrix = static_cast< GXPTTexMtx >(ShiftRightAndMask(flags, 0x3F, 15) + GX_PTTEXMTX0);
+  }
+}
+
+void CGX::SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count, GXCompType type, uchar frac) {
+  int components = 0;
+  int componentSize = 0;
+  bool error = false;
+  if (attr == GX_VA_POS) {
+    switch (count) {
+    case GX_POS_XYZ:
+      components = 3;
+      break;
+    case GX_POS_XY:
+      components = 2;
+      break;
+    default:
+      error = true;
+      break;
+    }
+  } else if (attr == GX_VA_NRM) {
+    if (count == GX_NRM_XYZ) {
+      components = 3;
+    } else {
+      error = true;
+    }
+  } else if (attr == GX_VA_CLR0 || attr == GX_VA_CLR1) {
+    if (count == GX_CLR_RGB) {
+      components = 3;
+    } else if (count == GX_CLR_RGBA) {
+      components = 4;
+    } else {
+      error = true;
+    }
+  } else if (attr >= GX_VA_TEX0 && attr <= GX_VA_TEX7) {
+    if (count == GX_TEX_ST) {
+      components = 2;
+    } else if (count == GX_TEX_S) {
+      components = 1;
+    } else {
+      error = true;
+    }
+  } else {
+    error = true;
+  }
+
+  if (attr == GX_VA_POS || (attr >= GX_VA_TEX0 && attr <= GX_VA_TEX7)) {
+    switch (type) {
+    case GX_U8:
+    case GX_S8:
+      componentSize = 1;
+      break;
+    case GX_U16:
+    case GX_S16:
+      componentSize = 2;
+      break;
+    case GX_F32:
+      componentSize = 4;
+      break;
+    default:
+      error = true;
+      break;
+    }
+  } else if (attr == GX_VA_NRM) {
+    switch (type) {
+    case GX_S8:
+      componentSize = 1;
+      break;
+    case GX_S16:
+      componentSize = 2;
+      break;
+    case GX_F32:
+      componentSize = 4;
+      break;
+    default:
+      error = true;
+      break;
+    }
+  } else if (attr == GX_VA_CLR0 || attr == GX_VA_CLR1) {
+    switch (type) {
+    case GX_RGB565:
+    case GX_RGBA4:
+      components = 1;
+      componentSize = 2;
+      break;
+    case GX_RGB8:
+    case GX_RGBA6:
+      components = 1;
+      componentSize = 3;
+      break;
+    case GX_RGBX8:
+    case GX_RGBA8:
+      components = 1;
+      componentSize = 4;
+      break;
+    default:
+      error = true;
+      break;
+    }
+  }
+
+  RS_VERIFY_THROW_DIRECT(1349, !error, false, "Error setting vertex attributes");
+  if (!error) {
+    CGX_STATE.mVtxAttrSizes[fmt][attr] = components * componentSize;
+  }
+  GXSetVtxAttrFmt(fmt, attr, count, type, frac);
+}
+#endif
+
+#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
+void CGX::LoadPosMtxImm(const float mtx[][4], unsigned long id) {
+  GXLoadPosMtxImm(const_cast< MtxPtr >(mtx), id);
+}
+
+void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
+  GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
+}
+#endif
+
+#if !defined(TARGET_PC) && !RSTL_KYOTO_CGX_SDK_FOG_COLOR
 static inline void write_bp_cmd(u32 cmd) {
   GXWGFifo.u8 = GX_LOAD_BP_REG;
   GXWGFifo.u32 = cmd;
@@ -750,14 +1014,14 @@ void CGX::update_fog(uint flags) {
     return;
   }
   if ((flags & 0xE0) == 0x20) {
-#ifdef TARGET_PC
+#if defined(TARGET_PC) || RSTL_KYOTO_CGX_SDK_FOG_COLOR
     static const GXColor sGXClear = {0, 0, 0, 0};
     GXSetFogColor(sGXClear);
 #else
     write_bp_cmd(0xf2000000);
 #endif
   } else {
-#ifdef TARGET_PC
+#if defined(TARGET_PC) || RSTL_KYOTO_CGX_SDK_FOG_COLOR
     GXSetFogColor(CGX_STATE.mFogParams.mFogColor);
 #else
     write_bp_cmd((CGX_STATE.mFogParams.mFogColor.b) | (CGX_STATE.mFogParams.mFogColor.g << 8) |
