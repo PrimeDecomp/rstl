@@ -795,6 +795,15 @@
 // CGX::CompareGXColors reads both colors through non-const pointers (Corruption), which changes the
 // code of its callers.
 #define RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE (RSTL_CORRUPTION)
+// CGX::update_fog sets the fog color through GXSetFogColor (Corruption). Earlier builds write the
+// BP register directly.
+#define RSTL_KYOTO_CGX_SDK_FOG_COLOR (RSTL_CORRUPTION)
+// CGX::SetTexCoordGen records the matrix as GXTexMtx / 3 (Corruption). Earlier builds record its
+// index from GX_TEXMTX0.
+#define RSTL_KYOTO_CGX_ABSOLUTE_TEX_MTX (RSTL_CORRUPTION)
+// CGX::Begin and CGX::End follow CGX::CallDisplayList in CGX.cpp (Corruption). Earlier builds
+// have them after CGX::SetArray.
+#define RSTL_KYOTO_CGX_LATE_BEGIN_END (RSTL_CORRUPTION)
 // CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
 // lighting as a CVector4f (Corruption).
 #define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)

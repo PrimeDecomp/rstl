@@ -283,6 +283,13 @@ inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
   GXLoadNrmMtxIndx3x3(index, slot);
 }
 
+#if !RSTL_KYOTO_CGX_EXTENDED_STATE
+inline void CGX::SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count,
+                                GXCompType type, uchar frac) {
+  GXSetVtxAttrFmt(fmt, attr, count, type, frac);
+}
+#endif
+
 #if RSTL_KYOTO_CGX_HEADER_APPLY_FOG
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
@@ -297,6 +304,10 @@ inline void CGX::apply_fog() {
 #if !RSTL_KYOTO_CGX_OUTLINED_HELPERS
 inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
   GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
+}
+
+inline void CGX::LoadPosMtxImm(const float mtx[][4], unsigned long id) {
+  GXLoadPosMtxImm(const_cast< MtxPtr >(mtx), id);
 }
 
 inline void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
