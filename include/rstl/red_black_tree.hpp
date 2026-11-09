@@ -197,7 +197,6 @@ public:
     mHeader.set_root(root);
   }
 
-#if !RSTL_RBTREE_DESTROY_HELPER
   red_black_tree& operator=(const red_black_tree& other) {
     if (this == &other) {
       return *this;
@@ -211,6 +210,7 @@ public:
     return *this;
   }
 
+#if !RSTL_RBTREE_DESTROY_HELPER
   ~red_black_tree() { clear(); }
 #else
   ~red_black_tree() { destroy(); }
