@@ -20,6 +20,12 @@ class CColor;
 #define CGX_STATE (CGX::sGXState)
 #endif
 
+#if RSTL_KYOTO_CGX_GXBOOL_ZMODE
+typedef GXBool TZModeFlag;
+#else
+typedef bool TZModeFlag;
+#endif
+
 class CGX {
 public:
   struct STevState {
@@ -157,11 +163,7 @@ public:
                           GXChannelID color);
   static void SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlendFactor dstFac,
                            GXLogicOp op);
-#if RSTL_KYOTO_CGX_GXBOOL_ZMODE
-  static void SetZMode(GXBool compareEnable, GXCompare func, GXBool updateEnable);
-#else
-  static void SetZMode(bool compareEnable, GXCompare func, bool updateEnable);
-#endif
+  static void SetZMode(TZModeFlag compareEnable, GXCompare func, TZModeFlag updateEnable);
 
   static void SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                               uchar ref1);
@@ -217,13 +219,7 @@ public:
   static inline void LoadTexMtxImm(const float mtx[][4], unsigned long id, GXTexMtxType type) {
     GXLoadTexMtxImm(const_cast< MtxPtr >(mtx), id, type);
   }
-#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
   static void LoadNrmMtxImm(const float mtx[][4], unsigned long id);
-#else
-  static inline void LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
-    GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
-  }
-#endif
   static void LoadPosMtxImm(const float mtx[][4], unsigned long id); // Guessed name
   // Guessed name
   static void SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count, GXCompType type, uchar frac);
@@ -264,13 +260,7 @@ public:
 
   static inline void SetAlphaUpdate(const bool update) { GXSetAlphaUpdate(update); }
 
-#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
   static void SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel);
-#else
-  static inline void SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
-    GXSetTevSwapMode(stage, rasSel, texSel);
-  }
-#endif
   // Guessed name
   static void SetTevSwapModeTable(GXTevSwapSel table, GXTevColorChan red, GXTevColorChan green,
                                   GXTevColorChan blue, GXTevColorChan alpha);
@@ -303,6 +293,16 @@ private:
 inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
   GXLoadNrmMtxIndx3x3(index, slot);
 }
+
+#if !RSTL_KYOTO_CGX_OUTLINED_HELPERS
+inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
+  GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
+}
+
+inline void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
+  GXSetTevSwapMode(stage, rasSel, texSel);
+}
+#endif
 
 #if RSTL_PRIME1
 inline CGX::STevState::STevState()

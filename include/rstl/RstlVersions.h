@@ -784,8 +784,8 @@
 // CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
 // tables and the vertex attribute sizes of each format (Corruption).
 #define RSTL_KYOTO_CGX_EXTENDED_STATE (RSTL_CORRUPTION)
-// CGX::LoadNrmMtxImm and CGX::SetTevSwapMode are out-of-line functions (Corruption). Earlier builds inline
-// the GX call.
+// CGX::LoadNrmMtxImm and CGX::SetTevSwapMode are defined out of line by the game (Corruption, whose
+// SetTevSwapMode also caches the swap state). Earlier builds inline the plain GX call.
 #define RSTL_KYOTO_CGX_OUTLINED_HELPERS (RSTL_CORRUPTION)
 // CGX::SetZMode takes GXBool flags (Corruption). Earlier builds take bool.
 #define RSTL_KYOTO_CGX_GXBOOL_ZMODE (RSTL_CORRUPTION)
