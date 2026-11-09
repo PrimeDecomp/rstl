@@ -10,5 +10,6 @@ void* GetLockedCacheAllocationBase();
 void* AllocateLockedCache4(uint size);
 void* AllocateLockedCache32(uint size);
 void FreeLockedCache(void* ptr);
+void rs_lc_free(void* ptr);
 
 #endif // _LOCKEDCACHE
