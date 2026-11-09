@@ -9,7 +9,7 @@
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/math.hpp"
-#if RSTL_KYOTO_DVD_HOST_READS
+#ifdef ENABLE_BBA_TOOLS
 #include "Corruption/Kyoto/Network/CBBASupport.hpp"
 #endif
 
@@ -150,7 +150,7 @@ void CDvdFile::PingARAMTransfer() {
 #if !RSTL_PRIME1
     aramFile->mGotDvdInterrupt = false;
 #endif
-#if RSTL_KYOTO_DVD_HOST_READS
+#ifdef ENABLE_BBA_TOOLS
     if (sPollingMode) {
       int handle;
       if (CBBASupport::BBAOpen(
@@ -407,7 +407,7 @@ CDvdRequest* CDvdFile::AsyncSeekRead(void* dest, uint len, ESeekOrigin origin, i
     request = rs_new_line(574) CARAMDvdRequest(CARAMManager::DMAToMRAM(
         mARAMBuffer + mOffset, dest, roundedLen, CARAMManager::kDMAPrio_One));
   }
-#if RSTL_KYOTO_DVD_HOST_READS
+#ifdef ENABLE_BBA_TOOLS
   else if (sPollingMode) {
     int handle;
     if (CBBASupport::BBAOpen(
