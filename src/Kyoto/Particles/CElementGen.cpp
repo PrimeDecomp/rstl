@@ -3460,7 +3460,7 @@ void CElementGen::RenderParticlesIndirectTexture() {
         CVector3f(sinPlusCos + vpX, vpY, cosMinusSin + vpZ),
         CVector3f(sinMinusCos + vpX, vpY, sinPlusCos + vpZ),
         CVector3f(vpX - sinPlusCos, vpY, vpZ - cosMinusSin),
-        CVector3f(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ), kTF_RGB565);
+        CVector3f(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ), kTexelFormat_RGB565);
     if (!clipRect.IsValid()) {
       continue;
     }
@@ -3478,7 +3478,8 @@ void CElementGen::RenderParticlesIndirectTexture() {
 #if RSTL_VERSION >= RSTL_R3IJ
     CGraphics::CClippedScreenRect clipRect = CGraphics::ClipScreenRectFromMS(
         CVector3f(viewPoint.GetX() - size, viewPoint.GetY(), viewPoint.GetZ() - size),
-        CVector3f(size + viewPoint.GetX(), viewPoint.GetY(), size + viewPoint.GetZ()), kTF_RGB565);
+        CVector3f(size + viewPoint.GetX(), viewPoint.GetY(), size + viewPoint.GetZ()),
+        kTexelFormat_RGB565);
 
     if (clipRect.IsValid()) {
       void* const dest = CGraphics::GetDolphinSpareBuffer();
@@ -3531,7 +3532,8 @@ void CElementGen::RenderParticlesIndirectTexture() {
         CGX::End();
 #else
     CGraphics::CClippedScreenRect clipRect = CGraphics::ClipScreenRectFromMS(
-        CVector3f(vpX - size, vpY, vpZ - size), CVector3f(size + vpX, vpY, size + vpZ), kTF_RGB565);
+        CVector3f(vpX - size, vpY, vpZ - size), CVector3f(size + vpX, vpY, size + vpZ),
+        kTexelFormat_RGB565);
     const int x = clipRect.GetX();
     const int y = clipRect.GetY();
     const int width = clipRect.GetWidth();
@@ -4245,7 +4247,7 @@ void CElementGen::RenderIndirectModelParticle(SModelRenderState& state, const CC
 
   CGraphics::CClippedScreenQuad clip = CGraphics::ClipScreenQuadFromMS(
       CVector3f(0.5f, 0.f, 0.5f), CVector3f(-0.5f, 0.f, 0.5f), CVector3f(-0.5f, 0.f, -0.5f),
-      CVector3f(0.5f, 0.f, -0.5f), kTF_RGB565);
+      CVector3f(0.5f, 0.f, -0.5f), kTexelFormat_RGB565);
   if (!clip.IsValid()) {
     return;
   }

@@ -82,7 +82,7 @@ CTexture::CTexture(ETexelFormat fmt, const short w, const short h, int mips)
 }
 
 CTexture::CTexture(CInputStream& in, EAutoMipmap automip, EBlackKey blackKey)
-: mTexelFormat(kTF_Invalid)
+: mTexelFormat(kTexelFormat_Invalid)
 , mWidth(0)
 , mHeight(0)
 , mNumMips(0)
@@ -511,20 +511,20 @@ bool CTexture::IsARAMTransferInProgress() const {
 
 int CTexture::TexelFormatBitsPerPixel(ETexelFormat fmt) {
   switch (fmt) {
-  case kTF_I4:
-  case kTF_C4:
-  case kTF_CMPR:
+  case kTexelFormat_I4:
+  case kTexelFormat_C4:
+  case kTexelFormat_CMPR:
     return 4;
-  case kTF_I8:
-  case kTF_IA4:
-  case kTF_C8:
+  case kTexelFormat_I8:
+  case kTexelFormat_IA4:
+  case kTexelFormat_CI8:
     return 8;
-  case kTF_IA8:
-  case kTF_C14X2:
-  case kTF_RGB565:
-  case kTF_RGB5A3:
+  case kTexelFormat_IA8:
+  case kTexelFormat_C14X2:
+  case kTexelFormat_RGB565:
+  case kTexelFormat_RGB5A3:
     return 16;
-  case kTF_RGBA8:
+  case kTexelFormat_RGBA8:
     return 32;
   default:
     return 0;
@@ -533,37 +533,37 @@ int CTexture::TexelFormatBitsPerPixel(ETexelFormat fmt) {
 
 void CTexture::InitBitmapBuffers(ETexelFormat fmt, short width, short height, int mips) {
   switch (fmt) {
-  case kTF_C4:
+  case kTexelFormat_C4:
     mNativeCIFormat = GX_TF_C4;
     break;
-  case kTF_C8:
+  case kTexelFormat_CI8:
     mNativeCIFormat = GX_TF_C8;
     break;
-  case kTF_C14X2:
+  case kTexelFormat_C14X2:
     mNativeCIFormat = GX_TF_C14X2;
     break;
-  case kTF_I4:
+  case kTexelFormat_I4:
     mNativeFormat = GX_TF_I4;
     break;
-  case kTF_I8:
+  case kTexelFormat_I8:
     mNativeFormat = GX_TF_I8;
     break;
-  case kTF_IA4:
+  case kTexelFormat_IA4:
     mNativeFormat = GX_TF_IA4;
     break;
-  case kTF_IA8:
+  case kTexelFormat_IA8:
     mNativeFormat = GX_TF_IA8;
     break;
-  case kTF_RGB565:
+  case kTexelFormat_RGB565:
     mNativeFormat = GX_TF_RGB565;
     break;
-  case kTF_RGB5A3:
+  case kTexelFormat_RGB5A3:
     mNativeFormat = GX_TF_RGB5A3;
     break;
-  case kTF_RGBA8:
+  case kTexelFormat_RGBA8:
     mNativeFormat = GX_TF_RGBA8;
     break;
-  case kTF_CMPR:
+  case kTexelFormat_CMPR:
     mNativeFormat = GX_TF_CMPR;
     break;
   default:
@@ -655,14 +655,14 @@ void CTexture::MangleMipmap(int mip) {
   }
 
   switch (GetTexelFormat()) {
-  case kTF_RGB565: {
+  case kTexelFormat_RGB565: {
     ushort* ptr = static_cast< ushort* >(mARAMToken.GetMRAMSafe());
     for (int i = 0; i < width * height; ++i) {
       ptr[i + offset] = rgb565Color;
     }
     break;
   }
-  case kTF_CMPR: {
+  case kTexelFormat_CMPR: {
     ushort* ptr = static_cast< ushort* >(mARAMToken.GetMRAMSafe()) + offset / 4;
     for (int i = 0; i < width * height / 16; ++i, ptr += 4) {
       ptr[0] = rgb565Color;
@@ -672,7 +672,7 @@ void CTexture::MangleMipmap(int mip) {
     }
     break;
   }
-  case kTF_RGB5A3: {
+  case kTexelFormat_RGB5A3: {
     ushort* ptr = static_cast< ushort* >(mARAMToken.GetMRAMSafe());
     for (int i = 0; i < width * height; ++i) {
       ushort& val = ptr[i + offset];

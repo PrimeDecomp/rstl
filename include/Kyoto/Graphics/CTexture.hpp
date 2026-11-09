@@ -31,19 +31,6 @@ enum ETexelFormat {
   kTexelFormat_RGB5A3 = 8,
   kTexelFormat_RGBA8 = 9,
   kTexelFormat_CMPR = 10,
-
-  kTF_Invalid = kTexelFormat_Invalid,
-  kTF_I4 = kTexelFormat_I4,
-  kTF_I8 = kTexelFormat_I8,
-  kTF_IA4 = kTexelFormat_IA4,
-  kTF_IA8 = kTexelFormat_IA8,
-  kTF_C4 = kTexelFormat_C4,
-  kTF_C8 = kTexelFormat_CI8,
-  kTF_C14X2 = kTexelFormat_C14X2,
-  kTF_RGB565 = kTexelFormat_RGB565,
-  kTF_RGB5A3 = kTexelFormat_RGB5A3,
-  kTF_RGBA8 = kTexelFormat_RGBA8,
-  kTF_CMPR = kTexelFormat_CMPR,
 };
 
 class CTexture {

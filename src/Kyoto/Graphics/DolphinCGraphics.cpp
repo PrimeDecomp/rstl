@@ -2313,15 +2313,15 @@ CGraphics::ClipScreenRectFromVS(const CVector3f& p1, const CVector3f& p2, ETexel
 
   int texAlign = 4;
   switch (fmt) {
-  case kTF_I8:
+  case kTexelFormat_I8:
     texAlign = 8;
     break;
-  case kTF_IA8:
-  case kTF_RGB565:
-  case kTF_RGB5A3:
+  case kTexelFormat_IA8:
+  case kTexelFormat_RGB565:
+  case kTexelFormat_RGB5A3:
     texAlign = 4;
     break;
-  case kTF_RGBA8:
+  case kTexelFormat_RGBA8:
     texAlign = 2;
     break;
   }
@@ -2398,15 +2398,15 @@ CGraphics::ClipScreenQuadFromVS(const CVector3f& p1, const CVector3f& p2, const 
 
   int texAlign = 4;
   switch (fmt) {
-  case kTF_I8:
+  case kTexelFormat_I8:
     texAlign = 8;
     break;
-  case kTF_IA8:
-  case kTF_RGB565:
-  case kTF_RGB5A3:
+  case kTexelFormat_IA8:
+  case kTexelFormat_RGB565:
+  case kTexelFormat_RGB5A3:
     texAlign = 4;
     break;
-  case kTF_RGBA8:
+  case kTexelFormat_RGBA8:
     texAlign = 2;
     break;
   }

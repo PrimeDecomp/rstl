@@ -798,18 +798,15 @@
 // CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
 // lighting as a CVector4f (Corruption).
 #define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)
-// CColor::WithAlphaOf multiplies the byte scale by the alpha (Echoes, including Echoes Trilogy). Prime and
-// Corruption multiply the alpha by the byte scale.
-#define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (!RSTL_PRIME1 && !RSTL_CORRUPTION)
-// CGraphics::ConfigureVideoMode takes its progressive flag as a uchar (Echoes, including Echoes Trilogy).
-// Prime and Corruption take a bool.
-#define RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CColor::WithAlphaOf multiplies the byte scale by the alpha (Trilogy). Earlier builds multiply the
+// alpha by the byte scale.
+#define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (RSTL_VERSION >= RSTL_R32J)
+// CGraphics::ConfigureVideoMode takes its progressive flag as a uchar (from Prime PAL on). Corruption takes a
+// bool and passes the flag through unchanged.
+#define RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG (RSTL_VERSION >= RSTL_GM8P_00 && !RSTL_CORRUPTION)
 // CGraphics::GetLightMask returns the active light mask as a uchar (Corruption). Earlier builds widen
 // it to uint.
 #define RSTL_KYOTO_UCHAR_LIGHT_MASK (RSTL_CORRUPTION)
-// CMath::Clamp takes its by-value arguments as const (Echoes, including Echoes Trilogy). Corruption's are
-// not const. Prime takes references.
-#define RSTL_KYOTO_CONST_CLAMP_ARGS (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
 // CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)

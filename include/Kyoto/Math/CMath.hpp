@@ -58,13 +58,9 @@ public:
 #if RSTL_PRIME1
   static const T& Clamp(const T& min, const T& val, const T& max);
 #else
-#if RSTL_KYOTO_CONST_CLAMP_ARGS
   static T Clamp(const T min, const T val, const T max) {
     return min > val ? min : max < val ? max : val;
   }
-#else
-  static T Clamp(T min, T val, T max) { return min > val ? min : max < val ? max : val; }
-#endif
 #if RSTL_VERSION >= RSTL_R32J
   static float Clamp(const float min, const float val, const float max) {
     return FastClamp(min, val, max);
