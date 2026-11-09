@@ -179,6 +179,9 @@ public:
   ~CMayaSpline() {}
 
   static CMayaSpline CreateFor(float timeA, float amplitudeA, float timeB, float amplitudeB);
+  static CMayaSpline BuildSpline(const CMayaSplineKnot* knots, uint count, int clampMode,
+                                 int preInfinity, int postInfinity, float minAmplitude,
+                                 float maxAmplitude);
 
   size_t GetKnotCount() const;
   const rstl::vector< CMayaSplineKnot >& GetKnots() const;

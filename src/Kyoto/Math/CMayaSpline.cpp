@@ -991,6 +991,17 @@ CMayaSpline CMayaSpline::CreateFor(float timeA, float amplitudeA, float timeB, f
   return CMayaSpline(knots, 0, 0, 0, -FLT_MAX, FLT_MAX);
 }
 
+CMayaSpline CMayaSpline::BuildSpline(const CMayaSplineKnot* knots, uint count, int clampMode,
+                                    int preInfinity, int postInfinity, float minAmplitude,
+                                    float maxAmplitude) {
+  rstl::vector< CMayaSplineKnot > knotVector;
+  knotVector.reserve(count);
+  for (uint i = 0; i < count; ++i) {
+    knotVector.push_back_unsafe(knots[i]);
+  }
+  return CMayaSpline(knotVector, clampMode, preInfinity, postInfinity, minAmplitude, maxAmplitude);
+}
+
 const rstl::vector< CMayaSplineKnot >& CMayaSpline::GetKnots() const { return mKnots; }
 
 float CMayaSpline::GetMaxTime() const {
