@@ -89,6 +89,15 @@ void CBufferedDvdRequest::WaitUntilComplete() {
   }
 }
 
+#if RSTL_KYOTO_DVD_REQUEST_READY
+bool CBufferedDvdRequest::IsReady() {
+  if (mRequest.get() == nullptr) {
+    return true;
+  }
+  return mRequest->IsReady();
+}
+#endif
+
 bool CBufferedDvdRequest::IsComplete() {
   if (mRequest.get() == nullptr) {
     return true;

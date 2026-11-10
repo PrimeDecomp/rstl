@@ -598,8 +598,12 @@
 
 // Wii display-list triangle loops retain the packet's 16-bit vertex count.
 #define RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT (RSTL_VERSION >= RSTL_RM3E)
-// Wii Prime and Echoes add a readiness slot and identify disc requests as media type 2.
-#define RSTL_KYOTO_DVD_REQUEST_WII_PORT (RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_KYOTO_DVD_REQUEST_READY (RSTL_VERSION >= RSTL_RM3E)
+#if RSTL_VERSION >= RSTL_R3IJ && (RSTL_PRIME1 || defined(PRIME2))
+#define RSTL_KYOTO_DVD_REQUEST_MEDIA_TYPE_2 1
+#else
+#define RSTL_KYOTO_DVD_REQUEST_MEDIA_TYPE_2 0
+#endif
 // The prototype and later contexts have a virtual destructor.
 #define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
 // Wii Echoes retains the system aspect ratio as a separate word after its language.
