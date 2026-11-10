@@ -46,6 +46,7 @@ public:
 #else
   CVector3f& Normalize();
 #endif
+  float NormalizeWithMagnitude();
   float Magnitude() const;
   CVector3f AsNormalized() const;
   bool IsNotInf() const;

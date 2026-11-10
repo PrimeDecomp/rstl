@@ -151,7 +151,7 @@ public:
   node* create_node(node* prev, node* next, insert_param val) {
     node* n;
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.allocate(n, 1);
+    GetAllocator().allocate(n, 1);
 #if RSTL_LIST_PRECONDITIONS
     RSTL_PRECONDITION(n != nullptr);
 #endif
@@ -359,6 +359,14 @@ public:
   };
 
 private:
+  Alloc& GetAllocator() {
+#if RSTL_ALLOCATOR_BASE_CLASS
+    return *this;
+#else
+    return mAllocator;
+#endif
+  }
+
 #if !RSTL_ALLOCATOR_BASE_CLASS
   Alloc mAllocator;
 #endif
@@ -434,10 +442,10 @@ list< T, Alloc >::~list() {
     cur = next;
 #if RSTL_LIST_DIRECT_DTOR_CALL
     it->get_value()->~T();
-    mAllocator.deallocate(it);
+    GetAllocator().deallocate(it);
 #elif RSTL_ALLOCATOR_INSTANCE
     rstl::destroy(it->get_value());
-    mAllocator.deallocate(it);
+    GetAllocator().deallocate(it);
 #else
     it->get_value()->~T();
     Alloc::deallocate(it);
@@ -459,7 +467,7 @@ typename list< T, Alloc >::node* list< T, Alloc >::do_erase(node* node) {
   node->get_next()->set_prev(node->get_prev());
 #if RSTL_ALLOCATOR_INSTANCE
   rstl::destroy(node->get_value());
-  mAllocator.deallocate(node);
+  GetAllocator().deallocate(node);
 #else
   node->get_value()->~T();
   Alloc::deallocate(node);

@@ -75,6 +75,15 @@ CVector3f& CVector3f::Normalize() {
 }
 #endif
 
+float CVector3f::NormalizeWithMagnitude() {
+  const float magSquared = MagSquared();
+  const float invMag = CMath::InvSqrtF(magSquared);
+  mX *= invMag;
+  mY *= invMag;
+  mZ *= invMag;
+  return magSquared * invMag;
+}
+
 float CVector3f::Magnitude() const {
   float mag = mX * mX;
   mag += mY * mY;

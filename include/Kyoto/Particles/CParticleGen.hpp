@@ -25,7 +25,12 @@ class CWarp;
 class CParticleGen {
 public:
 #if !RSTL_PRIME1
-  CParticleGen() : mDrawFlags(0) {}
+  CParticleGen()
+  : mDrawFlags(0)
+#if RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD
+  , x1c_(2)
+#endif
+  {}
 #endif
 
   virtual ~CParticleGen() = 0;
@@ -82,6 +87,9 @@ protected:
 #if !RSTL_PRIME1
 private:
   uint mDrawFlags;
+#if RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD
+  uint x1c_;
+#endif
 #endif
 
 };

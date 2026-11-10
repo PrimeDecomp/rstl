@@ -2,8 +2,8 @@
 #include "Kyoto/Animation/CCharacterSet.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
-CCharacterSet::CCharacterSet(CInputStream& in) : mTableCount(in.Get< ushort >()) {
-  int count = in.Get< int >();
+CCharacterSet::CCharacterSet(CInputStream& in) : mTableCount(in.Get(TGetType(mTableCount))) {
+  int count = in.Get(TGetType(count));
   mCharacters.reserve(count);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

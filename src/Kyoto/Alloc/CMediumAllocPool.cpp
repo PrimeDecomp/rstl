@@ -1,20 +1,79 @@
 #include "Kyoto/Alloc/CMediumAllocPool.hpp"
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+#include "Kyoto/Basics/CBasics.hpp"
+#endif
 
 CMediumAllocPool* CMediumAllocPool::gMediumAllocPtr = nullptr;
 
-CMediumAllocPool::CMediumAllocPool() : mLastNodePrev(mList.begin()) { gMediumAllocPtr = this; }
+CMediumAllocPool::CMediumAllocPool()
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+: mLastRequestBlocks(0)
+, mLastPuddle(kHeapCount, mList.end())
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+, mFreeBlocks(kHeapCount, 0u)
+#endif
+#else
+: mLastNodePrev(mList.begin())
+#endif
+{
+  gMediumAllocPtr = this;
+}
 
 void CMediumAllocPool::ClearPuddles() {
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   mLastNodePrev = mList.end();
+#endif
   for (rstl::list< SMediumAllocPuddle >::iterator it = mList.begin(); it != mList.end(); ++it) {
     // The debug build checks each puddle here before releasing the pool.
   }
   mList.clear();
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  mLastPuddle.clear();
+  mLastPuddle.resize(kHeapCount, mList.end());
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  mFreeBlocks.clear();
+  mFreeBlocks.resize(kHeapCount, 0u);
+#endif
+#endif
   gMediumAllocPtr = nullptr;
 }
 
 bool CMediumAllocPool::HasPuddles() const { return mList.size() != 0; }
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void* CMediumAllocPool::Alloc(uint size, int heapIndex) {
+  const uint blockCount = (size + 31) / 32;
+  void* result = mLastPuddle[heapIndex]->FindFree(blockCount);
+  if (result == nullptr) {
+    for (Puddles::iterator it = mList.begin(); it != mList.end(); ++it) {
+      if (it != mLastPuddle[heapIndex] && it->GetHeapIndex() == heapIndex) {
+        result = it->FindFree(blockCount);
+        if (result != nullptr) {
+          mLastPuddle[heapIndex] = it;
+          break;
+        }
+      }
+    }
+  }
+  mLastRequestBlocks = blockCount;
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  if (result != nullptr) {
+    mFreeBlocks[heapIndex] -= blockCount;
+  }
+#endif
+  return result;
+}
+
+CMediumAllocPool::Puddles::iterator
+CMediumAllocPool::FindNextPuddle(int heapIndex, const Puddles::iterator& current) {
+  for (Puddles::iterator it = mList.begin(); it != mList.end(); ++it) {
+    if (it->GetHeapIndex() == heapIndex && it != current) {
+      return it;
+    }
+  }
+  return mList.begin();
+}
+#else
 void* CMediumAllocPool::Alloc(uint len) {
   SMediumAllocPuddle* puddle = &*mLastNodePrev;
   void* ret;
@@ -41,7 +100,35 @@ void* CMediumAllocPool::Alloc(uint len) {
 
   return ret;
 }
+#endif
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+int CMediumAllocPool::Free(const void* ptr) {
+  Puddles::node* node = mList.begin().get_node();
+  Puddles::node* end = mList.end().get_node();
+  for (; node != end; node = node->get_next()) {
+    SMediumAllocPuddle* puddle = node->get_value();
+    if (puddle->Contains(ptr)) {
+      const uint blocks = puddle->Free(ptr);
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+      mFreeBlocks[puddle->GetHeapIndex()] += blocks;
+#endif
+      if (puddle->GetNumAllocs() == 0 && puddle->CanErase()) {
+        const int heapIndex = puddle->GetHeapIndex();
+        if (mLastPuddle[heapIndex] == node) {
+          mLastPuddle[heapIndex] = FindNextPuddle(heapIndex, Puddles::iterator(node));
+        }
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+        mFreeBlocks[heapIndex] -= puddle->GetNumEntries();
+#endif
+        mList.erase(node);
+      }
+      return blocks;
+    }
+  }
+  return 0;
+}
+#else
 int CMediumAllocPool::Free(const void* ptr) {
   rstl::list< SMediumAllocPuddle >::node* node = mList.begin().get_node();
   for (; node != mList.end().get_node(); node = node->get_next()) {
@@ -61,6 +148,7 @@ int CMediumAllocPool::Free(const void* ptr) {
   }
   return 1;
 }
+#endif
 
 uint CMediumAllocPool::GetNumAllocs() {
   uint ret = 0;
@@ -88,12 +176,36 @@ uint CMediumAllocPool::GetNumBlocksAvailable() {
   return ret;
 }
 
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+uint CMediumAllocPool::GetAvailableBytes(int heapIndex) const {
+  return GetAllocMemoryRequired(mFreeBlocks[heapIndex]);
+}
+#endif
+
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void CMediumAllocPool::AddPuddle(uint numBlocks, void* data, bool canErase, int heapIndex) {
+  mList.push_back(SMediumAllocPuddle(numBlocks, data, canErase, heapIndex));
+  mLastPuddle[heapIndex] = mList.end();
+  --mLastPuddle[heapIndex];
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  mFreeBlocks[heapIndex] += numBlocks;
+#endif
+}
+#else
 void CMediumAllocPool::AddPuddle(uint len, void* data, const bool unk) {
   mList.push_back(SMediumAllocPuddle(len, data, unk));
   mLastNodePrev = mList.end();
   --mLastNodePrev;
 }
+#endif
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+SMediumAllocPuddle::SMediumAllocPuddle(uint numBlocks, void* data, bool canErase, int heapIndex)
+: mMainData(static_cast<uchar*>(data))
+, mBookKeeping(static_cast<uchar*>(data) + CMediumAllocPool::GetAllocMemoryRequired(numBlocks), numBlocks)
+, mCanErase(canErase)
+, mIsMem2(heapIndex == 1) {}
+#else
 SMediumAllocPuddle::SMediumAllocPuddle(const uint numBlocks, void* data, const bool canErase)
 : mMainData(static_cast< uchar* >(data))
 , mBookKeeping(static_cast< uchar* >(data) + numBlocks * 32)
@@ -105,9 +217,145 @@ SMediumAllocPuddle::SMediumAllocPuddle(const uint numBlocks, void* data, const b
 , mCanErase(canErase) {
   SMediumAllocPuddle::InitBookKeeping(mBookKeeping, numBlocks);
 }
+#endif
 
 SMediumAllocPuddle::~SMediumAllocPuddle() {}
 
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+void* SMediumAllocPuddle::FindFree(uint blockCount) {
+  const int index = mBookKeeping.Alloc(blockCount != 0 ? blockCount : 1);
+  if (index == -1) {
+    return nullptr;
+  }
+  return mMainData.get() + index * 32;
+}
+
+uint SMediumAllocPuddle::Free(const void* ptr) {
+  return mBookKeeping.Free((reinterpret_cast<uintptr_t>(ptr) -
+                            reinterpret_cast<uintptr_t>(mMainData.get())) / 32);
+}
+
+CMediumAllocBookKeeping::CMediumAllocBookKeeping(void* data, uint numBlocks)
+: mTags(static_cast<uchar*>(data) + 4)
+, mNumEntries(numBlocks)
+, mNumBlocks(numBlocks)
+, mNumAllocs(0)
+, mSearchIndex(0) {
+  CBasics::ZeroMemory(mTags, numBlocks);
+  WriteTags(0, mNumEntries, 0);
+}
+
+uint CMediumAllocPool::GetBookKeepingMemoryRequired(uint numBlocks) {
+  return (numBlocks + 8 + 31) & ~31u;
+}
+
+namespace {
+enum { kAllocated = 0x80, kExtended = 0x7f };
+const uint kSizeMasks[] = {0, ~0u};
+
+// Extended lengths occupy four bytes adjacent to a one-byte tag.
+#pragma pack(push, 1)
+struct STagLength {
+  uint value;
+};
+#pragma pack(pop)
+
+inline uint ReadSize(uint tag, const uchar* extended) {
+  const uint size = tag & kExtended;
+  const bool hasExtendedSize = size == kExtended;
+  const uint word = reinterpret_cast<const STagLength*>(extended)->value;
+  return (size & kSizeMasks[!hasExtendedSize]) | (kSizeMasks[hasExtendedSize] & word);
+}
+}
+
+void CMediumAllocBookKeeping::WriteTags(uint index, uint count, uint flags) {
+  if (count >= kExtended) {
+    const uint tag = flags | kExtended;
+    const uint end = index + count;
+    mTags[index] = tag;
+    reinterpret_cast<STagLength*>(mTags + index + 1)->value = count;
+    mTags[end - 1] = tag;
+    reinterpret_cast<STagLength*>(mTags + end - 5)->value = count;
+  } else {
+    const uint tag = flags | static_cast<uchar>(count);
+    mTags[index] = tag;
+    mTags[index + count - 1] = tag;
+  }
+}
+
+void CMediumAllocBookKeeping::CountFreeBefore(uint& total, uint& runs, uint index) const {
+  uint span = 0;
+  uint count = 0;
+  while (index != 0) {
+    const uint tag = mTags[index - 1];
+    const uint size = ReadSize(tag, mTags + index - 5);
+    if (tag & kAllocated) {
+      break;
+    }
+    span += size;
+    index -= size;
+    ++count;
+  }
+  runs = count;
+  total = span;
+}
+
+void CMediumAllocBookKeeping::CountFreeAfter(uint& total, uint& runs, uint index) const {
+  uint span = 0;
+  uint count = 0;
+  while (index < mNumEntries) {
+    const uint tag = mTags[index];
+    const uint size = ReadSize(tag, mTags + index + 1);
+    if (tag & kAllocated) {
+      break;
+    }
+    span += size;
+    index += size;
+    ++count;
+  }
+  runs = count;
+  total = span;
+}
+
+int CMediumAllocBookKeeping::Alloc(uint count) {
+  if (count > mNumBlocks) {
+    return -1;
+  }
+  const uint start = mSearchIndex;
+  uint index = start;
+  do {
+    const uint tag = mTags[index];
+    const uint size = ReadSize(tag, mTags + index + 1);
+    if (!(tag & kAllocated) && size >= count) {
+      ++mNumAllocs;
+      WriteTags(index, count, kAllocated);
+      if (size != count) {
+        WriteTags(index + count, size - count, 0);
+      }
+      mNumBlocks -= count;
+      mSearchIndex = (index + count) % mNumEntries;
+      return index;
+    }
+    index = (index + size) % mNumEntries;
+    if (index >= mNumEntries) {
+      index = 0;
+    }
+  } while (index != start);
+  return -1;
+}
+
+uint CMediumAllocBookKeeping::Free(uint index) {
+  const uint count = ReadSize(mTags[index], mTags + index + 1);
+  uint previous, previousRuns, next, nextRuns;
+  CountFreeBefore(previous, previousRuns, index);
+  CountFreeAfter(next, nextRuns, index + count);
+  WriteTags(index - previous, previous + count + next, 0);
+  mSearchIndex = index - previous;
+  mNumBlocks += count;
+  --mNumAllocs;
+  return count;
+}
+#else
 void* SMediumAllocPuddle::FindFree(uint blockCount) {
   void* bookKeepingptr;
   uchar* entryPtr;
@@ -247,3 +495,4 @@ void SMediumAllocPuddle::InitBookKeeping(uchar* bookKeepingPtr, ushort blockCoun
     bookKeepingPtr[blockCount - 1] = (blockCount >> 8) | 0x80;
   }
 }
+#endif
