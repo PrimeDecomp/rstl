@@ -3,6 +3,7 @@
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "rstl/RstlVersions.h"
 
+#include "dolphin/base/PPCArch.h"
 #include "dolphin/dvd.h"
 #include "dolphin/os.h"
 #if RSTL_KYOTO_REVOLUTION_SDK
@@ -82,6 +83,60 @@ void CBasics::CopyMemory(void* dst, const void* src, uint size) {
       memcpy(alignedDst, alignedSrc, tail);
     }
   }
+}
+
+void CBasics::CopyMemoryAndFlush(void* dst, const void* src, uint size) {
+  uchar* out = static_cast< uchar* >(dst);
+  const uchar* in = static_cast< const uchar* >(src);
+  const uint outAddr = reinterpret_cast< uint >(out);
+  const uint inAddr = reinterpret_cast< uint >(in);
+  if (size > 96 && (inAddr < outAddr || inAddr - outAddr > 96)) {
+    const uint unaligned = outAddr - (outAddr & ~31);
+    if (unaligned != 0) {
+      const uint head = 32 - unaligned;
+      uint i = 0;
+      for (uint words = (head + 3) / 4; words != 0; --words, i += 4) {
+        *reinterpret_cast< uint* >(out + i) = *reinterpret_cast< const uint* >(in + i);
+      }
+      __dcbf(out, 0);
+      out += head;
+      in += head;
+      size -= head;
+    }
+
+    const uint blockBytes = size & ~31;
+    if ((reinterpret_cast< uint >(in) & 3) != 0) {
+      for (uint i = 0; i < blockBytes; i += 32) {
+        __dcbz(out, 0);
+        for (int j = 0; j < 8; ++j) {
+          reinterpret_cast< uint* >(out)[j] = reinterpret_cast< const uint* >(in)[j];
+        }
+        __dcbf(out, 0);
+        in += 32;
+        out += 32;
+      }
+    } else {
+      for (uint i = 0; i < blockBytes; i += 32) {
+        __dcbz(out, 0);
+        for (int j = 0; j < 4; ++j) {
+          reinterpret_cast< double* >(out)[j] = reinterpret_cast< const double* >(in)[j];
+        }
+        __dcbf(out, 0);
+        in += 32;
+        out += 32;
+      }
+    }
+    size -= blockBytes;
+  }
+
+  if (size != 0) {
+    uchar* start = out;
+    for (uint remaining = size; remaining != 0; --remaining) {
+      *out++ = *in++;
+    }
+    DCFlushRange(start, size);
+  }
+  PPCSync();
 }
 
 void CBasics::ZeroMemory(void* dst, uint size) {

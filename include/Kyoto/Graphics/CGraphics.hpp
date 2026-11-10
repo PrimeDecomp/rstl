@@ -579,6 +579,7 @@ public:
   static void SetProgressiveMode(bool b);
 
   static bool GetProgressiveMode();
+  static void BlankScreen(); // Guessed name.
   static bool CanSetProgressiveMode();
   static bool GetProgressiveDefault();
 

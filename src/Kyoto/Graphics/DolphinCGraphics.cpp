@@ -2879,6 +2879,13 @@ void CGraphics::SetProgressiveMode(bool progressive) {
 #endif
 }
 
+void CGraphics::BlankScreen() {
+  mFirstFrame = false;
+  VISetBlack(TRUE);
+  VIFlush();
+  VIWaitForRetrace();
+}
+
 bool CGraphics::GetProgressiveMode() {
 #if RSTL_KYOTO_PAL_VIDEO
   return VIGetTvFormat() == VI_EURGB60;
