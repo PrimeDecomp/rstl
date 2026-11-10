@@ -595,6 +595,8 @@
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
 // COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
 #define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_RM3E)
+// Wii ARAM tokens wait for the DMA instead of polling their status.
+#define RSTL_KYOTO_ARAM_TOKEN_SYNC_WAIT (RSTL_VERSION >= RSTL_RM3E)
 
 // Wii display-list triangle loops retain the packet's 16-bit vertex count.
 #define RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT (RSTL_VERSION >= RSTL_RM3E)

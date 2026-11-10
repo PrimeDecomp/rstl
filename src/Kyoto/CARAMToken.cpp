@@ -97,8 +97,8 @@ bool CARAMToken::LoadToMRAM() {
   case kS_Three: {
     break;
   }
-  case kS_Four:
-  case kS_One: {
+  case kS_One:
+  case kS_Four: {
     return true;
   }
   case kS_Two: {
@@ -274,12 +274,19 @@ void CARAMToken::ForceSyncARAM() {
 }
 
 void* CARAMToken::GetMRAMSafe() {
+#if RSTL_KYOTO_ARAM_TOKEN_SYNC_WAIT
+  if (mStatus != kS_One) {
+    LoadToMRAM();
+    ForceSyncARAM();
+  }
+#else
   if (mStatus == kS_One) {
     return mMramPtr;
   }
   LoadToMRAM();
   while (!RefreshStatus())
     ;
+#endif
   return mMramPtr;
 }
 
