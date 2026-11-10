@@ -2142,7 +2142,7 @@ static inline void SetParticleTevScale(CTevCombiners::ETevScale scale) {
 #endif
 
 void CElementGen::RenderParticles() {
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_RENDER_HOISTED_LOCALS
   bool noRota;
   bool constUVs;
 #endif
@@ -2186,7 +2186,7 @@ void CElementGen::RenderParticles() {
 
   CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
 
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_RENDER_HOISTED_LOCALS
   bool constUVs = true;
 #else
   constUVs = true;
@@ -2198,7 +2198,7 @@ void CElementGen::RenderParticles() {
   uvs.yMin = 0.f;
   uvs.yMax = 1.f;
 
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_RENDER_HOISTED_LOCALS
   bool noRota = mLoadedGenDesc->mROTA == nullptr;
 #else
   noRota = mLoadedGenDesc->mROTA == nullptr;
@@ -2344,7 +2344,7 @@ void CElementGen::RenderParticles() {
     GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
   }
 
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_RENDER_HOISTED_LOCALS
   int particleCount = mParticles.size();
   int mbspVal = rstl::max_val(1, mMBSP);
 #else

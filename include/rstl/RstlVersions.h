@@ -69,6 +69,11 @@
 // `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
 #define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
 
+// GameCube Echoes declares CElementGen::RenderParticles' rotation and UV flags at the top and
+// computes the motion-blur sample count in two steps; Prime and Wii Echoes declare each local
+// where it is set (the Corruption prototype keeps the GameCube Echoes form, unverified).
+#define RSTL_PARTICLE_RENDER_HOISTED_LOCALS (!RSTL_PRIME1 && RSTL_VERSION < RSTL_R32J)
+
 // Prime and US GameCube Echoes normalize the offset from the emitter origin.
 #define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
 
