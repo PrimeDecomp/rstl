@@ -484,7 +484,6 @@
 // `RSTL_DONT_INLINE_RESERVED_VECTOR`.
 #define RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION (RSTL_CORRUPTION)
 // `listpool` is the full reconstructed container instead of the declaration-only stub.
-#define RSTL_LISTPOOL_FULL (RSTL_CORRUPTION)
 // `reserved_vector(int, fill_type)` carries the (empty) `count <= N` precondition.
 #define RSTL_RESERVED_VECTOR_FILL_PRECONDITION (RSTL_CORRUPTION)
 // `list::node` is a plain `uchar` item array without alignment or constructor, and
@@ -501,6 +500,7 @@
 #define RSTL_LIST_EXCHANGE_DIRECT (RSTL_CORRUPTION)
 // `~list` calls the element destructor directly instead of `rstl::destroy`.
 #define RSTL_LIST_DIRECT_DTOR_CALL (RSTL_CORRUPTION)
+#define RSTL_LISTPOOL_ALLOCATOR_MEMBER (RSTL_CORRUPTION)
 // Pointer elements are passed by value to list insertion helpers.
 #define RSTL_LIST_POINTER_VALUE_PARAM (RSTL_CORRUPTION)
 // `bit_vector` uses compact `reference`/iterator records, out-of-line `at` / `operator[]`,
@@ -595,6 +595,9 @@
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
 // COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
 #define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_RM3E)
+
+// Wii display-list triangle loops retain the packet's 16-bit vertex count.
+#define RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT (RSTL_VERSION >= RSTL_RM3E)
 // Wii Prime and Echoes add a readiness slot and identify disc requests as media type 2.
 #define RSTL_KYOTO_DVD_REQUEST_WII_PORT (RSTL_VERSION >= RSTL_R3IJ)
 // The prototype and later contexts have a virtual destructor.
