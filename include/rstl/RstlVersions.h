@@ -595,6 +595,9 @@
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
 // COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
 #define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_RM3E)
+
+// Wii display-list triangle loops retain the packet's 16-bit vertex count.
+#define RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT (RSTL_VERSION >= RSTL_RM3E)
 // Wii Prime and Echoes add a readiness slot and identify disc requests as media type 2.
 #define RSTL_KYOTO_DVD_REQUEST_WII_PORT (RSTL_VERSION >= RSTL_R3IJ)
 // The prototype and later contexts have a virtual destructor.

@@ -1,6 +1,7 @@
 #include "Kyoto/Graphics/CDisplayListReader.hpp"
 
 #include "Kyoto/Basics/CBasics.hpp"
+#include "rstl/RstlVersions.h"
 
 #include "string.h"
 
@@ -100,34 +101,33 @@ bool CDisplayListReader::EnumerateTriangles(IDisplayListTriangleCallback& callba
     if (primitive == GX_NOP) {
       continue;
     }
-    const int count = ReadDisplayListShort(displayList + offset);
+#if RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT
+    typedef ushort VertexCount;
+#else
+    typedef int VertexCount;
+#endif
+    const VertexCount count = ReadDisplayListShort(displayList + offset);
     offset += 2;
 
     switch (primitive) {
     case GX_TRIANGLES: {
-      int twoVertexStride;
-      const int stride = mVertexStride;
-      twoVertexStride = stride * 2;
       int vertexOffset = offset;
-      for (int i = 0; i < count; i += 3, vertexOffset += stride * 3) {
+      for (int i = 0; i < count; i += 3, vertexOffset += mVertexStride * 3) {
         const uchar* vertex = displayList + vertexOffset;
-        if (!callback.OnTriangle(*this, vertex, vertex + stride, vertex + twoVertexStride)) {
+        if (!callback.OnTriangle(*this, vertex, vertex + mVertexStride, vertex + mVertexStride * 2)) {
           return false;
         }
       }
       break;
     }
     case GX_TRIANGLEFAN: {
-      int previous;
-      int current;
-      const int stride = mVertexStride;
       vertices = displayList + offset;
-      previous = offset + stride;
-      current = previous + stride;
+      int previous = offset + mVertexStride;
+      int current = previous + mVertexStride;
       for (int i = 2; i < count; ++i) {
         const int last = previous;
         previous = current;
-        current += stride;
+        current += mVertexStride;
         if (!callback.OnTriangle(*this, vertices, displayList + last, displayList + previous)) {
           return false;
         }
