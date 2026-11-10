@@ -98,8 +98,8 @@
 // --- Allocation ---
 // Containers and strings derive privately from `Alloc`; otherwise they hold an `Alloc
 // mAllocator` member.
-#define RSTL_ALLOCATOR_BASE_CLASS (RSTL_VERSION >= RSTL_R3IJ)
-// Containers allocate and free through the `mAllocator` instance instead of static `Alloc::` calls.
+#define RSTL_ALLOCATOR_BASE_CLASS (RSTL_VERSION >= RSTL_RM3E)
+// Containers allocate and free through the allocator instance instead of static `Alloc::` calls.
 #define RSTL_ALLOCATOR_INSTANCE RSTL_ECHOES
 // `rmemory_allocator::allocate(int)` is declared only and always called out of line (defined in
 // RstlExtras.cpp), `deallocate` deletes without a null check, and `allocate2` exists.
@@ -749,6 +749,11 @@
 // CParticleData holds only the particle tag, scale and parented mode, and reads and constructs them
 // inline (prototype); Prime and Echoes also store a duration and a bone and read them out of line.
 #define RSTL_KYOTO_PARTICLE_DATA_PROTOTYPE (RSTL_CORRUPTION)
+#if RSTL_VERSION >= RSTL_RM3E && !RSTL_PRIME1 && !defined(PRIME2)
+#define RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD 1
+#else
+#define RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD 0
+#endif
 // CVector2f defines IsNotInf and IsNormalizable (prototype only).
 #define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_CORRUPTION)
 // CVector3i's const operator[] returns a reference in Echoes (CBarrierChunkGrid's `dims[0]` binds it

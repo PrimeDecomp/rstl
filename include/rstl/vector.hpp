@@ -51,6 +51,14 @@ class vector
 : private Alloc
 #endif
 {
+  Alloc& GetAllocator() {
+#if RSTL_ALLOCATOR_BASE_CLASS
+    return *this;
+#else
+    return mAllocator;
+#endif
+  }
+
 public:
 #if !RSTL_ALLOCATOR_BASE_CLASS
   Alloc mAllocator;
@@ -122,7 +130,7 @@ public:
   mCount(count)
   , mCapacity(count) {
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.allocate(mItems, mCount);
+    GetAllocator().allocate(mItems, mCount);
 #else
     Alloc::allocate(mItems, mCount);
 #endif
@@ -187,7 +195,7 @@ public:
     mCount(0), mCapacity(0) {
     mCount = mCapacity = rstl::distance(first, last);
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.allocate(mItems, mCount);
+    GetAllocator().allocate(mItems, mCount);
 #else
     Alloc::allocate(mItems, mCount);
 #endif
@@ -381,7 +389,7 @@ mCount(other.mCount)
     mItems = nullptr;
   } else {
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.allocate(mItems, mCapacity);
+    GetAllocator().allocate(mItems, mCapacity);
 #else
     Alloc::allocate(mItems, mCapacity);
 #endif
@@ -407,7 +415,7 @@ inline vector< T, Alloc >::~vector() {
     }
   }
 #if RSTL_ALLOCATOR_INSTANCE
-  mAllocator.deallocate(mItems);
+  GetAllocator().deallocate(mItems);
 #else
   Alloc::deallocate(mItems);
 #endif
@@ -448,7 +456,7 @@ void vector< T, Alloc >::reserve(int newSize) {
 
   T* newData;
 #if RSTL_ALLOCATOR_INSTANCE
-  mAllocator.allocate(newData, newSize);
+  GetAllocator().allocate(newData, newSize);
 #else
   Alloc::allocate(newData, newSize);
 #endif
@@ -462,7 +470,7 @@ void vector< T, Alloc >::reserve(int newSize) {
   }
   destroy(mItems, mItems + mCount);
 #if RSTL_ALLOCATOR_INSTANCE
-  mAllocator.deallocate(mItems);
+  GetAllocator().deallocate(mItems);
 #else
   Alloc::deallocate(mItems);
 #endif
@@ -518,7 +526,7 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
 
     T* newData;
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.allocate(newData, newCapacity);
+    GetAllocator().allocate(newData, newCapacity);
 #else
     Alloc::allocate(newData, newCapacity);
 #endif
@@ -546,7 +554,7 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
 
     destroy(oldData, oldData + size());
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.deallocate(mItems);
+    GetAllocator().deallocate(mItems);
 #else
     Alloc::deallocate(mItems);
 #endif
@@ -563,7 +571,7 @@ inline vector< T, Alloc >& vector< T, Alloc >::operator=(const vector< T, Alloc 
   clear();
   if (other.size() == 0) {
 #if RSTL_ALLOCATOR_INSTANCE
-    mAllocator.deallocate(mItems);
+    GetAllocator().deallocate(mItems);
 #else
     Alloc::deallocate(mItems);
 #endif
