@@ -178,8 +178,6 @@ public:
   size_t GetLargestFreeChunk() const;
 
 private:
-  void ReleaseHeapAllocations(SGameMemInfo*& first, SGameMemInfo*& last);
-
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   int GetHeapIndex(const void* ptr) const; // Guessed name
 
@@ -194,8 +192,7 @@ private:
   };
 
   bool mInitialized;
-  enum { kHeapCount = 2 };
-  mutable SHeap mHeaps[kHeapCount];
+  mutable SHeap mHeaps[2];
   FOutOfMemoryCb mOomCallback;
   const void* mOomTarget;
   CSmallAllocPool* mSmallAllocPool;
@@ -214,9 +211,6 @@ private:
   uint mSmallPoolReservedBytes;
   bool mAllowMem2Fallback : 1;
   bool mGrowingMediumPool : 1;
-#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
-  bool mAllocatingPuddle : 1; // Guessed name
-#endif
   bool mHandlingOutOfMemory : 1;
 #else
   SGameMemInfo** GetBinPtr(uint bin) { return &mBins[bin]; }
