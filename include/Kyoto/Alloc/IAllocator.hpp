@@ -16,6 +16,8 @@ public:
     kHI_None = 0,
     kHI_TopOfHeap = (1 << 0),
     kHI_RoundUpLen = (1 << 1),
+    kHI_MEM2 = (1 << 2),
+    kHI_NoMEM2Fallback = (1 << 3),
   };
 
   enum EScope {

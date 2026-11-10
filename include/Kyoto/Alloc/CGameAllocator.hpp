@@ -134,10 +134,17 @@ public:
   bool Initialize(COsContext& ctx) override;
   void Shutdown() override;
   void* Alloc(size_t size, EHint hint, EScope scope, EType type, const CCallStack& cs) override;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  SGameMemInfo* FindFreeBlock(uint, int);
+  SGameMemInfo* FindFreeBlockFromTopOfHeap(uint, int);
+  uint FixupAllocPtrs(SGameMemInfo*, int, uint, uint, EHint, const CCallStack&);
+  void UpdateAllocDebugStats(int, uint, uint, uint);
+#else
   SGameMemInfo* FindFreeBlock(uint);
   SGameMemInfo* FindFreeBlockFromTopOfHeap(uint);
   uint FixupAllocPtrs(SGameMemInfo*, const uint, uint, EHint, const CCallStack&);
   void UpdateAllocDebugStats(unsigned int, unsigned int, unsigned int);
+#endif
   bool Free(const void* ptr) override;
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   void FreeNormalAllocation(const void* ptr);
@@ -178,7 +185,15 @@ public:
   size_t GetLargestFreeChunk() const;
 
 private:
+  inline void ReleaseHeapAllocations(SGameMemInfo*& first, SGameMemInfo*& last);
+
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  void InitializeHeap(int index, void* arena, uint size);
+  SGameMemInfo* FindFreeBlock(int& heapIndex, uint size, EHint hint);
+  SGameMemInfo* FindFreeBlockInBins(uint len, uint maxLen, int heapIndex);
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  SGameMemInfo* FindFreeBlockInSizeRange(uint minLen, uint maxLen, int heapIndex); // Guessed name
+#endif
   int GetHeapIndex(const void* ptr) const; // Guessed name
 
   struct SHeap { // Guessed name
@@ -192,7 +207,8 @@ private:
   };
 
   bool mInitialized;
-  mutable SHeap mHeaps[2];
+  enum { kHeapCount = 2 };
+  mutable SHeap mHeaps[kHeapCount];
   FOutOfMemoryCb mOomCallback;
   const void* mOomTarget;
   CSmallAllocPool* mSmallAllocPool;
@@ -205,12 +221,15 @@ private:
   void* mMediumPoolMem2;
   bool mMediumAllocFailed;
   uint mSmallHeapAllocations;
-  uint x140_;
+  uint mPeakSmallPoolEntries;
   uint mMem1HeapPhysicalAddress;
   uint x148_;
   uint mSmallPoolReservedBytes;
   bool mAllowMem2Fallback : 1;
   bool mGrowingMediumPool : 1;
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  bool mAllocatingPuddle : 1; // Guessed name
+#endif
   bool mHandlingOutOfMemory : 1;
 #else
   SGameMemInfo** GetBinPtr(uint bin) { return &mBins[bin]; }

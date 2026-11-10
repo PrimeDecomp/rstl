@@ -62,9 +62,12 @@ bool COsContext::GetEuRgb60Mode() const {
 COsContext::COsContext(bool, bool)
 #if RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 #if RSTL_KYOTO_WII_OS_CONTEXT
-: mLanguage(RSTL_VERSION < RSTL_R3ME_00 ? kLang_Japanese : GetSystemLanguage())
+: mLanguage((RSTL_VERSION >= RSTL_R3IJ && RSTL_VERSION < RSTL_R3ME_00) ? kLang_Japanese : GetSystemLanguage())
 #if RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO
 , mAspectRatio(GetSystemAspectRatio())
+#endif
+#if RSTL_KYOTO_OS_CONTEXT_EXTRA_ARENA_FIELD
+, x20_(0)
 #endif
 , mMem1ArenaLo(nullptr)
 , mMem1ArenaHi(nullptr)
