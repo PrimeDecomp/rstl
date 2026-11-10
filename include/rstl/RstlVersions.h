@@ -484,7 +484,6 @@
 // `RSTL_DONT_INLINE_RESERVED_VECTOR`.
 #define RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION (RSTL_CORRUPTION)
 // `listpool` is the full reconstructed container instead of the declaration-only stub.
-#define RSTL_LISTPOOL_FULL (RSTL_CORRUPTION)
 // `reserved_vector(int, fill_type)` carries the (empty) `count <= N` precondition.
 #define RSTL_RESERVED_VECTOR_FILL_PRECONDITION (RSTL_CORRUPTION)
 // `list::node` is a plain `uchar` item array without alignment or constructor, and
