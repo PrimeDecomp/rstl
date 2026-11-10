@@ -2879,6 +2879,8 @@ void CGraphics::SetProgressiveMode(bool progressive) {
 #endif
 }
 
+int CGraphics::GetScreenBottomMargin() { return Is50Hz() ? 50 : 44; }
+
 void CGraphics::BlankScreen() {
   mFirstFrame = false;
   VISetBlack(TRUE);

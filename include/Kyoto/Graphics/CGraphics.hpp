@@ -494,6 +494,7 @@ public:
     width = mViewport.mWidth;
     height = mViewport.mHeight;
   }
+  static int GetScreenBottomMargin(); // Guessed name.
   static bool Is50Hz() { return sIs50Hz; } // Guessed name.
 #if RSTL_PRIME1
   static const CVector3f& GetViewPoint() { return mViewPoint; }
