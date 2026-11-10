@@ -13,9 +13,7 @@
 
 #include "stddef.h"
 #include <stdint.h>
-#if RSTL_KYOTO_DEBUG_BUILD
 #include <string.h>
-#endif
 
 #if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 /* Here just to make sure the data section matches */
@@ -48,13 +46,14 @@ CGameAllocator::SGameMemInfo* CGameAllocator::GetMemInfoFromBlockPtr(const void*
                                            sizeof(SGameMemInfo));
 }
 
-#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 CGameAllocator::CGameAllocator()
 : mInitialized(0)
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 , mHeapSize(0)
 , mFirst(nullptr)
 , mLast(nullptr)
 , x54_(0)
+#endif
 , mOomCallback(nullptr)
 , mOomTarget(nullptr)
 , mSmallAllocPool(nullptr)
@@ -63,6 +62,13 @@ CGameAllocator::CGameAllocator()
 , mSmallAllocFailed(false)
 , mSmallAllocRetryDelay(0)
 , mMediumPool(nullptr)
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+, mMediumAllocFailed(false)
+, mSmallHeapAllocations(0)
+, x140_(0)
+, mMem1HeapPhysicalAddress(0)
+, x148_(0)
+#else
 , mTotalHeapAllocations(0)
 , mCurrentHeapAllocations(0)
 , mRequestedHeapBytes(0)
@@ -81,11 +87,26 @@ CGameAllocator::CGameAllocator()
 , mPreviousTotalHeapAllocations(0)
 , mPhysicalAddr(nullptr)
 , mFakeStatics(0)
-, mSmallPoolReservedBytes(0) {
+#endif
+, mSmallPoolReservedBytes(0)
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+, mAllowMem2Fallback(false)
+, mGrowingMediumPool(false)
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+, mAllocatingPuddle(false)
+#endif
+, mHandlingOutOfMemory(false)
+#endif
+{
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  mMediumPoolMem2 = nullptr;
+  mMediumPoolMem1 = nullptr;
+#else
   SGameMemInfo testSGameMemInfo(nullptr, nullptr, nullptr, 0, string_NULL, string_NULL);
   // clang-format off
   RS_VERIFY_THROW(172, (reinterpret_cast<uint>(&testSGameMemInfo.mGuardBlockStart) - reinterpret_cast<uint>(&testSGameMemInfo)) == 28, kXCP_InvalidSGameMemInfo, "SGameMemInfo must have mGuardBlockStart at end of structure.");
   // clang-format on
+#endif
 }
 
 CGameAllocator::~CGameAllocator() {
@@ -96,6 +117,7 @@ CGameAllocator::~CGameAllocator() {
   }
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 bool CGameAllocator::Initialize(COsContext& ctx) {
   mHeapSize = ctx.GetBaseFreeRam() - 2 * sizeof(SGameMemInfo);
   mFirst = static_cast< SGameMemInfo* >(OSAllocFromArenaLo(mHeapSize, sizeof(SGameMemInfo)));
@@ -176,12 +198,17 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   return true;
 }
 
+#endif
+
 void CGameAllocator::Shutdown() {
   ReleaseAll();
   mInitialized = 0;
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   x54_ = 0;
+#endif
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, const EType type,
                             const CCallStack& callstack) {
   uint tmp = 0;
@@ -458,6 +485,8 @@ void CGameAllocator::UpdateAllocDebugStats(uint len, uint roundedLen, uint offse
   ++mSmallHeapAllocations;
 }
 
+#endif
+
 bool CGameAllocator::Free(const void* ptr) {
   if (ptr == nullptr) {
     return true;
@@ -468,15 +497,24 @@ bool CGameAllocator::Free(const void* ptr) {
   }
 
   if (mMediumPool) {
-    int tmp = mMediumPool->Free(ptr);
-    if (tmp != 1) {
-      return tmp > 0;
+    const int freed = mMediumPool->Free(ptr);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+    if (freed != 0) {
+      return true;
     }
-  }
-  return FreeNormalAllocation(ptr);
-}
-
+#else
+    if (freed != 1) {
+      return freed > 0;
+    }
 #endif
+  }
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  FreeNormalAllocation(ptr);
+  return true;
+#else
+  return FreeNormalAllocation(ptr);
+#endif
+}
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void CGameAllocator::FreeNormalAllocation(const void* p)
@@ -577,7 +615,20 @@ bool CGameAllocator::FreeNormalAllocation(const void* p)
 #endif
 }
 
-#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+inline void CGameAllocator::ReleaseHeapAllocations(SGameMemInfo*& first, SGameMemInfo*& last) {
+  SGameMemInfo* iter = first;
+  while (iter != nullptr) {
+    SGameMemInfo* next = iter->GetNext();
+    if (iter->IsAllocated()) {
+      FreeNormalAllocation(iter + 1);
+    }
+    iter = next;
+  }
+
+  first = nullptr;
+  last = nullptr;
+}
+
 void CGameAllocator::ReleaseAll() {
   if (mMediumPool) {
     mMediumPool->ClearPuddles();
@@ -585,20 +636,15 @@ void CGameAllocator::ReleaseAll() {
     mMediumPool = nullptr;
   }
 
-  SGameMemInfo* iter = mFirst;
-  while (iter != nullptr) {
-    SGameMemInfo* next = iter->GetNext();
-    if (iter->IsAllocated()) {
-      FreeNormalAllocation(((uchar*)iter) + sizeof(SGameMemInfo));
-    }
-    iter = next;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  for (int index = 0; index < kHeapCount; ++index) {
+    SHeap& heap = mHeaps[index];
+    ReleaseHeapAllocations(heap.mFirst, heap.mLast);
   }
-
-  mFirst = nullptr;
-  mLast = nullptr;
-};
-
+#else
+  ReleaseHeapAllocations(mFirst, mLast);
 #endif
+}
 
 void* CGameAllocator::AllocSecondary(size_t size, EHint hint, EScope scope, EType type,
                                      const CCallStack& callstack) {
@@ -764,6 +810,32 @@ void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo)
 }
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+CGameAllocator::SHeap::SHeap()
+: mFirst(nullptr)
+, mLast(nullptr)
+, mArenaStart(nullptr)
+, mArenaEnd(nullptr)
+, mMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
+#if RSTL_PRIME1 || defined(PRIME2)
+  CBasics::ZeroMemory(mBins, sizeof(mBins));
+#else
+  memset(mBins, 0, sizeof(mBins));
+#endif
+}
+
+int CGameAllocator::GetHeapCount() const { return kHeapCount; }
+
+const char* CGameAllocator::GetHeapName(int index) const {
+  switch (index) {
+  case 0:
+    return "Default";
+  case 1:
+    return "GPU+Audio";
+  default:
+    return "?????";
+  }
+}
+
 int CGameAllocator::GetHeapIndex(const void* ptr) const {
   if (ptr >= mHeaps[0].mArenaStart && ptr < mHeaps[0].mArenaEnd) {
     return 0;
@@ -808,5 +880,12 @@ size_t CGameAllocator::GetLargestFreeChunk() const {
 }
 #endif
 
-void CGameAllocator::OffsetFakeStatics(const int offset) { mFakeStatics += offset; }
+#endif
+
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
+void CGameAllocator::OffsetFakeStatics(int offset) {
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  mFakeStatics += offset;
+#endif
+}
 #endif
