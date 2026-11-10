@@ -199,12 +199,14 @@ public:
 
   int ControllerNumber() const { return mControllerIdx; }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #if RSTL_FINAL_INPUT_CONTROLLER_DATA
   uint GetInputType() const { return mInputType; }
   const CControllerData& GetControllerData() const { return mControllerData; }
+#endif
 
+// TODO: verify that this Prime/Echoes difference is real
+#if RSTL_PRIME1
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA
   // For allowing the old code to compile
   float ALAUp() const;
   float ALADown() const;

@@ -36,7 +36,7 @@ bool CRealDvdRequest::IsReady() {
 void CRealDvdRequest::PostCancelRequest() { DVDCancelAsync(&mFileInfo.cb, nullptr); }
 
 int CRealDvdRequest::GetMediaType() const {
-  return RSTL_KYOTO_DVD_REQUEST_WII_PORT ? 2 : 1;
+  return RSTL_KYOTO_DVD_REQUEST_MEDIA_TYPE_2 ? 2 : 1;
 }
 
 #if !defined(TARGET_PC)

@@ -55,7 +55,6 @@ CVector2f CVector2f::AsNormalized() const {
   return CVector2f(mX * mag, mY * mag);
 }
 
-#if RSTL_KYOTO_VECTOR2F_FINITE_CHECKS
 bool CVector2f::IsNotInf() const {
   int x = __HI(mX);
   int y = __HI(mY);
@@ -66,7 +65,6 @@ bool CVector2f::IsNotInf() const {
 }
 
 bool CVector2f::IsNormalizable() const { return IsNotInf() && MagSquared() >= 9.99999943e-29f; }
-#endif
 
 float CVector2f::GetAngleDiff(const CVector2f& a, const CVector2f& b) {
   float mag1 = a.Magnitude();

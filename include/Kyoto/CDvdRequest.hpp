@@ -9,7 +9,7 @@ class CDvdRequest {
 public:
   virtual ~CDvdRequest() = 0;           // 8
   virtual void WaitUntilComplete() = 0; // c
-#if RSTL_KYOTO_DVD_REQUEST_WII_PORT
+#if RSTL_KYOTO_DVD_REQUEST_READY
   virtual bool IsReady() = 0; // Guessed name; native predicate is END or BUSY.
 #endif
   virtual bool IsComplete() = 0;        // GC 10, Wii 14
@@ -48,6 +48,7 @@ public:
   CDummyDvdRequest() {}
   ~CDummyDvdRequest();
   void WaitUntilComplete() override;
+  bool IsReady() { return true; }
   bool IsComplete() override;
   void PostCancelRequest() override;
   int GetMediaType() const override;
