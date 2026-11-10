@@ -762,8 +762,6 @@
 #else
 #define RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD 0
 #endif
-// CVector2f defines IsNotInf and IsNormalizable (prototype only).
-#define RSTL_KYOTO_VECTOR2F_FINITE_CHECKS (RSTL_CORRUPTION)
 // CVector3i's const operator[] returns a reference in Echoes (CBarrierChunkGrid's `dims[0]` binds it
 // to a vector constructor argument); Prime and the prototype return by value.
 #define RSTL_KYOTO_VECTOR3I_INDEX_REFERENCE (!RSTL_PRIME1 && !RSTL_CORRUPTION)
