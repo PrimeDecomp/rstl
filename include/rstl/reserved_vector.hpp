@@ -252,7 +252,7 @@ public:
   }
 
   void clear() {
-    RS_ASSERT(mCount <= N, "rstl invariant");
+    RSTL_PRECONDITION(mCount <= N);
 #if RSTL_RESERVED_VECTOR_TRAITS
     if (!reserved_vector_traits< T >::trivial_destructor) {
 #endif
