@@ -1,6 +1,7 @@
 #ifndef _RSTL_LISTPOOL
 #define _RSTL_LISTPOOL
 
+#include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"
 #include "rstl/iterator.hpp"
 #include "rstl/rmemory_allocator.hpp"
@@ -9,7 +10,11 @@ namespace rstl {
 
 // The declaration survives in Echoes; operations are reconstructed from G2MEAB.
 template < typename T, int N, typename Alloc = rmemory_allocator >
-class listpool {
+class listpool
+#if !RSTL_LISTPOOL_ALLOCATOR_MEMBER
+: private Alloc
+#endif
+{
   struct node {
     node* mPrev;
     node* mNext;
@@ -101,7 +106,11 @@ public:
   };
 
   listpool(const Alloc& alloc = Alloc())
+#if RSTL_LISTPOOL_ALLOCATOR_MEMBER
   : mAllocator(alloc)
+#else
+  : Alloc(alloc)
+#endif
   , mStart(reinterpret_cast< node* >(&mEmpty_prev))
   , mEnd(reinterpret_cast< node* >(&mEmpty_prev))
   , mEmpty_prev(reinterpret_cast< node* >(&mEmpty_prev))
@@ -201,7 +210,9 @@ private:
     return nn;
   }
 
+#if RSTL_LISTPOOL_ALLOCATOR_MEMBER
   Alloc mAllocator;
+#endif
   node* mStart;
   node* mEnd;
   node* mEmpty_prev;

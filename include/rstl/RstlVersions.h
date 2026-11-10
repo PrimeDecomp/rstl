@@ -500,6 +500,7 @@
 #define RSTL_LIST_EXCHANGE_DIRECT (RSTL_CORRUPTION)
 // `~list` calls the element destructor directly instead of `rstl::destroy`.
 #define RSTL_LIST_DIRECT_DTOR_CALL (RSTL_CORRUPTION)
+#define RSTL_LISTPOOL_ALLOCATOR_MEMBER (RSTL_CORRUPTION)
 // Pointer elements are passed by value to list insertion helpers.
 #define RSTL_LIST_POINTER_VALUE_PARAM (RSTL_CORRUPTION)
 // `bit_vector` uses compact `reference`/iterator records, out-of-line `at` / `operator[]`,
