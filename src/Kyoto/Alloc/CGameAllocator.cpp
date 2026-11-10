@@ -1,5 +1,11 @@
-// #include "dolphin/os/OSArena.h"
 #include "dolphin/types.h"
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+#include "dolphin/os/OSArena.h"
+#if RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+#include "dolphin/dvd.h"
+#endif
+#endif
 
 #include "Kyoto/Alloc/CGameAllocator.hpp"
 
@@ -11,11 +17,12 @@
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"
 
+#include "rstl/algorithm.hpp"
+#include "rstl/reserved_vector.hpp"
+
 #include "stddef.h"
 #include <stdint.h>
-#if RSTL_KYOTO_DEBUG_BUILD
 #include <string.h>
-#endif
 
 #if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 /* Here just to make sure the data section matches */
@@ -48,13 +55,14 @@ CGameAllocator::SGameMemInfo* CGameAllocator::GetMemInfoFromBlockPtr(const void*
                                            sizeof(SGameMemInfo));
 }
 
-#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 CGameAllocator::CGameAllocator()
 : mInitialized(0)
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 , mHeapSize(0)
 , mFirst(nullptr)
 , mLast(nullptr)
 , x54_(0)
+#endif
 , mOomCallback(nullptr)
 , mOomTarget(nullptr)
 , mSmallAllocPool(nullptr)
@@ -63,6 +71,13 @@ CGameAllocator::CGameAllocator()
 , mSmallAllocFailed(false)
 , mSmallAllocRetryDelay(0)
 , mMediumPool(nullptr)
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+, mMediumAllocFailed(false)
+, mSmallHeapAllocations(0)
+, mPeakSmallPoolEntries(0)
+, mMem1HeapPhysicalAddress(0)
+, x148_(0)
+#else
 , mTotalHeapAllocations(0)
 , mCurrentHeapAllocations(0)
 , mRequestedHeapBytes(0)
@@ -81,11 +96,26 @@ CGameAllocator::CGameAllocator()
 , mPreviousTotalHeapAllocations(0)
 , mPhysicalAddr(nullptr)
 , mFakeStatics(0)
-, mSmallPoolReservedBytes(0) {
+#endif
+, mSmallPoolReservedBytes(0)
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+, mAllowMem2Fallback(false)
+, mGrowingMediumPool(false)
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+, mAllocatingPuddle(false)
+#endif
+, mHandlingOutOfMemory(false)
+#endif
+{
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  mMediumPoolMem2 = nullptr;
+  mMediumPoolMem1 = nullptr;
+#else
   SGameMemInfo testSGameMemInfo(nullptr, nullptr, nullptr, 0, string_NULL, string_NULL);
   // clang-format off
   RS_VERIFY_THROW(172, (reinterpret_cast<uint>(&testSGameMemInfo.mGuardBlockStart) - reinterpret_cast<uint>(&testSGameMemInfo)) == 28, kXCP_InvalidSGameMemInfo, "SGameMemInfo must have mGuardBlockStart at end of structure.");
   // clang-format on
+#endif
 }
 
 CGameAllocator::~CGameAllocator() {
@@ -96,6 +126,7 @@ CGameAllocator::~CGameAllocator() {
   }
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 bool CGameAllocator::Initialize(COsContext& ctx) {
   mHeapSize = ctx.GetBaseFreeRam() - 2 * sizeof(SGameMemInfo);
   mFirst = static_cast< SGameMemInfo* >(OSAllocFromArenaLo(mHeapSize, sizeof(SGameMemInfo)));
@@ -176,12 +207,17 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   return true;
 }
 
+#endif
+
 void CGameAllocator::Shutdown() {
   ReleaseAll();
   mInitialized = 0;
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   x54_ = 0;
+#endif
 }
 
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, const EType type,
                             const CCallStack& callstack) {
   uint tmp = 0;
@@ -458,6 +494,8 @@ void CGameAllocator::UpdateAllocDebugStats(uint len, uint roundedLen, uint offse
   ++mSmallHeapAllocations;
 }
 
+#endif
+
 bool CGameAllocator::Free(const void* ptr) {
   if (ptr == nullptr) {
     return true;
@@ -468,15 +506,24 @@ bool CGameAllocator::Free(const void* ptr) {
   }
 
   if (mMediumPool) {
-    int tmp = mMediumPool->Free(ptr);
-    if (tmp != 1) {
-      return tmp > 0;
+    const int freed = mMediumPool->Free(ptr);
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+    if (freed != 0) {
+      return true;
     }
-  }
-  return FreeNormalAllocation(ptr);
-}
-
+#else
+    if (freed != 1) {
+      return freed > 0;
+    }
 #endif
+  }
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  FreeNormalAllocation(ptr);
+  return true;
+#else
+  return FreeNormalAllocation(ptr);
+#endif
+}
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 void CGameAllocator::FreeNormalAllocation(const void* p)
@@ -577,7 +624,20 @@ bool CGameAllocator::FreeNormalAllocation(const void* p)
 #endif
 }
 
-#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+inline void CGameAllocator::ReleaseHeapAllocations(SGameMemInfo*& first, SGameMemInfo*& last) {
+  SGameMemInfo* iter = first;
+  while (iter != nullptr) {
+    SGameMemInfo* next = iter->GetNext();
+    if (iter->IsAllocated()) {
+      FreeNormalAllocation(iter + 1);
+    }
+    iter = next;
+  }
+
+  first = nullptr;
+  last = nullptr;
+}
+
 void CGameAllocator::ReleaseAll() {
   if (mMediumPool) {
     mMediumPool->ClearPuddles();
@@ -585,20 +645,15 @@ void CGameAllocator::ReleaseAll() {
     mMediumPool = nullptr;
   }
 
-  SGameMemInfo* iter = mFirst;
-  while (iter != nullptr) {
-    SGameMemInfo* next = iter->GetNext();
-    if (iter->IsAllocated()) {
-      FreeNormalAllocation(((uchar*)iter) + sizeof(SGameMemInfo));
-    }
-    iter = next;
+#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  for (int index = 0; index < kHeapCount; ++index) {
+    SHeap& heap = mHeaps[index];
+    ReleaseHeapAllocations(heap.mFirst, heap.mLast);
   }
-
-  mFirst = nullptr;
-  mLast = nullptr;
-};
-
+#else
+  ReleaseHeapAllocations(mFirst, mLast);
 #endif
+}
 
 void* CGameAllocator::AllocSecondary(size_t size, EHint hint, EScope scope, EType type,
                                      const CCallStack& callstack) {
@@ -764,6 +819,21 @@ void CGameAllocator::RemoveFreeEntryFromFreeList(SGameMemInfo* memInfo)
 }
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+CGameAllocator::SHeap::SHeap()
+: mFirst(nullptr)
+, mLast(nullptr)
+, mArenaStart(nullptr)
+, mArenaEnd(nullptr)
+, mMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
+#if RSTL_PRIME1 || defined(PRIME2)
+  CBasics::ZeroMemory(mBins, sizeof(mBins));
+#else
+  memset(mBins, 0, sizeof(mBins));
+#endif
+}
+
+int CGameAllocator::GetHeapCount() const { return kHeapCount; }
+
 int CGameAllocator::GetHeapIndex(const void* ptr) const {
   if (ptr >= mHeaps[0].mArenaStart && ptr < mHeaps[0].mArenaEnd) {
     return 0;
@@ -773,6 +843,475 @@ int CGameAllocator::GetHeapIndex(const void* ptr) const {
   }
   return 0;
 }
+void CGameAllocator::InitializeHeap(int index, void* arena, uint size) {
+  mHeaps[index] = SHeap();
+  mHeaps[index].mFirst = static_cast< SGameMemInfo* >(arena);
+  mHeaps[index].mArenaStart = arena;
+  mHeaps[index].mArenaEnd = static_cast< char* >(arena) + size;
+  mHeaps[index].mMetrics.mHeapSize = size;
+  mHeaps[index].mMetrics.mFreeHeapBytes = size;
+  mHeaps[index].mLast = reinterpret_cast< SGameMemInfo* >(static_cast< char* >(arena) + size) - 1;
+
+  const SGameMemInfo& head = SGameMemInfo(nullptr, mHeaps[index].mLast, mHeaps[index].mLast,
+                                          size - 2 * sizeof(SGameMemInfo), "MemHead", "MemHead");
+  *mHeaps[index].mFirst = head;
+  const SGameMemInfo& tail =
+      SGameMemInfo(mHeaps[index].mFirst, nullptr, nullptr, 0, "MemTail", "MemTail");
+  *mHeaps[index].mLast = tail;
+  for (uint i = 0; i < 16; ++i) {
+    mHeaps[index].mBins[i] = nullptr;
+  }
+  AddFreeEntryToFreeList(mHeaps[index].mFirst, index);
+}
+
+bool CGameAllocator::Initialize(COsContext& ctx) {
+  uint mem1Reserve = 0x1000;
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+  mAllowMem2Fallback = DVDConvertPathToEntrynum("AllowMem1SpillOver.txt") != -1;
+#else
+  mAllowMem2Fallback = true;
+#if RSTL_KYOTO_CORRUPTION
+  mem1Reserve = DVDConvertPathToEntrynum("IncreaseRSOHeap.txt") != -1 ? 0x200000 : 0x180000;
+#endif
+#endif
+  const uint mem1Size = ctx.GetMem1FreeRam() - mem1Reserve - 2 * sizeof(SGameMemInfo);
+  const uint mem2Size = ctx.GetMem2FreeRam() - 2 * sizeof(SGameMemInfo);
+  InitializeHeap(0, OSAllocFromArenaLo(mem1Size, sizeof(SGameMemInfo)), mem1Size);
+  InitializeHeap(1, OSAllocFromMEM2ArenaLo(mem2Size, sizeof(SGameMemInfo)), mem2Size);
+  const uintptr_t addr = reinterpret_cast< uintptr_t >(mHeaps[0].mFirst);
+  mMem1HeapPhysicalAddress = addr - (addr & kAllocatorPointerTopNybbleMask);
+  mSmallHeapAllocations = 0;
+  mInitialized = true;
+  mSmallAllocMainData = Alloc(0x100000, kHI_None, kSC_Unk1, kTP_Heap,
+                              CCallStack(-1, "SmallAllocMainData   ", " - Ignore"));
+  mSmallAllocBookKeeping = Alloc(0x20000, kHI_None, kSC_Unk1, kTP_Heap,
+                                 CCallStack(-1, "SmallAllocBookKeeping", " - Ignore"));
+  mSmallAllocPool = new (Alloc(sizeof(CSmallAllocPool), kHI_None, kSC_Unk1, kTP_Heap,
+                               CCallStack(-1, "SmallAllocClass      ", " - Ignore")))
+      CSmallAllocPool(0x40000, mSmallAllocMainData, mSmallAllocBookKeeping);
+  mMediumPool =
+      new (Alloc(sizeof(CMediumAllocPool), kHI_None, kSC_Unk1, kTP_Heap,
+                 CCallStack(-1, "MediumAllocClass      ", " - Ignore"))) CMediumAllocPool();
+  const uint mem1Bookkeeping = CMediumAllocPool::GetBookKeepingMemoryRequired(0x1000);
+  mMediumPoolMem1 = Alloc(0x20000 + mem1Bookkeeping, kHI_None, kSC_Unk1, kTP_Heap,
+                          CCallStack(-1, "MediumAllocMainData   ", " - Ignore"));
+  const uint mem2Bookkeeping = CMediumAllocPool::GetBookKeepingMemoryRequired(0x2000);
+  mMediumPoolMem2 = Alloc(0x40000 + mem2Bookkeeping, kHI_MEM2, kSC_Unk1, kTP_Heap,
+                          CCallStack(-1, "MediumAllocMainData2  ", " - Ignore"));
+  mSmallPoolReservedBytes = 0x120000;
+  mHeaps[0].mMetrics.mCurrentHeapAllocations -= 4;
+  return true;
+}
+
+static int gAllocatorTime = 0;
+static const uint kMediumEntries[] = {0x1000, 0x2000};
+static const uint kMaxMediumAlloc[] = {0x400, 0x4000};
+
+void* CGameAllocator::Alloc(size_t size, EHint hint, EScope scope, EType type,
+                            const CCallStack& callstack) {
+  const OSTick start = OSGetTick();
+  if (hint & kHI_RoundUpLen) {
+    size = (size + 31) & ~31;
+  }
+  bool useSmall = size <= 56 && !(hint & 0xf) && mSmallAllocPool;
+  if (useSmall && mSmallAllocRetryDelay > 0) {
+    --mSmallAllocRetryDelay;
+    useSmall = false;
+  }
+  if (useSmall) {
+    void* result = mSmallAllocPool->Alloc(size);
+    const uint blocks = mSmallAllocPool->GetAllocatedSize();
+    if (mPeakSmallPoolEntries < blocks) {
+      mPeakSmallPoolEntries = blocks;
+      static uint lastReportedBlocks;
+      if (lastReportedBlocks + 128 < blocks) {
+        lastReportedBlocks = blocks;
+      }
+    }
+    if (result) {
+      gAllocatorTime += OSGetTick() - start;
+      return result;
+    }
+    if (!mSmallAllocFailed) {
+      OSReport("**************************************************\n");
+      OSReport("************** Performance warning! **************\n");
+      OSReport("*************** SmallAlloc Failed! ***************\n");
+      OSReport("Num Entries:%d\tNumAllocs:%d\tNumFreeBlocks:%d\n",
+               mSmallAllocPool->GetTotalEntries(), mSmallAllocPool->GetNumAllocs(),
+               mSmallAllocPool->GetNumBlocksAvailable());
+      OSReport("Try increasing 'kNumSmallAllocEntries' in CGameAllocator.cpp.\n");
+      OSReport("**************************************************\n");
+    }
+    mSmallAllocRetryDelay = 25;
+    mSmallAllocFailed = true;
+  }
+
+  int heapIndex;
+  SGameMemInfo* info = nullptr;
+  if (mMediumPool && size <= kMaxMediumAlloc[(hint & kHI_MEM2) != 0] &&
+      !(hint & (kHI_TopOfHeap | kHI_NoMEM2Fallback)) && !mGrowingMediumPool) {
+    mGrowingMediumPool = true;
+    if (!mMediumPool->HasPuddles()) {
+      mMediumPool->AddPuddle(kMediumEntries[0], mMediumPoolMem1, false, 0);
+      mMediumPoolMem1 = nullptr;
+      mMediumPool->AddPuddle(kMediumEntries[1], mMediumPoolMem2, false, 1);
+      mMediumPoolMem2 = nullptr;
+    }
+    const bool mem2 = (hint & kHI_MEM2) != 0;
+    const EHint puddleHint = mem2 ? kHI_MEM2 : kHI_None;
+    void* result = mMediumPool->Alloc(size, mem2);
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+    if (!result) {
+      const int mediumHeapIndex = mem2 ? 1 : 0;
+      const SHeapMetrics& metrics = mHeaps[mediumHeapIndex].mMetrics;
+      if (metrics.mFreeHeapBytes < metrics.mHeapSize / 4) {
+        info = FindFreeBlockInSizeRange((size + 31) & ~31, (kMaxMediumAlloc[mem2] + 31) & ~31,
+                                        mediumHeapIndex);
+        if (info) {
+          heapIndex = mediumHeapIndex;
+        }
+      }
+    }
+#endif
+    if (!result && !info) {
+      const uint entries = kMediumEntries[mem2];
+      const uint bookkeeping = CMediumAllocPool::GetBookKeepingMemoryRequired(entries);
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+      mAllocatingPuddle = true;
+#endif
+      void* puddle =
+          Alloc(CMediumAllocPool::GetAllocMemoryRequired(entries) + bookkeeping, puddleHint,
+                kSC_Unk1, kTP_Heap, CCallStack(-1, "MediumAllocMainData   ", " - Ignore"));
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+      mAllocatingPuddle = false;
+#endif
+      if (puddle) {
+        mMediumPool->AddPuddle(entries, puddle, true, mem2);
+        result = mMediumPool->Alloc(size, mem2);
+      }
+    }
+    if (!info) {
+      mGrowingMediumPool = false;
+      if (result) {
+        gAllocatorTime += OSGetTick() - start;
+        return result;
+      }
+      if (!mMediumAllocFailed) {
+        OSReport("**************************************************\n");
+        OSReport("************** Performance warning! **************\n");
+        OSReport("*************** MediumAlloc Failed! ***************\n");
+        OSReport("Num Entries:%d\tNumAllocs:%d\tNumFreeBlocks:%d\n", mMediumPool->GetTotalEntries(),
+                 mMediumPool->GetNumAllocs(), mMediumPool->GetNumBlocksAvailable());
+        OSReport("No medium alloc blocks available.\n");
+        OSReport("**************************************************\n");
+        mMediumAllocFailed = true;
+      }
+    }
+  }
+
+  const uint roundedSize = (size + 31) & ~31;
+  const bool topOfHeap = (hint & kHI_TopOfHeap) != 0;
+  if (!info) {
+    info = FindFreeBlock(heapIndex, roundedSize, hint);
+  }
+  if (!info) {
+    void* result = nullptr;
+    if (mHandlingOutOfMemory) {
+      return nullptr;
+    }
+    if (mOomCallback) {
+      mHandlingOutOfMemory = true;
+      while (mOomCallback(mOomTarget, size)) {
+        result = Alloc(size, hint, scope, type, callstack);
+        if (result) {
+          break;
+        }
+      }
+      mHandlingOutOfMemory = false;
+    }
+    if (!result) {
+      DumpAllocations();
+      return nullptr;
+    }
+    return result;
+  }
+
+  const uint offset = FixupAllocPtrs(info, heapIndex, size, roundedSize, hint, callstack);
+  if (topOfHeap && !info->IsAllocated()) {
+    info = info->GetNext();
+  }
+  UpdateAllocDebugStats(heapIndex, size, roundedSize, offset);
+  gAllocatorTime += OSGetTick() - start;
+  return info + 1;
+}
+
+CGameAllocator::SGameMemInfo* CGameAllocator::FindFreeBlock(int& heapIndex, uint size, EHint hint) {
+  typedef SGameMemInfo* (CGameAllocator::*FFindBlock)(uint, int);
+  FFindBlock find = (hint & kHI_TopOfHeap)
+                        ? &CGameAllocator::FindFreeBlockFromTopOfHeap
+                        : static_cast< FFindBlock >(&CGameAllocator::FindFreeBlock);
+  if (hint & kHI_MEM2) {
+    heapIndex = 1;
+    SGameMemInfo* info = (this->*find)(size, 1);
+    if (!mOomCallback && !info && mHeaps[0].mFirst) {
+      heapIndex = 0;
+      info = (this->*find)(size, 0);
+    }
+    return info;
+  }
+  heapIndex = 0;
+  SGameMemInfo* info = (this->*find)(size, 0);
+  if (mAllowMem2Fallback && !info && mHeaps[1].mFirst && !(hint & kHI_NoMEM2Fallback)) {
+    heapIndex = 1;
+    info = (this->*find)(size, 1);
+  }
+  return info;
+}
+
+inline CGameAllocator::SGameMemInfo* CGameAllocator::FindFreeBlockInBins(uint len, uint maxLen,
+                                                                         int heapIndex) {
+  SHeap& heap = mHeaps[heapIndex];
+  CGameAllocator::SGameMemInfo* ret = nullptr;
+
+  uint binIndex = GetFreeBinEntryForSize(len);
+  const uint binEnd = maxLen == ~0u ? 16 : GetFreeBinEntryForSize(maxLen) + 1;
+
+  uint chosenBin = 0;
+  SGameMemInfo* previous = nullptr;
+  uint bestDelta = 0x10000000;
+
+  for (; binIndex < binEnd && !ret; ++binIndex) {
+    SGameMemInfo* candidate = heap.mBins[binIndex];
+    SGameMemInfo* last = nullptr;
+    for (; candidate; last = candidate, candidate = candidate->GetNextFree()) {
+      if (!candidate->IsAllocated() && candidate->mSize >= len && candidate->mSize <= maxLen) {
+        if (candidate->mSize - len < bestDelta && candidate->GetNext()) {
+          ret = candidate;
+          previous = last;
+          bestDelta = candidate->mSize - len;
+          chosenBin = binIndex;
+          if (bestDelta < sizeof(SGameMemInfo)) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (ret) {
+    if (previous == nullptr) {
+      const uintptr_t next = reinterpret_cast< uintptr_t >(ret->mNextFree);
+      heap.mBins[chosenBin] =
+          reinterpret_cast< SGameMemInfo* >(next & ~(kAllocatorPointerBits - 1));
+    } else {
+      previous->SetNextFree(ret->GetNextFree());
+    }
+  }
+  return ret;
+}
+
+CGameAllocator::SGameMemInfo* CGameAllocator::FindFreeBlock(uint len, int heapIndex) {
+  return FindFreeBlockInBins(len, ~0u, heapIndex);
+}
+
+#if RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+CGameAllocator::SGameMemInfo* CGameAllocator::FindFreeBlockInSizeRange(uint len, uint maxLen,
+                                                                       int heapIndex) {
+  return FindFreeBlockInBins(len, maxLen, heapIndex);
+}
+#endif
+
+CGameAllocator::SGameMemInfo* CGameAllocator::FindFreeBlockFromTopOfHeap(uint size, int heapIndex) {
+  SGameMemInfo* iter = mHeaps[heapIndex].mLast;
+  SGameMemInfo* ret = nullptr;
+
+  while (iter != nullptr) {
+    if (!iter->IsAllocated() && iter->GetLength() >= size) {
+      ret = iter;
+      break;
+    }
+    iter = iter->GetPrev();
+  }
+
+  RemoveFreeEntryFromFreeList(ret, heapIndex);
+  return ret;
+}
+
+uint CGameAllocator::FixupAllocPtrs(SGameMemInfo* info, int heapIndex, const uint len,
+                                    uint roundedLen, EHint hint, const CCallStack& cs) {
+
+  const bool topOfHeap = (hint & kHI_TopOfHeap) != 0;
+  uint ret = 0;
+  const size_t blockLength = info->GetLength();
+  if (blockLength == roundedLen + sizeof(SGameMemInfo)) {
+    ret = sizeof(SGameMemInfo);
+    roundedLen += sizeof(SGameMemInfo);
+  }
+
+  SGameMemInfo* newPtr = info;
+  if (blockLength != roundedLen) {
+    SGameMemInfo* newInfo;
+
+    SGameMemInfo* infoNext = info->GetNext();
+    if (topOfHeap) {
+      newInfo =
+          reinterpret_cast< SGameMemInfo* >(reinterpret_cast< char* >(infoNext) - roundedLen) - 1;
+      const SGameMemInfo& block = SGameMemInfo(info, infoNext, nullptr, len, "", "");
+      *newInfo = block;
+      info->mSize -= roundedLen + sizeof(SGameMemInfo);
+      AddFreeEntryToFreeList(info, heapIndex);
+      newPtr = newInfo;
+    } else {
+      newInfo = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< uintptr_t >(info) + roundedLen +
+                                                  sizeof(SGameMemInfo));
+      SGameMemInfo* nextFree = info->mNextFree;
+      nextFree = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< uintptr_t >(nextFree) &
+                                                   ~(kAllocatorPointerBits - 1));
+      const SGameMemInfo& block = SGameMemInfo(
+          info, infoNext, nextFree, info->mSize - roundedLen - sizeof(SGameMemInfo), "", "");
+      *newInfo = block;
+      AddFreeEntryToFreeList(newInfo, heapIndex);
+    }
+    newPtr->mFileAndLine = cs.GetFileAndLineText();
+    newPtr->mType = cs.GetTypeText();
+    ret = sizeof(SGameMemInfo);
+
+    infoNext->SetPrev(newInfo);
+    info->SetNext(newInfo);
+  } else {
+    info->mFileAndLine = cs.GetFileAndLineText();
+    info->mType = cs.GetTypeText();
+  }
+
+  newPtr->SetTopOfHeapAllocated(topOfHeap);
+  newPtr->SetAllocated(true);
+  newPtr->mSize = len;
+  return ret;
+}
+
+void CGameAllocator::UpdateAllocDebugStats(int heapIndex, uint len, uint roundedLen, uint offset) {
+  SHeapMetrics& metrics = mHeaps[heapIndex].mMetrics;
+  ++metrics.mCurrentHeapAllocations;
+  ++metrics.mTotalHeapAllocations;
+  metrics.mRequestedHeapBytes += len;
+  metrics.mAllocatedHeapBytes += roundedLen + offset;
+  metrics.mFreeHeapBytes -= roundedLen + offset;
+
+  if (metrics.mCurrentHeapAllocations > metrics.mPeakHeapAllocations) {
+    metrics.mPeakHeapAllocations = metrics.mCurrentHeapAllocations;
+  }
+
+  if (metrics.mAllocatedHeapBytes > metrics.mPeakAllocatedHeapBytes) {
+    metrics.mPeakAllocatedHeapBytes = metrics.mAllocatedHeapBytes;
+  }
+
+  if (metrics.mAllocatedHeapBytes > metrics.mPeriodicPeakAllocatedHeapBytes) {
+    metrics.mPeriodicPeakAllocatedHeapBytes = metrics.mAllocatedHeapBytes;
+  }
+
+  if (len < metrics.mMinAllocationSize) {
+    metrics.mMinAllocationSize = len;
+  }
+
+  if (len > metrics.mMaxAllocationSize) {
+    metrics.mMaxAllocationSize = len;
+  }
+  metrics.mAverageAllocationSize =
+      (len + metrics.mAverageAllocationSize * (metrics.mTotalHeapAllocations - 1)) /
+      metrics.mTotalHeapAllocations;
+  if (len > 56) {
+    return;
+  }
+
+  ++mSmallHeapAllocations;
+}
+
+static inline uint GetMediumMemoryRequired(uint entries) {
+  return CMediumAllocPool::GetAllocMemoryRequired(entries) +
+         CMediumAllocPool::GetBookKeepingMemoryRequired(entries);
+}
+
+IAllocator::SAllocatorMetrics CGameAllocator::GetMetrics() const {
+  const uint heapSize = mHeaps[0].mMetrics.mHeapSize + mHeaps[1].mMetrics.mHeapSize;
+  const uint allocated =
+      mHeaps[0].mMetrics.mAllocatedHeapBytes + mHeaps[1].mMetrics.mAllocatedHeapBytes;
+  const uint mediumReserved =
+      mMediumPool ? GetMediumMemoryRequired(mMediumPool->GetTotalEntries()) : 0;
+  const uint mediumAvailable = mMediumPool ? mMediumPool->GetNumBlocksAvailable() : 0;
+  const uint mediumAllocated =
+      mMediumPool ? mMediumPool->GetTotalEntries() - mMediumPool->GetNumBlocksAvailable() : 0;
+  const uint mediumNumAllocs = mMediumPool ? mMediumPool->GetNumAllocs() : 0;
+  return SAllocatorMetrics(mSmallAllocPool ? mSmallAllocPool->GetNumAllocs() : 0,
+                           mSmallAllocPool ? mSmallAllocPool->GetAllocatedSize() : 0,
+                           mSmallAllocPool ? mSmallAllocPool->GetNumBlocksAvailable() : 0,
+                           mediumNumAllocs, mediumAllocated, mediumAvailable,
+                           mMem1HeapPhysicalAddress, mSmallPoolReservedBytes, mediumReserved,
+                           heapSize, allocated);
+}
+
+IAllocator::SHeapMetrics CGameAllocator::GetHeapMetrics(int index, uint flags) const {
+  SHeapMetrics snapshot = mHeaps[index].mMetrics;
+  if (flags & 1) {
+    mHeaps[index].mMetrics.mPeriodicPeakAllocatedHeapBytes = 0;
+  }
+  if (flags & 2) {
+    mHeaps[index].mMetrics.mPeakAllocatedHeapBytes = 0;
+  }
+  mHeaps[index].mMetrics.x30_ = 0;
+  return snapshot;
+}
+
+const char* CGameAllocator::GetHeapName(int index) const {
+  switch (index) {
+  case 0:
+    return "Default";
+  case 1:
+    return "GPU+Audio";
+  default:
+    return "?????";
+  }
+}
+
+int CGameAllocator::EnumAllocations(FEnumAllocationsCb func, const void* ptr, bool) const {
+  typedef rstl::pair< const SGameMemInfo*, int > HeapStart;
+  rstl::reserved_vector< HeapStart, kHeapCount > starts;
+  starts.push_back(HeapStart(mHeaps[0].mFirst, 0));
+  starts.push_back(HeapStart(mHeaps[1].mFirst, 1));
+  rstl::sort_by_key(starts);
+
+  int count = 0;
+  for (int i = 0; i < kHeapCount; ++i) {
+    const int heapIndex = starts[i].second;
+    const SGameMemInfo* info = starts[i].first;
+    while (info) {
+      if (!info->IsPriorGuardBlockIntact()) {
+        return -1;
+      }
+      if (!info->IsPostGuardBlockIntact()) {
+        return -1;
+      }
+      const SGameMemInfo* next = info->GetNext();
+      SAllocInfo allocInfo(info + 1, info->GetLength(), info->IsAllocated(), false,
+                           info->mFileAndLine, info->mType);
+      func(heapIndex, allocInfo, ptr);
+      ++count;
+      info = next;
+    }
+  }
+  return count;
+}
+
+void CGameAllocator::DumpAllocations() const {
+  int count = 0;
+  for (int index = 0; index < kHeapCount; ++index) {
+    for (const SGameMemInfo* info = mHeaps[index].mFirst; info; info = info->GetNext()) {
+      if (++count % 4 == 0) {
+        CStopwatch::Wait(0.005f);
+      }
+    }
+  }
+}
+
 #else
 static inline bool DoWait(int v) { return (v % 4) == 0; }
 
@@ -808,5 +1347,12 @@ size_t CGameAllocator::GetLargestFreeChunk() const {
 }
 #endif
 
-void CGameAllocator::OffsetFakeStatics(const int offset) { mFakeStatics += offset; }
+#endif
+
+#if RSTL_KYOTO_ALLOCATOR_OFFSET_FAKE_STATICS
+void CGameAllocator::OffsetFakeStatics(int offset) {
+#if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+  mFakeStatics += offset;
+#endif
+}
 #endif

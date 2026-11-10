@@ -594,13 +594,18 @@
 // which has neither (those builds do not compile these units yet).
 #define RSTL_KYOTO_REVOLUTION_SDK (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ)
 // COsContext's MEM1/MEM2 arenas and preallocated video buffers on Wii.
-#define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_KYOTO_WII_OS_CONTEXT (RSTL_VERSION >= RSTL_RM3E)
 // Wii Prime and Echoes add a readiness slot and identify disc requests as media type 2.
 #define RSTL_KYOTO_DVD_REQUEST_WII_PORT (RSTL_VERSION >= RSTL_R3IJ)
 // The prototype and later contexts have a virtual destructor.
 #define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
 // Wii Echoes retains the system aspect ratio as a separate word after its language.
-#define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
+#define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_KYOTO_WII_OS_CONTEXT)
+#if RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1 && !defined(PRIME2)
+#define RSTL_KYOTO_OS_CONTEXT_EXTRA_ARENA_FIELD 1
+#else
+#define RSTL_KYOTO_OS_CONTEXT_EXTRA_ARENA_FIELD 0
+#endif
 // Prime Trilogy reserves a larger auxiliary GPU buffer than Japanese Wii and Echoes.
 #define RSTL_KYOTO_OS_CONTEXT_LARGE_GPU_BUFFER (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00)
 // By-value scalar returns are declared const: the CBasics::SwapBytes overloads (which also take

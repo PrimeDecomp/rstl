@@ -284,7 +284,7 @@ public:
 #else
   void push_back(const T& in) {
 #endif
-    RS_ASSERT(mCount < N, "rstl precondition");
+    RSTL_PRECONDITION(mCount < N);
     if (reserved_vector_push_policy< T >::value) {
       reserved_vector_push_policy< T >::construct_element(data() + mCount, in);
     } else {

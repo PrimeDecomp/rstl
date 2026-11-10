@@ -69,6 +69,15 @@ public:
   void* AllocFromArena(size_t sz);
   void SetArenaBlockSize(int size); // Guessed name.
 
+#if RSTL_KYOTO_WII_OS_CONTEXT
+  uint GetMem1FreeRam() const {
+    return AlignedArenaAddress(mMem1ArenaHi) - AlignedArenaAddress(mMem1ArenaCurrent);
+  }
+  uint GetMem2FreeRam() const {
+    return AlignedArenaAddress(mArenaHi) - AlignedArenaAddress(mArenaLo2);
+  }
+#endif
+
   uint GetBaseFreeRam() const {
     size_t hiAddr = reinterpret_cast< size_t >(mArenaHi);
     size_t loAddr = reinterpret_cast< size_t >(mArenaLo2);
@@ -86,6 +95,9 @@ public:
 
 private:
   void* AllocFromMem1Arena(size_t sz); // Guessed name.
+  static size_t AlignedArenaAddress(const void* address) {
+    return (reinterpret_cast< size_t >(address) + 31) & ~31;
+  }
 
   int mRight;
   int mBottom;
@@ -104,6 +116,9 @@ private:
   EAspectRatio mAspectRatio;
 #endif
 #if RSTL_KYOTO_WII_OS_CONTEXT
+#if RSTL_KYOTO_OS_CONTEXT_EXTRA_ARENA_FIELD
+  uint x20_;
+#endif
   void* mMem1ArenaLo;
   void* mMem1ArenaHi;
   void* mMem1ArenaCurrent;
