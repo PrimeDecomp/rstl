@@ -105,6 +105,10 @@ RSTL_DECLARE_VECTOR_CONSTRUCTION(TEditorId)
 RSTL_DECLARE_VECTOR_CONSTRUCTION(pair< uint, TEditorId >)
 RSTL_DECLARE_VECTOR_RESERVE_CONSTRUCTION(pair< uint, TEditorId >)
 
+inline void construct(void* dest, const TEditorId& src) {
+  construction_policy< TEditorId, true >::construct(dest, src);
+}
+
 inline void construct(void* dest, TEditorId& src) {
   construction_policy< TEditorId, true >::construct(dest, src);
 }
