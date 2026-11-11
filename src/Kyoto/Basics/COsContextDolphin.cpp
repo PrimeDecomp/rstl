@@ -12,19 +12,8 @@
 #endif
 
 #if RSTL_KYOTO_WII_OS_CONTEXT
-// Shared Wii entry points; the games' SDK header sets expose different subsets.
-extern "C" {
-void SCInit(void);
-u32 SCCheckStatus(void);
-u8 SCGetLanguage(void);
-u8 SCGetAspectRatio(void);
-u8 SCGetEuRgb60Mode(void);
-void* OSGetMEM1ArenaLo(void);
-void* OSGetMEM1ArenaHi(void);
-void* OSGetMEM2ArenaLo(void);
-void* OSGetMEM2ArenaHi(void);
-void* OSAllocFromMEM2ArenaLo(u32 size, u32 align);
-}
+#include "dolphin/os/OSArena.h"
+#include "revolution/sc.h"
 
 // Guessed names for the private system-configuration helpers.
 static void EnsureSystemConfigReady() {
@@ -52,11 +41,6 @@ static COsContext::EAspectRatio GetSystemAspectRatio() {
   return static_cast< COsContext::EAspectRatio >(SCGetAspectRatio() == 1);
 }
 #endif
-
-bool COsContext::GetEuRgb60Mode() const {
-  EnsureSystemConfigReady();
-  return SCGetEuRgb60Mode() == 1;
-}
 #endif
 
 COsContext::COsContext(bool, bool)
@@ -230,6 +214,16 @@ int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool f
 }
 #endif
 
+#if RSTL_KYOTO_WII_OS_CONTEXT
+void* COsContext::AllocFromMem1Arena(size_t sz) {
+  void* result = OSAllocFromArenaLo(sz, 32);
+  mMem1ArenaCurrent = OSGetMEM1ArenaLo();
+  mMem1ArenaLo = OSGetMEM1ArenaLo();
+  mMem1ArenaHi = OSGetMEM1ArenaHi();
+  return result;
+}
+#endif
+
 void* COsContext::AllocFromArena(size_t sz) {
 #if defined(TARGET_PC)
   return operator new(sz);
@@ -254,11 +248,8 @@ int COsContext::GetLanguage() const { return mLanguage; }
 #endif
 
 #if RSTL_KYOTO_WII_OS_CONTEXT
-void* COsContext::AllocFromMem1Arena(size_t sz) {
-  void* result = OSAllocFromArenaLo(sz, 32);
-  mMem1ArenaCurrent = OSGetMEM1ArenaLo();
-  mMem1ArenaLo = OSGetMEM1ArenaLo();
-  mMem1ArenaHi = OSGetMEM1ArenaHi();
-  return result;
+bool COsContext::GetEuRgb60Mode() const {
+  EnsureSystemConfigReady();
+  return SCGetEuRgb60Mode() == 1;
 }
 #endif
