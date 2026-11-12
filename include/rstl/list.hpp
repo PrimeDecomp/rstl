@@ -152,9 +152,7 @@ public:
     node* n;
 #if RSTL_ALLOCATOR_INSTANCE
     GetAllocator().allocate(n, 1);
-#if RSTL_LIST_PRECONDITIONS
     RSTL_PRECONDITION(n != nullptr);
-#endif
 #if RSTL_LIST_CREATE_NODE_SETTERS
     n->set_prev(prev);
     n->set_next(next);
@@ -540,9 +538,7 @@ void list< T, Alloc >::exchange(node* nodeA, node* nodeB) {
 template < typename T, typename Alloc >
 inline typename list< T, Alloc >::iterator list< T, Alloc >::erase(const iterator& start,
                                                                    const iterator& end) {
-#if RSTL_LIST_PRECONDITIONS
   RSTL_PRECONDITION(start.get_node() != nullptr);
-#endif
   iterator it = start;
   while (it != end) {
     it = erase(it);

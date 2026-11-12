@@ -166,7 +166,7 @@
 #define RSTL_TRIVIAL_POINTERS                                                                      \
   ((RSTL_ECHOES && !RSTL_CORRUPTION) || RSTL_VERSION >= RSTL_R32J)
 // UInt destruction is also trivial in NPC Echoes; keep pointer policies independent.
-#define RSTL_TRIVIAL_UINT_DESTRUCTION (RSTL_TRIVIAL_POINTERS || RSTL_VERSION >= RSTL_R32J)
+#define RSTL_TRIVIAL_UINT_DESTRUCTION RSTL_TRIVIAL_POINTERS
 // Echoes skips float element cleanup, including NPC and Trilogy. Older Prime
 // callers retain their native empty element traversal.
 #define RSTL_TRIVIAL_FLOAT_DESTRUCTION (!RSTL_PRIME1)
@@ -235,10 +235,9 @@
 #define RSTL_SINGLE_PTR_DELETE_VIA_GET (RSTL_VERSION >= RSTL_R3IJ)
 // `rc_ptr` is the standalone implementation counting through `rc_ptr_private::sNull`.
 #define RSTL_RC_PTR_PRIVATE_COUNT RSTL_ECHOES
-// `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `rc_ptr_private::sNull`.
+// `rc_ptr` keeps `const T* mPtr` plus an `int* mCount` that starts at `rc_ptr_private::sNull`, and
+// supports converting construction and `Cast<U>()`.
 #define RSTL_RC_PTR_INLINE_COUNT (RSTL_VERSION >= RSTL_R3IJ)
-// The inline-count owner supports converting construction and `Cast<U>()`.
-#define RSTL_RC_PTR_CONVERSION RSTL_RC_PTR_INLINE_COUNT
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
@@ -513,8 +512,6 @@
 // Node construction initializes the links through their setters.
 // G2MEAB retains the create_node call for instruction, DVD request and map-hint lists.
 #define RSTL_LIST_CREATE_NODE_SETTERS (RSTL_VERSION == RSTL_G2MEAB)
-// `create_node` and the out-of-class `erase(start, end)` carry the (empty) precondition statements.
-#define RSTL_LIST_PRECONDITIONS 1
 // `list::remove_if` is defined in the class body (over nodes) even though the rest is out of class.
 #define RSTL_LIST_REMOVE_IF_IN_CLASS (RSTL_CORRUPTION)
 // `list::exchange` is a plain (not `inline`) member that links nodes through `mPrev` / `mNext`.
@@ -561,8 +558,6 @@
 #define RSTL_RBTREE_DIRECT_FIND_RETURN (RSTL_CORRUPTION)
 // `find_lower_bound` / `find_upper_bound` start with the (empty) root precondition.
 #define RSTL_RBTREE_BOUND_PRECONDITION (RSTL_CORRUPTION)
-// `create_node` carries the (empty) allocation precondition.
-#define RSTL_RBTREE_CREATE_PRECONDITION 1
 // The out-of-line members are defined in the prototype's own order (`copy_from`,
 // `free_node_and_sub_nodes`, `insert_into`), reach the children through `get_left()` /
 // `get_right()` and name the multi-flag template parameter `U`.
@@ -607,9 +602,6 @@
 // The CI overload accepts a filter only in the prototype; Echoes PAL still fixes GX_NEAR.
 #define RSTL_KYOTO_SPARE_CI_TEXTURE_FILTER (RSTL_CORRUPTION)
 // Basics, object tags, dependency groups.
-// Game selection, for the few sources that name a game's own headers or namespace (Corruption's
-// prototype and the retail builds).
-#define RSTL_KYOTO_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION < RSTL_R3IJ)
 // Prime on the Wii (Wii de Asobu and Trilogy) runs on the Revolution SDK: CBasics::Init also
 // calls NANDInit and CStopwatch::Wait uses fabsf. Echoes' Wii builds come from Echoes' copy,
 // which has neither (those builds do not compile these units yet).
@@ -628,7 +620,7 @@
 #define RSTL_KYOTO_DVD_REQUEST_MEDIA_TYPE_2 0
 #endif
 // The prototype and later contexts have a virtual destructor.
-#define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_KYOTO_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
+#define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
 // Wii Echoes retains the system aspect ratio as a separate word after its language.
 #define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_KYOTO_WII_OS_CONTEXT)
 #if RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1 && !defined(PRIME2)
