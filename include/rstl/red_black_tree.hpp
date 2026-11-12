@@ -397,9 +397,7 @@ private:
   node* create_node(node* left, node* right, node* parent, node_color color, const P& value) {
     node* n;
     Alloc::allocate(n, 1);
-#if RSTL_RBTREE_CREATE_PRECONDITION
     RSTL_PRECONDITION(n != nullptr);
-#endif
     new (n) node(left, right, parent, color, value);
     return n;
   }

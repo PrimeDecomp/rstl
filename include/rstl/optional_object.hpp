@@ -27,7 +27,7 @@ public:
 #else
   optional_object(const optional_object& other) : m_valid(other.m_valid) {
 #endif
-#if RSTL_OPTIONAL_COPY_PRECONDITION
+#if RSTL_OPTIONAL_PRECONDITIONS
     RSTL_PRECONDITION(this != &other);
     RSTL_PRECONDITION(m_data != nullptr);
 #endif
@@ -128,7 +128,7 @@ private:
 #endif
 
   void assign(const T& item) {
-#if RSTL_OPTIONAL_ASSIGN_PRECONDITION
+#if RSTL_OPTIONAL_PRECONDITIONS
     RSTL_PRECONDITION(m_valid == true || m_valid == false);
 #endif
     if (!m_valid) {

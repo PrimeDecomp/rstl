@@ -97,7 +97,7 @@ CTransform4f CTransform4f::RotateY(const CRelAngle& y) {
   );
 }
 
-#if RSTL_KYOTO_TRANSFORM4F_POINT_ARRAY_EULER
+#if RSTL_KYOTO_TRANSFORM4F_CORRUPTION
 CTransform4f CTransform4f::FromEulerAngles(const float& x, const float& y, const float& z,
                                            const CVector3f& translation) {
   const float cosZ = cos(z);
@@ -124,7 +124,7 @@ CTransform4f CTransform4f::RotateZ(const CRelAngle& z) {
   );
 }
 
-#if RSTL_KYOTO_TRANSFORM4F_FIELD_READS
+#if RSTL_KYOTO_TRANSFORM4F_CORRUPTION
 #define ROTATE_LOCAL_ELEMENT(n) m##n
 #else
 #define ROTATE_LOCAL_ELEMENT(n) Get##n()
@@ -520,7 +520,7 @@ CVector3f CTransform4f::operator*(const CVector3f& vec) const {
 }
 #endif
 
-#if RSTL_KYOTO_TRANSFORM4F_POINT_ARRAY_EULER
+#if RSTL_KYOTO_TRANSFORM4F_CORRUPTION
 void CTransform4f::TransformPointArray(const CVector3f* in, CVector3f* out, int count) const {
   if (count == 0) {
     return;

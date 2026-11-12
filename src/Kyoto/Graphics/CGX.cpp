@@ -11,7 +11,7 @@
 
 #include "limits.h"
 
-#if !RSTL_PRIME1 && !RSTL_KYOTO_CGX_SDK_FOG_COLOR
+#if !RSTL_PRIME1 && !RSTL_KYOTO_CGX_CORRUPTION
 #ifndef TARGET_PC
 struct GXData {
   ushort cpSRreg;
@@ -44,7 +44,7 @@ static GXVtxDescList sVtxDescList[GX_MAX_VTXDESCLIST_SZ];
 #if RSTL_PRIME1
 #define CGX_INLINE
 #define CGX_CPP
-#elif !RSTL_KYOTO_CGX_HEADER_APPLY_FOG
+#elif !RSTL_KYOTO_CGX_CORRUPTION
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
@@ -134,7 +134,7 @@ void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
   }
 }
 
-#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
+#if RSTL_KYOTO_CGX_CORRUPTION
 void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
   STevState& state = CGX_STATE.mTevStates[stage];
   const uchar flags = rasSel | (texSel << 2);
@@ -143,9 +143,7 @@ void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel t
     state.mSwapMode = flags;
   }
 }
-#endif
 
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
 void CGX::SetTevSwapModeTable(GXTevSwapSel table, GXTevColorChan red, GXTevColorChan green,
                               GXTevColorChan blue, GXTevColorChan alpha) {
   const uchar flags = red | (green << 2) | (blue << 4) | (alpha << 6);
@@ -322,7 +320,7 @@ void CGX::SetTevDirect(GXTevStageID stageId) {
 void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src, GXTexMtx mtx,
                          GXBool normalize, GXPTTexMtx postMtx) {
   STexState& state = CGX_STATE.mTexStates[dstCoord];
-#if RSTL_KYOTO_CGX_ABSOLUTE_TEX_MTX
+#if RSTL_KYOTO_CGX_CORRUPTION
   uint vm = mtx / 3;
 #else
   uint vm = (mtx - GX_TEXMTX0) / 3;
@@ -365,7 +363,7 @@ void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
   if (data == nullptr) {
     return;
   }
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   if (attr >= GX_VA_POS && attr < GX_VA_MAX_ATTR) {
     uint idx = attr - GX_VA_POS;
     if (CGX_STATE.mArrayPtrs[idx] == data && CGX_STATE.mArrayStrides[idx] == stride) {
@@ -386,7 +384,7 @@ void CGX::SetArray(GXAttr attr, const void* data, uchar stride) {
   GXSetArray(attr, const_cast< void* >(data), stride);
 }
 
-#if !RSTL_KYOTO_CGX_LATE_BEGIN_END
+#if !RSTL_KYOTO_CGX_CORRUPTION
 void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
   if (CGX_STATE.mChanFlags != 0) {
     FlushState();
@@ -425,7 +423,7 @@ CGX::STevState::STevState()
 , mTevOrderFlags(UINT_MAX)
 , mKColorSel(UCHAR_MAX)
 , mKAlphaSel(UCHAR_MAX)
-#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
+#if RSTL_KYOTO_CGX_CORRUPTION
 , mSwapMode(UCHAR_MAX)
 #endif
 {}
@@ -461,14 +459,14 @@ CGX::SGXState::SGXState()
   for (int i = 0; i < 4; ++i) {
     mKColors[i] = sGXClear;
   }
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   for (int i = 0; i < 4; ++i) {
     mTevSwapTables[i] = UCHAR_MAX;
   }
 #endif
   SetChanCtrl(Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   SetChanCtrl(Channel1, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   SetChanCtrl(Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   SetChanCtrl(Channel3, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   for (int fmt = 0; fmt < 8; ++fmt) {
@@ -483,7 +481,7 @@ void CGX::ResetGXStates() {
   CGX_STATE.mDescList = 0;
 
   GXClearVtxDesc();
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   for (int i = 0; i < 17; i++) {
     CGX_STATE.mArrayPtrs[i] = reinterpret_cast< const void* >(1);
     CGX_STATE.mArrayStrides[i] = 0;
@@ -499,7 +497,7 @@ void CGX::ResetGXStates() {
   for (int i = 0; i < 4; i++) {
     GXSetTevKColor(static_cast< GXTevKColorID >(i), CGX_STATE.mKColors[i]);
   }
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   SetChanCtrl(Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   SetChanCtrl(Channel1, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
   SetChanCtrl(Channel2, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
@@ -512,7 +510,7 @@ void CGX::ResetGXStates() {
   GXSetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
   GXSetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
   GXSetTevSwapModeTable(GX_TEV_SWAP3, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_BLUE);
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
   SetTevSwapModeTable(GX_TEV_SWAP1, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_RED);
   SetTevSwapModeTable(GX_TEV_SWAP2, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_GREEN);
@@ -526,7 +524,7 @@ void CGX::ResetGXStates() {
   }
   for (int i = 0; i < 16; i++) {
     SetTevDirect(static_cast< GXTevStageID >(i));
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
     SetTevSwapMode(static_cast< GXTevStageID >(i), GX_TEV_SWAP0, GX_TEV_SWAP0);
 #endif
   }
@@ -539,7 +537,7 @@ void CGX::ResetGXStates() {
   GXSetMisc(GX_MT_XF_FLUSH, 8);
   GXSetDither(GX_FALSE);
 #endif
-#elif RSTL_KYOTO_CGX_EXTENDED_STATE
+#elif RSTL_KYOTO_CGX_CORRUPTION
   GXSetMisc(GX_MT_XF_FLUSH, 8);
   GXSetDither(GX_TRUE);
   GXSetDstAlpha(GX_FALSE, 0);
@@ -603,7 +601,7 @@ void CGX::FlushState() {
     GXSetNumChans(CGX_STATE.mNumChans);
     CGX_STATE.mPrevNumChans = CGX_STATE.mNumChans;
   }
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
   for (int i = 0; i < 4; ++i) {
     if (CGX_STATE.mChanFlags & (1 << (i + 1))) {
       FlushChanCtrl(static_cast< GXChannelID >(GX_COLOR0 + i), CGX_STATE.mChanCtrls[i]);
@@ -812,7 +810,7 @@ void CGX::CallDisplayList(const void* ptr, size_t size) {
   GXCallDisplayList(const_cast< void* >(ptr), size);
 }
 
-#if RSTL_KYOTO_CGX_LATE_BEGIN_END
+#if RSTL_KYOTO_CGX_CORRUPTION
 void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
   if (CGX_STATE.mChanFlags != 0) {
     FlushState();
@@ -861,7 +859,7 @@ uchar CGX::GetNumTexGens() { return CGX_STATE.mNumTexGens; }
 
 uchar CGX::GetNumTevStages() { return CGX_STATE.mNumTevStages; }
 
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
 void CGX::GetTexCoordGen(GXTexCoordID coord, GXTexGenType* type, GXTexGenSrc* source,
                          int* matrixIndex, GXBool* normalize, GXPTTexMtx* postMatrix) {
   const STexState& state = CGX_STATE.mTexStates[coord];
@@ -986,9 +984,7 @@ void CGX::SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count, GXCompType t
   }
   GXSetVtxAttrFmt(fmt, attr, count, type, frac);
 }
-#endif
 
-#if RSTL_KYOTO_CGX_OUTLINED_HELPERS
 void CGX::LoadPosMtxImm(const float mtx[][4], unsigned long id) {
   GXLoadPosMtxImm(const_cast< MtxPtr >(mtx), id);
 }
@@ -998,7 +994,7 @@ void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
 }
 #endif
 
-#if !defined(TARGET_PC) && !RSTL_KYOTO_CGX_SDK_FOG_COLOR
+#if !defined(TARGET_PC) && !RSTL_KYOTO_CGX_CORRUPTION
 static inline void write_bp_cmd(u32 cmd) {
   GXWGFifo.u8 = GX_LOAD_BP_REG;
   GXWGFifo.u32 = cmd;
@@ -1014,14 +1010,14 @@ void CGX::update_fog(uint flags) {
     return;
   }
   if ((flags & 0xE0) == 0x20) {
-#if defined(TARGET_PC) || RSTL_KYOTO_CGX_SDK_FOG_COLOR
+#if defined(TARGET_PC) || RSTL_KYOTO_CGX_CORRUPTION
     static const GXColor sGXClear = {0, 0, 0, 0};
     GXSetFogColor(sGXClear);
 #else
     write_bp_cmd(0xf2000000);
 #endif
   } else {
-#if defined(TARGET_PC) || RSTL_KYOTO_CGX_SDK_FOG_COLOR
+#if defined(TARGET_PC) || RSTL_KYOTO_CGX_CORRUPTION
     GXSetFogColor(CGX_STATE.mFogParams.mFogColor);
 #else
     write_bp_cmd((CGX_STATE.mFogParams.mFogColor.b) | (CGX_STATE.mFogParams.mFogColor.g << 8) |

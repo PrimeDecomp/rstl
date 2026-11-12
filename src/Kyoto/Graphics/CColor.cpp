@@ -24,7 +24,7 @@ const CColor& CColor::White() { return sWhiteColor; }
 #endif
 #endif
 
-#if !RSTL_CCOLOR_INLINE_GREY
+#if !RSTL_CCOLOR_INLINE_CONSTANTS
 const CColor& CColor::Grey() { return sGreyColor; }
 #endif
 // TODO: verify that this Prime/Echoes difference is real
@@ -41,7 +41,7 @@ const CColor& CColor::Green() { return sGreenColor; }
 #endif
 
 const CColor& CColor::Blue() { return sBlueColor; }
-#if !RSTL_CCOLOR_INLINE_YELLOW
+#if !RSTL_CCOLOR_INLINE_CONSTANTS
 const CColor& CColor::Yellow() { return sYellowColor; }
 #endif
 // TODO: verify that this Prime/Echoes difference is real

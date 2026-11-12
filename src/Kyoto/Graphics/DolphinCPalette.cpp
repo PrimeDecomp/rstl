@@ -135,7 +135,7 @@ void* CGraphicsPalette::Lock() {
 #endif
 
 void CGraphicsPalette::UnLock() {
-#if RSTL_KYOTO_PALETTE_UNLOCK_STORE_RANGE
+#if !RSTL_KYOTO_PALETTE_GPU_MEMORY
   DCStoreRange(mEntries.get(), mEntryCount * sizeof(ushort));
 #endif
 #if defined(TARGET_PC)

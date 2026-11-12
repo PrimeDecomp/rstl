@@ -19,13 +19,13 @@ public:
   explicit COutputStream(int len);
   virtual ~COutputStream();
   virtual void Write(const void* ptr, size_t len) = 0;
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
   void WriteBits(uint val, uint bitCount);
 #endif
 
   void DoPut(const void* ptr, size_t len);
   void DoFlush();
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
   void Flush();
   void FlushShiftRegister();
   void Put(const void* ptr, size_t len) {
@@ -63,7 +63,7 @@ public:
   }
 
   void WriteBool(const bool b) {
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
     FlushShiftRegister();
 #endif
     if (mUnwrittenLen >= mBufLen) {
@@ -73,7 +73,7 @@ public:
     *(static_cast< uchar* >(mBufPtr) + mUnwrittenLen++) = b ? 1 : 0;
   }
   void WriteChar(const uchar c) {
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
     FlushShiftRegister();
 #endif
     if (mUnwrittenLen >= mBufLen) {
@@ -90,7 +90,7 @@ private:
   uint mBufLen;
   void* mBufPtr;
   uint mNumWrites;
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
   uint mShiftRegister;
   volatile uint mShiftRegisterOffset;
 #endif
@@ -100,7 +100,7 @@ private:
 };
 
 #if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
-DECLARE_FULL_SIZE_FOR(COutputStream, RSTL_KYOTO_OUTPUT_SHIFT_REGISTER ? 0x7C : 0x74)
+DECLARE_FULL_SIZE_FOR(COutputStream, RSTL_KYOTO_PRIME_OUTPUT_STREAM ? 0x7C : 0x74)
 #else
 DECLARE_FULL_SIZE_FOR(COutputStream, 0x1C)
 #endif
@@ -111,7 +111,7 @@ inline void coutput_stream_helper(const T& t, COutputStream& out) {
   t.PutTo(out);
 }
 
-#if RSTL_KYOTO_OUTPUT_PAIR_HELPER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
 template < typename L, typename R >
 inline void coutput_stream_helper(const rstl::pair< L, R >& t, COutputStream& out) {
   out.Put(t.first);

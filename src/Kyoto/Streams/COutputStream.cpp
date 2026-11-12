@@ -18,7 +18,7 @@ COutputStream::COutputStream(const int len)
 , mBufPtr(rs_new_line(22) uchar[len])
 #endif
 , mNumWrites(0)
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
 , mShiftRegister(0)
 , mShiftRegisterOffset(32)
 #if RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER
@@ -69,7 +69,7 @@ void COutputStream::DoPut(const void* ptr, const size_t len) {
   }
 }
 
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
 void COutputStream::Flush() {
   FlushShiftRegister();
   DoFlush();
@@ -83,7 +83,7 @@ void COutputStream::DoFlush() {
   }
 }
 
-#if RSTL_KYOTO_OUTPUT_SHIFT_REGISTER
+#if RSTL_KYOTO_PRIME_OUTPUT_STREAM
 void COutputStream::FlushShiftRegister() {
   if (mShiftRegisterOffset < 32) {
     mShiftRegister = CBasics::SwapBytes(mShiftRegister);

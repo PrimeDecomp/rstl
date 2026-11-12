@@ -34,7 +34,7 @@ static inline int round_up_32(int val) { return (val + 31) & ~31; }
 CPakFile::CResInfo::CResInfo(CAssetId id, uint type, uint offset, uint size,
                              uint flags IF_NOT_RSTL_PRIME1(, uint lookaheadAfterResourceSize))
 : mId(id) {
-#if RSTL_KYOTO_ASSET_TYPES_LIST
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   const uint typeIndex = CAssetTypesList::GetIndexForFourCC(type);
 #else
   const uint typeIndex = CFactoryMgr::FourCCToTypeIdx(type);
@@ -63,7 +63,7 @@ CPakFile::CResInfo::CResInfo(CAssetId id, uint type, uint offset, uint size,
       "Lookahead size too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
 }
 
-#if RSTL_KYOTO_PAK_RES_INFO_COPY
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
 CPakFile::CResInfo::CResInfo(const CResInfo& other) : mId(other.mId) {
   memcpy(mData, other.mData, sizeof(mData));
 }
@@ -77,7 +77,7 @@ void CPakFile::CResInfo::operator=(const CResInfo& other) {
 #endif
 
 uint CPakFile::CResInfo::GetType() const {
-#if RSTL_KYOTO_ASSET_TYPES_LIST
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   return CAssetTypesList::GetFourCCForIndex(mData[0] & 0x7f);
 #else
   return CFactoryMgr::TypeIdxToFourCC(mData[0] & 0x7f);
@@ -182,7 +182,7 @@ void CPakFile::AsyncIdle() {
 }
 
 void CPakFile::Warmup() {
-#if RSTL_KYOTO_PAK_LARGE_HEADER_READ
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   const int length = rstl::min_val< int >(mFile.Length(), 16384);
 #else
   const int length = rstl::min_val< int >(mFile.Length(), 8192);
@@ -479,7 +479,7 @@ void CPakFile::StashWorldPak() {
 void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
   rstl::reserved_vector< uint, 256 > bucketCounts(256, 0);
 
-#if RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   const CResInfo defaultResInfo = CResInfo::SearchKey(kInvalidAssetId);
 #else
   const CResInfo defaultResInfo = CResInfo(0, 'TXTR', 0, 0, 0, 0);
@@ -490,7 +490,7 @@ void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
   mBucketOffsets.reserve(257);
   for (ResListType::const_iterator it = sortedResources.begin(); it != sortedResources.end(); ++it)
     ++bucketCounts[GetBucketForId(it->GetId())];
-#if RSTL_KYOTO_PAK_BUCKET_RESET_BEFORE_OFFSET
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   uint offset = 0;
   mBucketOffsets.push_back_unsafe(offset);
   for (int i = 0; i < 256; ++i) {
@@ -543,7 +543,7 @@ void CPakFile::EnsureWorldPakReady() {
     uint size = round_up_32(mResTableCount * sizeof(CResInfo));
 #else
     ResListType resources;
-#if RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
     const CResInfo defaultResInfo(kInvalidAssetId, 'TXTR', 0, 0, 0, 0);
     resources.resize(mResTableCount, defaultResInfo);
 #else

@@ -33,12 +33,12 @@ public:
     uchar mData[7];
 #endif
 
-#if !RSTL_KYOTO_PAK_RES_INFO_COPY
+#if !RSTL_KYOTO_PAK_FILE_CORRUPTION
     CResInfo(CAssetId id, uint type, uint offset, uint size, uint flags);
 #endif
     CResInfo(CAssetId id, uint type, uint offset, uint size, uint flags,
              uint lookaheadAfterResourceSize);
-#if RSTL_KYOTO_PAK_RES_INFO_COPY
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
     CResInfo(const CResInfo& other);
     void operator=(const CResInfo& other);
 #endif
@@ -132,7 +132,7 @@ private:
 #if !RSTL_PRIME1
   rstl::vector< int > mBucketOffsets;
 #endif
-#if RSTL_KYOTO_PAK_ASSET_NAMES
+#if RSTL_KYOTO_PAK_FILE_CORRUPTION
   rstl::vector< rstl::pair< CAssetId, rstl::string > > x98_names; // Guessed name
 #endif
 #if !RSTL_PRIME1
@@ -140,10 +140,10 @@ private:
 #endif
   int mCurrentSeek;
 };
-CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : RSTL_KYOTO_PAK_ASSET_NAMES ? 0xac : 0x9c)
+CHECK_SIZEOF(CPakFile, RSTL_PRIME1 ? 0x88 : RSTL_KYOTO_PAK_FILE_CORRUPTION ? 0xac : 0x9c)
 NESTED_CHECK_SIZEOF(CPakFile, CResInfo, RSTL_PRIME1 ? 0xa : RSTL_KYOTO_ASSET_ID_CLASS ? 0xf : 0xb)
 
-#if !RSTL_PRIME1 && !RSTL_KYOTO_PAK_RES_INFO_COPY
+#if !RSTL_PRIME1 && !RSTL_KYOTO_PAK_FILE_CORRUPTION
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPakFile::CResInfo)
 }
