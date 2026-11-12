@@ -7,6 +7,10 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 
+#if !RSTL_BITWISE_CONSTRUCTION_TAIL_WORD
+#include <string.h>
+#endif
+
 // Release rstl keeps its precondition checks as empty statements. They still count
 // toward MWCC's inline size limit, which decides where uninitialized_copy is outlined.
 #define RSTL_PRECONDITION(cond) ((void)0)
@@ -157,7 +161,24 @@ void bitwise_copy(void* dest, const void* src) {
   }
 }
 
+#if RSTL_BITWISE_CONSTRUCTION_TAIL_WORD
 // A trailing 4-byte remainder is copied inline after the double-word block.
+#define RSTL_BITWISE_CONSTRUCT(T, dest, src)                                                       \
+  bitwise_copy< sizeof(T) / sizeof(double) >(dest, &src);                                          \
+  if (sizeof(T) % sizeof(double) != 0) {                                                           \
+    static_cast< uint* >(dest)[sizeof(T) / sizeof(uint) - 1] =                                     \
+        reinterpret_cast< const uint* >(&src)[sizeof(T) / sizeof(uint) - 1];                       \
+  }
+#else
+// A size that is not a whole number of doubles is copied with memcpy instead.
+#define RSTL_BITWISE_CONSTRUCT(T, dest, src)                                                       \
+  if (sizeof(T) % sizeof(double) != 0) {                                                           \
+    memcpy(dest, &src, sizeof(T));                                                                 \
+  } else {                                                                                         \
+    bitwise_copy< sizeof(T) / sizeof(double) >(dest, &src);                                        \
+  }
+#endif
+
 #define RSTL_DECLARE_BITWISE_CONSTRUCTION(T)                                                       \
   template <>                                                                                      \
   struct use_assignment_for_construction< T > {                                                    \
@@ -165,13 +186,7 @@ void bitwise_copy(void* dest, const void* src) {
   };                                                                                               \
   template <>                                                                                      \
   struct construction_policy< T, true > {                                                          \
-    static void construct(void* dest, const T& src) {                                              \
-      bitwise_copy< sizeof(T) / sizeof(double) >(dest, &src);                                      \
-      if (sizeof(T) % sizeof(double) != 0) {                                                       \
-        static_cast< uint* >(dest)[sizeof(T) / sizeof(uint) - 1] =                                 \
-            reinterpret_cast< const uint* >(&src)[sizeof(T) / sizeof(uint) - 1];                   \
-      }                                                                                            \
-    }                                                                                              \
+    static void construct(void* dest, const T& src) { RSTL_BITWISE_CONSTRUCT(T, dest, src) }       \
   };
 
 #define ECHOES_RSTL_DECLARE_BITWISE_CONSTRUCTION(T)                                                \

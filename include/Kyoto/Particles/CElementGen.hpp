@@ -211,7 +211,7 @@ public:
   void UpdateLightParameters();
   void UpdateAdvanceAccessParameters(int particleIndex, int particleFrame);
   bool UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                             ,
                             const CVector3f& scaledTranslation
 #endif
@@ -226,9 +226,13 @@ public:
                                              ushort seed) const;
   static CParticleGen*
   ConstructChildParticleSystem(const CToken& description, uint type, short seed,
-                               EOptionalSystemFlags flags, bool modelsUseLights, bool emission,
-                               const CVector3f& translation, const CTransform4f& orientation,
-                               const CVector3f& globalTranslation,
+#if RSTL_PARTICLE_BOUNDS_MODES
+                               EOptionalSystemFlags flags,
+#else
+                               bool optsEnabled,
+#endif
+                               bool modelsUseLights, bool emission, const CVector3f& translation,
+                               const CTransform4f& orientation, const CVector3f& globalTranslation,
                                const CTransform4f& globalOrientation, const CVector3f& globalScale,
                                const CColor& modulationColor, const CVector3f& localScale);
 #endif
@@ -364,7 +368,7 @@ public:
   bool mWarmedUp : 1;
   bool mModelsUseLights : 1;
   bool mEnableOPTS : 1;
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
   // Guessed names, based on the bounds consumers and FXBR/FXBO properties.
   bool mEnableDynamicBounds : 1;
   bool mEnableFixedBounds : 1;

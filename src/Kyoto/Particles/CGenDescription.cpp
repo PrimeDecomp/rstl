@@ -18,6 +18,8 @@ static const size_t skGenOffsets[] = {
     offsetof(CGenDescription, mTIND),
 #if !RSTL_PRIME1
     offsetof(CGenDescription, mXTAD),
+#endif
+#if RSTL_PARTICLE_BOUNDS_MODES
     offsetof(CGenDescription, mFXBR),
     offsetof(CGenDescription, mFXBO),
 #endif
@@ -84,8 +86,10 @@ CGenDescription::CGenDescription()
 #endif
 
 , mOPTS(false)
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_RDOP
 , mRDOP(true)
+#endif
+#if !RSTL_PRIME1
 , mVMPC(false)
 #endif
 
@@ -96,6 +100,8 @@ CGenDescription::CGenDescription()
 , mTIND(nullptr)
 #if !RSTL_PRIME1
 , mXTAD(nullptr)
+#endif
+#if RSTL_PARTICLE_BOUNDS_MODES
 , mFXBR(nullptr)
 , mFXBO(nullptr)
 #endif

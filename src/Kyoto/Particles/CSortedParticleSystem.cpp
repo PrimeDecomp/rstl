@@ -19,7 +19,11 @@ CSortedParticleSystem::CSortedParticleSystem(TToken< CSortedParticleSystemDescri
 , mGeneratorRate(1.f)
 , mParticleCount(0)
 , mPrevFrame(-1)
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
 , mOptionalFlags(flags)
+#else
+, mEnableOPTS(flags & CElementGen::kOSF_Two)
+#endif
 , mModelsUseLights(modelsUseLights)
 , mParticleEmission(true)
 , mGlobalTranslation(CVector3f::Zero())
@@ -228,9 +232,15 @@ void CSortedParticleSystem::UpdateChildParticleSystems(double dt) {
         const ushort seed = (i + mCurFrame + 1) * 100 + mRandom.GetSeed();
         if (info.GetType() == 'PART' && mChildren.size() < mChildren.capacity()) {
           CParticleGen* child = CElementGen::ConstructChildParticleSystem(
-              *info.GetToken(), info.GetType(), seed, mOptionalFlags, mModelsUseLights,
-              mParticleEmission, CVector3f::Zero(), CTransform4f::Identity(), mGlobalTranslation,
-              mGlobalOrientation, mGlobalScale, CColor::White(), CVector3f::One());
+              *info.GetToken(), info.GetType(), seed,
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
+              mOptionalFlags,
+#else
+              mEnableOPTS,
+#endif
+              mModelsUseLights, mParticleEmission, CVector3f::Zero(), CTransform4f::Identity(),
+              mGlobalTranslation, mGlobalOrientation, mGlobalScale, CColor::White(),
+              CVector3f::One());
           if (child) {
             mChildren.push_back(child);
           }

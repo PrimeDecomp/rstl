@@ -15,6 +15,11 @@
 #define RSTL_G2ME 10
 #define RSTL_G2MP 11
 #define RSTL_G2MJ 12
+// Prime 2 GC demo discs. They predate retail but are numbered after it, so ranges that
+// must include or exclude them name them explicitly (RSTL_ECHOES_DEMO, RSTL_ECHOES_GC).
+#define RSTL_P2ME 13 // v0.160 Echoes Bonus Disc
+#define RSTL_D75E 14 // Multi-Game Demo Disc v20
+#define RSTL_D84P 15 // EUR Interactive Multi-Game Demo Disc: November 2004
 
 // Prime 3 Standalone
 #define RSTL_G2MEAB 20  // E3 2006 Prototype
@@ -41,6 +46,10 @@
 #else
 #define RSTL_PRIME1 0
 #endif
+// RSTL_ECHOES_DEMO selects the GameCube Echoes demo discs; RSTL_ECHOES_GC selects every
+// GameCube Echoes build, retail and demo.
+#define RSTL_ECHOES_DEMO (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION <= RSTL_D84P)
+#define RSTL_ECHOES_GC (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_D84P)
 // RSTL_ECHOES groups GameCube Echoes with Corruption, including the built E3 prototype.
 // Retail Corruption selections are provisional; see Prime's MCP shared-rstl.md for build coverage.
 #define RSTL_ECHOES (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION < RSTL_R3IJ)
@@ -60,20 +69,45 @@
 // Wii Echoes passes the input mix through while RSF decoding is muted.
 #define RSTL_RSF_AUDIO_MUTE_PASSTHROUGH (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // GameCube Echoes emits the streamed compression duration method in the reader TU.
-#define RSTL_CFB_ANIMATION_DURATION_IN_READER \
-  (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_CFB_ANIMATION_DURATION_IN_READER (!RSTL_PRIME1 && RSTL_ECHOES_GC)
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
-#define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_CGX_STATE_POINTER RSTL_ECHOES_GC
 // CParticleSwoosh.cpp ends with a function the retail link stripped; its weak
 // `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
-#define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_PARTICLE_SWOOSH_GEN_CLEAR RSTL_ECHOES_GC
+
+// Retail Echoes and later particle systems have fixed (FXBR/FXBO) and dynamic bounds modes;
+// Prime and the Echoes demo discs always accumulate dynamic bounds.
+#define RSTL_PARTICLE_BOUNDS_MODES (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+// Spawn and sorted particle systems keep the optional system flags for their children; the Echoes
+// demo discs keep only the OPTS bit.
+#define RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS (!RSTL_ECHOES_DEMO)
+
+// Retail Echoes and later velocity sources work relative to the translation in emitter scale space;
+// Prime and the Echoes demo discs use the unscaled translation.
+#define RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+
+// Retail Echoes and later particle descriptions have the RDOP (render particles) flag.
+#define RSTL_PARTICLE_RDOP (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+
+// CElementGen behaviour added after the Echoes demo discs (absent from Prime too): the system is
+// the current particle system while it constructs, scale setters clamp near-zero components, a new
+// particle that a velocity source ends at once is discarded, bounds are padded by half the largest
+// particle size, model positions are rotated by the global orientation, and sorting more than 128
+// particles uses a heap buffer.
+#define RSTL_PARTICLE_ELEMENT_GEN_RETAIL (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+
+// Bitwise construction copies the trailing word of a type whose size is not a whole number of
+// doubles inline; the Echoes demo discs memcpy such types instead.
+#define RSTL_BITWISE_CONSTRUCTION_TAIL_WORD (!RSTL_ECHOES_DEMO)
 
 // Prime and US GameCube Echoes normalize the offset from the emitter origin.
-#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
+#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE                                                       \
+  (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME && !RSTL_ECHOES_DEMO)
 
 // Japanese GameCube Echoes and later Prime 2 and Prime 3 builds use a line-spacing override.
-#define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
+#define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ && !RSTL_ECHOES_DEMO)
 
 // Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)

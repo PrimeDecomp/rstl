@@ -62,8 +62,10 @@ public:
 #endif
 
   bool mOPTS : 1;
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_RDOP
   bool mRDOP : 1;
+#endif
+#if !RSTL_PRIME1
   bool mVMPC : 1;
 #endif
 
@@ -74,6 +76,8 @@ public:
   CUVElement* mTIND;
 #if !RSTL_PRIME1
   CIntElement* mXTAD;
+#endif
+#if RSTL_PARTICLE_BOUNDS_MODES
   CRealElement* mFXBR;
   CVectorElement* mFXBO;
 #endif
@@ -141,6 +145,6 @@ public:
 #endif
 
 };
-CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : 0x150)
+CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
 
 #endif // _CGENDESCRIPTION
