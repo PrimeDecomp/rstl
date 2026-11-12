@@ -512,7 +512,7 @@ public:
   }
 
   static const CTransform4f& GetModelMatrix() { return mModelMatrix; }
-#if RSTL_KYOTO_UCHAR_LIGHT_MASK
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   static uchar GetLightMask() { return mLightActive; }
 #else
   static uint GetLightMask() { return mLightActive; }

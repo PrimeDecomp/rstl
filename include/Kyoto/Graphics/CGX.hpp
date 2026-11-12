@@ -20,7 +20,7 @@ class CColor;
 #define CGX_STATE (CGX::sGXState)
 #endif
 
-#if RSTL_KYOTO_CGX_GXBOOL_ZMODE
+#if RSTL_KYOTO_CGX_CORRUPTION
 typedef GXBool TZModeFlag;
 #else
 typedef bool TZModeFlag;
@@ -66,7 +66,7 @@ public:
   };
 
   struct SGXState {
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
     const void* mArrayPtrs[17];
     uchar mArrayStrides[17]; // Guessed name
     uchar x55[3];
@@ -83,7 +83,7 @@ public:
     union {
       uchar mChanFlags;
       struct {
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
         uchar unused : 3;
         uchar chansDirty : 4;
 #else
@@ -107,14 +107,14 @@ public:
     STexState mTexStates[8];
     uint mAlphaCompare;
     SFogParams mFogParams;
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
     uchar mTevSwapTables[4]; // Guessed name
 #endif
 #if !RSTL_PRIME1
     bool mDstAlphaEnabled;
     uchar mDstAlpha;
 #endif
-#if RSTL_KYOTO_CGX_EXTENDED_STATE
+#if RSTL_KYOTO_CGX_CORRUPTION
     uint mVtxAttrSizes[8][GX_VA_MAX_ATTR]; // Guessed name
 #endif
 
@@ -237,7 +237,7 @@ public:
                      float* fogFarZ, GXColor* fogColor);
 
   static inline bool CompareGXColors(const GXColor& lhs, const GXColor& rhs) {
-#if RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE
+#if RSTL_KYOTO_CGX_CORRUPTION
     return *(uint*)&lhs == *(uint*)&rhs;
 #else
     return *reinterpret_cast< const uint* >(&lhs) == *reinterpret_cast< const uint* >(&rhs);
@@ -283,14 +283,14 @@ inline void CGX::LoadNrmMtxIndx3x3(ushort index, uint slot) {
   GXLoadNrmMtxIndx3x3(index, slot);
 }
 
-#if !RSTL_KYOTO_CGX_EXTENDED_STATE
+#if !RSTL_KYOTO_CGX_CORRUPTION
 inline void CGX::SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count,
                                 GXCompType type, uchar frac) {
   GXSetVtxAttrFmt(fmt, attr, count, type, frac);
 }
 #endif
 
-#if RSTL_KYOTO_CGX_HEADER_APPLY_FOG
+#if RSTL_KYOTO_CGX_CORRUPTION
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
@@ -301,7 +301,7 @@ inline void CGX::apply_fog() {
 }
 #endif
 
-#if !RSTL_KYOTO_CGX_OUTLINED_HELPERS
+#if !RSTL_KYOTO_CGX_CORRUPTION
 inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
   GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);
 }
@@ -352,7 +352,7 @@ inline CGX::STexState::STexState() : mCoordGen(0) {}
 #endif // TARGET_PC
 
 #else // RSTL_PRIME1
-NESTED_CHECK_SIZEOF(CGX, SGXState, RSTL_KYOTO_CGX_EXTENDED_STATE ? 0x5d8 : 0x264)
+NESTED_CHECK_SIZEOF(CGX, SGXState, RSTL_KYOTO_CGX_CORRUPTION ? 0x5d8 : 0x264)
 #endif
 
 #endif // _CGX

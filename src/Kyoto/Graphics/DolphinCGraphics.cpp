@@ -17,7 +17,7 @@
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 #include "Kyoto/CSignal0.hpp"
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "rstl/optional_object.hpp"
@@ -37,7 +37,7 @@ static bool sGXAborted;
 #endif
 
 bool CGraphicsSys::mGraphicsInitialized;
-#if !RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
 static CStopwatch sFPSTimer;
 #endif
 #if RSTL_PRIME1
@@ -199,7 +199,7 @@ CTevCombiners::CTevPass CGraphics::kEnvModulateColorByAlpha(
     CTevCombiners::kAS_PreviousAlpha
   )
 );
-#if RSTL_KYOTO_GRAPHICS_EXTENDED_API
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 // Guessed name
 CTevCombiners::CTevPass CGraphics::kEnvAddPrevious(
   CTevCombiners::ColorPass(
@@ -218,7 +218,7 @@ CTevCombiners::CTevPass CGraphics::kEnvAddPrevious(
 #endif
 // clang-format on
 
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 static CStopwatch sFPSTimer;
 static rstl::optional_object< CGraphics::SDrawSyncState > sDrawSyncState;
 static TSignal0 sDrawDoneSignal;
@@ -234,7 +234,7 @@ uint* CGraphics::clrBuffer;
 
 bool CGraphics::mJustReset;
 ERglCullMode CGraphics::mCullMode;
-#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
 int CGraphics::mNumLightsActive;
 #endif
 float CGraphics::mDepthNear;
@@ -244,7 +244,7 @@ STextureCoordinate* CGraphics::mpTxtBuffer0;
 STextureCoordinate* CGraphics::mpTxtBuffer1;
 uint* CGraphics::mpClrBuffer;
 
-#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
 // Guessed name inherited from Prime; these unused fields are not yet identified.
 struct CGXLightParams {
   int x0_;
@@ -274,7 +274,7 @@ CVector3f CGraphics::kDefaultDirectionVector(0.f, 1.f, 0.f);
 CGraphics::CProjectionState CGraphics::mProj(true, -1.f, 1.f, 1.f, -1.f, 1.f, 100.f);
 CTransform4f CGraphics::mViewMatrix = CTransform4f::Identity();
 CTransform4f CGraphics::mModelMatrix = CTransform4f::Identity();
-#if RSTL_KYOTO_GRAPHICS_BLUE_CLEAR_COLOR
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 CColor CGraphics::mClearColor = CColor::Blue();
 #else
 CColor CGraphics::mClearColor = CColor::Black();
@@ -313,7 +313,7 @@ int CGraphics::mFlippingState;
 bool CGraphics::mLastFrameUsedAbove;
 bool CGraphics::mInterruptLastFrameUsedAbove;
 uchar CGraphics::mLightActive;
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 uchar CGraphics::mAlphaLightMask;
 int CGraphics::mLightingMode;
 CColor CGraphics::mLightingColor = CColor::Black();
@@ -364,7 +364,7 @@ ELightType CGraphics::mLightTypes[8] = {
 };
 
 const CTevCombiners::CTevPass& CGraphics::kEnvPassthru = CTevCombiners::kEnvPassthru;
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 int CGraphics::mCurrentAlphaContext = 1;
 #endif
 bool CGraphics::mIsBeginSceneClearFb = true;
@@ -392,7 +392,7 @@ bool CGraphics::sIsPAL; // Guessed name; PAL TV format.
 
 const GXTexMapID CGraphics::kSpareBufferTexMapID = GX_TEXMAP7;
 
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 static void DispatchDrawDoneCallbacks() { sDrawDoneSignal.Emit(); }
 #endif
 
@@ -453,7 +453,7 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
   CGX::ResetGXStates();
   InitGraphicsVariables();
   ConfigureFrameBuffer();
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   SelectAlphaContext(1);
 #endif
   for (int i = 0; i < ARRAY_SIZE(mTexRegions); ++i) {
@@ -469,7 +469,7 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
   mpSpareBuffer = sSpareFrameBuffer;
 
   mSpareBufferTexCacheSize = 0x10000;
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   CGraphics::SDrawSyncState syncState;
   syncState.mBase = 0;
   syncState.mIssued = 1;
@@ -766,7 +766,7 @@ void CGraphics::InitGraphicsVariables() {
 
 void CGraphics::Shutdown() {
   GXSetTexRegionCallback(mGXDefaultTexRegionCallback);
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   GXSetDrawDoneCallback(nullptr);
 #endif
 #if RSTL_KYOTO_GRAPHICS_ARENA
@@ -791,7 +791,7 @@ void CGraphics::InitGraphicsDefaults() {
   FlushProjection();
   CTevCombiners::Init();
   DisableAllLights();
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   SetLightingMode(0);
   UpdateLightChannels();
 #endif
@@ -834,7 +834,7 @@ void CGraphics::ConfigureFrameBuffer(const COsContext& osContext) {
   InitGraphicsDefaults();
 }
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 void CGraphics::SetLightingMode(int mode) {
   if (mode == 1) {
     SetLightingModeAndColor(1, CColor(0u));
@@ -977,14 +977,14 @@ static inline GXLightID get_hw_light_index(ERglLight light) {
 
 void CGraphics::LoadLight(ERglLight light, const CLight& info) {
   GXLightID lightId = get_hw_light_index(light);
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   uchar previousAlphaMask = mAlphaLightMask;
 #endif
 
   CVector3f pos = info.GetPosition();
   CVector3f dir = info.GetDirection();
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   bool affectsAlpha = false;
   if (info.IsColorProcessing() && info.GetProcessedColor().GetAlphau8() != 0) {
     affectsAlpha = true;
@@ -1026,7 +1026,7 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     break;
   }
   case kLT_Custom:
-#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_NO_HARD_HELPERS
+#if !RSTL_PRIME1 && !RSTL_KYOTO_LIGHT_CORRUPTION
   case kLT_Hard:
 #endif
   {
@@ -1044,7 +1044,7 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
     break;
   }
 
-#if RSTL_KYOTO_LIGHT_COLOR_PROCESSING
+#if RSTL_KYOTO_LIGHT_CORRUPTION
   CColor color = info.GetProcessedColor();
   GXInitLightColor(&mLightObj[light], color.GetGXColor());
 #else
@@ -1052,14 +1052,14 @@ void CGraphics::LoadLight(ERglLight light, const CLight& info) {
 #endif
   GXLoadLightObjImm(&mLightObj[light], lightId);
   mLightTypes[light] = info.GetType();
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   if (previousAlphaMask != mAlphaLightMask) {
     UpdateLightChannels();
   }
 #endif
 }
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 void CGraphics::DisableAllLights() {
   if (mLightActive != 0) {
     mLightActive = 0;
@@ -1369,7 +1369,7 @@ int CGraphics::GetViewportTop(int bottom) {
 }
 #endif
 
-#if RSTL_KYOTO_GRAPHICS_EXTENDED_API
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 int CGraphics::GetViewportTopFromBottomAndHeight(int bottom, int height) {
   return mRenderModeObj.efbHeight - (bottom + height);
 }
@@ -1523,7 +1523,7 @@ void CGraphics::VideoPostCallback(u32 retraceCount) {
   }
 }
 
-#if RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 // Guessed name
 static void DrawEndSceneTriangles(const CViewport& viewport) {
   Mtx projection;
@@ -1610,7 +1610,7 @@ void CGraphics::EndScene() {
   ++mNumBreakpointsWaiting;
 #endif
 #if !RSTL_PRIME1
-#if RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   DrawEndSceneTriangles(mViewport);
 #else
   // The original declares a 3x4 matrix here; MTXOrtho writes all four rows past its end.
@@ -1791,7 +1791,7 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
   // Save state + setup
   CGX::SetVtxDescv(skPosColorTexDirect);
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   SLightingState lightingState = CaptureLightingState();
   SetLightingMode(0);
 #else
@@ -1827,7 +1827,7 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
   CGX::End();
 
   // Restore state
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   RestoreLightingState(lightingState);
 #else
   if (mLightsWereOn != 0) {
@@ -1841,7 +1841,7 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
 }
 #endif
 
-#if !RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
 bool CGraphics::BeginRender2D(const CTexture& tex) {
   Mtx44 proj;
   MTXOrtho(proj, mViewport.mHeight / 2, -mViewport.mHeight / 2, -mViewport.mWidth / 2,
@@ -2221,7 +2221,7 @@ void CGraphics::SetTevStates(uchar flags) {
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
   CGX::SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY, false, GX_PTIDENTITY);
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
   switch (mLightingMode) {
   case 0:
     if ((flags & kHasColor) != 0) {
@@ -2265,7 +2265,7 @@ void CGraphics::SetTevStates(uchar flags) {
 #endif
 }
 
-#if RSTL_KYOTO_GRAPHICS_LIGHTING_MODES
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 void CGraphics::RestoreLightingState(const SLightingState& state) {
   SetLightingModeAndColor(state.mMode, state.mColor);
   SetLightState(state.mLights);
@@ -2831,7 +2831,7 @@ void CGraphics::SetProgressiveMode(bool progressive) {
 #if !RSTL_KYOTO_PAL_VIDEO
   VIWaitForRetrace();
 #endif
-#if !RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
   for (int i = 0; i < 10; ++i) {
     VIWaitForRetrace();
   }
@@ -2866,7 +2866,7 @@ void CGraphics::SetProgressiveMode(bool progressive) {
   VIConfigure(&mRenderModeObj);
   VISetBlack(TRUE);
   VIFlush();
-#if !RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
   for (int i = 0; i < 100; ++i) {
     VIWaitForRetrace();
   }
@@ -2988,7 +2988,7 @@ CGraphicsSys::~CGraphicsSys() {
   }
 }
 
-#if RSTL_KYOTO_GRAPHICS_DRAW_SYNC
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 void CGraphics::SDrawSyncState::Poll() {
   ushort gotten = GXReadDrawSync();
   if (gotten < mGotten) {

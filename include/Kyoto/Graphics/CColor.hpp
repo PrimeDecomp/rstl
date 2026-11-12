@@ -264,7 +264,7 @@ private:
   static const CColor sPurpleColor;
   static const CColor sOrangeColor;
 };
-#if RSTL_CCOLOR_INLINE_GREY
+#if RSTL_CCOLOR_INLINE_CONSTANTS
 inline const CColor& CColor::Grey() { return sGreyColor; }
 #endif
 
@@ -274,7 +274,7 @@ inline const CColor& CColor::Grey() { return sGreyColor; }
 #endif
 #endif
 
-#if RSTL_CCOLOR_INLINE_YELLOW
+#if RSTL_CCOLOR_INLINE_CONSTANTS
 inline const CColor& CColor::Yellow() { return sYellowColor; }
 #endif
 

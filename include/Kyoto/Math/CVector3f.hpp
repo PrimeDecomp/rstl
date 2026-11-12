@@ -41,7 +41,7 @@ public:
   }
 
   static CVector3f Slerp(const CVector3f& a, const CVector3f& b, const CRelAngle& angle);
-#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+#if RSTL_KYOTO_VECTOR3F_CORRUPTION
   float Normalize();
 #else
   CVector3f& Normalize();
@@ -167,7 +167,7 @@ protected:
 DECLARE_FULL_SIZE_FOR(CVector3f, 0xc)
 CHECK_SIZEOF(CVector3f, CVector3f_FULL_SIZE)
 
-#if !RSTL_KYOTO_VECTOR3F_OUT_OF_LINE_CROSS
+#if !RSTL_KYOTO_VECTOR3F_CORRUPTION
 inline CVector3f CVector3f::Cross(const CVector3f& lhs, const CVector3f& rhs) {
   float lX = lhs.GetX();
   float lY = lhs.GetY();

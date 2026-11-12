@@ -98,10 +98,8 @@
 
 // Wii CFinalInput contains the controller snapshot and queries its buttons and axes.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
-// Wii builds starting with retail Corruption access the yellow color constant directly.
-#define RSTL_CCOLOR_INLINE_YELLOW (RSTL_VERSION >= RSTL_RM3E)
-// Wii builds access the grey color constant directly.
-#define RSTL_CCOLOR_INLINE_GREY (RSTL_VERSION >= RSTL_RM3E)
+// Wii builds read the CColor yellow and grey constants directly instead of through getters.
+#define RSTL_CCOLOR_INLINE_CONSTANTS (RSTL_VERSION >= RSTL_RM3E)
 // The Revolution controller interface starts with retail Corruption.
 #define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
 // Later controllers add acceptance and motion-activity slots.
@@ -310,9 +308,8 @@
 #define RSTL_RESERVED_VECTOR_COUNT_CTOR (RSTL_RESERVED_VECTOR_TRAITS || RSTL_CORRUPTION)
 // `reserved_vector_traits< int >` and `< u32 >` fill by value, like the float one.
 #define RSTL_RESERVED_VECTOR_INT_FILLS (RSTL_VERSION >= RSTL_R3ME_00)
-// `destroy_elements` checks the count (a release no-op that still counts toward the inline size)
-// before skipping trivially destructible types. GameCube Echoes has no such check.
-#define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_CORRUPTION)
+// `destroy_elements` and `reserved_vector(int, fill_type)` carry (empty) precondition statements.
+#define RSTL_RESERVED_VECTOR_PROTO_PRECONDITIONS (RSTL_CORRUPTION)
 // The `reserved_vector` copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_P2ME)
 // `reserved_vector::resize` also shrinks.
@@ -503,9 +500,6 @@
 // The out-of-line `operator=` is `inline` unless the translation unit defines
 // `RSTL_DONT_INLINE_RESERVED_VECTOR`.
 #define RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION (RSTL_CORRUPTION)
-// `listpool` is the full reconstructed container instead of the declaration-only stub.
-// `reserved_vector(int, fill_type)` carries the (empty) `count <= N` precondition.
-#define RSTL_RESERVED_VECTOR_FILL_PRECONDITION (RSTL_CORRUPTION)
 // `list::node` is a plain `uchar` item array without alignment or constructor, and
 // `do_insert_before` reads `n->mPrev` directly.
 #define RSTL_LIST_NODE_PLAIN (RSTL_CORRUPTION)
@@ -582,10 +576,8 @@
 // Keep the accessor in the prototype: direct member access inlines away native
 // CSpawnSystemKeyframeInfo copy/construction helpers (GC/2.7).
 #define RSTL_OPTIONAL_COPY_READS_VALID_CALL (RSTL_CORRUPTION)
-// The `optional_object` copy constructor starts with two (empty) precondition statements.
-#define RSTL_OPTIONAL_COPY_PRECONDITION (RSTL_CORRUPTION)
-// `optional_object::assign` starts with an (empty) precondition statement.
-#define RSTL_OPTIONAL_ASSIGN_PRECONDITION (RSTL_CORRUPTION)
+// The copy constructor and `assign` carry (empty) precondition statements.
+#define RSTL_OPTIONAL_PRECONDITIONS (RSTL_CORRUPTION)
 // `optional_object` stores a plain `uchar` array followed by `bool m_valid ATTRIBUTE_ALIGN(4)`.
 #define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_CORRUPTION)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
@@ -741,11 +733,8 @@
 #define RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM (RSTL_CORRUPTION)
 // CVector3d has compound assignment, scalar multiplication and equality operators (prototype only).
 #define RSTL_KYOTO_VECTOR3D_COMPOUND (RSTL_CORRUPTION)
-// CVector3f::Normalize returns the original magnitude and Slerp returns its first argument when the
-// cross product cannot be normalized (the prototype); Prime and Echoes return the vector itself.
-#define RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE (RSTL_CORRUPTION)
-// CVector3f::Cross is defined outside the header (prototype); Prime and Echoes inline it.
-#define RSTL_KYOTO_VECTOR3F_OUT_OF_LINE_CROSS (RSTL_CORRUPTION)
+// Corruption's CVector3f: Normalize returns the magnitude and Cross is out of line.
+#define RSTL_KYOTO_VECTOR3F_CORRUPTION (RSTL_CORRUPTION)
 // CVector3f declares reserved_vector/optional/vector construction policies (Echoes; the prototype
 // declares only trivial construction).
 #define RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
@@ -784,13 +773,9 @@
 // CVector3i's const operator[] returns a reference in Echoes (CBarrierChunkGrid's `dims[0]` binds it
 // to a vector constructor argument); Prime and the prototype return by value.
 #define RSTL_KYOTO_VECTOR3I_INDEX_REFERENCE (!RSTL_PRIME1 && !RSTL_CORRUPTION)
-// CTransform4f defines TransformPointArray and FromEulerAngles (Corruption only) and Shear
-// (Echoes only); all three are declared in every build.
-#define RSTL_KYOTO_TRANSFORM4F_POINT_ARRAY_EULER (RSTL_CORRUPTION)
+// Corruption's CTransform4f: TransformPointArray and FromEulerAngles, and direct field reads.
+#define RSTL_KYOTO_TRANSFORM4F_CORRUPTION (RSTL_CORRUPTION)
 #define RSTL_KYOTO_TRANSFORM4F_SHEAR (!RSTL_PRIME1 && !RSTL_CORRUPTION)
-// CTransform4f::RotateLocal{X,Y,Z} read the matrix fields directly (Corruption) instead of through
-// the const-returning GetNN accessors (Prime and Echoes).
-#define RSTL_KYOTO_TRANSFORM4F_FIELD_READS (RSTL_CORRUPTION)
 // CQuaternion::IsValidQuaternion tests finiteness and the squared length in double (Corruption);
 // Prime measures the squared length error in float; Echoes has no definition.
 #define RSTL_KYOTO_QUATERNION_VALID_DOUBLE (RSTL_CORRUPTION)
@@ -815,24 +800,9 @@
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
 // CGraphicsPalette can keep its entries in GPU memory, so GetPaletteData is out of line (Corruption).
 #define RSTL_KYOTO_PALETTE_GPU_MEMORY (RSTL_CORRUPTION)
-// CGraphicsPalette::UnLock stores the entries to memory before rebuilding its TLUT (Prime, Echoes).
-#define RSTL_KYOTO_PALETTE_UNLOCK_STORE_RANGE (!RSTL_CORRUPTION)
-// CPakFile::CResInfo copies through out-of-line members and is built only with a lookahead size
-// (Corruption). Earlier builds copy it bitwise and also have a five-argument constructor.
-#define RSTL_KYOTO_PAK_RES_INFO_COPY (RSTL_CORRUPTION)
-// CPakFile keeps a list of asset names after its bucket offsets (Corruption).
-#define RSTL_KYOTO_PAK_ASSET_NAMES (RSTL_CORRUPTION)
-// CPakFile reads the first 16 KB of a pak for its header (Corruption). Earlier builds read 8 KB.
-#define RSTL_KYOTO_PAK_LARGE_HEADER_READ (RSTL_CORRUPTION)
-// Asset type indices come from CAssetTypesList (Corruption). Earlier builds keep the type table in
-// CFactoryMgr (FourCCToTypeIdx, TypeIdxToFourCC).
-#define RSTL_KYOTO_ASSET_TYPES_LIST (RSTL_CORRUPTION)
-// CPakFile fills new resource tables with records holding the invalid asset ID (Corruption).
-// Echoes uses ID 0, or leaves the restored table uninitialized.
-#define RSTL_KYOTO_PAK_INVALID_DEFAULT_RES_INFO (RSTL_CORRUPTION)
-// CPakFile::RebuildResourceLists clears each bucket count before storing the bucket's end offset
-// (Corruption). Echoes stores the offset first.
-#define RSTL_KYOTO_PAK_BUCKET_RESET_BEFORE_OFFSET (RSTL_CORRUPTION)
+// Corruption's CPakFile: asset names, a 16 KB header read, CAssetTypesList type indices,
+// out-of-line CResInfo copies and invalid-ID default records.
+#define RSTL_KYOTO_PAK_FILE_CORRUPTION (RSTL_CORRUPTION)
 // CResLoader looks for network assets before the paks: FindResource returns nothing and
 // LoadMemResourceSync reports whether it loaded the resource (Corruption).
 #define RSTL_KYOTO_RES_LOADER_NETWORK_ASSETS (RSTL_CORRUPTION)
@@ -842,59 +812,20 @@
 // GPUMemory::EnsureAllocation marks itself as allocating once it has the memory (Corruption).
 // Echoes marks it before allocating.
 #define RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG (RSTL_CORRUPTION)
-// CGX::SGXState tracks all 17 vertex arrays with their strides, four channel controls, the TEV swap
-// tables and the vertex attribute sizes of each format (Corruption).
-#define RSTL_KYOTO_CGX_EXTENDED_STATE (RSTL_CORRUPTION)
-// CGX::LoadNrmMtxImm and CGX::SetTevSwapMode are defined out of line by the game (Corruption, whose
-// SetTevSwapMode also caches the swap state). Earlier builds inline the plain GX call.
-#define RSTL_KYOTO_CGX_OUTLINED_HELPERS (RSTL_CORRUPTION)
-// CGX::SetZMode takes GXBool flags (Corruption). Earlier builds take bool.
-#define RSTL_KYOTO_CGX_GXBOOL_ZMODE (RSTL_CORRUPTION)
-// CGX::apply_fog is defined in CGX.hpp, so every includer emits its weak black constant (Corruption).
-// Earlier builds define it beside its callers (CGX_Impl.hpp, CGX.cpp).
-#define RSTL_KYOTO_CGX_HEADER_APPLY_FOG (RSTL_CORRUPTION)
-// CGX::CompareGXColors reads both colors through non-const pointers (Corruption), which changes the
-// code of its callers.
-#define RSTL_KYOTO_CGX_MUTABLE_COLOR_COMPARE (RSTL_CORRUPTION)
-// CGX::update_fog sets the fog color through GXSetFogColor (Corruption). Earlier builds write the
-// BP register directly.
-#define RSTL_KYOTO_CGX_SDK_FOG_COLOR (RSTL_CORRUPTION)
-// CGX::SetTexCoordGen records the matrix as GXTexMtx / 3 (Corruption). Earlier builds record its
-// index from GX_TEXMTX0.
-#define RSTL_KYOTO_CGX_ABSOLUTE_TEX_MTX (RSTL_CORRUPTION)
-// CGX::Begin and CGX::End follow CGX::CallDisplayList in CGX.cpp (Corruption). Earlier builds
-// have them after CGX::SetArray.
-#define RSTL_KYOTO_CGX_LATE_BEGIN_END (RSTL_CORRUPTION)
-// CGraphics drives its light channels from a lighting mode and color and tracks which lights
-// affect alpha (Corruption). Earlier builds enable channel 0 light by light.
-#define RSTL_KYOTO_GRAPHICS_LIGHTING_MODES (RSTL_CORRUPTION)
-// CGraphics issues GX draw-sync tokens, signals draw-done callbacks and keeps destination-alpha
-// contexts (Corruption).
-#define RSTL_KYOTO_GRAPHICS_DRAW_SYNC (RSTL_CORRUPTION)
-// CGraphics has the add-previous TEV pass, centered orthographic matrices and the viewport-top
-// helper that takes a height (Corruption).
-#define RSTL_KYOTO_GRAPHICS_EXTENDED_API (RSTL_CORRUPTION)
-// CGraphics::EndScene draws its black frame triangles in a separate function (Corruption).
-#define RSTL_KYOTO_GRAPHICS_OUTLINED_END_SCENE_DRAW (RSTL_CORRUPTION)
-// CGraphics clears to blue by default (Corruption). Earlier builds clear to black.
-#define RSTL_KYOTO_GRAPHICS_BLUE_CLEAR_COLOR (RSTL_CORRUPTION)
-// CGraphics::SetProgressiveMode switches without the long retrace waits (Corruption).
-#define RSTL_KYOTO_GRAPHICS_QUICK_PROGRESSIVE_SWITCH (RSTL_CORRUPTION)
+// Corruption's CGX: extended GX state, out-of-line helpers, GXBool z mode, apply_fog in the
+// header and its own function order.
+#define RSTL_KYOTO_CGX_CORRUPTION (RSTL_CORRUPTION)
+// Corruption's CGraphics: lighting modes, draw-sync tokens, alpha contexts, a uchar light mask
+// and a blue clear color.
+#define RSTL_KYOTO_GRAPHICS_CORRUPTION (RSTL_CORRUPTION)
 // CGraphics can render streamed primitives with a per-vertex delay (Echoes). The prototype's
 // FlushStream always renders directly and Prime has no delay.
 #define RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // CGraphics::InitGraphicsFifo sets the fifo object's base again before its limits (Echoes PAL,
 // Corruption).
 #define RSTL_KYOTO_GRAPHICS_FIFO_REBASE (RSTL_VERSION == RSTL_G2MP || RSTL_CORRUPTION)
-// CLight keeps a processed copy of its color and a processing flag, and returns its normal-independent
-// lighting as a CVector4f (Corruption).
-#define RSTL_KYOTO_LIGHT_COLOR_PROCESSING (RSTL_CORRUPTION)
-// CLight has no BuildHard and no hard-light radius case, and an unattenuated light's radius is 1e18
-// (Corruption, including retail). Earlier builds return 3e36 and give hard lights their own radius.
-#define RSTL_KYOTO_LIGHT_NO_HARD_HELPERS (RSTL_CORRUPTION)
-// CLight.cpp's stripped stand-in function follows GetIntensity, which orders its float constants
-// (Corruption). Echoes has it before GetIntensity.
-#define RSTL_KYOTO_LIGHT_LATE_STRIPPED_HELPER (RSTL_CORRUPTION)
+// Corruption's CLight: processed color, no hard-light helpers, and its own function order.
+#define RSTL_KYOTO_LIGHT_CORRUPTION (RSTL_CORRUPTION)
 // CColor::WithAlphaOf multiplies the byte scale by the alpha (Trilogy). Earlier builds multiply the
 // alpha by the byte scale.
 #define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (RSTL_VERSION >= RSTL_R32J)
@@ -903,9 +834,6 @@
 // CGraphics::ConfigureVideoMode takes its progressive flag as a uchar (from Prime PAL on). Corruption takes a
 // bool and passes the flag through unchanged.
 #define RSTL_KYOTO_UCHAR_VIDEO_MODE_FLAG (RSTL_VERSION >= RSTL_GM8P_00 && !RSTL_CORRUPTION)
-// CGraphics::GetLightMask returns the active light mask as a uchar (Corruption). Earlier builds widen
-// it to uint.
-#define RSTL_KYOTO_UCHAR_LIGHT_MASK (RSTL_CORRUPTION)
 // Small value types (CPASAnimParm, CPASAnimInfo, CPASParmInfo, CAdditiveAnimationInfo,
 // CCubeSurface) declare their rstl container copy policies (Echoes). Prime leaves the defaults.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
@@ -969,17 +897,13 @@
 // `*p32++`, `*pc8++`) in its inline reads, as the prototype's code does; Echoes casts the byte
 // cursor instead. Inline in every stream reader, so the spelling can reach any object.
 #define RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR (RSTL_CORRUPTION)
-// `COutputStream` carries the bit shift register (`WriteBits`, `FlushShiftRegister`), flushes it
-// before every byte write, and value-initializes its scratch buffer. Echoes moved bit writing
-// into `CBitStreamWriter` and dropped both members (0x74 bytes instead of 0x7C).
-#define RSTL_KYOTO_OUTPUT_SHIFT_REGISTER RSTL_PRIME1
+// Prime's COutputStream: the bit shift register (0x7C bytes) and its own pair helper.
+#define RSTL_KYOTO_PRIME_OUTPUT_STREAM RSTL_PRIME1
 // `COutputStream` keeps its small buffers (64 bytes or fewer) in an inline scratch array. The demo
 // has no such array (0x1C bytes) and allocates every buffer, so its constructor and destructor
 // always allocate and free (GM8EAB_00 0x8029D1AC allocates unconditionally; 0x8029D14C frees
 // without a length check).
 #define RSTL_KYOTO_OUTPUT_SCRATCH_BUFFER (RSTL_VERSION != RSTL_GM8EAB_00)
-// `COutputStream` writes `rstl::pair` with its own helper overload instead of `pair::PutTo`.
-#define RSTL_KYOTO_OUTPUT_PAIR_HELPER RSTL_PRIME1
 // The bit writer's shift register offset is `volatile` (Prime's `COutputStream` and Echoes'
 // `CBitStreamWriter`); the prototype's is a plain member.
 #define RSTL_KYOTO_VOLATILE_SHIFT_OFFSET (!RSTL_CORRUPTION)

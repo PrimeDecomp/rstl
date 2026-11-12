@@ -41,7 +41,7 @@ void CVector3f::PutTo(COutputStream& out) const {
 }
 
 CVector3f CVector3f::Slerp(const CVector3f& a, const CVector3f& b, const CRelAngle& angle) {
-#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+#if RSTL_KYOTO_VECTOR3F_CORRUPTION
   CVector3f axb = CVector3f::Cross(a, b);
   if (!axb.IsNormalizable()) {
     return a;
@@ -56,7 +56,7 @@ CVector3f CVector3f::Slerp(const CVector3f& a, const CVector3f& b, const CRelAng
   return acos * a + asin * crs;
 }
 
-#if RSTL_KYOTO_VECTOR3F_NORMALIZE_MAGNITUDE
+#if RSTL_KYOTO_VECTOR3F_CORRUPTION
 float CVector3f::Normalize() {
   const float mag = Magnitude();
   const float invMag = 1.f / mag;

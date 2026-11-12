@@ -170,7 +170,7 @@ public:
 #if !RSTL_PRECONDITION_MACRO
     RS_ASSERT(count <= N, "rstl precondition");
 #endif
-#if RSTL_RESERVED_VECTOR_FILL_PRECONDITION
+#if RSTL_RESERVED_VECTOR_PROTO_PRECONDITIONS
     RSTL_PRECONDITION(count <= N);
 #endif
     uninitialized_fill_n(data(), count, value);
@@ -387,7 +387,7 @@ public:
 
 private:
   void destroy_elements() {
-#if RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION
+#if RSTL_RESERVED_VECTOR_PROTO_PRECONDITIONS
     RSTL_PRECONDITION(mCount >= 0);
 #endif
     if (is_trivially_destructible< T >::value) {
