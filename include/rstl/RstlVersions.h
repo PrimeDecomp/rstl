@@ -119,7 +119,7 @@
   ((RSTL_ECHOES && !RSTL_CORRUPTION) || RSTL_VERSION >= RSTL_R32J)
 // `uint` destruction is trivial; kept apart from the pointer traits it currently follows.
 #define RSTL_TRIVIAL_UINT_DESTRUCTION RSTL_TRIVIAL_POINTERS
-// `float` destruction is trivial (Echoes, Wii Echoes and Trilogy Echoes).
+// `float` destruction is trivial (every build except Prime).
 #define RSTL_TRIVIAL_FLOAT_DESTRUCTION (!RSTL_PRIME1)
 // `int`/`bool`/`ushort` destruction traits for non-Prime builds without RSTL_TRIVIAL_SCALARS.
 #define RSTL_TRIVIAL_INT_BOOL_DESTRUCTION (!RSTL_PRIME1 && !RSTL_TRIVIAL_SCALARS)
@@ -163,7 +163,7 @@
 #define RSTL_POINTER_FILL_OVERLOAD (RSTL_VERSION >= RSTL_R3IJ)
 // `uninitialized_fill_n` takes builtin values by value and assigns them.
 #define RSTL_SCALAR_FILL_HELPERS (RSTL_VERSION >= RSTL_R3IJ)
-// ...for `signed char` only.
+// The prototype passes builtin fill values by value only for `signed char`.
 #define RSTL_BYTE_FILL_VALUE (RSTL_CORRUPTION)
 // `uninitialized_fill_n` advances `dest` itself, and `bit_vector::insert` uses counted loops.
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
@@ -500,7 +500,7 @@
 
 // CStringExtras reads with `at()` into a `signed char` buffer; its char parameter is non-const.
 #define RSTL_STRING_EXTRAS_AT_ACCESS (RSTL_VERSION >= RSTL_P2ME)
-// The string list factory is emitted (it also changes the string pool in PAL/JP Prime).
+// The unused string list factory is emitted (in PAL/JP Prime it would change the string pool).
 #define RSTL_STRING_LIST_FACTORY (RSTL_VERSION >= RSTL_P2ME)
 // `ConvertToUNICODE` returns early for an empty string.
 #define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_P2ME)
@@ -600,7 +600,7 @@
 
 // Wii allocators manage separate MEM1 and MEM2 heaps.
 #define RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS (RSTL_VERSION >= RSTL_RM3E)
-// The medium pool's size-range search and puddle flag (retail Corruption profiles only).
+// The medium pool's size-range search and puddle flag (Trilogy built without PRIME1 or PRIME2).
 #if RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1 && !defined(PRIME2)
 #define RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL 1
 #else
@@ -694,9 +694,9 @@
   (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00 || RSTL_KYOTO_WII_OS_CONTEXT)
 // COsContext has a virtual destructor.
 #define RSTL_KYOTO_OS_CONTEXT_VIRTUAL (RSTL_CORRUPTION || RSTL_KYOTO_WII_OS_CONTEXT)
-// Wii Echoes keeps the system aspect ratio in a separate word after the language.
+// Non-Prime Wii builds keep the system aspect ratio in a separate word after the language.
 #define RSTL_KYOTO_OS_CONTEXT_ASPECT_RATIO (!RSTL_PRIME1 && RSTL_KYOTO_WII_OS_CONTEXT)
-// COsContext has an extra word before the MEM1 arena (retail Corruption profiles only).
+// COsContext has an extra word before the MEM1 arena (Trilogy built without PRIME1 or PRIME2).
 #if RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1 && !defined(PRIME2)
 #define RSTL_KYOTO_OS_CONTEXT_EXTRA_ARENA_FIELD 1
 #else
@@ -712,7 +712,7 @@
 // Corruption's CGraphics: lighting modes, draw-sync tokens, alpha contexts, a uchar light mask
 // and a blue clear color.
 #define RSTL_KYOTO_GRAPHICS_CORRUPTION (RSTL_CORRUPTION)
-// CGraphics allocates its video buffers from the OS arena block (PAL Prime, GameCube Echoes).
+// CGraphics allocates its video buffers from the OS arena block (PAL Prime and all non-Prime).
 #define RSTL_KYOTO_GRAPHICS_ARENA (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
 // PAL builds switch between 50 Hz PAL and EURGB60 instead of progressive scan.
 #define RSTL_KYOTO_PAL_VIDEO (RSTL_VERSION == RSTL_GM8P_00 || RSTL_VERSION == RSTL_G2MP)
@@ -827,7 +827,7 @@
 #define RSTL_PARTICLE_SWOOSH_GEN_CLEAR RSTL_ECHOES_GC
 // CParticleData holds only tag, scale and parented mode, read inline.
 #define RSTL_KYOTO_PARTICLE_DATA_PROTOTYPE (RSTL_CORRUPTION)
-// CParticleGen has an extra word (retail Corruption profiles only).
+// CParticleGen has an extra word (retail Corruption, and Trilogy without PRIME1 or PRIME2).
 #if RSTL_VERSION >= RSTL_RM3E && !RSTL_PRIME1 && !defined(PRIME2)
 #define RSTL_KYOTO_PARTICLE_GEN_EXTRA_FIELD 1
 #else
@@ -859,7 +859,7 @@
 
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
-// CLineInstruction declares its destructor explicitly, giving Wii's virtual emission order.
+// CLineInstruction declares its destructor explicitly, giving the virtual order from R32J on.
 #define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 
 #include "Kyoto/Platform.h"
