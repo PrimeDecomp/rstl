@@ -67,7 +67,11 @@ private:
   float mGeneratorRate;
   int mParticleCount;
   int mPrevFrame;
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
   CElementGen::EOptionalSystemFlags mOptionalFlags;
+#else
+  bool mEnableOPTS : 1;
+#endif
   bool mModelsUseLights : 1;
   bool mParticleEmission : 1;
   CVector3f mGlobalTranslation;
@@ -75,6 +79,6 @@ private:
   CTransform4f mGlobalOrientation;
   CAABox mBounds;
 };
-CHECK_SIZEOF(CSortedParticleSystem, 0xd8)
+CHECK_SIZEOF(CSortedParticleSystem, RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS ? 0xd8 : 0xd0)
 
 #endif // _CSORTEDPARTICLESYSTEM

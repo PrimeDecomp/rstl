@@ -520,15 +520,19 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('DFLG'):
       desc->mDFLG = GetBitflag(in);
       break;
+#if RSTL_PARTICLE_BOUNDS_MODES
     case SBIG('FXBR'):
       desc->mFXBR = GetRealElement(in);
       break;
     case SBIG('FXBO'):
       desc->mFXBO = GetVectorElement(in);
       break;
+#endif
+#if RSTL_PARTICLE_RDOP
     case SBIG('RDOP'):
       desc->mRDOP = GetBool(in);
       break;
+#endif
 #endif
 
     case SBIG('_END'):

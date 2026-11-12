@@ -184,7 +184,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mWarmedUp(false)
 , mModelsUseLights(false)
 , mEnableOPTS(flags & kOSF_Two)
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
 , mEnableDynamicBounds((flags & kOSF_DisableBounds) == 0)
 , mEnableFixedBounds(false)
 #endif
@@ -220,7 +220,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   SetDrawFlags(mLoadedGenDesc->mDFLG);
 #endif
   CGlobalRandom gr(mRandState);
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleGlobals::SParticleSystem system('PART', this);
 #endif
 // TODO: verify that this Prime/Echoes difference is real
@@ -490,7 +490,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     }
 #endif
   }
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableDynamicBounds) {
     mEnableFixedBounds = mLoadedGenDesc->mFXBR != nullptr;
     if (mEnableFixedBounds) {
@@ -565,7 +565,7 @@ const CColor& CElementGen::GetModulationColor() const { return mModuColor; }
 
 void CElementGen::SetGlobalScale(const CVector3f& scale) {
   mGlobalScale = scale;
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   if (close_enough(mGlobalScale.GetX(), 0.f, 0.0001f)) {
     mGlobalScale.SetX(0.0001f * CMath::Sign(mGlobalScale.GetX()));
   }
@@ -588,7 +588,7 @@ void CElementGen::SetGlobalScale(const CVector3f& scale) {
 
 void CElementGen::SetLocalScale(const CVector3f& scale) {
   mLocalScale = scale;
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   if (close_enough(mLocalScale.GetX(), 0.f, 0.0001f)) {
     mLocalScale.SetX(0.0001f * CMath::Sign(mLocalScale.GetX()));
   }
@@ -777,7 +777,7 @@ bool CElementGen::InternalUpdate(double dt) {
     mTimeDeltaScale = 1.0f - static_cast< float >((t - mCurSeconds) / skTickTime);
 #endif
   }
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableFixedBounds) {
     float radius = 0.f;
     if (mLoadedGenDesc->mFXBR) {
@@ -866,7 +866,7 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
 }
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
 bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particle) {
 #else
 bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particle,
@@ -876,7 +876,7 @@ bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particl
   if (mHasVMD[velIdx]) {
     CVector3f localVel = mOrientationInverse * particle.mVel;
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
     CVector3f localPos = mOrientationInverse * (particle.mPos - mTranslation);
 #else
     CVector3f localPos = mOrientationInverse * (particle.mPos - scaledTranslation);
@@ -884,7 +884,7 @@ bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particl
     reset = mVELSources[velIdx]->GetValue(frame, localVel, localPos);
     particle.mVel = mOrientation.Rotate(localVel);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
     particle.mPos = mOrientation.Rotate(localPos) + mTranslation;
 #else
     particle.mPos = mOrientation.Rotate(localPos) + scaledTranslation;
@@ -908,6 +908,8 @@ void CElementGen::UpdateExistingParticles() {
   CParticleGlobals::mParticleAccessParameters = NULL;
 #else
   CParticleGlobals::SetParticleAccessParameters(nullptr);
+#endif
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
   const CVector3f scaledTranslation =
       (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
 #endif
@@ -962,28 +964,28 @@ void CElementGen::UpdateExistingParticles() {
     ++mActiveParticleCount;
     if (mVELSources[0]) {
       UpdateVelocitySource(0, particleFrame, *it
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                            ,
                            scaledTranslation
 #endif
       );
       if (mVELSources[1]) {
         UpdateVelocitySource(1, particleFrame, *it
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                              ,
                              scaledTranslation
 #endif
         );
         if (mVELSources[2]) {
           UpdateVelocitySource(2, particleFrame, *it
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                                ,
                                scaledTranslation
 #endif
           );
           if (mVELSources[3]) {
             UpdateVelocitySource(3, particleFrame, *it
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                                  ,
                                  scaledTranslation
 #endif
@@ -1041,7 +1043,7 @@ void CElementGen::UpdateExistingParticles() {
 #endif
     }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_BOUNDS_MODES
     AccumulateBounds(it->mPos, it->mLineLengthOrSize);
 #else
     if (mEnableDynamicBounds) {
@@ -1132,6 +1134,8 @@ void CElementGen::CreateNewParticles(int count) {
   CParticleGlobals::mParticleAccessParameters = NULL;
 #else
   CParticleGlobals::SetParticleAccessParameters(nullptr);
+#endif
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
   const CVector3f scaledTranslation =
       (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
 #endif
@@ -1279,31 +1283,61 @@ void CElementGen::CreateNewParticles(int count) {
 #if !RSTL_PRIME1
       if (mLoadedGenDesc->mVMPC) {
         if (mVELSources[0]) {
-          UpdateVelocitySource(0, 0, particle, scaledTranslation);
+          UpdateVelocitySource(0, 0, particle
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
+                               ,
+                               scaledTranslation
+#endif
+          );
           if (mVELSources[1]) {
-            UpdateVelocitySource(1, 0, particle, scaledTranslation);
+            UpdateVelocitySource(1, 0, particle
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
+                                 ,
+                                 scaledTranslation
+#endif
+            );
             if (mVELSources[2]) {
-              UpdateVelocitySource(2, 0, particle, scaledTranslation);
+              UpdateVelocitySource(2, 0, particle
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
+                                   ,
+                                   scaledTranslation
+#endif
+              );
               if (mVELSources[3]) {
-                UpdateVelocitySource(3, 0, particle, scaledTranslation);
+                UpdateVelocitySource(3, 0, particle
+#if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
+                                     ,
+                                     scaledTranslation
+#endif
+                );
               }
             }
           }
         }
       }
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
       ++mCumulativeParticles;
       if (particle.mEndFrame == -1) {
         mParticles.pop_back();
       } else {
+#endif
+#if RSTL_PARTICLE_BOUNDS_MODES
         if (mEnableDynamicBounds) {
+#endif
 #endif
 
     AccumulateBounds(particle.mPos, particle.mLineLengthOrSize);
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
         }
+#endif
+#if !RSTL_PRIME1
         ++mParticleAliveCount;
         ++mActiveParticleCount;
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
       }
+#else
+      ++mCumulativeParticles;
+#endif
     }
 #endif
   }
@@ -1357,13 +1391,20 @@ CElementGen* CElementGen::ConstructChildParticleSystem(TToken< CGenDescription >
   child->SetModulationColor(mModuColor);
 #else
 CParticleGen* CElementGen::ConstructChildParticleSystem(
-    const CToken& description, uint type, short seed, EOptionalSystemFlags flags,
+    const CToken& description, uint type, short seed,
+#if RSTL_PARTICLE_BOUNDS_MODES
+    EOptionalSystemFlags flags,
+#else
+    bool optsEnabled,
+#endif
     bool modelsUseLights, bool emission, const CVector3f& translation,
     const CTransform4f& orientation, const CVector3f& globalTranslation,
     const CTransform4f& globalOrientation, const CVector3f& globalScale,
     const CColor& modulationColor, const CVector3f& localScale) {
   CParticleGen* child;
+#if RSTL_PARTICLE_BOUNDS_MODES
   const bool optsEnabled = (flags & kOSF_Two) != 0;
+#endif
   switch (type) {
   case 'PART': {
     const short backupSeed = sSeed;
@@ -1375,7 +1416,12 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     if (optsEnabled && descOpts) {
       return nullptr;
     }
+#if RSTL_PARTICLE_BOUNDS_MODES
     CElementGen* particles = rs_new CElementGen(particleDescription, kMOT_Normal, flags);
+#else
+    CElementGen* particles = rs_new CElementGen(particleDescription, kMOT_Normal,
+                                                optsEnabled ? kOSF_Two : kOSF_One);
+#endif
     particles->SetLeaveLightsEnabledForModelRender(modelsUseLights);
     child = particles;
     sSeed = backupSeed;
@@ -1401,6 +1447,9 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     if (seed != 0) {
       CParticleSpawnSystem::SetGlobalSeed(seed);
     }
+#if !RSTL_PARTICLE_BOUNDS_MODES
+    const EOptionalSystemFlags flags = optsEnabled ? kOSF_Two : kOSF_One;
+#endif
     TToken< CSpawnSystemDescription > spawnDescription(description);
     child = rs_new CParticleSpawnSystem(spawnDescription, flags, modelsUseLights);
     CParticleSpawnSystem::SetGlobalSeed(backupSeed);
@@ -1411,6 +1460,9 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     if (seed != 0) {
       CSortedParticleSystem::SetGlobalSeed(seed);
     }
+#if !RSTL_PARTICLE_BOUNDS_MODES
+    const EOptionalSystemFlags flags = optsEnabled ? kOSF_Two : kOSF_One;
+#endif
     TToken< CSortedParticleSystemDescription > spawnDescription(description);
     child = rs_new CSortedParticleSystem(spawnDescription, flags, modelsUseLights);
     CSortedParticleSystem::SetGlobalSeed(backupSeed);
@@ -1446,9 +1498,13 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
 #if !RSTL_PRIME1
 CParticleGen* CElementGen::ConstructChildParticleSystem(const CToken& description, uint type,
                                                         ushort seed) const {
+#if RSTL_PARTICLE_BOUNDS_MODES
   const int boundsFlags = mEnableDynamicBounds ? kOSF_One : kOSF_DisableBounds;
   const int optsFlags = mEnableOPTS ? kOSF_Two : kOSF_One;
   const EOptionalSystemFlags flags = EOptionalSystemFlags(optsFlags | boundsFlags);
+#else
+  const bool flags = mEnableOPTS;
+#endif
   return ConstructChildParticleSystem(
       description, type, seed, flags, mModelsUseLights, mParticleEmission, mTranslation,
       mOrientation, mGlobalTranslation, mGlobalOrientation, mGlobalScale, mModuColor, mLocalScale);
@@ -1774,7 +1830,11 @@ void CElementGen::Render() {
           }
         }
       }
+#if RSTL_PARTICLE_RDOP
       if (!zeroSize && mLoadedGenDesc->mRDOP) {
+#else
+      if (!zeroSize) {
+#endif
         if (IsIndirectTextured()) {
           RenderParticlesIndirectTexture();
         } else {
@@ -2362,25 +2422,25 @@ void CElementGen::RenderParticles() {
   }
 
   bool noTS = !close_enough(mTimeDeltaScale, 1.f, 0.00001f);
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleListItem* sortItems = nullptr;
   rstl::single_ptr< CParticleListItem > heapItems;
 #endif
 
   bool SORT = mLoadedGenDesc->mSORT;
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleListItem* sortItems = nullptr;
 #endif
 
   if (SORT) {
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     if (particleCount <= 128)
 #endif
     {
       sortItems =
           static_cast< CParticleListItem* >(alloca(particleCount * sizeof(CParticleListItem)));
     }
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     else {
       sortItems = static_cast< CParticleListItem* >(
           CMemory::Alloc(particleCount * sizeof(CParticleListItem)));
@@ -4389,10 +4449,15 @@ void CElementGen::RenderModels() {
       mLoadedGenDesc->mPMOP->GetValue(frame, offset);
     }
 
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     CTransform4f transform = CTransform4f::Translate(
         translation +
         mGlobalOrientation.Rotate(mTimeDeltaScale * (particle.mPos - particle.mPrevPos) +
                                   particle.mPrevPos));
+#else
+    CTransform4f transform = CTransform4f::Translate(
+        translation + (mTimeDeltaScale * (particle.mPos - particle.mPrevPos) + particle.mPrevPos));
+#endif
     if (mOrientType == kMOT_One) {
       CTransform4f parent(mParentMatrices[index], CVector3f::Zero());
       transform.AddTranslation((orientation * parent) * offset);
@@ -4514,7 +4579,7 @@ void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
 void CElementGen::BuildParticleSystemBounds() {
   CAABox childBounds = CAABox::MakeMaxInvertedBox();
   bool accumulated = false;
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableDynamicBounds)
 #endif
   {
@@ -4532,17 +4597,17 @@ void CElementGen::BuildParticleSystemBounds() {
   mRecursiveParticleCount = GetParticleCountAllInternal();
 
   if (
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_BOUNDS_MODES
       GetParticleCount() > 0
 #else
       (mEnableDynamicBounds && GetParticleCount() > 0) || mEnableFixedBounds
 #endif
   ) {
-#if !RSTL_PRIME1
+#if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     const float halfSize = mMaxSize / 2.f;
 #endif
     const CVector3f extent = CVector3f::ByElementMultiply(
-#if RSTL_PRIME1
+#if !RSTL_PARTICLE_ELEMENT_GEN_RETAIL
         CVector3f(mMaxSize, mMaxSize, mMaxSize),
 #else
         CVector3f(halfSize, halfSize, halfSize),

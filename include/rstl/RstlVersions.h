@@ -12,9 +12,12 @@
 #define RSTL_GM8J_00 7
 
 // Prime 2 GC
-#define RSTL_G2ME 10
-#define RSTL_G2MP 11
-#define RSTL_G2MJ 12
+#define RSTL_P2ME 10 // v0.160 Echoes Bonus Disc
+#define RSTL_D75E 11 // Multi-Game Demo Disc v20
+#define RSTL_D84P 12 // EUR Interactive Multi-Game Demo Disc: November 2004
+#define RSTL_G2ME 13
+#define RSTL_G2MP 14
+#define RSTL_G2MJ 15
 
 // Prime 3 Standalone
 #define RSTL_G2MEAB 20  // E3 2006 Prototype
@@ -36,14 +39,17 @@
 // RSTL_PRIME1 is 1 when the code is built for Metroid Prime. The Trilogy versions (R3ME, R3MP) are
 // shared by Prime and Echoes, so they are told apart by the game's `PRIME1` define. Hunks that
 // only differ between the two games' otherwise identical code are gated on this.
-#if defined(PRIME1) || RSTL_VERSION < RSTL_G2ME || RSTL_VERSION == RSTL_R3IJ
+#if defined(PRIME1) || RSTL_VERSION < RSTL_P2ME || RSTL_VERSION == RSTL_R3IJ
 #define RSTL_PRIME1 1
 #else
 #define RSTL_PRIME1 0
 #endif
+// The GameCube Echoes demo discs, and every GameCube Echoes build.
+#define RSTL_ECHOES_DEMO (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION <= RSTL_D84P)
+#define RSTL_ECHOES_GC (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION <= RSTL_G2MJ)
 // RSTL_ECHOES groups GameCube Echoes with Corruption, including the built E3 prototype.
 // Retail Corruption selections are provisional; see Prime's MCP shared-rstl.md for build coverage.
-#define RSTL_ECHOES (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION < RSTL_R3IJ)
+#define RSTL_ECHOES (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION < RSTL_R3IJ)
 
 // The Corruption builds: the E3 2006 prototype and the retail versions. Retail follows the
 // prototype's forms of the shared code (the prototype is an earlier revision of it), so the
@@ -60,17 +66,32 @@
 // Wii Echoes passes the input mix through while RSF decoding is muted.
 #define RSTL_RSF_AUDIO_MUTE_PASSTHROUGH (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // GameCube Echoes emits the streamed compression duration method in the reader TU.
-#define RSTL_CFB_ANIMATION_DURATION_IN_READER \
-  (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_CFB_ANIMATION_DURATION_IN_READER (!RSTL_PRIME1 && RSTL_ECHOES_GC)
 // CGX keeps its GX state behind the `.sdata` pointer `CGX::gpGXState` (GameCube Echoes only;
 // Prime, Echoes Wii and the Corruption prototype address a static `sGXState` directly).
-#define RSTL_CGX_STATE_POINTER (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_CGX_STATE_POINTER RSTL_ECHOES_GC
 // CParticleSwoosh.cpp ends with a function the retail link stripped; its weak
 // `vector< CParticleGen* >::clear` copy is kept (GameCube Echoes only).
-#define RSTL_PARTICLE_SWOOSH_GEN_CLEAR (RSTL_VERSION >= RSTL_G2ME && RSTL_VERSION <= RSTL_G2MJ)
+#define RSTL_PARTICLE_SWOOSH_GEN_CLEAR RSTL_ECHOES_GC
+
+// Particle features the Echoes demo discs lack.
+// Fixed (FXBR/FXBO) and dynamic particle bounds modes.
+#define RSTL_PARTICLE_BOUNDS_MODES (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+// Spawn and sorted systems store the child flags enum, not just the OPTS bit.
+#define RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS (!RSTL_ECHOES_DEMO)
+// Velocity sources use the scaled emitter translation.
+#define RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+// The RDOP particle description flag.
+#define RSTL_PARTICLE_RDOP (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+// Retail behaviour within CElementGen.cpp.
+#define RSTL_PARTICLE_ELEMENT_GEN_RETAIL (!RSTL_PRIME1 && !RSTL_ECHOES_DEMO)
+
+// Bitwise construction copies a trailing word inline; the Echoes demo discs memcpy instead.
+#define RSTL_BITWISE_CONSTRUCTION_TAIL_WORD (!RSTL_ECHOES_DEMO)
 
 // Prime and US GameCube Echoes normalize the offset from the emitter origin.
-#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME)
+#define RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE                                                       \
+  (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2ME && !RSTL_ECHOES_DEMO)
 
 // Japanese GameCube Echoes and later Prime 2 and Prime 3 builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
@@ -103,7 +124,7 @@
 #define RSTL_ALLOCATOR_INSTANCE RSTL_ECHOES
 // `rmemory_allocator::allocate(int)` is declared only and always called out of line (defined in
 // RstlExtras.cpp), `deallocate` deletes without a null check, and `allocate2` exists.
-#define RSTL_ALLOCATOR_EXTERN_ALLOCATE (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_ALLOCATOR_EXTERN_ALLOCATE (RSTL_VERSION >= RSTL_P2ME)
 // Echoes on Wii exports the allocation entry point as global_allocate, including NPC.
 #define RSTL_ALLOCATOR_GLOBAL_ALLOCATE (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // Allocation calls the out-of-line `rmemory_allocator::allocate(int)` (MWCC only).
@@ -122,15 +143,15 @@
 #define RSTL_PAIR_CONSTRUCTION_POLICY (RSTL_CONSTRUCTION_POLICY && !RSTL_CONSTRUCT_MUTABLE_OVERLOAD)
 // Precondition checks are the empty `RSTL_PRECONDITION` statements; otherwise `RS_ASSERT` or
 // `((void)0)` stubs.
-#define RSTL_PRECONDITION_MACRO (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_PRECONDITION_MACRO (RSTL_VERSION >= RSTL_P2ME)
 // `vector::operator[]` and the non-const `reserved_vector::operator[]` carry the index
 // precondition (on Trilogy the extra statement stops CInputFilter's loops from unrolling).
 #define RSTL_INDEX_PRECONDITION (RSTL_ECHOES && !RSTL_CORRUPTION)
 // Member functions are declared in the class and defined outside it (or marked `inline` there),
 // not defined in the class body. This is chosen per container.
-#define RSTL_STRING_OUT_OF_CLASS (RSTL_VERSION >= RSTL_G2ME)
-#define RSTL_LIST_OUT_OF_CLASS (RSTL_VERSION >= RSTL_G2ME)
-#define RSTL_VECTOR_OUT_OF_CLASS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_OUT_OF_CLASS (RSTL_VERSION >= RSTL_P2ME)
+#define RSTL_LIST_OUT_OF_CLASS (RSTL_VERSION >= RSTL_P2ME)
+#define RSTL_VECTOR_OUT_OF_CLASS (RSTL_VERSION >= RSTL_P2ME)
 // bit_vector, reserved_vector and set regress on Trilogy in this form (frame size,
 // `reserved_vector_traits` against `destroy_elements`, and a stream constructor that conflicts
 // with CInputStream.hpp), so they stay Echoes-only.
@@ -209,7 +230,7 @@
 #define RSTL_AUTO_PTR_CHECKED_RELEASE (RSTL_VERSION >= RSTL_G2MEAB)
 
 // `single_ptr` has a const-ref copy constructor that transfers ownership.
-#define RSTL_SINGLE_PTR_TRANSFER (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_SINGLE_PTR_TRANSFER (RSTL_VERSION >= RSTL_P2ME)
 // `~single_ptr` deletes through `get()` instead of `mPtr`.
 #define RSTL_SINGLE_PTR_DELETE_VIA_GET (RSTL_VERSION >= RSTL_R3IJ)
 // `rc_ptr` is the standalone implementation counting through `rc_ptr_private::sNull`.
@@ -221,24 +242,24 @@
 
 // --- Iterators and algorithms ---
 // `distance`, `advance` and their tag-dispatch helpers are `inline`.
-#define RSTL_INLINE_ITERATOR_HELPERS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_INLINE_ITERATOR_HELPERS (RSTL_VERSION >= RSTL_P2ME)
 // `advance_iterator` is `inline`.
 #define RSTL_INLINE_ADVANCE_ITERATOR                                                            \
-  (RSTL_VERSION >= RSTL_G2ME && (!RSTL_CORRUPTION || RSTL_VERSION == RSTL_G2MEAB))
+  (RSTL_VERSION >= RSTL_P2ME && (!RSTL_CORRUPTION || RSTL_VERSION == RSTL_G2MEAB))
 // `min_val` / `max_val` exist and take their arguments by value.
-#define RSTL_MIN_MAX_VAL (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_MIN_MAX_VAL (RSTL_VERSION >= RSTL_P2ME)
 // `pointer_iterator` `operator+` / `operator-` copy the iterator and use `+=` / `-=`.
 #define RSTL_POINTER_ITERATOR_COPY_ARITHMETIC (RSTL_VERSION >= RSTL_R3ME_00)
 // `less` declares its own typedefs instead of deriving from `binary_function`, and `less<
 // unsigned int >` exists.
 #define RSTL_LESS_WITHOUT_BASE (RSTL_VERSION >= RSTL_R3ME_00)
 // `__insertion_sort` takes a non-const `first` and the partition loop is `for (;;)`.
-#define RSTL_SORT_ECHOES_LOOPS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_SORT_ECHOES_LOOPS (RSTL_VERSION >= RSTL_P2ME)
 // `__insertion_sort` computes `t1 = next - 1` (the Wii compiler hoists the `subi` above the value
 // load, so it steps `t1 = next; --t1;` instead).
 #define RSTL_INSERTION_SORT_NEXT_MINUS_ONE RSTL_ECHOES
 // `lower_bound` advances `start` itself with a loop-local iterator.
-#define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_P2ME)
 // `lower_bound` declares `halfDist` before its loop instead of inside it.
 #define RSTL_LOWER_BOUND_HOISTED_HALF_DIST (!RSTL_PRIME1)
 // `binary_find` and `equal_range` keep named `lower` / `found` locals.
@@ -246,41 +267,41 @@
 
 // --- vector, list and reserved_vector ---
 // `vector::begin` builds the iterator from `mItems` instead of `data()`.
-#define RSTL_VECTOR_ITEM_BEGIN (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_VECTOR_ITEM_BEGIN (RSTL_VERSION >= RSTL_P2ME)
 // `vector::end` and `insert_into` bind their pointers to `T* const` locals.
 #define RSTL_VECTOR_CONST_LOCALS (RSTL_VERSION >= RSTL_GM8P_00)
 // `insert_into` destroys the moved-from element through a `T* const item` local.
-#define RSTL_VECTOR_INSERT_CONST_ITEM (RSTL_VERSION < RSTL_G2ME)
+#define RSTL_VECTOR_INSERT_CONST_ITEM (RSTL_VERSION < RSTL_P2ME)
 // The default-allocator-argument `vector(int, fill_type, const Alloc&)` carries the (empty) allocation
 // precondition after allocating (it counts toward the inline size at 128).
 #define RSTL_VECTOR_FILL_CTOR_PRECONDITION (RSTL_CORRUPTION)
 // `vector(int)` sets the count and leaves the elements uninitialized.
 #define RSTL_VECTOR_UNINITIALIZED_COUNT_CTOR RSTL_ECHOES
 // `vector(int, const T&)` is one constructor with a defaulted allocator argument.
-#define RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_VECTOR_DEFAULT_ALLOC_FILL_CTOR (RSTL_VERSION >= RSTL_P2ME)
 // `vector(int)` only reserves, with `mCount` assigned in the body.
 #define RSTL_VECTOR_RESERVE_CTOR (RSTL_VERSION >= RSTL_R3ME_00)
 // The stream constructor reserves `count + mCount` elements instead of `count`.
 #define RSTL_VECTOR_STREAM_RESERVE_APPEND (RSTL_VERSION >= RSTL_R32J)
 // `vector::assign` and CStringExtras fill with `push_back_unsafe`.
-#define RSTL_VECTOR_PUSH_BACK_UNSAFE (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_VECTOR_PUSH_BACK_UNSAFE (RSTL_VERSION >= RSTL_P2ME)
 // `vector::push_back` appends without growing or checking capacity.
 #define RSTL_VECTOR_UNCHECKED_PUSH_BACK (RSTL_VERSION >= RSTL_R3IJ)
 // `vector::push_back` grows the storage, and is followed by `push_back_unsafe` and `pop_back`.
 #define RSTL_VECTOR_GROWING_PUSH_BACK                                                              \
-  (RSTL_VERSION >= RSTL_G2ME && !RSTL_VECTOR_UNCHECKED_PUSH_BACK)
+  (RSTL_VERSION >= RSTL_P2ME && !RSTL_VECTOR_UNCHECKED_PUSH_BACK)
 // `insert_into` indexes the leading elements with a `long`.
-#define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_VECTOR_LONG_INSERT_INDEX (RSTL_VERSION >= RSTL_P2ME)
 // The `vector::erase` move loop declares its destination iterator before the source one.
 #define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R32J)
 // The `list` copy constructor guards the partial copy with a `destroy_helper`.
-#define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_G2ME)
+#define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_P2ME)
 // `list::destroy` calls `clear()` instead of erasing the range.
 #define RSTL_LIST_DESTROY_CALLS_CLEAR (RSTL_VERSION >= RSTL_GM8P_00)
 // `list` iterators have real postfix `++` / `--` (copy, step, return the copy).
-#define RSTL_LIST_POSTFIX_ITERATORS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_LIST_POSTFIX_ITERATORS (RSTL_VERSION >= RSTL_P2ME)
 // The `list` sentinel `mEmpty_prev` is a plain, unaligned pointer.
-#define RSTL_LIST_PLAIN_SENTINEL (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_LIST_PLAIN_SENTINEL (RSTL_VERSION >= RSTL_P2ME)
 // `list::sort`'s inner loop walks a plain node cursor instead of an iterator (all but Trilogy).
 #define RSTL_LIST_SORT_NODE_CURSOR (RSTL_VERSION < RSTL_R3ME_00)
 // `reserved_vector` uses `reserved_vector_traits` to skip destructor loops for trivial types and
@@ -294,9 +315,9 @@
 // before skipping trivially destructible types. GameCube Echoes has no such check.
 #define RSTL_RESERVED_VECTOR_DESTROY_PRECONDITION (RSTL_CORRUPTION)
 // The `reserved_vector` copy constructor copies through raw pointers.
-#define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_P2ME)
 // `reserved_vector::resize` also shrinks.
-#define RSTL_RESERVED_VECTOR_SHRINKING_RESIZE (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_RESERVED_VECTOR_SHRINKING_RESIZE (RSTL_VERSION >= RSTL_P2ME)
 // `reserved_vector` destroys through `destroy_elements` and defines `operator=` out of class.
 #define RSTL_RESERVED_VECTOR_OUT_OF_CLASS RSTL_ECHOES
 // `bit_vector::make_room` grows with `push_back_unsafe`.
@@ -324,7 +345,7 @@
 // The `set` copy constructor is `inline`.
 #define RSTL_SET_INLINE_COPY_CTOR (RSTL_VERSION < RSTL_GM8P_00 || RSTL_PRIME1)
 // `red_black_tree::find_node` returns through a ternary instead of a `noResult` flag.
-#define RSTL_RBTREE_TERNARY_FIND (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_RBTREE_TERNARY_FIND (RSTL_VERSION >= RSTL_P2ME)
 // `red_black_tree` has `destroy()` and a destroy-based destructor; otherwise
 // copy/assign/destructor go through `clear()`.
 #define RSTL_RBTREE_DESTROY_HELPER (!RSTL_ECHOES)
@@ -337,31 +358,31 @@
 // instead of the explicit specializations in rstl_strings.cpp.
 #define RSTL_STRING_INCLASS_NULL (RSTL_VERSION >= RSTL_RM3E)
 // `basic_string::mNull` is a non-const static.
-#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_G2ME && !RSTL_STRING_INCLASS_NULL)
+#define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_P2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
 #define RSTL_STRING_INLINE_CHAR_COMPARE 1
 // The string typedefs and comparison operators are declared before the out-of-line specializations,
 // and `substr` is defined out of line.
-#define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_P2ME)
 // `operator+(const string&, const string&)` is inline instead of declared out of line.
 #define RSTL_STRING_INLINE_CONCAT RSTL_ECHOES
 // `basic_string` reads characters with `ReadInt8()` instead of `Get< schar >()`.
-#define RSTL_STRING_READ_INT8 (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_READ_INT8 (RSTL_VERSION >= RSTL_P2ME)
 // Releasing the copy-on-write buffer calls `CMemory::Free` instead of
 // `rmemory_allocator::deallocate`.
-#define RSTL_STRING_FREE_WITH_CMEMORY (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_FREE_WITH_CMEMORY (RSTL_VERSION >= RSTL_P2ME)
 // rstl_strings.cpp specializes `basic_string< char >::assign(const char*, int)`.
 #define RSTL_STRING_ASSIGN_SPECIALIZATION (RSTL_VERSION >= RSTL_GM8P_00)
 // CStringExtras reads characters with `at()` and a `signed char` digit buffer, and
 // declares the uppercase character parameter without top-level const (MWCC codegen).
-#define RSTL_STRING_EXTRAS_AT_ACCESS (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_EXTRAS_AT_ACCESS (RSTL_VERSION >= RSTL_P2ME)
 // Emitting the unused factory also changes the string pool and existing conversion code
 // in PAL/Japanese Prime, so this is an emission boundary rather than just API availability.
-#define RSTL_STRING_LIST_FACTORY (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_STRING_LIST_FACTORY (RSTL_VERSION >= RSTL_P2ME)
 // `ConvertToUNICODE` returns early for an empty string.
-#define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_G2ME)
+#define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_P2ME)
 // `CStringExtras::CreateFromReal` exists.
-#define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_G2ME)
+#define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_P2ME)
 
 // --- Corruption prototype differences ---
 // Sharing Echoes' allocation expression (with a size local) outlines the

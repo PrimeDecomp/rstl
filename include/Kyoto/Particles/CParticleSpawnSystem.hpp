@@ -87,7 +87,11 @@ private:
   double mCurSeconds;
   int mLifetime;
   int mParticleCount;
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
   CElementGen::EOptionalSystemFlags mOptionalFlags;
+#else
+  bool mEnableOPTS : 1;
+#endif
   bool mModelsUseLights : 1;
   bool mParticleEmission : 1;
   bool mIgnoreGlobalTransform : 1;
@@ -115,6 +119,6 @@ private:
   bool mVelocitySourceLocal[2];
   CModVectorElement* mVelocitySources[2];
 };
-CHECK_SIZEOF(CParticleSpawnSystem, 0x220)
+CHECK_SIZEOF(CParticleSpawnSystem, RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS ? 0x220 : 0x218)
 
 #endif // _CPARTICLESPAWNSYSTEM

@@ -22,7 +22,11 @@ CParticleSpawnSystem::CParticleSpawnSystem(TToken< CSpawnSystemDescription > des
 , mCurFrame(0)
 , mCurSeconds(0.0)
 , mParticleCount(0)
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
 , mOptionalFlags(flags)
+#else
+, mEnableOPTS(flags & CElementGen::kOSF_Two)
+#endif
 , mModelsUseLights(modelsUseLights)
 , mParticleEmission(true)
 , mIgnoreGlobalTransform(false)
@@ -462,8 +466,14 @@ CParticleGen* CParticleSpawnSystem::ConstructChildParticleSystem(const CToken& d
   const CVector3f localScale = CVector3f::ByElementMultiply(mLocalScaleMultiplier, mLocalScale);
   const CColor color = CColor::Modulate(mParticleColor, mModulationColor);
   return CElementGen::ConstructChildParticleSystem(
-      description, type, seed, mOptionalFlags, mModelsUseLights, mParticleEmission, translation,
-      orientation, globalTranslation, globalOrientation, globalScale, color, localScale);
+      description, type, seed,
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
+      mOptionalFlags,
+#else
+      mEnableOPTS,
+#endif
+      mModelsUseLights, mParticleEmission, translation, orientation, globalTranslation,
+      globalOrientation, globalScale, color, localScale);
 }
 
 void CParticleSpawnSystem::UpdateChildParticleSystems(double dt) {
