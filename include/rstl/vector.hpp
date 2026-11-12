@@ -257,15 +257,25 @@ public:
   iterator erase(iterator it);
   iterator erase(iterator first, iterator last);
 
-#if RSTL_VECTOR_VERIFIED_PUSH_BACK
   void push_back(typename type_traits< T >::vector_push_type in) {
+#if RSTL_VECTOR_VERIFIED_PUSH_BACK
     if (mCount >= mCapacity) {
       verify_capacity_failed();
     }
     RSTL_PRECONDITION(mItems != nullptr);
     RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in);
+#elif RSTL_VECTOR_UNCHECKED_PUSH_BACK
+    RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in);
+#else
+    if (mCount >= mCapacity) {
+      reserve(mCapacity != 0 ? mCapacity * 2 : 4);
+    }
+    RSTL_VECTOR_CONSTRUCT(mItems + mCount, in);
+    ++mCount;
+#endif
   }
 
+#if RSTL_VECTOR_VERIFIED_PUSH_BACK
   void push_back_unsafe(const T& in) {
     if (!(mCount < mCapacity)) {
       verify_capacity_failed();
@@ -282,28 +292,7 @@ public:
     push_back_unsafe(in);
   }
 #elif RSTL_VECTOR_GROWING_PUSH_BACK
-  void push_back(typename type_traits< T >::vector_push_type in) {
-    if (mCount >= mCapacity) {
-      reserve(mCapacity != 0 ? mCapacity * 2 : 4);
-    }
-    RSTL_VECTOR_CONSTRUCT(mItems + mCount, in);
-    ++mCount;
-  }
-
   void push_back_unsafe(const T& in) { RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in); }
-#else
-#if RSTL_VECTOR_UNCHECKED_PUSH_BACK
-  void push_back(typename type_traits< T >::vector_push_type in) { RSTL_VECTOR_CONSTRUCT(mItems + mCount++, in); }
-#else
-  void push_back(typename type_traits< T >::vector_push_type in) {
-    if (mCount >= mCapacity) {
-      reserve(mCapacity ? mCapacity * 2 : 4);
-    }
-    RS_ASSERT(mCount < mCapacity, "rstl invariant");
-    RSTL_VECTOR_CONSTRUCT(mItems + mCount, in);
-    ++mCount;
-  }
-#endif
 #endif
 
   void pop_back() {
