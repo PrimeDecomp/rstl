@@ -59,12 +59,7 @@ CPOINode::CPOINode(CInputStream& in)
 #endif
 , mType(in.Get< ushort >())
 , mTime(in)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 , mIndex(in.Get< uint >())
-#else
-, mIndex(in.Get< int >())
-#endif
 , mUnique(in.Get< bool >())
 , mWeight(in.Get< float >())
 , mCharIdx(in.Get< int >())

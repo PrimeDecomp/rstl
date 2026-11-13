@@ -354,11 +354,7 @@ CHECK_SIZEOF(CFBStreamedPerChannelHeader, RSTL_PRIME1 ? 0x4 : 0x1)
 class TLoadedContainerBase {
 protected:
   static void LoadSize(uint& size, CInputStream& in) {
-#if RSTL_PRIME1
-    size = in.Get< uint >();
-#else
-    size = in.ReadInt32();
-#endif
+    size = in.ReadLong();
   }
 };
 

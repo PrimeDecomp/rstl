@@ -14,12 +14,7 @@ CMetaTransTrans::CMetaTransTrans(CInputStream& in)
 #endif
 , mRunA(in.ReadBool())
 , mFlags(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       in.ReadLong()
-#else
-      in.ReadInt32()
-#endif
       ) {}
 
 rstl::ncrc_ptr< CAnimTreeNode >

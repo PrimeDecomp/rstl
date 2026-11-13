@@ -222,6 +222,18 @@ public:
   }
   char ReadInt8() { return *mpBufferAt.p8++; }
   bool ReadBool() { return ReadUint8() != 0; }
+  // Prime's reader names, with the bodies of ReadUint32, ReadUint16, ReadInt8 and ReadInt64.
+  uint ReadLong() {
+    uint* result = mpBufferAt.p32++;
+    return BE_SWAP(*result);
+  }
+  ushort ReadShort() { return BE_SWAP(*mpBufferAt.p16++); }
+  char ReadChar() { return *mpBufferAt.p8++; }
+  u64 ReadLongLong() {
+    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
+    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
+    return BE_SWAP(*result);
+  }
 #else
   int ReadInt32() {
     int* result = reinterpret_cast< int* >(mpBufferAt.p8);
@@ -250,6 +262,23 @@ public:
   }
   char ReadInt8() { return static_cast< char >(ReadUint8()); }
   bool ReadBool() { return *mpBufferAt.p8++ != 0; }
+  // Prime's reader names, with the bodies of ReadUint32, ReadUint16, ReadInt8 and ReadInt64.
+  uint ReadLong() {
+    uint* result = reinterpret_cast< uint* >(mpBufferAt.p8);
+    mpBufferAt.p8 += sizeof(uint);
+    return BE_SWAP(*result);
+  }
+  ushort ReadShort() {
+    ushort* result = reinterpret_cast< ushort* >(mpBufferAt.p8);
+    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
+    return BE_SWAP(*result);
+  }
+  char ReadChar() { return static_cast< char >(ReadUint8()); }
+  u64 ReadLongLong() {
+    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
+    mpBufferAt.p8 += sizeof(u64);
+    return BE_SWAP(*result);
+  }
 #endif
   uint GetReadPosition() const { return mpBufferAt.p8 - mpBufferStart; }
 

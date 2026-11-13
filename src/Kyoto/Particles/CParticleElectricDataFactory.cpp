@@ -94,12 +94,7 @@ bool CParticleElectricDataFactory::CreateELSM(CElectricDescription* desc, CInput
     case 'SSWH': {
       const FourCC childId = CParticleDataFactory::GetClassID(in);
       if (childId != 'NONE') {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         const CAssetId id = in.ReadLong();
-#else
-        const CAssetId id = in.ReadInt32();
-#endif
 
         if (id != 0) {
           desc->mSSWH = TCachedToken< CSwooshDescription >(pool->GetObj(SObjectTag('SWHC', id)));

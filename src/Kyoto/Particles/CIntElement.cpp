@@ -306,25 +306,13 @@ bool CIELifetimePercent::GetValue(int frame, int& valOut) const {
 }
 
 CIEKeyframeEmitter::CIEKeyframeEmitter(CInputStream& in)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 : mPercent(in.ReadLong())
 , mUnk1(in.ReadLong())
-#else
-: mPercent(in.ReadInt32())
-, mUnk1(in.ReadInt32())
-#endif
 
 , mLoop(in.ReadBool())
 , mUnk2(in.ReadBool())
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 , mLoopEnd(in.ReadLong())
 , mLoopStart(in.ReadLong())
-#else
-, mLoopEnd(in.ReadInt32())
-, mLoopStart(in.ReadInt32())
-#endif
 
 , mKeys(in) {}
 

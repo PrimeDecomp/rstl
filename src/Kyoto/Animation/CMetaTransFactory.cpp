@@ -11,12 +11,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 rstl::rc_ptr< IMetaTrans > CMetaTransFactory::CreateMetaTrans(CInputStream& in) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   EMetaTransType type = static_cast< EMetaTransType >(in.ReadLong());
-#else
-  EMetaTransType type = static_cast< EMetaTransType >(in.ReadInt32());
-#endif
   switch (type) {
   case kMTT_MetaAnim:
     return rs_new CMetaTransMetaAnim(in);

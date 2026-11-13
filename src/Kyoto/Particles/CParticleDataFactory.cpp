@@ -547,12 +547,7 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
 }
 
 FourCC CParticleDataFactory::GetClassID(CInputStream& in) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   return in.ReadLong();
-#else
-  return in.ReadInt32();
-#endif
 }
 
 bool CParticleDataFactory::GetBool(CInputStream& in) {
@@ -1544,12 +1539,7 @@ CUVElement* CParticleDataFactory::GetTextureElement(CInputStream& in, CSimplePoo
     CAssetId id = 0;
     FourCC subId = GetClassID(in);
     if (subId != SBIG('NONE')) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       id = in.ReadLong();
-#else
-      id = in.ReadInt32();
-#endif
 
     }
     if (id == 0) {
@@ -1565,12 +1555,7 @@ CUVElement* CParticleDataFactory::GetTextureElement(CInputStream& in, CSimplePoo
     CAssetId id = 0;
     FourCC subId = GetClassID(in);
     if (subId != SBIG('NONE')) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       id = in.ReadLong();
-#else
-      id = in.ReadInt32();
-#endif
 
     }
     CIntElement* tileW = GetIntElement(in);
