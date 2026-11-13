@@ -10,7 +10,7 @@
 // Guessed name: the demo discs have an empty function taking an exception name.
 void ThrowException(int, const char*);
 
-// The demo discs compile this unit with -inline deferred, which emits its functions in reverse.
+// Written in Prime's order; -inline deferred emits the functions in reverse.
 CInputStream::CInputStream(int len)
 : mBlockOffset(0)
 , mBlockLen(0)
