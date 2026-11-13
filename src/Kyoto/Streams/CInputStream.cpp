@@ -6,6 +6,11 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Streams/StreamSupport.hpp"
 
+#if RSTL_ECHOES_DEMO
+// Guessed name: the demo discs have an empty function taking an exception name.
+void ThrowException(int, const char*);
+#endif
+
 CInputStream::CInputStream(int len)
 : mBlockOffset(0)
 , mBlockLen(0)
@@ -38,7 +43,15 @@ bool CInputStream::InternalReadNext() {
   return mBlockLen != 0;
 }
 
+#if RSTL_ECHOES_DEMO
+void CInputStream::GrabAnotherBlock() {
+  if (!InternalReadNext()) {
+    ThrowException(0, "kException_EndOfStream");
+  }
+}
+#else
 bool CInputStream::GrabAnotherBlock() { return InternalReadNext(); }
+#endif
 
 void CInputStream::Get(void* dest, unsigned long len) {
   uint remain = len;
@@ -92,7 +105,13 @@ size_t CInputStream::ReadBytes(void* dest, size_t len) {
     }
 
     uint sz = curLen < remain ? curLen : remain;
+#if RSTL_ECHOES_DEMO
+    if (dest != nullptr) {
+      memcpy(reinterpret_cast< uchar* >(dest) + curReadLen, mPtr + mBlockOffset, sz);
+    }
+#else
     memcpy(reinterpret_cast< uchar* >(dest) + curReadLen, mPtr + mBlockOffset, sz);
+#endif
     curReadLen += sz;
     curLen -= sz;
     mBlockOffset += sz;
@@ -158,8 +177,15 @@ uint CInputStream::ReadBits(uint bitCount) {
 #endif
 }
 
+// The Prime build reads into function-local statics; the demos use plain locals.
+#if RSTL_ECHOES_DEMO
+#define RSTL_INPUT_STREAM_TEMP
+#else
+#define RSTL_INPUT_STREAM_TEMP static
+#endif
+
 char CInputStream::ReadChar() {
-  static char c;
+  RSTL_INPUT_STREAM_TEMP char c;
   Get(&c, sizeof(char));
   return c;
 }
@@ -167,31 +193,40 @@ char CInputStream::ReadChar() {
 bool CInputStream::ReadBool() { return static_cast< uchar >(ReadChar()) != 0; }
 
 ushort CInputStream::ReadShort() {
-  static ushort s;
+  RSTL_INPUT_STREAM_TEMP ushort s;
   Get(&s, sizeof(ushort));
   return CBasics::SwapBytes(s);
 }
 
 uint CInputStream::ReadLong() {
-  static uint l;
+  RSTL_INPUT_STREAM_TEMP uint l;
   Get(&l, sizeof(uint));
   return CBasics::SwapBytes(l);
 }
 
 u64 CInputStream::ReadLongLong() {
-  static u64 ll;
+  RSTL_INPUT_STREAM_TEMP u64 ll;
   Get(&ll, sizeof(u64));
   return CBasics::SwapBytes(ll);
 }
 
 float CInputStream::ReadFloat() {
-  static float f;
+  RSTL_INPUT_STREAM_TEMP float f;
   Get(&f, sizeof(float));
   return CBasics::SwapBytes(f);
 }
 
+#if !RSTL_ECHOES_DEMO
 double CInputStream::ReadDouble() {
-  static double d;
+  RSTL_INPUT_STREAM_TEMP double d;
   Get(&d, sizeof(double));
   return d;
 }
+#endif
+
+#if RSTL_ECHOES_DEMO
+void ThrowException(int, const char*) {}
+
+// Guessed name; stripped from the link, but its string literal stays in the pool.
+static void ThrowNoException() { ThrowException(0, "(no exceptions)"); }
+#endif

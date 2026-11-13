@@ -564,6 +564,8 @@
 #define RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE (RSTL_CORRUPTION)
 // The demo discs' CObjectReference packs its counts into one word, as Prime's does.
 #define RSTL_KYOTO_OBJECT_REFERENCE_PACKED_COUNTS (RSTL_PRIME1 || RSTL_ECHOES_DEMO)
+// The demo discs' CModelFlags::DepthBackwards only sets the greater-depth flag, as Prime's does.
+#define RSTL_KYOTO_MODEL_FLAGS_DEPTH_BACKWARDS_SET_ONLY (RSTL_ECHOES_DEMO)
 // IObj and CObjOwnerDerivedFromIObjUntyped declare their destructors inline in the class.
 #define RSTL_KYOTO_IOBJ_INLINE_DTOR (RSTL_CORRUPTION)
 // TObjOwnerParam::GetData returns the held value by const reference.
@@ -841,7 +843,8 @@
 // ============================================================================================
 
 // CInputStream is Prime's abstract block-buffered stream, and CZipInputStream inflates per block.
-#define RSTL_KYOTO_BLOCK_INPUT_STREAM RSTL_PRIME1
+// The demo discs still use Prime's block-reading input stream.
+#define RSTL_KYOTO_BLOCK_INPUT_STREAM (RSTL_PRIME1 || RSTL_ECHOES_DEMO)
 // The memory-buffer CInputStream steps its cursor through typed union members.
 #define RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR (RSTL_CORRUPTION)
 // Prime's COutputStream: the bit shift register (0x7C bytes) and its own pair helper.
