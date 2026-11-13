@@ -371,12 +371,7 @@ void CFBStreamedAnimReaderTotals::IncrementInto(
     }
 #endif
     if (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
         mHasOffset[channel]
-#else
-          mHasOffset[channel]
-#endif
     ) {
       const CFBStreamedPerChannelHeader::OffsetHeader& offset = it->GetOffsetBitStorage();
       output[4] = input[4] + loader.LoadSigned(offset.GetBitCount(0));

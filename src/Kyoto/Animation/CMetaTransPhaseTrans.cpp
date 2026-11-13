@@ -15,12 +15,7 @@ CMetaTransPhaseTrans::CMetaTransPhaseTrans(CInputStream& in)
 #endif
 , mRunA(in.ReadBool())
 , mFlags(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
       in.ReadLong()
-#else
-      in.ReadInt32()
-#endif
       ) {}
 
 #if RSTL_PRIME1

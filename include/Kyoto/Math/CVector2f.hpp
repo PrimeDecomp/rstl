@@ -16,13 +16,8 @@ public:
 #endif
   CVector2f(float x, float y);
   CVector2f(CInputStream& in)
-#if RSTL_PRIME1
-  : mX(in.Get< float >())
-  , mY(in.Get< float >())
-#else
   : mX(in.ReadFloat())
   , mY(in.ReadFloat())
-#endif
   {
   }
 

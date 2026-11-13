@@ -4,9 +4,8 @@
 
 CInt32POINode::CInt32POINode(CInputStream& in)
 : CPOINode(in)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-, mVal(in.ReadInt32())
+, mVal(in.ReadLong())
 #else
 , mVal(in.Get< int >())
 #endif

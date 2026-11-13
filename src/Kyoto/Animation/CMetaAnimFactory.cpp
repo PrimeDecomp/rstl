@@ -10,12 +10,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 rstl::rc_ptr< IMetaAnim > CMetaAnimFactory::CreateMetaAnim(CInputStream& in) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   EMetaAnimType type = static_cast< EMetaAnimType >(in.ReadLong());
-#else
-  EMetaAnimType type = static_cast< EMetaAnimType >(in.ReadInt32());
-#endif
   switch (type) {
   case kMAT_Play:
     return rs_new CMetaAnimPlay(in);

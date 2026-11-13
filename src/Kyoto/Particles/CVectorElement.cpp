@@ -416,7 +416,6 @@ bool CVEPulse::GetValue(int frame, CVector3f& valOut) const {
 }
 
 CVEKeyframeEmitter::CVEKeyframeEmitter(CInputStream& in)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : mPercent(in.Get< uint >())
 , mUnk1(in.Get< uint >())
@@ -425,14 +424,13 @@ CVEKeyframeEmitter::CVEKeyframeEmitter(CInputStream& in)
 , mLoopEnd(in.Get< uint >())
 , mLoopStart(in.Get< uint >())
 #else
-: mPercent(in.ReadInt32())
-, mUnk1(in.ReadInt32())
+: mPercent(in.ReadLong())
+, mUnk1(in.ReadLong())
 , mLoop(in.ReadBool())
 , mUnk2(in.ReadBool())
-, mLoopEnd(in.ReadInt32())
-, mLoopStart(in.ReadInt32())
+, mLoopEnd(in.ReadLong())
+, mLoopStart(in.ReadLong())
 #endif
-
 , mKeys(in) {}
 
 CVEKeyframeEmitter::~CVEKeyframeEmitter() {}

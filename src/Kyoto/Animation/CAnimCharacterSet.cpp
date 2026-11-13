@@ -6,12 +6,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 CAnimCharacterSet::CAnimCharacterSet(CInputStream& in)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-: mVersion(in.Get< short >())
-#else
 : mVersion(in.Get< ushort >())
-#endif
 , mCharacterSet(in)
 , mAnimationSet(in) {}
 

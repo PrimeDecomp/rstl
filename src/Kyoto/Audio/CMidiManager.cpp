@@ -162,18 +162,10 @@ CMidiManager::CMidiData::CMidiData(CInputStream& in)
           "Invalid CSNG arrangement at {}: {}", error.offset, error.reason ? error.reason : "");
 #else
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   in.ReadLong();
   mSongId = in.ReadLong();
   mGroupId = in.ReadLong();
   mAgscId = in.ReadLong();
-#else
-  in.ReadInt32();
-  mSongId = in.ReadInt32();
-  mGroupId = in.ReadInt32();
-  mAgscId = in.ReadInt32();
-#endif
   int len = in.ReadInt32();
   mData = rs_new uchar[len];
   in.Get(mData.get(), len);

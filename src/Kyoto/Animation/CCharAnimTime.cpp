@@ -7,11 +7,10 @@
 
 CCharAnimTime::CCharAnimTime(CInputStream& in)
 : mTime(in.Get< float >())
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mType(EType(in.Get< int >()))
 #else
-, mType(EType(in.ReadInt32()))
+, mType(EType(in.ReadLong()))
 #endif
 {}
 
