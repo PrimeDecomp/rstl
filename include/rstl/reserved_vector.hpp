@@ -185,7 +185,7 @@ public:
     RSTL_PRECONDITION(mCount == other.mCount);
     RSTL_PRECONDITION(other.data() != nullptr);
     RSTL_PRECONDITION(data() != nullptr);
-    const T* it = other.data();
+    const T* it = other.begin();
     T* cur = data();
     for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
       construction_policy< T, is_scalar_type< T >::value >::construct(cur, *it);
