@@ -1,4 +1,5 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
+#include "Metaforce/Display.hpp"
 #include "rstl/macros.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -243,7 +244,9 @@ CVector3f CGraphics::mViewPoint(0.f, 0.f, 0.f);
 GXLightObj CGraphics::mLightObj[8];
 GXTexRegion CGraphics::mTexRegions[GX_MAX_TEXMAP];
 GXTexRegion CGraphics::mTexRegionsCI[GX_MAX_TEXMAP / 2];
+#if !defined(TARGET_PC)
 GXRenderModeObj CGraphics::mRenderModeObj;
+#endif
 Mtx CGraphics::mGXViewPointMatrix;
 #if RSTL_PRIME1
 Mtx CGraphics::mGXModelMatrix;
@@ -715,7 +718,12 @@ void CGraphics::InitGraphicsDefaults() {
 void CGraphics::ConfigureFrameBuffer() {
 #else
 void CGraphics::ConfigureFrameBuffer(const COsContext& osContext) {
+#if !defined(TARGET_PC)
   mRenderModeObj = osContext.GetRenderModeObj();
+#else
+  metaforce::SetRenderMode(osContext.GetRenderModeObj());
+  const auto& mRenderModeObj = metaforce::GetRenderMode();
+#endif
   mpFrameBuf1 = osContext.GetFramebuf1();
   mpFrameBuf2 = osContext.GetFramebuf2();
 #endif
@@ -1126,6 +1134,7 @@ CMatrix4f CGraphics::CalculatePerspectiveMatrix(float fovy, float aspect, float 
 }
 
 void CGraphics::SetViewport(int left, int bottom, int width, int height) {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   mViewport.mLeft = left;
   mViewport.mTop = mRenderModeObj.efbHeight - (bottom + height);
   mViewport.mWidth = width;
@@ -1144,6 +1153,7 @@ int CGraphics::GetViewportTop(int bottom) {
 #endif
 
 void CGraphics::SetScissor(int left, int bottom, int width, int height) {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   GXSetScissor(left, mRenderModeObj.efbHeight - (bottom + height), width, height);
 }
 
@@ -1166,6 +1176,7 @@ void CGraphics::SetClearColor(const CColor& color) {
 CColor CGraphics::GetClearColor() { return mClearColor; }
 
 void CGraphics::ClearBackAndDepthBuffers() {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   GXInvalidateTexAll();
   if (mRenderModeObj.field_rendering) {
     GXSetViewportJitter(0.f, 0.f, static_cast< float >(mRenderModeObj.fbWidth),
@@ -2439,6 +2450,7 @@ float CGraphics::GetFPS() {
 }
 
 void CGraphics::SetUseVideoFilter(const bool b) {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   mUseVideoFilter = b;
   GXSetCopyFilter(mRenderModeObj.aa, mRenderModeObj.sample_pattern, b ? GX_ENABLE : GX_DISABLE,
                   mRenderModeObj.vfilter);
@@ -2456,6 +2468,7 @@ CVector2i CGraphics::ProjectPoint(const CVector3f& point) {
 }
 
 void CGraphics::SetProgressiveMode(bool progressive) {
+  IF_TARGET_PC(auto& mRenderModeObj = metaforce::GetRenderMode());
   const bool wasProgressive = GetProgressiveMode();
 #if RSTL_KYOTO_PAL_VIDEO
   OSSetEuRgb60Mode(progressive);
@@ -2496,7 +2509,7 @@ void CGraphics::SetProgressiveMode(bool progressive) {
   } else {
     mRenderModeObj.viTVmode = VI_TVMODE_NTSC_INT;
     mRenderModeObj.xFBmode = VI_XFBMODE_DF;
-    memcpy(mRenderModeObj.vfilter, GXNtsc480IntDf.vfilter, 7);
+    memcpy(mRenderModeObj.vfilter, IF_TARGET_PC_OR(metaforce::GetGXNtsc480IntDf()->vfilter, GXNtsc480IntDf.vfilter), 7);
   }
   GXSetCopyFilter(mRenderModeObj.aa, mRenderModeObj.sample_pattern, GX_ENABLE,
                   mRenderModeObj.vfilter);
@@ -2519,6 +2532,7 @@ bool CGraphics::GetProgressiveMode() {
 #if RSTL_KYOTO_PAL_VIDEO
   return VIGetTvFormat() == VI_EURGB60;
 #else
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   return mRenderModeObj.viTVmode == VI_TVMODE_NTSC_PROG;
 #endif
 }
@@ -2554,6 +2568,7 @@ void CGraphics::GetScreenPosition(int* stretch, int* xOffset, int* yOffset) {
 }
 
 void CGraphics::SetScreenPosition(int stretch, int xOffset, int yOffset) {
+  IF_TARGET_PC(auto& mRenderModeObj = metaforce::GetRenderMode());
   int stretchChange = stretch - mScreenStretch;
   int xChange = xOffset - mScreenPositionX;
   int yChange = yOffset - mScreenPositionY;

@@ -11,6 +11,10 @@
 #include <string.h>
 #endif
 
+#if defined(TARGET_PC)
+#include "Metaforce/Display.hpp"
+#endif
+
 #if RSTL_KYOTO_WII_OS_CONTEXT
 // Shared Wii entry points; the games' SDK header sets expose different subsets.
 extern "C" {
@@ -172,11 +176,13 @@ COsKeyState COsContext::GetOsKeyState(int key) const {
 int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool fullscreen) {
   VIInit();
   GXRenderModeObj* rModeObj;
+
   switch (VIGetTvFormat()) {
   case VI_NTSC:
-    rModeObj = &GXNtsc480IntDf;
+    rModeObj = IF_TARGET_PC_OR(metaforce::GetGXNtsc480IntDf(), &GXNtsc480IntDf);
     mFormat = 1;
     break;
+#if !defined(TARGET_PC)
   case VI_PAL:
     rModeObj = &GXPal528IntDf;
     mFormat = 2;
@@ -185,6 +191,7 @@ int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool f
     rModeObj = &GXMpal480IntDf;
     mFormat = 3;
     break;
+#endif
   }
 
   if (w > 0) {

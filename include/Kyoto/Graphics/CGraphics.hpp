@@ -2,10 +2,6 @@
 #define _CGRAPHICS
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
-#include "GameVersions.h"
-#endif
-
 #include "types.h"
 
 #include "Kyoto/CTimeProvider.hpp"
@@ -21,6 +17,10 @@
 
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
+
+#if defined(TARGET_PC)
+#include "Metaforce/Display.hpp"
+#endif
 
 class COsContext;
 
@@ -385,7 +385,13 @@ public:
                                                  ETexelFormat fmt);
   static CVector2i ProjectPoint(const CVector3f& point);
 
-  static const GXRenderModeObj& GetRenderMode() { return mRenderModeObj; }
+  static const GXRenderModeObj& GetRenderMode() {
+    #if defined(TARGET_PC)
+    return metaforce::GetRenderMode();
+    #else
+    return mRenderModeObj;
+    #endif
+  }
 
   static float GetDepthNear() { return mDepthNear; }
   static float GetDepthFar() { return mDepthFar; }
@@ -595,7 +601,9 @@ private:
   static GXLightObj mLightObj[8];
   static GXTexRegion mTexRegions[GX_MAX_TEXMAP];
   static GXTexRegion mTexRegionsCI[GX_MAX_TEXMAP / 2];
+#if !defined(TARGET_PC)
   static GXRenderModeObj mRenderModeObj;
+#endif
   static bool sIsPAL; // Guessed name.
   static bool sIs50Hz; // Guessed name; shared video timing and splash-coordinate flag.
 
