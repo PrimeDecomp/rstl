@@ -841,7 +841,8 @@
 // ============================================================================================
 
 // CInputStream is Prime's abstract block-buffered stream, and CZipInputStream inflates per block.
-#define RSTL_KYOTO_BLOCK_INPUT_STREAM RSTL_PRIME1
+// The demo discs still use Prime's block-reading input stream.
+#define RSTL_KYOTO_BLOCK_INPUT_STREAM (RSTL_PRIME1 || RSTL_ECHOES_DEMO)
 // The memory-buffer CInputStream steps its cursor through typed union members.
 #define RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR (RSTL_CORRUPTION)
 // Prime's COutputStream: the bit shift register (0x7C bytes) and its own pair helper.

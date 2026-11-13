@@ -9,7 +9,7 @@
 
 #include "rstl/auto_ptr.hpp"
 
-#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+#if RSTL_PRIME1
 #include "rstl/single_ptr.hpp"
 
 #include <zlib.h>

@@ -71,6 +71,8 @@ public:
   }
   char ReadInt8() { return static_cast< char >(ReadUint8()); }
   int ReadInt32() { return Get< int >(); }
+  uint ReadUint32() { return Get< uint >(); } // Guessed name.
+  u64 ReadInt64() { return ReadLongLong(); }
   ushort ReadUint16() { return Get< ushort >(); }
   short ReadInt16() { return Get< short >(); }
 
@@ -78,7 +80,11 @@ public:
   const uint GetReadPosition() const { return mReadPosition; }
 
 private:
+#if RSTL_ECHOES_DEMO
+  void GrabAnotherBlock();
+#else
   bool GrabAnotherBlock();
+#endif
   bool InternalReadNext();
 
   uint mBlockOffset;
@@ -135,6 +141,10 @@ inline uint cinput_stream_helper(const TType< uint >& type, CInputStream& in) {
 template <>
 inline unsigned long cinput_stream_helper(const TType< unsigned long >& type, CInputStream& in) {
   return in.ReadLong();
+}
+template <>
+inline u64 cinput_stream_helper(const TType< u64 >& type, CInputStream& in) {
+  return in.ReadLongLong();
 }
 template <>
 inline float cinput_stream_helper(const TType< float >& type, CInputStream& in) {
