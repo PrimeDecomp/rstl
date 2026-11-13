@@ -562,6 +562,8 @@
 #define RSTL_KYOTO_OBJECT_STORE_VIRTUAL_DTOR (RSTL_CORRUPTION)
 // CObjectReference::AddReference is defined out of line.
 #define RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE (RSTL_CORRUPTION)
+// The demo discs' CObjectReference packs its counts into one word, as Prime's does.
+#define RSTL_KYOTO_OBJECT_REFERENCE_PACKED_COUNTS (RSTL_PRIME1 || RSTL_ECHOES_DEMO)
 // IObj and CObjOwnerDerivedFromIObjUntyped declare their destructors inline in the class.
 #define RSTL_KYOTO_IOBJ_INLINE_DTOR (RSTL_CORRUPTION)
 // TObjOwnerParam::GetData returns the held value by const reference.
