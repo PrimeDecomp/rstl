@@ -10,37 +10,107 @@
 // Guessed name: the demo discs have an empty function taking an exception name.
 void ThrowException(int, const char*);
 
-// The demo discs emit this unit's functions in the reverse of Prime's order.
-float CInputStream::ReadFloat() {
-  float f;
-  Get(&f, sizeof(float));
-  return f;
+// The demo discs compile this unit with -inline deferred, which emits its functions in reverse.
+CInputStream::CInputStream(int len)
+: mBlockOffset(0)
+, mBlockLen(0)
+, mLen(len)
+, mPtr(rs_new uchar[len])
+, mOwned(true)
+, mReadPosition(0)
+, mBitWord(0)
+, mBitOffset(0) {}
+
+CInputStream::CInputStream(const void* ptr, int len, bool owned)
+: mBlockOffset(0)
+, mBlockLen(len)
+, mLen(len)
+, mPtr(const_cast< uchar* >(reinterpret_cast< const uchar* >(ptr)))
+, mOwned(owned)
+, mReadPosition(0)
+, mBitWord(0)
+, mBitOffset(0) {}
+
+CInputStream::~CInputStream() {
+  if (mOwned) {
+    delete[] mPtr;
+  }
 }
 
-u64 CInputStream::ReadLongLong() {
-  u64 ll;
-  Get(&ll, sizeof(u64));
-  return ll;
+bool CInputStream::InternalReadNext() {
+  mBlockLen = Read(mPtr, mLen);
+  mBlockOffset = 0;
+  return mBlockLen != 0;
 }
 
-uint CInputStream::ReadLong() {
-  uint l;
-  Get(&l, sizeof(uint));
-  return l;
+void CInputStream::GrabAnotherBlock() {
+  if (!InternalReadNext()) {
+    ThrowException(0, "kException_EndOfStream");
+  }
 }
 
-ushort CInputStream::ReadShort() {
-  ushort s;
-  Get(&s, sizeof(ushort));
-  return s;
+void CInputStream::Get(void* dest, unsigned long len) {
+  uint remain = len;
+  uint readCount = 0;
+  mBitOffset = 0;
+
+  while (remain != 0) {
+    uint blockLen = mBlockLen - mBlockOffset;
+    blockLen = remain < blockLen ? remain : blockLen;
+
+    if (blockLen != 0) {
+      memcpy(reinterpret_cast< uchar* >(dest) + readCount, mPtr + mBlockOffset, blockLen);
+      remain -= blockLen;
+      readCount += blockLen;
+      mBlockOffset += blockLen;
+    } else if (remain > 256) {
+      uint readLen = Read(reinterpret_cast< uchar* >(dest) + readCount, remain);
+      remain -= readLen;
+      readCount += readLen;
+    } else {
+      GrabAnotherBlock();
+    }
+  }
+
+  mReadPosition += readCount;
 }
 
-bool CInputStream::ReadBool() { return static_cast< uchar >(ReadChar()) != 0; }
+size_t CInputStream::ReadBytes(void* dest, size_t len) {
+  if (len == 0) {
+    return 0;
+  }
 
-char CInputStream::ReadChar() {
-  char c;
-  Get(&c, sizeof(char));
-  return c;
+  if (mBlockOffset == mBlockLen) {
+    GrabAnotherBlock();
+  }
+
+  uint curLen = len;
+  uint curReadLen = 0;
+
+  while (curReadLen < len) {
+    uint remain = mBlockLen - mBlockOffset;
+    if (remain == 0) {
+      if (InternalReadNext()) {
+        continue;
+      } else {
+#if NONMATCHING
+        mReadPosition += curReadLen;
+#endif
+        return curReadLen;
+      }
+    }
+
+    uint sz = curLen < remain ? curLen : remain;
+    if (dest != nullptr) {
+      memcpy(reinterpret_cast< uchar* >(dest) + curReadLen, mPtr + mBlockOffset, sz);
+    }
+    curReadLen += sz;
+    curLen -= sz;
+    mBlockOffset += sz;
+  }
+
+  mReadPosition += curReadLen;
+  return curReadLen;
 }
 
 static inline uint GetBitMask(const uint& bits) {
@@ -99,107 +169,37 @@ uint CInputStream::ReadBits(uint bitCount) {
 #endif
 }
 
-size_t CInputStream::ReadBytes(void* dest, size_t len) {
-  if (len == 0) {
-    return 0;
-  }
-
-  if (mBlockOffset == mBlockLen) {
-    GrabAnotherBlock();
-  }
-
-  uint curLen = len;
-  uint curReadLen = 0;
-
-  while (curReadLen < len) {
-    uint remain = mBlockLen - mBlockOffset;
-    if (remain == 0) {
-      if (InternalReadNext()) {
-        continue;
-      } else {
-#if NONMATCHING
-        mReadPosition += curReadLen;
-#endif
-        return curReadLen;
-      }
-    }
-
-    uint sz = curLen < remain ? curLen : remain;
-    if (dest != nullptr) {
-      memcpy(reinterpret_cast< uchar* >(dest) + curReadLen, mPtr + mBlockOffset, sz);
-    }
-    curReadLen += sz;
-    curLen -= sz;
-    mBlockOffset += sz;
-  }
-
-  mReadPosition += curReadLen;
-  return curReadLen;
+char CInputStream::ReadChar() {
+  char c;
+  Get(&c, sizeof(char));
+  return c;
 }
 
-void CInputStream::Get(void* dest, unsigned long len) {
-  uint remain = len;
-  uint readCount = 0;
-  mBitOffset = 0;
+bool CInputStream::ReadBool() { return static_cast< uchar >(ReadChar()) != 0; }
 
-  while (remain != 0) {
-    uint blockLen = mBlockLen - mBlockOffset;
-    blockLen = remain < blockLen ? remain : blockLen;
-
-    if (blockLen != 0) {
-      memcpy(reinterpret_cast< uchar* >(dest) + readCount, mPtr + mBlockOffset, blockLen);
-      remain -= blockLen;
-      readCount += blockLen;
-      mBlockOffset += blockLen;
-    } else if (remain > 256) {
-      uint readLen = Read(reinterpret_cast< uchar* >(dest) + readCount, remain);
-      remain -= readLen;
-      readCount += readLen;
-    } else {
-      GrabAnotherBlock();
-    }
-  }
-
-  mReadPosition += readCount;
+ushort CInputStream::ReadShort() {
+  ushort s;
+  Get(&s, sizeof(ushort));
+  return s;
 }
 
-void CInputStream::GrabAnotherBlock() {
-  if (!InternalReadNext()) {
-    ThrowException(0, "kException_EndOfStream");
-  }
+uint CInputStream::ReadLong() {
+  uint l;
+  Get(&l, sizeof(uint));
+  return l;
 }
 
-bool CInputStream::InternalReadNext() {
-  mBlockLen = Read(mPtr, mLen);
-  mBlockOffset = 0;
-  return mBlockLen != 0;
+u64 CInputStream::ReadLongLong() {
+  u64 ll;
+  Get(&ll, sizeof(u64));
+  return ll;
 }
 
-CInputStream::~CInputStream() {
-  if (mOwned) {
-    delete[] mPtr;
-  }
+float CInputStream::ReadFloat() {
+  float f;
+  Get(&f, sizeof(float));
+  return f;
 }
-
-CInputStream::CInputStream(const void* ptr, int len, bool owned)
-: mBlockOffset(0)
-, mBlockLen(len)
-, mLen(len)
-, mPtr(const_cast< uchar* >(reinterpret_cast< const uchar* >(ptr)))
-, mOwned(owned)
-, mReadPosition(0)
-, mBitWord(0)
-, mBitOffset(0) {}
-
-CInputStream::CInputStream(int len)
-: mBlockOffset(0)
-, mBlockLen(0)
-, mLen(len)
-, mPtr(rs_new uchar[len])
-, mOwned(true)
-, mReadPosition(0)
-, mBitWord(0)
-, mBitOffset(0) {}
 
 void ThrowException(int, const char*) {}
 
