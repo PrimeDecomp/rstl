@@ -564,6 +564,8 @@
 #define RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE (RSTL_CORRUPTION)
 // The demo discs' CObjectReference packs its counts into one word, as Prime's does.
 #define RSTL_KYOTO_OBJECT_REFERENCE_PACKED_COUNTS (RSTL_PRIME1 || RSTL_ECHOES_DEMO)
+// The demo discs' CModelFlags::DepthBackwards only sets the greater-depth flag, as Prime's does.
+#define RSTL_KYOTO_MODEL_FLAGS_DEPTH_BACKWARDS_SET_ONLY (RSTL_ECHOES_DEMO)
 // IObj and CObjOwnerDerivedFromIObjUntyped declare their destructors inline in the class.
 #define RSTL_KYOTO_IOBJ_INLINE_DTOR (RSTL_CORRUPTION)
 // TObjOwnerParam::GetData returns the held value by const reference.

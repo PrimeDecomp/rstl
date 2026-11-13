@@ -130,10 +130,11 @@ public:
     return CModelFlags(*this, (mFlags & ~(kF_DepthCompare | kF_DepthUpdate)) | newFlags);
   }
   CModelFlags DepthBackwards() const {
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const uint flags = GetOtherFlags() | kF_DepthGreater;
     return CModelFlags(GetTrans(), mMatSetIdx, flags, mColor);
+#elif RSTL_KYOTO_MODEL_FLAGS_DEPTH_BACKWARDS_SET_ONLY
+    return CModelFlags(*this, GetOtherFlags() | kF_DepthGreater);
 #else
     return CModelFlags(*this, (GetOtherFlags() & ~kF_Unknown100) | kF_DepthGreater | kF_Unknown200);
 #endif
