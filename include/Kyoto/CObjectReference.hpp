@@ -37,7 +37,7 @@ public:
 
 private:
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if RSTL_KYOTO_OBJECT_REFERENCE_PACKED_COUNTS
   short mRefCount : 16;
   short mLockCount : 15;
   short mLoading : 1;
@@ -55,7 +55,7 @@ private:
 #if !RSTL_KYOTO_OBJECT_REFERENCE_ADD_OUT_OF_LINE
 inline void CObjectReference::AddReference() { mRefCount++; }
 #endif
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_ECHOES_DEMO
 CHECK_SIZEOF(CObjectReference, RSTL_KYOTO_ASSET_ID_CLASS ? 0x30 : 0x24)
 #endif
 
