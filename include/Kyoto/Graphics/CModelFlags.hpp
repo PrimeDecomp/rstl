@@ -232,9 +232,12 @@ public:
   union {
 #else
 private:
-  // Unknown. No constructor initializes it, and copies move it as one 4-byte aggregate
-  // (CScriptColorModulate::End copies it from uninitialized stack).
-  uchar x0_[4];
+  // Unknown. No constructor initializes it, and copies move it as one word-aligned 4-byte
+  // aggregate (CScriptColorModulate::End copies it from uninitialized stack).
+  union {
+    uchar x0_[4];
+    uint x0w_;
+  };
 #endif
 
     uchar mBlendMode;
