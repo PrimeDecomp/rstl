@@ -1,6 +1,7 @@
 #ifndef _CPVSVISSET
 #define _CPVSVISSET
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
 

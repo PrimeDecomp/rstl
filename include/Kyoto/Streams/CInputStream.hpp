@@ -2,8 +2,9 @@
 #define _CINPUTSTREAM
 
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "stddef.h"
 

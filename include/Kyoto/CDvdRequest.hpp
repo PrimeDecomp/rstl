@@ -1,9 +1,10 @@
 #ifndef _CDVDREQUEST
 #define _CDVDREQUEST
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "dolphin/dvd.h"
-#include "types.h"
+#include "rstl/types.h"
 
 class CDvdRequest {
 public:

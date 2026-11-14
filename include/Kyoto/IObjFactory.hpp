@@ -1,7 +1,7 @@
 #ifndef _CIOBJFACTORY
 #define _CIOBJFACTORY
 
-#include "types.h"
+#include "rstl/types.h"
 
 class IObjFactory {
 public:

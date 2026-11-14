@@ -1,10 +1,11 @@
 #ifndef _CFONT
 #define _CFONT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CColor.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
 class CTexture;
 

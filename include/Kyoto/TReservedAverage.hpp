@@ -2,7 +2,7 @@
 #define _TRESERVEDAVERAGE
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/TAverage.hpp"
 

@@ -1,9 +1,10 @@
 #ifndef _CMEMORYCARDSYS
 #define _CMEMORYCARDSYS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "string.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"

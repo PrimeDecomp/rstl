@@ -1,7 +1,8 @@
 #ifndef _CCHARLAYOUTINFO
 #define _CCHARLAYOUTINFO
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Animation/CSegIdList.hpp"

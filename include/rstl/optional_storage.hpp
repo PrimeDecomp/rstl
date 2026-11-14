@@ -1,7 +1,8 @@
 #ifndef _RSTL_OPTIONAL_STORAGE
 #define _RSTL_OPTIONAL_STORAGE
 
-#include "types.h"
+#include "rstl/macros.hpp"
+#include "rstl/types.h"
 
 #include "rstl/RstlVersions.h"
 

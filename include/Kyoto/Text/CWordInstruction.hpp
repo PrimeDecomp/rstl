@@ -1,5 +1,6 @@
 #ifndef _CWORDINSTRUCTION
 #define _CWORDINSTRUCTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/CInstruction.hpp"

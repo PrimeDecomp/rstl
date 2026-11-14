@@ -1,9 +1,10 @@
 #ifndef _RSTL_RED_BLACK_TREE
 #define _RSTL_RED_BLACK_TREE
 
+#include "rstl/macros.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/construct.hpp"
 #include "rstl/functional.hpp"

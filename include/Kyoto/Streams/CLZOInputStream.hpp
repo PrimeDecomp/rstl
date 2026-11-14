@@ -1,7 +1,7 @@
 #ifndef _CLZOINPUTSTREAM
 #define _CLZOINPUTSTREAM
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

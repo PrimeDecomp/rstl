@@ -1,7 +1,8 @@
 #ifndef _CMAYASPLINE
 #define _CMAYASPLINE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CAbsAngle.hpp"
 #include "Kyoto/Math/CVector2f.hpp"

@@ -1,7 +1,8 @@
 #ifndef _RSTL_LIST
 #define _RSTL_LIST
 
-#include "types.h"
+#include "rstl/macros.hpp"
+#include "rstl/types.h"
 
 #include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"

@@ -1,5 +1,6 @@
 #ifndef _CFONTIMAGEDEF
 #define _CFONTIMAGEDEF
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CTexture.hpp"

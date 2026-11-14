@@ -8,7 +8,7 @@
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/construct.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #if !RSTL_KYOTO_ASSET_ID_CLASS
 #define kInvalidAssetId 0xFFFFFFFFu

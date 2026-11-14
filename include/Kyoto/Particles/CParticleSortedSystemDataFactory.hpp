@@ -2,7 +2,7 @@
 #define _CPARTICLESORTEDSYSTEMDATAFACTORY
 
 #include "Kyoto/CFactoryMgr.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 class CInputStream;
 

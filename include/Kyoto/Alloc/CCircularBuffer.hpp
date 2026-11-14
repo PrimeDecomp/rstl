@@ -2,7 +2,7 @@
 #define _CCIRCULARBUFFER
 
 #include <rstl/auto_ptr.hpp>
-#include <types.h>
+#include "rstl/types.h"
 
 class CCircularBuffer {
 public:

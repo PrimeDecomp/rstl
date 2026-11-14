@@ -1,7 +1,7 @@
 #ifndef _CUNITVECTOR3F
 #define _CUNITVECTOR3F
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/RstlVersions.h"

@@ -1,8 +1,9 @@
 #ifndef _CPASANIMPARM
 #define _CPASANIMPARM
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/construct.hpp"
 
 class CPASAnimParm {

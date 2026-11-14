@@ -1,5 +1,6 @@
 #ifndef _CMETATRANSSNAP
 #define _CMETATRANSSNAP
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/IMetaTrans.hpp"

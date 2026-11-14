@@ -867,6 +867,14 @@
 // CLineInstruction declares its destructor explicitly, giving the virtual order from R32J on.
 #define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 
+#if VERSION < VERSION_GM8P_00
+#define NTSC_INLINE inline
+#else
+#define NTSC_INLINE
+#endif
+
+#include "rstl/macros.hpp"
+#include "GameVersions.h"
 #include "Kyoto/Platform.h"
 
 #endif // _RSTL_VERSIONS_H

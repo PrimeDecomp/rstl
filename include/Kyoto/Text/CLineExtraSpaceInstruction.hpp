@@ -1,5 +1,6 @@
 #ifndef _CLINEEXTRASPACINGINSTRUCTION
 #define _CLINEEXTRASPACINGINSTRUCTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/CInstruction.hpp"

@@ -1,7 +1,7 @@
 #ifndef _DOLPHINGPUMEMORY
 #define _DOLPHINGPUMEMORY
 
-#include "types.h"
+#include "rstl/types.h"
 
 // Guessed name: shared GX draw-sync-managed scratch storage, separated from the model TUs.
 // Method names describe the native operations; no original Echoes export is known.

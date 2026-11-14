@@ -2,7 +2,7 @@
 #define _IELEMENT
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Particles/CElementAllocationChunk.hpp"
 #include "Kyoto/TToken.hpp"

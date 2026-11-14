@@ -1,10 +1,11 @@
 #ifndef _CAUDIOSYS
 #define _CAUDIOSYS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "musyx/musyx.h"
 
-#include "types.h"
+#include "rstl/types.h"
 #include "dolphin/dtk.h"
 
 #include "rstl/map.hpp"

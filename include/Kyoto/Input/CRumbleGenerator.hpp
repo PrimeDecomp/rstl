@@ -1,8 +1,9 @@
 #ifndef _CRUMBLEGENERATOR
 #define _CRUMBLEGENERATOR
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Input/CRumbleVoice.hpp"
 #include "Kyoto/Input/InputTypes.hpp"

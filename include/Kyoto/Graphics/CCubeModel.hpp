@@ -1,8 +1,9 @@
 #ifndef _CCUBEMODEL
 #define _CCUBEMODEL
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/ModelTypes.hpp"

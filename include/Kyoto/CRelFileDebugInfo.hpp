@@ -1,7 +1,8 @@
 #ifndef _CRELFILEDEBUGINFO
 #define _CRELFILEDEBUGINFO
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 #include <stdint.h>
 
 // Guessed class and method names. Address range of a linked REL file, kept in a global list so

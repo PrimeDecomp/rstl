@@ -2,7 +2,7 @@
 #define _CVECTOR3I
 
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/construct.hpp"
 
 class CVector3i {

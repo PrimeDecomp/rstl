@@ -1,5 +1,6 @@
 #ifndef _CLAYOUTDESCRIPTION
 #define _CLAYOUTDESCRIPTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/TToken.hpp"

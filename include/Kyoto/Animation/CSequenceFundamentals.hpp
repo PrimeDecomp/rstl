@@ -1,5 +1,6 @@
 #ifndef _CSEQUENCEFUNDAMENTALS
 #define _CSEQUENCEFUNDAMENTALS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #include "Kyoto/Animation/CInt32POINode.hpp"

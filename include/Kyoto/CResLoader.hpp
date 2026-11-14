@@ -1,12 +1,13 @@
 #ifndef _CRESLOADER
 #define _CRESLOADER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #if RSTL_PRIME1
 #include "Kyoto/CPakFile.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"

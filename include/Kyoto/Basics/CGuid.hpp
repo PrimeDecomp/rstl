@@ -1,7 +1,7 @@
 #ifndef _CGUID
 #define _CGUID
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/string.hpp"
 #include "rstl/RstlVersions.h"

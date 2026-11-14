@@ -9,7 +9,7 @@
 #include "Kyoto/Audio/CSfxPitchBend.hpp"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Audio/CAudioSys.hpp"
 #include "Kyoto/Audio/CSfxHandle.hpp"

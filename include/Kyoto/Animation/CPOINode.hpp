@@ -1,8 +1,9 @@
 #ifndef _CPOINODE
 #define _CPOINODE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "rstl/string.hpp"

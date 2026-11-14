@@ -1,5 +1,6 @@
 #ifndef _CFBSTREAMEDANIMREADER
 #define _CFBSTREAMEDANIMREADER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"

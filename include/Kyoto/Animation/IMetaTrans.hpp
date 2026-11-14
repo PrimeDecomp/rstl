@@ -1,7 +1,7 @@
 #ifndef _IMETATRANS
 #define _IMETATRANS
 
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 #include "rstl/rc_ptr.hpp"

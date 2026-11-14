@@ -1,6 +1,7 @@
 #ifndef _CTIMESCALEFUNCTIONS
 #define _CTIMESCALEFUNCTIONS
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/ownership_transfer.hpp"

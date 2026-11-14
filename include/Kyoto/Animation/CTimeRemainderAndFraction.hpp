@@ -1,6 +1,7 @@
 #ifndef _CTIMEREMAINDERANDFRACTION
 #define _CTIMEREMAINDERANDFRACTION
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "rstl/RstlVersions.h"

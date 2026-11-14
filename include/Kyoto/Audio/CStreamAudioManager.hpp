@@ -2,7 +2,7 @@
 #define _CSTREAMAUDIOMANAGER
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/string.hpp"
 

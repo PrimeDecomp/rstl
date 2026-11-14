@@ -1,6 +1,7 @@
 #ifndef _CMOTIONSPLINE
 #define _CMOTIONSPLINE
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"

@@ -1,8 +1,10 @@
 #ifndef _CCOLOR
 #define _CCOLOR
+#include "rstl/macros.hpp"
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #if !RSTL_PRIME1
 #include "Kyoto/Math/CMath.hpp"

@@ -1,11 +1,12 @@
 #ifndef _COSCONTEXT
 #define _COSCONTEXT
 
+#include "rstl/static_assert.hpp"
 #include <stddef.h>
 
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include <dolphin/gx/GXStruct.h>
 

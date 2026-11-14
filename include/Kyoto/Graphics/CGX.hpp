@@ -2,7 +2,7 @@
 #define _CGX
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "limits.h"
 

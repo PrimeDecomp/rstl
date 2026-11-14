@@ -2,7 +2,7 @@
 #define _CCOLORELEMENT
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Particles/IElement.hpp"

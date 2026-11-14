@@ -2,7 +2,7 @@
 #define _CTOKEN
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CObjectReference.hpp"
 #include "Kyoto/IObj.hpp"

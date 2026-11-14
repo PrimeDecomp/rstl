@@ -1,6 +1,7 @@
 #ifndef _CSORTEDPARTICLESYSTEM
 #define _CSORTEDPARTICLESYSTEM
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/TToken.hpp"

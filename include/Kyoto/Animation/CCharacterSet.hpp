@@ -1,5 +1,6 @@
 #ifndef _CCHARACTERSET
 #define _CCHARACTERSET
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -13,7 +14,7 @@
 #if RSTL_PRIME1
 #include "rstl/map.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 #else
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"

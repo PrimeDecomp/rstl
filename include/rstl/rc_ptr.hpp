@@ -7,7 +7,7 @@
 #include "rstl/construct.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/rmemory_allocator.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 // Prime's and Echoes' own CMemory.hpp, used until they take Kyoto from RSTL, have no positioned
 // allocations. Outside the prototype these allocate exactly as rs_new does.

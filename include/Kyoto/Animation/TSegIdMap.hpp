@@ -1,8 +1,9 @@
 #ifndef MP1_TSEGIDMAP_HPP
 #define MP1_TSEGIDMAP_HPP
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
 #include "rstl/pair.hpp"

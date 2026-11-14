@@ -1,7 +1,7 @@
 #ifndef _CSCOPEDPROFILER
 #define _CSCOPEDPROFILER
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Basics/CStopwatch.hpp"
 #include "Kyoto/TFunctor.hpp"

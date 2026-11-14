@@ -1,5 +1,6 @@
 #ifndef _CANIMATIONDATABASE
 #define _CANIMATIONDATABASE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/TToken.hpp"

@@ -1,6 +1,7 @@
 #ifndef _CGUITEXTSUPPORT
 #define _CGUITEXTSUPPORT
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CColor.hpp"

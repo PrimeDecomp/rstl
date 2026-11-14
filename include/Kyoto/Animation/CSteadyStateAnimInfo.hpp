@@ -1,6 +1,7 @@
 #ifndef MP1_CSTEADYSTATEANIMINFO_HPP
 #define MP1_CSTEADYSTATEANIMINFO_HPP
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 

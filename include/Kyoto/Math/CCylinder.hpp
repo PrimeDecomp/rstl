@@ -1,7 +1,8 @@
 #ifndef _CCYLINDER
 #define _CCYLINDER
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CLine.hpp"
 

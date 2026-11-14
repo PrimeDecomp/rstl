@@ -1,7 +1,8 @@
 #ifndef _CTEXTCOLOR
 #define _CTEXTCOLOR
 
-#include <types.h>
+#include "rstl/macros.hpp"
+#include "rstl/types.h"
 
 #ifdef __MWERKS__
 #pragma cpp_extensions on

@@ -2,7 +2,7 @@
 #define _TEXTCOMMON
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 enum EColorType {
   kCT_Main = 0,

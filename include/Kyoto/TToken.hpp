@@ -2,7 +2,7 @@
 #define _TTOKEN
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/CToken.hpp"

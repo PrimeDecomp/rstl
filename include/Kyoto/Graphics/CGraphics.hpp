@@ -6,7 +6,7 @@
 #include "GameVersions.h"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CTimeProvider.hpp"
 #include "Kyoto/Graphics/CColor.hpp"

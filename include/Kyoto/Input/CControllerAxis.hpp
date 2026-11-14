@@ -1,7 +1,7 @@
 #ifndef _CCONTROLLERAXIS
 #define _CCONTROLLERAXIS
 
-#include "types.h"
+#include "rstl/types.h"
 
 class CControllerAxis {
 public:

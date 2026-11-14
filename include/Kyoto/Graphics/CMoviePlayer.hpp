@@ -1,6 +1,7 @@
 #ifndef _CMOVIEPLAYER
 #define _CMOVIEPLAYER
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CDvdFile.hpp"

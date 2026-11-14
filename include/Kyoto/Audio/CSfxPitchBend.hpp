@@ -1,6 +1,7 @@
 #ifndef _CSFXPITCHBEND
 #define _CSFXPITCHBEND
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/CSfxHandle.hpp"
 
 // Guessed name: a timed pitch transition owned by CSfxManager.

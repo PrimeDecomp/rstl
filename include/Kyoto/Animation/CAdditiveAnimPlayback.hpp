@@ -1,8 +1,9 @@
 #ifndef _CADDITIVEANIMPLAYBACK
 #define _CADDITIVEANIMPLAYBACK
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CAdditiveAnimationInfo.hpp"
 

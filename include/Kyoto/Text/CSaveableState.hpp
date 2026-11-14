@@ -1,5 +1,6 @@
 #ifndef _CSAVEABLESTATE
 #define _CSAVEABLESTATE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/CDrawStringOptions.hpp"
