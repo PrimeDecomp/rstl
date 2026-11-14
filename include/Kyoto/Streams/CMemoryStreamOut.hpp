@@ -1,6 +1,7 @@
 #ifndef _CMEMORYSTREAMOUT
 #define _CMEMORYSTREAMOUT
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
 
 class CMemoryStreamOut : public COutputStream {

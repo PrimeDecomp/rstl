@@ -1,5 +1,6 @@
 #ifndef _CGRAPHICS
 #define _CGRAPHICS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1

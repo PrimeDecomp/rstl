@@ -1,6 +1,7 @@
 #ifndef _CUNITVECTOR3F
 #define _CUNITVECTOR3F
 
+#include "rstl/static_assert.hpp"
 #include "rstl/types.h"
 
 #include "Kyoto/Math/CVector3f.hpp"

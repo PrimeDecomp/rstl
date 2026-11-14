@@ -1,6 +1,7 @@
 #ifndef _CFLANGER
 #define _CFLANGER
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/AudioEffectX.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/reserved_vector.hpp"

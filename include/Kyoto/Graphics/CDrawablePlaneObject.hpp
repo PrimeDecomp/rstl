@@ -1,5 +1,6 @@
 #ifndef _CDRAWABLEPLANEOBJECT
 #define _CDRAWABLEPLANEOBJECT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 

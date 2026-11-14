@@ -1,8 +1,10 @@
 #ifndef _CTEVCOMBINERS
 #define _CTEVCOMBINERS
+
 #include "rstl/RstlVersions.h"
 
 #include "rstl/types.h"
+#include "rstl/static_assert.hpp"
 
 #include "dolphin/gx/GXEnum.h"
 

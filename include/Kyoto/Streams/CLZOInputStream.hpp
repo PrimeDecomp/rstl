@@ -1,6 +1,7 @@
 #ifndef _CLZOINPUTSTREAM
 #define _CLZOINPUTSTREAM
 
+#include "rstl/static_assert.hpp"
 #include "rstl/types.h"
 
 #include "Kyoto/Streams/CInputStream.hpp"
