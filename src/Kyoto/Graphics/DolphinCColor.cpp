@@ -1,12 +1,9 @@
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CColor.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
-
+#include "rstl/RstlVersions.h"
 #include "rstl/math.hpp"
-#if RSTL_PRIME1
-#include "GameVersions.h"
-#endif
+
 
 CColor::CColor(CInputStream& in) {
   float r = in.ReadFloat();
@@ -61,7 +58,6 @@ void CColor::Get(float& r, float& g, float& b, float& a) const {
   b = CCast::ToReal32(mB) * (1.f / 255.f);
   a = CCast::ToReal32(mA) * (1.f / 255.f);
 #endif
-
 }
 
 void CColor::Get(float& r, float& g, float& b) const {
@@ -75,7 +71,6 @@ void CColor::Get(float& r, float& g, float& b) const {
   g = CCast::ToReal32(mG) * (1.f / 255.f);
   b = CCast::ToReal32(mB) * (1.f / 255.f);
 #endif
-
 }
 
 CColor CColor::Lerp(const CColor& a, const CColor& b, float t) {
@@ -190,4 +185,3 @@ ushort CColor::ToRGB5A3() const {
 
   return ret;
 }
-

@@ -3,10 +3,6 @@
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#if RSTL_PRIME1
-#include "GameVersions.h"
-#endif
-
 #include "rstl/types.h"
 
 #include "Kyoto/CTimeProvider.hpp"
