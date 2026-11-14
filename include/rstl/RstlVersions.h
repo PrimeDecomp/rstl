@@ -548,6 +548,13 @@
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
 #define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_CORRUPTION)
 
+// Expands to `virtual` on the Wii (Trilogy) versions only, for members that became virtual there.
+#if RSTL_VERSION >= RSTL_R32J
+#define RSTL_TRILOGY_VIRTUAL virtual
+#else
+#define RSTL_TRILOGY_VIRTUAL
+#endif
+
 // ============================================================================================
 // Kyoto: top-level files (resources, paks, tokens, object tags, DVD requests)
 // ============================================================================================

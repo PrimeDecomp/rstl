@@ -12,7 +12,7 @@ class IMetaTrans;
 class CTransitionDatabase {
 public:
 #if !RSTL_PRIME1
-  TRILOGY_VIRTUAL ~CTransitionDatabase() {}
+  RSTL_TRILOGY_VIRTUAL ~CTransitionDatabase() {}
 #endif
 
   virtual const rstl::rc_ptr< IMetaTrans >& GetMetaTrans(uint from, uint to) const = 0;

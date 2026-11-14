@@ -1,5 +1,6 @@
 #ifndef _CANIMATIONDATABASE
 #define _CANIMATIONDATABASE
+
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
@@ -21,15 +22,7 @@ class IMetaAnim;
 
 class CAnimationDatabase {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_R3ME_00
-  virtual
-#endif
-#else
-  TRILOGY_VIRTUAL
-#endif
-  ~CAnimationDatabase() {}
+  RSTL_TRILOGY_VIRTUAL ~CAnimationDatabase() {}
 
   virtual const rstl::rc_ptr< IMetaAnim >& GetMetaAnim(uint idx) const = 0;
   virtual uint GetNumMetaAnims() const = 0;
