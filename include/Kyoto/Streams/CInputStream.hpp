@@ -19,6 +19,12 @@
 #include "rstl/pair.hpp"
 #endif
 
+// Two implementations share this interface (RSTL_KYOTO_BLOCK_INPUT_STREAM selects one):
+// - the block stream (Prime and the Echoes demos) reads blocks from a derived stream's
+//   virtual Read, and its typed reads go through cinput_stream_helper;
+// - the buffer stream (Echoes and Corruption) reads directly from a memory buffer, and its typed
+//   reads are specializations of Get.
+
 class CInputStream;
 
 template < typename T >
@@ -34,51 +40,86 @@ inline TType< T > TGetType(const T&) {
   return TType< T >();
 }
 
-#if RSTL_KYOTO_BLOCK_INPUT_STREAM
-// Prime's input stream reads blocks from a derived stream's virtual Read.
 class CInputStream {
 public:
+#if !RSTL_KYOTO_BLOCK_INPUT_STREAM
+  struct SBufferAndSize {
+    const void* mBuffer;
+    unsigned long mSize;
+
+    SBufferAndSize(const void* buffer, unsigned long size) : mBuffer(buffer), mSize(size) {}
+  };
+#endif
+
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
   CInputStream(int len);
   CInputStream(const void* ptr, int len, bool owned);
+#else
+  CInputStream(const void* ptr, unsigned long len);
+  CInputStream(const void* ptr, unsigned long len, bool owned);
+  CInputStream(const SBufferAndSize& buffer, bool owned);
+#endif
   virtual ~CInputStream();
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
   virtual size_t Read(void* dest, size_t len) = 0;
+#endif
 
   float ReadFloat();
   double ReadDouble();
-  u64 ReadLongLong();
-  uint ReadLong();
-  ushort ReadShort();
-  bool ReadBool();
-  char ReadChar();
-  uint ReadBits(uint len);
   size_t ReadBytes(void* dest, size_t len);
   void Get(void* dest, unsigned long len);
+#if !RSTL_KYOTO_BLOCK_INPUT_STREAM
+  const void* Get(unsigned long len);
+  rstl::auto_ptr< uchar > ReleaseBuffer();
+#endif
 
+  // Reads a T: the specializations below for scalars, T(CInputStream&) otherwise.
+  // The block stream defines Get and its four wrappers below in the class: GC/1.3.2 emits Prime's
+  // 1-byte .sbss TType objects in every user only in this form.
   template < typename T >
-  T Get(const TType< T >& type = TType< T >()) {
+  T Get(const TType< T >& type = TType< T >())
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+  {
     return cinput_stream_helper(TType< T >(), *this);
   }
+#else
+      ;
+#endif
 
+  // Guessed name for the typed object read-into operation used by script properties.
   template < typename T >
-  void Read(T& value) {
-    value = T(*this);
-  }
+  void Read(T& value);
 
-  bool ReadPackedBool() { return ReadBits(1) != 0; }
+  // Prime's names, from the demo map. The block stream defines these out of line.
+  bool ReadBool();
+  char ReadChar();
+  ushort ReadShort();
+  uint ReadLong();
+  u64 ReadLongLong();
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+  uint ReadBits(uint len);
+  bool ReadPackedBool();
+#endif
 
-  unsigned char ReadUint8() {
-    const unsigned char result = *mPtr++;
-    return result;
-  }
-  char ReadInt8() { return static_cast< char >(ReadUint8()); }
+  // The typed names (Echoes and Corruption).
+  uchar ReadUint8();
+  char ReadInt8();
+  u64 ReadInt64();
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
   int ReadInt32() { return Get< int >(); }
   uint ReadUint32() { return Get< uint >(); } // Guessed name.
-  u64 ReadInt64() { return ReadLongLong(); }
   ushort ReadUint16() { return Get< ushort >(); }
   short ReadInt16() { return Get< short >(); }
+#else
+  int ReadInt32();
+  uint ReadUint32(); // Guessed name.
+  ushort ReadUint16();
+  short ReadInt16();
+#endif
 
-  uint GetBlockOffset() const { return mBlockOffset; }
-  const uint GetReadPosition() const { return mReadPosition; }
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+  uint GetBlockOffset() const;
+  const uint GetReadPosition() const;
 
 private:
 #if RSTL_ECHOES_DEMO
@@ -96,10 +137,46 @@ private:
   uint mReadPosition;
   uint mBitWord;
   uint mBitOffset;
+#else
+  uint GetReadPosition() const;
+
+protected:
+  uchar* mpBufferStart;
+  union {
+    uchar* p8;
+    char* pc8;   // Guessed name
+    ushort* p16; // Guessed name
+    uint* p32;   // Guessed name
+  } mpBufferAt;
+  unsigned long mBufferSize;
+  bool mOwner;
+#endif
 };
 
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
 DECLARE_FULL_SIZE_FOR(CInputStream, 0x24)
+#else
+DECLARE_FULL_SIZE_FOR(CInputStream, 0x14)
+#endif
 CHECK_SIZEOF(CInputStream, CInputStream_FULL_SIZE)
+
+template < typename T >
+inline void CInputStream::Read(T& value) {
+  value = T(*this);
+}
+
+inline uchar CInputStream::ReadUint8() {
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+  const uchar result = *mPtr++;
+#else
+  const uchar result = *mpBufferAt.p8++;
+#endif
+  return result;
+}
+
+#if RSTL_KYOTO_BLOCK_INPUT_STREAM
+// The block stream. Its scalar reads go through cinput_stream_helper to the out-of-line readers,
+// except the byte reads, which take the next byte of the current block.
 
 template < typename T >
 inline T cinput_stream_helper(const TType< T >& type, CInputStream& in) {
@@ -112,53 +189,30 @@ inline T cinput_stream_helper(const TType< T >& type, CInputStream& in) {
     return T(in);
   }
 }
-template <>
-inline bool cinput_stream_helper(const TType< bool >& type, CInputStream& in) {
-  return in.ReadBool();
-}
-template <>
-inline char cinput_stream_helper(const TType< char >& type, CInputStream& in) {
-  return in.ReadChar();
-}
 
-template <>
-inline unsigned char cinput_stream_helper(const TType< unsigned char >& type, CInputStream& in) {
-  return in.ReadChar();
-}
+#define CINPUTSTREAM_HELPER(T, read)                                                               \
+  template <>                                                                                      \
+  inline T cinput_stream_helper(const TType< T >& type, CInputStream& in) {                        \
+    return in.read();                                                                              \
+  }
+CINPUTSTREAM_HELPER(bool, ReadBool)
+CINPUTSTREAM_HELPER(char, ReadChar)
+CINPUTSTREAM_HELPER(unsigned char, ReadChar)
+CINPUTSTREAM_HELPER(signed char, ReadChar)
+CINPUTSTREAM_HELPER(int, ReadLong)
+CINPUTSTREAM_HELPER(uint, ReadLong)
+CINPUTSTREAM_HELPER(unsigned long, ReadLong)
+CINPUTSTREAM_HELPER(u64, ReadLongLong)
+CINPUTSTREAM_HELPER(float, ReadFloat)
+CINPUTSTREAM_HELPER(short, ReadShort)
+CINPUTSTREAM_HELPER(ushort, ReadShort)
+#undef CINPUTSTREAM_HELPER
 
-template <>
-inline signed char cinput_stream_helper(const TType< signed char >& type, CInputStream& in) {
-  return in.ReadChar();
-}
-
-template <>
-inline int cinput_stream_helper(const TType< int >& type, CInputStream& in) {
-  return in.ReadLong();
-}
-template <>
-inline uint cinput_stream_helper(const TType< uint >& type, CInputStream& in) {
-  return in.ReadLong();
-}
-template <>
-inline unsigned long cinput_stream_helper(const TType< unsigned long >& type, CInputStream& in) {
-  return in.ReadLong();
-}
-template <>
-inline u64 cinput_stream_helper(const TType< u64 >& type, CInputStream& in) {
-  return in.ReadLongLong();
-}
-template <>
-inline float cinput_stream_helper(const TType< float >& type, CInputStream& in) {
-  return in.ReadFloat();
-}
-template <>
-inline short cinput_stream_helper(const TType< short >& type, CInputStream& in) {
-  return in.ReadShort();
-}
-template <>
-inline ushort cinput_stream_helper(const TType< ushort >& type, CInputStream& in) {
-  return in.ReadShort();
-}
+inline bool CInputStream::ReadPackedBool() { return ReadBits(1) != 0; }
+inline char CInputStream::ReadInt8() { return static_cast< char >(ReadUint8()); }
+inline u64 CInputStream::ReadInt64() { return ReadLongLong(); }
+inline uint CInputStream::GetBlockOffset() const { return mBlockOffset; }
+inline const uint CInputStream::GetReadPosition() const { return mReadPosition; }
 
 #include "rstl/pair.hpp"
 
@@ -169,216 +223,103 @@ inline ushort cinput_stream_helper(const TType< ushort >& type, CInputStream& in
 #include "rstl/set.hpp"
 
 #else
-// Echoes' and Corruption's input stream reads directly from a memory buffer.
-class CInputStream {
-public:
-  struct SBufferAndSize {
-    const void* mBuffer;
-    unsigned long mSize;
-
-    SBufferAndSize(const void* buffer, unsigned long size) : mBuffer(buffer), mSize(size) {}
-  };
-
-  CInputStream(const void* ptr, unsigned long len);
-  CInputStream(const void* ptr, unsigned long len, bool owned);
-  CInputStream(const SBufferAndSize& buffer, bool owned);
-  virtual ~CInputStream();
-
-  float ReadFloat();
-  double ReadDouble();
-  size_t ReadBytes(void* dest, size_t len);
-  void Get(void* dest, unsigned long len);
-  const void* Get(unsigned long len);
-  rstl::auto_ptr< uchar > ReleaseBuffer();
-
-  template < typename T >
-  T Get(const TType< T >& type = TType< T >());
-
-  // Guessed name for the typed object read-into operation used by script properties.
-  template < typename T >
-  void Read(T& value) {
-    value = T(*this);
-  }
+// The buffer stream. Each read is defined twice, under its typed name and Prime's; the copies must
+// stay exact (a forwarding call changes Echoes' inlining), so their bodies are shared macros.
+// The typed cursor (RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR) steps through the union's typed members.
 
 #if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
-  int ReadInt32() {
-    int* result = reinterpret_cast< int* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(int);
-    return BE_SWAP(*result);
-  }
-  uint ReadUint32() { // Guessed name.
-    uint* result = mpBufferAt.p32++;
-    return BE_SWAP(*result);
-  }
-  u64 ReadInt64() {
-    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
-    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
-    return BE_SWAP(*result);
-  }
-  u16 ReadUint16() { return BE_SWAP(*mpBufferAt.p16++); }
-  short ReadInt16() { return static_cast< short >(ReadUint16()); }
-  u8 ReadUint8() {
-    const u8 result = *mpBufferAt.p8++;
-    return result;
-  }
-  char ReadInt8() { return *mpBufferAt.p8++; }
-  bool ReadBool() { return ReadUint8() != 0; }
-  // Prime's reader names, with the bodies of ReadUint32, ReadUint16, ReadInt8 and ReadInt64.
-  uint ReadLong() {
-    uint* result = mpBufferAt.p32++;
-    return BE_SWAP(*result);
-  }
-  ushort ReadShort() { return BE_SWAP(*mpBufferAt.p16++); }
-  char ReadChar() { return *mpBufferAt.p8++; }
-  u64 ReadLongLong() {
-    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
-    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
-    return BE_SWAP(*result);
-  }
+#define CINPUTSTREAM_READ_U32                                                                      \
+  uint* result = mpBufferAt.p32++;                                                                 \
+  return BE_SWAP(*result)
+#define CINPUTSTREAM_READ_U16 return BE_SWAP(*mpBufferAt.p16++)
+#define CINPUTSTREAM_READ_I8 return *mpBufferAt.p8++
+#define CINPUTSTREAM_READ_U64                                                                      \
+  u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);                                           \
+  mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);                                          \
+  return BE_SWAP(*result)
 #else
-  int ReadInt32() {
-    int* result = reinterpret_cast< int* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(int);
-    return BE_SWAP(*result);
-  }
-  uint ReadUint32() { // Guessed name.
-    uint* result = reinterpret_cast< uint* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(uint);
-    return BE_SWAP(*result);
-  }
-  u64 ReadInt64() {
-    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(u64);
-    return BE_SWAP(*result);
-  }
-  u16 ReadUint16() {
-    u16* result = reinterpret_cast< u16* >(mpBufferAt.p8);
-    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
-    return BE_SWAP(*result);
-  }
-  short ReadInt16() { return static_cast< short >(ReadUint16()); }
-  u8 ReadUint8() {
-    const u8 result = *mpBufferAt.p8++;
-    return result;
-  }
-  char ReadInt8() { return static_cast< char >(ReadUint8()); }
-  bool ReadBool() { return *mpBufferAt.p8++ != 0; }
-  // Prime's reader names, with the bodies of ReadUint32, ReadUint16, ReadInt8 and ReadInt64.
-  uint ReadLong() {
-    uint* result = reinterpret_cast< uint* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(uint);
-    return BE_SWAP(*result);
-  }
-  ushort ReadShort() {
-    ushort* result = reinterpret_cast< ushort* >(mpBufferAt.p8);
-    mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);
-    return BE_SWAP(*result);
-  }
-  char ReadChar() { return static_cast< char >(ReadUint8()); }
-  u64 ReadLongLong() {
-    u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);
-    mpBufferAt.p8 += sizeof(u64);
-    return BE_SWAP(*result);
-  }
+#define CINPUTSTREAM_READ_U32                                                                      \
+  uint* result = reinterpret_cast< uint* >(mpBufferAt.p8);                                         \
+  mpBufferAt.p8 += sizeof(uint);                                                                   \
+  return BE_SWAP(*result)
+#define CINPUTSTREAM_READ_U16                                                                      \
+  ushort* result = reinterpret_cast< ushort* >(mpBufferAt.p8);                                     \
+  mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);                                          \
+  return BE_SWAP(*result)
+#define CINPUTSTREAM_READ_I8 return static_cast< char >(ReadUint8())
+#define CINPUTSTREAM_READ_U64                                                                      \
+  u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);                                           \
+  mpBufferAt.p8 += sizeof(u64);                                                                    \
+  return BE_SWAP(*result)
 #endif
-  uint GetReadPosition() const { return mpBufferAt.p8 - mpBufferStart; }
 
-protected:
-  uchar* mpBufferStart;
-  union {
-    uchar* p8;
-    char* pc8;   // Guessed name
-    ushort* p16; // Guessed name
-    uint* p32;   // Guessed name
-  } mpBufferAt;
-  unsigned long mBufferSize;
-  bool mOwner;
-};
+inline char CInputStream::ReadInt8() { CINPUTSTREAM_READ_I8; }
+inline char CInputStream::ReadChar() { CINPUTSTREAM_READ_I8; }
+inline int CInputStream::ReadInt32() {
+  int* result = reinterpret_cast< int* >(mpBufferAt.p8);
+  mpBufferAt.p8 += sizeof(int);
+  return BE_SWAP(*result);
+}
+inline uint CInputStream::ReadUint32() { CINPUTSTREAM_READ_U32; }
+inline uint CInputStream::ReadLong() { CINPUTSTREAM_READ_U32; }
+inline u64 CInputStream::ReadInt64() { CINPUTSTREAM_READ_U64; }
+inline u64 CInputStream::ReadLongLong() { CINPUTSTREAM_READ_U64; }
+inline ushort CInputStream::ReadUint16() { CINPUTSTREAM_READ_U16; }
+inline ushort CInputStream::ReadShort() { CINPUTSTREAM_READ_U16; }
+inline short CInputStream::ReadInt16() { return static_cast< short >(ReadUint16()); }
+inline bool CInputStream::ReadBool() {
+#if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
+  return ReadUint8() != 0;
+#else
+  return *mpBufferAt.p8++ != 0;
+#endif
+}
+inline uint CInputStream::GetReadPosition() const { return mpBufferAt.p8 - mpBufferStart; }
 
-DECLARE_FULL_SIZE_FOR(CInputStream, 0x14)
-CHECK_SIZEOF(CInputStream, CInputStream_FULL_SIZE)
+#undef CINPUTSTREAM_READ_U32
+#undef CINPUTSTREAM_READ_U16
+#undef CINPUTSTREAM_READ_I8
+#undef CINPUTSTREAM_READ_U64
 
 template < typename T >
 inline T CInputStream::Get(const TType< T >& type) {
   return T(*this);
 }
 
-template <>
-inline bool CInputStream::Get< bool >(const TType< bool >& type) {
-  return ReadBool();
-}
-
+#define CINPUTSTREAM_GET(T, read)                                                                  \
+  template <>                                                                                      \
+  inline T CInputStream::Get< T >(const TType< T >& type) {                                        \
+    return read;                                                                                   \
+  }
+CINPUTSTREAM_GET(bool, ReadBool())
 #if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
-template <>
-inline char CInputStream::Get< char >(const TType< char >& type) {
-  return *mpBufferAt.pc8++;
-}
+CINPUTSTREAM_GET(char, *mpBufferAt.pc8++)
 #else
-template <>
-inline char CInputStream::Get< char >(const TType< char >& type) {
-  return ReadInt8();
-}
+CINPUTSTREAM_GET(char, ReadInt8())
 #endif
-
-template <>
-inline unsigned char CInputStream::Get< unsigned char >(const TType< unsigned char >& type) {
-  return ReadUint8();
-}
-
+CINPUTSTREAM_GET(unsigned char, ReadUint8())
 #if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
+// Read as a char through a local tag: a temporary tag would emit a 1-byte .sbss object.
 template <>
 inline signed char CInputStream::Get< signed char >(const TType< signed char >& type) {
   TType< char > charType;
   return Get(charType);
 }
 #else
-template <>
-inline signed char CInputStream::Get< signed char >(const TType< signed char >& type) {
-  return ReadInt8();
-}
+CINPUTSTREAM_GET(signed char, ReadInt8())
 #endif
-
-template <>
-inline int CInputStream::Get< int >(const TType< int >& type) {
-  return ReadInt32();
-}
-
-template <>
-inline uint CInputStream::Get< uint >(const TType< uint >& type) {
-  return ReadUint32();
-}
-
+CINPUTSTREAM_GET(int, ReadInt32())
+CINPUTSTREAM_GET(uint, ReadUint32())
 #if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
-template <>
-inline unsigned long CInputStream::Get< unsigned long >(const TType< unsigned long >& type) {
-  return ReadUint32();
-}
+CINPUTSTREAM_GET(unsigned long, ReadUint32())
 #else
-template <>
-inline unsigned long CInputStream::Get< unsigned long >(const TType< unsigned long >& type) {
-  return ReadInt32();
-}
+CINPUTSTREAM_GET(unsigned long, ReadInt32())
 #endif
-
-template <>
-inline u64 CInputStream::Get< u64 >(const TType< u64 >& type) {
-  return ReadInt64();
-}
-
-template <>
-inline float CInputStream::Get< float >(const TType< float >& type) {
-  return ReadFloat();
-}
-
-template <>
-inline short CInputStream::Get< short >(const TType< short >& type) {
-  return ReadInt16();
-}
-
-template <>
-inline ushort CInputStream::Get< ushort >(const TType< ushort >& type) {
-  return ReadUint16();
-}
+CINPUTSTREAM_GET(u64, ReadInt64())
+CINPUTSTREAM_GET(float, ReadFloat())
+CINPUTSTREAM_GET(short, ReadInt16())
+CINPUTSTREAM_GET(ushort, ReadUint16())
+#undef CINPUTSTREAM_GET
 
 #include "rstl/vector.hpp"
 
