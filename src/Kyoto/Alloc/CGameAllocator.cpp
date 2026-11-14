@@ -19,6 +19,7 @@
 
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
+#include "rstl/types.h"
 
 #include "stddef.h"
 #include <stdint.h>

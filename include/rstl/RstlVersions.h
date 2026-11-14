@@ -823,6 +823,11 @@
 // CTri declares a copy constructor defined out of line.
 #define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_CORRUPTION)
 
+#if RSTL_CORRUPTION
+#undef FLT_MAX
+#define FLT_MAX (*(float*)__float_max)
+#endif
+
 // ============================================================================================
 // Kyoto/Particles
 // ============================================================================================
