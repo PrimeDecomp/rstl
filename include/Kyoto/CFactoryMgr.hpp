@@ -1,8 +1,9 @@
 #ifndef _CFACTORYMGR
 #define _CFACTORYMGR
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/IObjectStore.hpp"

@@ -1,11 +1,12 @@
 #ifndef _RSTL_LOCKED_CACHE_ALLOCATOR
 #define _RSTL_LOCKED_CACHE_ALLOCATOR
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 namespace rstl {
 // Guessed name

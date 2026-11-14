@@ -1,5 +1,6 @@
 #ifndef _CTRANSITIONDATABASE
 #define _CTRANSITIONDATABASE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/TToken.hpp"
@@ -11,7 +12,7 @@ class IMetaTrans;
 class CTransitionDatabase {
 public:
 #if !RSTL_PRIME1
-  TRILOGY_VIRTUAL ~CTransitionDatabase() {}
+  RSTL_TRILOGY_VIRTUAL ~CTransitionDatabase() {}
 #endif
 
   virtual const rstl::rc_ptr< IMetaTrans >& GetMetaTrans(uint from, uint to) const = 0;

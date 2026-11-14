@@ -1,8 +1,9 @@
 #ifndef _CASSETID
 #define _CASSETID
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/construct.hpp"
 #include "rstl/string.hpp"

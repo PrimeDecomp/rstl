@@ -1,6 +1,7 @@
 #ifndef _AUDIOEFFECT
 #define _AUDIOEFFECT
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/AEffect.hpp"
 #include "rstl/RstlVersions.h"
 

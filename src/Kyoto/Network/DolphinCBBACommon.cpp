@@ -1,3 +1,4 @@
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Network/DolphinCBBACommon.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"

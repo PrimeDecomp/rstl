@@ -1,5 +1,6 @@
 #ifndef _CVERTEXMORPHEFFECT
 #define _CVERTEXMORPHEFFECT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CRandom16.hpp"

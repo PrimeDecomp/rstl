@@ -1,5 +1,6 @@
 #ifndef _CREVOLUTIONCONTROLLER
 #define _CREVOLUTIONCONTROLLER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Input/IController.hpp"

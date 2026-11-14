@@ -1,5 +1,6 @@
 #ifndef _CANIMTREENODE
 #define _CANIMTREENODE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"

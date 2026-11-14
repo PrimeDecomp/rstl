@@ -1,6 +1,7 @@
 #ifndef _CGAMECAMERASPLINE
 #define _CGAMECAMERASPLINE
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CSpline.hpp"
 
 // Guessed name.

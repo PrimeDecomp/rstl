@@ -1,7 +1,8 @@
 #ifndef _CCECHARACTERINFO
 #define _CCECHARACTERINFO
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Particles/CEffectComponent.hpp"
 

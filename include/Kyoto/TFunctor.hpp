@@ -1,8 +1,9 @@
 #ifndef _TFUNCTOR_HPP
 #define _TFUNCTOR_HPP
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 #include "string.h"
 
 // Prime-correlated names. Native callbacks store a bridge, borrowed object, and 16 method bytes.

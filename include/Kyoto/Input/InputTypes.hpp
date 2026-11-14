@@ -3,7 +3,7 @@
 
 #include <dolphin/pad.h>
 
-#include "types.h"
+#include "rstl/types.h"
 
 enum EIOPort {
   kIOP_Player1 = PAD_CHAN0,

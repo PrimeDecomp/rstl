@@ -2,7 +2,7 @@
 #define _IOBJECTSTORE
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CToken.hpp"
 

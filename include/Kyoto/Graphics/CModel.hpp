@@ -1,9 +1,10 @@
 #ifndef _CMODEL
 #define _CMODEL
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CFactoryFnReturn.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"

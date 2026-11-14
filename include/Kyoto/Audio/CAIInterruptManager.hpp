@@ -2,7 +2,7 @@
 #define _CAIINTERRUPTMANAGER
 
 #include "Kyoto/Platform.h"
-#include "types.h"
+#include "rstl/types.h"
 
 typedef void (*FAudioCallback)(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels));
 

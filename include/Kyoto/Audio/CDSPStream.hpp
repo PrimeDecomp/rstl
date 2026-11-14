@@ -1,7 +1,8 @@
 #ifndef _CDSPSTREAM
 #define _CDSPSTREAM
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "dolphin/dvd.h"
 #include "musyx/musyx.h"

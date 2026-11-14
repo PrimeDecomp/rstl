@@ -1,6 +1,6 @@
 #include "Kyoto/Math/CVector3i.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #if !RSTL_PRIME1
 CVector3i CVector3i::sZeroVector = CVector3i(0, 0, 0);

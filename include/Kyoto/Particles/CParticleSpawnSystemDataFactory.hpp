@@ -1,7 +1,7 @@
 #ifndef _CPARTICLESPAWNSYSTEMDATAFACTORY
 #define _CPARTICLESPAWNSYSTEMDATAFACTORY
 
-#include "types.h"
+#include "rstl/types.h"
 #include "Kyoto/CFactoryMgr.hpp"
 
 class CInputStream;

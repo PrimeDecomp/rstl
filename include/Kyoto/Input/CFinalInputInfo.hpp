@@ -1,7 +1,7 @@
 #ifndef _CFINALINPUTINFO
 #define _CFINALINPUTINFO
 
-#include "types.h"
+#include "rstl/types.h"
 
 class CFinalInput;
 

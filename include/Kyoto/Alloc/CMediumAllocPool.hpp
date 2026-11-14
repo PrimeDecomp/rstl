@@ -1,6 +1,7 @@
 #ifndef _CMEDIUMALLOCPOOL
 #define _CMEDIUMALLOCPOOL
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Alloc/AllocatorCommon.hpp"
 #include <rstl/auto_ptr.hpp>
 #include <rstl/list.hpp>

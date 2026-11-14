@@ -1,5 +1,6 @@
 #ifndef _CANIMSYSCONTEXT
 #define _CANIMSYSCONTEXT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #if !RSTL_PRIME1

@@ -1,6 +1,7 @@
 #ifndef _CPASANIMINFO
 #define _CPASANIMINFO
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CPASAnimParm.hpp"
 
 #include "rstl/RstlVersions.h"

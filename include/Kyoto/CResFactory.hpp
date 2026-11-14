@@ -1,5 +1,6 @@
 #ifndef _CRESFACTORY
 #define _CRESFACTORY
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "rstl/auto_ptr.hpp"
@@ -8,7 +9,7 @@
 #include "rstl/pair.hpp"
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 
 #include "Kyoto/CFactoryMgr.hpp"

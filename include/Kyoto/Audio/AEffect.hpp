@@ -1,7 +1,8 @@
 #ifndef _AEFFECT
 #define _AEFFECT
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 // SDK-correlated names; the selected target uses the older 0x90-byte VstP ABI.
 struct AEffect;

@@ -1,9 +1,10 @@
 #ifndef _DOLPHINCRSFAUDIO
 #define _DOLPHINCRSFAUDIO
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "dolphin/hw_regs.h"
 #include "Kyoto/Audio/g721.h"

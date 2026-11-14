@@ -1,7 +1,8 @@
 #ifndef _CVECTOR4F
 #define _CVECTOR4F
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 // Guessed name
 class CVector4f {

@@ -1,19 +1,21 @@
 #ifndef _CFBSTREAMEDCOMPRESSION
 #define _CFBSTREAMEDCOMPRESSION
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
-#include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/CAnimPOIData.hpp"
+#include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
+
 #if RSTL_PRIME1
 #include "string.h"
 #endif
 
 #include "Kyoto/Animation/CSegId.hpp"
-#include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Animation/IAnimReader.hpp"
+#include "Kyoto/Math/CVector3f.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/TToken.hpp"
@@ -161,11 +163,11 @@ private:
   TLoadedVal< ushort > mWidth;
 };
 
-template < uint Components, uint ConstantComponent, uint SignComponent >
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-NTSC_INLINE CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::
-        CFBBitCompressedDataChannelHeader(CInputStream& in) {
+template < uint Components, uint ConstantComponent, uint SignComponent >
+RSTL_KYOTO_ANIMATION_INLINE
+CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::
+    CFBBitCompressedDataChannelHeader(CInputStream& in) {
   ushort width = in.Get< ushort >();
   TLoadedVal< ushort >::Write(this, width);
   uchar* data = reinterpret_cast< uchar* >(this) + sizeof(ushort);
@@ -179,12 +181,12 @@ NTSC_INLINE CFBBitCompressedDataChannelHeader< Components, ConstantComponent, Si
     }
   }
 }
+#endif
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-NTSC_INLINE
-#endif
-short CFBBitCompressedDataChannelHeader< Components, ConstantComponent,
-                                         SignComponent >::GetInitialValue(uint component) const {
+RSTL_KYOTO_ANIMATION_INLINE short
+CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::GetInitialValue(
+    uint component) const {
   if (component == SignComponent) {
     return 0;
   }
@@ -197,11 +199,8 @@ short CFBBitCompressedDataChannelHeader< Components, ConstantComponent,
 }
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-NTSC_INLINE
-#endif
-uint CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::GetBitCount(
+RSTL_KYOTO_ANIMATION_INLINE uint
+CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::GetBitCount(
     uint component) const {
   if (SignComponent < Components && component == SignComponent) {
     return 1;
@@ -211,9 +210,9 @@ uint CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignCompo
 }
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-NTSC_INLINE const uchar* CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd() const
+RSTL_KYOTO_ANIMATION_INLINE const uchar*
+CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd() const
 #else
 CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::
     CFBBitCompressedDataChannelHeader(CInputStream& in) {
@@ -233,8 +232,7 @@ CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent 
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
 const uchar*
-CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd()
-    const
+CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd() const
 #endif
 {
 #if RSTL_PRIME1
@@ -255,12 +253,8 @@ CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent 
 }
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-NTSC_INLINE
-#endif
-uint CFBBitCompressedDataChannelHeader< Components, ConstantComponent,
-                                        SignComponent >::GetSumOfBitCounts() const {
+RSTL_KYOTO_ANIMATION_INLINE uint CFBBitCompressedDataChannelHeader<
+    Components, ConstantComponent, SignComponent >::GetSumOfBitCounts() const {
 #if RSTL_PRIME1
   if (*Width() == 0)
 #else
@@ -292,9 +286,11 @@ public:
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-  CFBStreamedPerChannelHeader(CInputStream& in) : mSegId(in.Get< uint >())
+  CFBStreamedPerChannelHeader(CInputStream& in)
+  : mSegId(in.Get< uint >())
 #else
-  explicit CFBStreamedPerChannelHeader(CInputStream& in) : mSegId(in.ReadInt8())
+  explicit CFBStreamedPerChannelHeader(CInputStream& in)
+  : mSegId(in.ReadInt8())
 #endif
   {
     new (const_cast< RotationHeader* >(&GetRotationBitStorage())) RotationHeader(in);
@@ -353,9 +349,7 @@ CHECK_SIZEOF(CFBStreamedPerChannelHeader, RSTL_PRIME1 ? 0x4 : 0x1)
 
 class TLoadedContainerBase {
 protected:
-  static void LoadSize(uint& size, CInputStream& in) {
-    size = in.ReadLong();
-  }
+  static void LoadSize(uint& size, CInputStream& in) { size = in.ReadLong(); }
 };
 
 template < typename Size, typename T >
@@ -428,11 +422,7 @@ public:
 };
 
 template < typename Size, typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-NTSC_INLINE
-#endif
-const uchar* TVectorOfVaryingLengthItems< Size, T >::AfterEnd() const {
+RSTL_KYOTO_ANIMATION_INLINE const uchar* TVectorOfVaryingLengthItems< Size, T >::AfterEnd() const {
   const_iterator it(begin());
   for (int remaining = this->size(); remaining > 0; --remaining) {
     ++it;
@@ -450,7 +440,8 @@ public:
 #else
   explicit CFBStreamedPerChannelHeaderList(CInputStream& in)
 #endif
-  : TVectorOfVaryingLengthItems< uint, CFBStreamedPerChannelHeader >(in) {}
+  : TVectorOfVaryingLengthItems< uint, CFBStreamedPerChannelHeader >(in) {
+  }
 
   uint GetSumOfBitCounts() const {
     uint sum = 0;
@@ -474,7 +465,8 @@ public:
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   template < typename Stream >
-  CFBKeyFrameReductionPerChannel_HeaderForAll(Stream& in) : mBitCount(in.template Get< uint >())
+  CFBKeyFrameReductionPerChannel_HeaderForAll(Stream& in)
+  : mBitCount(in.template Get< uint >())
 #else
   explicit CFBKeyFrameReductionPerChannel_HeaderForAll(CInputStream& in)
   : mBitCount(in.Get< uint >())
@@ -529,7 +521,8 @@ private:
   uint mBitCount;
 };
 DECLARE_FULL_SIZE_FOR(CFBKeyFrameReductionPerChannel_HeaderForAll, 0x4)
-CHECK_SIZEOF(CFBKeyFrameReductionPerChannel_HeaderForAll, CFBKeyFrameReductionPerChannel_HeaderForAll_FULL_SIZE)
+CHECK_SIZEOF(CFBKeyFrameReductionPerChannel_HeaderForAll,
+             CFBKeyFrameReductionPerChannel_HeaderForAll_FULL_SIZE)
 
 class CFBStreamedCompressionTimeHeader : public CFBKeyFrameReductionPerChannel_HeaderForAll {
 public:
@@ -540,9 +533,11 @@ public:
 #else
   explicit CFBStreamedCompressionTimeHeader(CInputStream& in)
 #endif
-  : CFBKeyFrameReductionPerChannel_HeaderForAll(in) {}
+  : CFBKeyFrameReductionPerChannel_HeaderForAll(in) {
+  }
 };
-CHECK_CHILD_SIZEOF(CFBStreamedCompressionTimeHeader, CFBKeyFrameReductionPerChannel_HeaderForAll, 0x0)
+CHECK_CHILD_SIZEOF(CFBStreamedCompressionTimeHeader, CFBKeyFrameReductionPerChannel_HeaderForAll,
+                   0x0)
 
 class CFBStreamedCompression {
 public:

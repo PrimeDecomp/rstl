@@ -1,8 +1,9 @@
 #ifndef _CMODELFLAGS
 #define _CMODELFLAGS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Graphics/CColor.hpp"
 

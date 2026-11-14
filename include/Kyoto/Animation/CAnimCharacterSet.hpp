@@ -1,5 +1,6 @@
 #ifndef _CANIMCHARACTERSET
 #define _CANIMCHARACTERSET
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -10,7 +11,7 @@
 #endif
 
 #include "Kyoto/Animation/CCharacterSet.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 struct SObjectTag;
 

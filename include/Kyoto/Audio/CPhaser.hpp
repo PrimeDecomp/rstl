@@ -1,6 +1,7 @@
 #ifndef _CPHASER
 #define _CPHASER
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/AudioEffectX.hpp"
 
 // Guessed name, supported by the native effect name and four-stage all-pass filters.

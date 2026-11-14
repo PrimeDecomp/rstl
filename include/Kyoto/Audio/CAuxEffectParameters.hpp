@@ -1,7 +1,8 @@
 #ifndef _CAUXEFFECTPARAMETERS
 #define _CAUXEFFECTPARAMETERS
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 #include "musyx/musyx.h"
 
 // Guessed types and member names, based on the native processor and VstP callback descriptor.

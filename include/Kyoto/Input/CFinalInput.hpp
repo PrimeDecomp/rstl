@@ -1,8 +1,9 @@
 #ifndef _CFINALINPUT
 #define _CFINALINPUT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Input/CControllerData.hpp"
 

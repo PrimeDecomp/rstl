@@ -1,9 +1,10 @@
 #ifndef _RSTL_MAP
 #define _RSTL_MAP
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/pair.hpp"
 #include "rstl/red_black_tree.hpp"

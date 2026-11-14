@@ -1,7 +1,8 @@
 #ifndef _CALLFORMATSANIMSOURCE
 #define _CALLFORMATSANIMSOURCE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/macros.hpp"
 
 #include "Kyoto/Animation/CAnimSource.hpp"

@@ -1,5 +1,6 @@
 #ifndef _CPUSHSTATEINSTRUCTION
 #define _CPUSHSTATEINSTRUCTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/CInstruction.hpp"
