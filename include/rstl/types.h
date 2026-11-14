@@ -4,13 +4,17 @@
 // TODO: correct place
 #define RS_ASSERT(cond, msg) ((void)(0))
 
+#include "rstl/RstlVersions.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// stddef.h first: its NULL (0L) is what dolphin/types.h's nullptr falls back to; with NULL as plain 0,
-// vector<T*>(n, nullptr) picks the iterator-range constructor.
+// FIXME: NULL is being defined as 0 or 0L depending on the inclusion order, and different games are breaking in different ways.
+// Corruption proto wants 0L, but prime/echoes wants 0 due to reserved_vector constructor.
+#if RSTL_CORRUPTION
 #include <stddef.h>
+#endif
 #include <dolphin/types.h>
 
 // Dolphin u32 is unsigned long
