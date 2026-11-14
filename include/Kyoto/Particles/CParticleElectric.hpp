@@ -1,5 +1,6 @@
 #ifndef _CPARTICLEELECTRIC
 #define _CPARTICLEELECTRIC
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Particles/CParticleGen.hpp"

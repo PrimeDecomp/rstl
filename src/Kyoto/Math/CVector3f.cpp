@@ -9,7 +9,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #ifndef __MWERKS__
 // TODO
@@ -151,4 +151,3 @@ bool CVector3f::IsEqu(const CVector3f& vec, float epsilon) const {
   return CMath::AbsF(mX - vec.mX) <= epsilon && CMath::AbsF(mY - vec.mY) <= epsilon &&
          CMath::AbsF(mZ - vec.mZ) <= epsilon;
 }
-

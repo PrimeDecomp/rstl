@@ -1,5 +1,6 @@
 #ifndef _CLIGHT
 #define _CLIGHT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Graphics/CColor.hpp"

@@ -1,8 +1,9 @@
 #ifndef _CSTREAMPRELOADEDTOKEN
 #define _CSTREAMPRELOADEDTOKEN
 
+#include "rstl/static_assert.hpp"
 #include "rstl/string.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 class CStreamPreloadedData;
 

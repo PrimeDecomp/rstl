@@ -1,7 +1,8 @@
 #ifndef _CLINESEG
 #define _CLINESEG
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CLine.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"

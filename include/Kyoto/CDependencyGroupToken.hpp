@@ -1,5 +1,6 @@
 #ifndef _CDEPENDENCYGROUPTOKEN
 #define _CDEPENDENCYGROUPTOKEN
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/TToken.hpp"
 #include "rstl/vector.hpp"

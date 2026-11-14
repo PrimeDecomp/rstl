@@ -1,7 +1,7 @@
 #ifndef _LOCKEDCACHE
 #define _LOCKEDCACHE
 
-#include "types.h"
+#include "rstl/types.h"
 
 // Guessed name; returns the mutable base used by the native locked-cache allocator.
 void* GetLockedCacheAllocationBase();

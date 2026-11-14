@@ -3,7 +3,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"
 

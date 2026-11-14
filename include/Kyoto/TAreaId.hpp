@@ -1,6 +1,7 @@
 #ifndef _TAREAID
 #define _TAREAID
 
+#include "rstl/static_assert.hpp"
 #include "rstl/construct.hpp"
 
 struct TAreaId {

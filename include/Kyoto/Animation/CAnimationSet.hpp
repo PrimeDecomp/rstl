@@ -1,6 +1,7 @@
 #ifndef _CANIMATIONSET
 #define _CANIMATIONSET
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CAdditiveAnimationInfo.hpp"
 #include "Kyoto/Animation/CAnimation.hpp"
 #include "Kyoto/Animation/CHalfTransition.hpp"

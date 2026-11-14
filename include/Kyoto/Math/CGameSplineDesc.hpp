@@ -1,6 +1,7 @@
 #ifndef _CGAMESPLINEDESC
 #define _CGAMESPLINEDESC
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CMayaSpline.hpp"
 #include "Kyoto/Math/CMotionSpline.hpp"
 

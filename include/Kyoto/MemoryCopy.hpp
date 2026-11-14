@@ -6,7 +6,7 @@
 // MWCC's intrinsic expands constant-sized copies inline. Use (memcpy)(...) for
 // runtime-sized copies, which need the C library function.
 
-#include "types.h"
+#include "rstl/types.h"
 
 #ifdef __MWERKS__
 #define memcpy(dest, src, size) __memcpy((dest), (src), (size))

@@ -1,5 +1,6 @@
 #ifndef _CFONTRENDERSTATE
 #define _CFONTRENDERSTATE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "rstl/list.hpp"

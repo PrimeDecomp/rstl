@@ -1,5 +1,6 @@
 #ifndef _CHALFTRANSITION
 #define _CHALFTRANSITION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IMetaTrans.hpp"
 

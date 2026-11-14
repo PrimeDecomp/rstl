@@ -1,7 +1,8 @@
 #ifndef _CJOINTDATA_LINEARSTORAGE
 #define _CJOINTDATA_LINEARSTORAGE
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CVector3f.hpp"

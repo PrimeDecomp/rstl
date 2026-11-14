@@ -1,7 +1,7 @@
 #ifndef _CSMALLALLOCPOOL
 #define _CSMALLALLOCPOOL
 
-#include <types.h>
+#include "rstl/types.h"
 
 #include "Kyoto/Alloc/AllocatorCommon.hpp"
 #include "rstl/RstlVersions.h"

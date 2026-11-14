@@ -1,5 +1,6 @@
 #ifndef _IANIMSOURCEINFO
 #define _IANIMSOURCEINFO
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CCharAnimTime.hpp"

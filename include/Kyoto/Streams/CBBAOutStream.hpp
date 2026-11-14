@@ -1,7 +1,8 @@
 #ifndef _CBBAOUTSTREAM
 #define _CBBAOUTSTREAM
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Streams/COutputStream.hpp"
 

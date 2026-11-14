@@ -1,5 +1,6 @@
 #ifndef _CADVANCEMENTDELTAS_HPP
 #define _CADVANCEMENTDELTAS_HPP
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CQuaternion.hpp"

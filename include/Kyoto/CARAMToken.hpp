@@ -1,7 +1,7 @@
 #ifndef _CARAMTOKEN
 #define _CARAMTOKEN
 
-#include "types.h"
+#include "rstl/types.h"
 
 class CARAMToken {
 #if !defined(TARGET_PC)

@@ -3,7 +3,7 @@
 
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #if RSTL_CORRUPTION
 #include "Kyoto/Alloc/Assert.hpp"

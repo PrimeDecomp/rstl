@@ -1,8 +1,9 @@
 #ifndef _CRASTERFONT
 #define _CRASTERFONT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/TToken.hpp"
 #include "rstl/optional_object.hpp"

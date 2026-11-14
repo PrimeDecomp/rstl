@@ -1,10 +1,11 @@
 #ifndef _RSTL_SINGLE_PTR
 #define _RSTL_SINGLE_PTR
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/rmemory_allocator.hpp"
 #include "rstl/type_traits.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 namespace rstl {
 

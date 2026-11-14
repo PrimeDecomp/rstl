@@ -1,5 +1,6 @@
 #ifndef _CANIMTREESINGLECHILD
 #define _CANIMTREESINGLECHILD
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimTreeNode.hpp"

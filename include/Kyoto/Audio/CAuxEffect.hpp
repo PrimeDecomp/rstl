@@ -1,6 +1,7 @@
 #ifndef _CAUXEFFECT
 #define _CAUXEFFECT
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/CAuxEffectParameters.hpp"
 #include "musyx/musyx.h"
 

@@ -2,7 +2,7 @@
 #define _RSTL_MATH
 
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 namespace rstl {
 #if RSTL_MIN_MAX_VAL

@@ -1,7 +1,8 @@
 #ifndef _CPOSEASTRANSFORMS
 #define _CPOSEASTRANSFORMS
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/TSegIdMapVariableSize.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"

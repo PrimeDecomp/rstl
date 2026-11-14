@@ -1,7 +1,8 @@
 #ifndef _CSORTEDPARTICLESYSTEMDESCRIPTION
 #define _CSORTEDPARTICLESYSTEMDESCRIPTION
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 class CSpawnSystemKeyframeData;
 

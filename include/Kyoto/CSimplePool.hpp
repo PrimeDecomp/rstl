@@ -1,12 +1,13 @@
 #ifndef _CSIMPLEPOOL
 #define _CSIMPLEPOOL
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1
 #include "Kyoto/CVParamTransfer.hpp"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/map.hpp"
 #include "rstl/vector.hpp"

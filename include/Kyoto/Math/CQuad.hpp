@@ -1,10 +1,11 @@
 #ifndef _CQUAD
 #define _CQUAD
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CPlane.hpp"
 #include "Kyoto/Math/CTri.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 // Guessed name; the G2ME01 object contains a plane and four corners.
 class CQuad {

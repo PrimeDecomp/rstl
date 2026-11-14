@@ -2,7 +2,7 @@
 #define _CPARTICLEGLOBALS
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"

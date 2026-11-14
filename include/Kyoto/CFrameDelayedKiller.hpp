@@ -2,7 +2,7 @@
 #define _CFRAMEDELAYEDKILLER
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 class CFrameDelayedKiller {
 public:

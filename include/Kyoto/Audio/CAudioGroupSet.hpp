@@ -1,9 +1,10 @@
 #ifndef _CAUDIOGROUPSET
 #define _CAUDIOGROUPSET
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/TToken.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"

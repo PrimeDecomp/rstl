@@ -1,5 +1,6 @@
 #ifndef _CSFXMANAGER
 #define _CSFXMANAGER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "rstl/optional_object.hpp"
@@ -9,7 +10,7 @@
 #include "Kyoto/Audio/CSfxPitchBend.hpp"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Audio/CAudioSys.hpp"
 #include "Kyoto/Audio/CSfxHandle.hpp"

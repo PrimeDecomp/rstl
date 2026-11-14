@@ -1,9 +1,10 @@
 #ifndef _TONESTATIC
 #define _TONESTATIC
+#include "rstl/macros.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "stdio.h"
-#include "types.h"
+#include "rstl/types.h"
 
 template < typename T >
 class TOneStatic {

@@ -1,6 +1,7 @@
 #ifndef _CAUXEFFECTMANAGER
 #define _CAUXEFFECTMANAGER
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/CAuxEffect.hpp"
 #include "rstl/reserved_vector.hpp"
 

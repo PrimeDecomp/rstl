@@ -1,7 +1,7 @@
 #ifndef _CMEMORYSYS
 #define _CMEMORYSYS
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/IAllocator.hpp"

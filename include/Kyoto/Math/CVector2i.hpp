@@ -3,7 +3,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 #include "rstl/construct.hpp"
 
 class CVector2i {

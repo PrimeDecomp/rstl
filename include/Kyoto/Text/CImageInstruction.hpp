@@ -1,5 +1,6 @@
 #ifndef _CIMAGEINSTRUCTION
 #define _CIMAGEINSTRUCTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/CFontImageDef.hpp"

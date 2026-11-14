@@ -1,7 +1,7 @@
 #ifndef _DOLPHINCBBACOMMON
 #define _DOLPHINCBBACOMMON
 
-#include "types.h"
+#include "rstl/types.h"
 
 struct SBBASettings;
 

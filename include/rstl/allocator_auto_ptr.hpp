@@ -1,7 +1,7 @@
 #ifndef _RSTL_ALLOCATOR_AUTO_PTR
 #define _RSTL_ALLOCATOR_AUTO_PTR
 
-#include "types.h"
+#include "rstl/types.h"
 
 namespace rstl {
 template < typename T, typename Alloc >

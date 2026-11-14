@@ -1,5 +1,6 @@
 #ifndef _CFBSTREAMEDANIMREADER
 #define _CFBSTREAMEDANIMREADER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
@@ -233,11 +234,7 @@ private:
 };
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-NTSC_INLINE
-#endif
-uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
+RSTL_KYOTO_ANIMATION_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
   uint remaining = bits;
   uint result = 0;
   uint shift = 0;
@@ -265,11 +262,7 @@ uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
 }
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-NTSC_INLINE
-#endif
-int CBitLevelLoader< T >::LoadSigned(uint bits) {
+RSTL_KYOTO_ANIMATION_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
   if (bits == 0) {
     return 0;
   }

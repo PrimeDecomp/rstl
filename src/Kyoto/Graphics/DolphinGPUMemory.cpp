@@ -1,3 +1,4 @@
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "rstl/RstlVersions.h"
 

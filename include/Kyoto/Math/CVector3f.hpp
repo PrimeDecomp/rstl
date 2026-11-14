@@ -1,7 +1,8 @@
 #ifndef _CVECTOR3F
 #define _CVECTOR3F
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CVector2f.hpp"
 #include "rstl/RstlVersions.h"

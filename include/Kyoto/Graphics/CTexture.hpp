@@ -1,8 +1,9 @@
 #ifndef _CTEXTURE
 #define _CTEXTURE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CARAMToken.hpp"
 #include "Kyoto/SObjectTag.hpp"

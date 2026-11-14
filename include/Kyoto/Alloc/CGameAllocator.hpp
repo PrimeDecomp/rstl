@@ -1,11 +1,12 @@
 #ifndef _CGAMEALLOCATOR
 #define _CGAMEALLOCATOR
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Alloc/AllocatorCommon.hpp"
 #include "Kyoto/Alloc/CMediumAllocPool.hpp"
 #include "Kyoto/Alloc/IAllocator.hpp"
 
-#include <types.h>
+#include "rstl/types.h"
 
 #include "rstl/RstlVersions.h"
 

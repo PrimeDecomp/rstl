@@ -2,8 +2,9 @@
 #define _RSTL_RESERVED_VECTOR
 
 #include "rstl/RstlVersions.h"
+#include "rstl/macros.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/construct.hpp"
 #include "rstl/pointer_iterator.hpp"

@@ -1,5 +1,6 @@
 #ifndef _CINT32POINODE
 #define _CINT32POINODE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CPOINode.hpp"

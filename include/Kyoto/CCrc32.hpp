@@ -1,6 +1,6 @@
 #ifndef _CCRC32
 #define _CCRC32
-#include "types.h"
+#include "rstl/types.h"
 
 class CCRC32 {
 public:

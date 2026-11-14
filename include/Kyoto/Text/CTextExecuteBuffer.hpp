@@ -1,5 +1,6 @@
 #ifndef _CTEXTEXECUTEBUFFER
 #define _CTEXTEXECUTEBUFFER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Text/TextCommon.hpp"

@@ -1,5 +1,6 @@
 #ifndef _CEMITTERELEMENT
 #define _CEMITTERELEMENT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CTransform4f.hpp"

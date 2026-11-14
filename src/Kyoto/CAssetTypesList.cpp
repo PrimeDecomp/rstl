@@ -2,6 +2,7 @@
 #include "Kyoto/Alloc/Assert.hpp"
 
 #include <ctype.h>
+#include "rstl/types.h"
 
 static const unsigned int kAssetTypes[] = {
     'CLSN', 'CSPP', 'CMDL', 'CSKR', 'ANIM', 'CINF', 'TXTR', 'PLTT', 'FONT', 'MADF', 'MLVL',

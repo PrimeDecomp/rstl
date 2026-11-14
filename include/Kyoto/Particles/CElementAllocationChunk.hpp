@@ -1,8 +1,10 @@
 #ifndef _CELEMENTALLOCATIONCHUNK
 #define _CELEMENTALLOCATIONCHUNK
 
+#include "rstl/macros.hpp"
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 class CElementAllocationChunk {
 public:

@@ -1,5 +1,6 @@
 #ifndef _CCUBESURFACE
 #define _CCUBESURFACE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CAABox.hpp"

@@ -1,7 +1,7 @@
 #ifndef _CBBAINSTREAM
 #define _CBBAINSTREAM
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Streams/CInputStream.hpp"
 

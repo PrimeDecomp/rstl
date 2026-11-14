@@ -1,6 +1,7 @@
 #ifndef _CMETAANIMSEQUENCE
 #define _CMETAANIMSEQUENCE
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/IMetaAnim.hpp"
 #include "rstl/rc_ptr.hpp"
 #include "rstl/vector.hpp"

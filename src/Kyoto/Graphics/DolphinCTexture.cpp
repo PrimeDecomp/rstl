@@ -27,7 +27,7 @@
 #include "dolphin/os.h"
 #include "dolphin/os/OSCache.h"
 #include "stdint.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"

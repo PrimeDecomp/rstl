@@ -1,6 +1,7 @@
 #ifndef _CCEANIMATIONSET
 #define _CCEANIMATIONSET
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CAdditiveAnimationInfo.hpp"
 #include "Kyoto/Animation/CAnimPOIData.hpp"
 #include "Kyoto/Animation/CAnimation.hpp"

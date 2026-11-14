@@ -1,9 +1,10 @@
 #ifndef _CBITSTREAMWRITER
 #define _CBITSTREAMWRITER
 
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 class COutputStream;
 

@@ -1,11 +1,12 @@
 #ifndef _CELECTRICDESCRIPTION
 #define _CELECTRICDESCRIPTION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Particles/CGenDescription.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/TToken.hpp"
 #include "rstl/optional_object.hpp"

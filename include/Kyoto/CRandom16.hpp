@@ -1,7 +1,7 @@
 #ifndef _CRANDOM16
 #define _CRANDOM16
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "rstl/RstlVersions.h"
 

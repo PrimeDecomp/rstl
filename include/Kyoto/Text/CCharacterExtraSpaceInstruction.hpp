@@ -1,6 +1,7 @@
 #ifndef _CCHARACTEREXTRASPACEINSTRUCTION
 #define _CCHARACTEREXTRASPACEINSTRUCTION
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
 
 // Guessed name

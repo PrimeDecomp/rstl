@@ -1,5 +1,6 @@
 #ifndef _CMANAGEDPARTICLEGEN
 #define _CMANAGEDPARTICLEGEN
+#include "rstl/static_assert.hpp"
 #include "Kyoto/CDependencyGroupToken.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/SObjectTag.hpp"

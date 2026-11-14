@@ -1,8 +1,9 @@
 #ifndef _CCONTROLLERDATA
 #define _CCONTROLLERDATA
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Input/CControllerAxis.hpp"
 #include "Kyoto/Input/CControllerButton.hpp"

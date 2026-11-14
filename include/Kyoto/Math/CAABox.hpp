@@ -1,5 +1,6 @@
 #ifndef _CAABOX
 #define _CAABOX
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CVector3f.hpp"

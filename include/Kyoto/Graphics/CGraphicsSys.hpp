@@ -2,7 +2,7 @@
 #define _CGRAPHICSSYS
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 class COsContext;
 class CMemorySys;

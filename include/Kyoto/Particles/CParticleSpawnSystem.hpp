@@ -1,7 +1,8 @@
 #ifndef _CPARTICLESPAWNSYSTEM
 #define _CPARTICLESPAWNSYSTEM
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"

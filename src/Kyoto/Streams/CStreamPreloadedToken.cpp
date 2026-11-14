@@ -1,3 +1,4 @@
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/RstlVersions.h"
 

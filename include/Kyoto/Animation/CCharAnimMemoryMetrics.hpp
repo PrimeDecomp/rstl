@@ -2,7 +2,7 @@
 #define _CCHARANIMMEMORYMETRICS
 
 #include "rstl/RstlVersions.h"
-#include <types.h>
+#include "rstl/types.h"
 
 class CCharAnimMemoryMetrics {
 public:

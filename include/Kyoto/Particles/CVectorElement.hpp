@@ -3,7 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Streams/CInputStream.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Particles/IElement.hpp"

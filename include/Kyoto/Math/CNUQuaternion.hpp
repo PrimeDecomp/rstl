@@ -1,7 +1,8 @@
 #ifndef _CNUQUATERNION
 #define _CNUQUATERNION
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/RstlVersions.h"

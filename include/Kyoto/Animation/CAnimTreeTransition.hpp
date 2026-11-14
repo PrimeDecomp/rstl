@@ -1,5 +1,6 @@
 #ifndef _CANIMTREETRANSITION
 #define _CANIMTREETRANSITION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CAnimTreeTweenBase.hpp"

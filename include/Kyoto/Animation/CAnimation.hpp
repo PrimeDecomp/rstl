@@ -1,5 +1,6 @@
 #ifndef _CANIMATION
 #define _CANIMATION
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IMetaAnim.hpp"
 

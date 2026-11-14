@@ -1,7 +1,7 @@
 #ifndef _G721
 #define _G721
 
-#include "types.h"
+#include "rstl/types.h"
 
 struct g72x_state {
   long yl;   /* Locked or steady state step size multiplier. */

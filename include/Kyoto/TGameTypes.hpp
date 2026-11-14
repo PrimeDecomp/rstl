@@ -1,11 +1,12 @@
 #ifndef _TGAMETYPES
 #define _TGAMETYPES
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/TAreaId.hpp"
 
 #include "rstl/construct.hpp"
 #include "rstl/pair.hpp"
-#include "types.h"
+#include "rstl/types.h"
 
 class CInputStream;
 class COutputStream;

@@ -1,8 +1,9 @@
 #ifndef _CPAKFILE
 #define _CPAKFILE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/IObjectStore.hpp"

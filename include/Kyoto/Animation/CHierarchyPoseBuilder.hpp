@@ -1,7 +1,8 @@
 #ifndef _CHIERARCHYPOSEBUILDER
 #define _CHIERARCHYPOSEBUILDER
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CLayoutDescription.hpp"
 #include "Kyoto/Animation/CSegId.hpp"

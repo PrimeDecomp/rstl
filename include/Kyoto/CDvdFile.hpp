@@ -1,9 +1,10 @@
 #ifndef _CDVDFILE
 #define _CDVDFILE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CDvdRequest.hpp"
-#include "types.h"
+#include "rstl/types.h"
 #include <stdint.h>
 
 #include "rstl/auto_ptr.hpp"

@@ -1,7 +1,8 @@
 #ifndef _CINPUTFILTER
 #define _CINPUTFILTER
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "rstl/reserved_vector.hpp"
 

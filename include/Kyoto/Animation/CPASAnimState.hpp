@@ -1,10 +1,11 @@
 #ifndef _CPASANIMSTATE
 #define _CPASANIMSTATE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/CRandom16.hpp"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CPASAnimInfo.hpp"
 #include "Kyoto/Animation/CPASAnimParm.hpp"

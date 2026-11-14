@@ -1,7 +1,8 @@
 #ifndef _CNETWORKMESSAGE
 #define _CNETWORKMESSAGE
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CGuid.hpp"

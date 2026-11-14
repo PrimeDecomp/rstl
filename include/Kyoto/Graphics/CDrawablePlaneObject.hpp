@@ -1,7 +1,8 @@
 #ifndef _CDRAWABLEPLANEOBJECT
 #define _CDRAWABLEPLANEOBJECT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Graphics/CDrawable.hpp"
 #include "Kyoto/Math/CAABox.hpp"

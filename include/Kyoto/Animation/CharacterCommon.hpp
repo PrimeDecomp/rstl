@@ -2,7 +2,7 @@
 #define _CHARACTERCOMMON
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 namespace pas {
 enum ELocomotionType {

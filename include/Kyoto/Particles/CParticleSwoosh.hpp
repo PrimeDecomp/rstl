@@ -1,7 +1,8 @@
 #ifndef _CPARTICLESWOOSH
 #define _CPARTICLESWOOSH
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Graphics/CColor.hpp"

@@ -1,8 +1,9 @@
 #ifndef _CGRAPHICSPALETTE
 #define _CGRAPHICSPALETTE
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "dolphin/gx.h"
 

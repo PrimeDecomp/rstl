@@ -1,7 +1,8 @@
 #ifndef KYOTO_STREAMS_CLOOKAHEADRES_HPP
 #define KYOTO_STREAMS_CLOOKAHEADRES_HPP
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/CDvdRequest.hpp"
 #include "rstl/auto_ptr.hpp"

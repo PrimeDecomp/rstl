@@ -1,7 +1,7 @@
 #ifndef _CRENDERPROFILESCOPE
 #define _CRENDERPROFILESCOPE
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CStopwatch.hpp"

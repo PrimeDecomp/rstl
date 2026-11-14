@@ -1,6 +1,7 @@
 #ifndef _CPRIMITIVE
 #define _CPRIMITIVE
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "rstl/RstlVersions.h"
 

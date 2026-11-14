@@ -1,6 +1,7 @@
 #ifndef _AUDIOEFFECTX
 #define _AUDIOEFFECTX
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/AudioEffect.hpp"
 
 // SDK-correlated extended interface; target-specific slots/signatures differ from newer SDKs.

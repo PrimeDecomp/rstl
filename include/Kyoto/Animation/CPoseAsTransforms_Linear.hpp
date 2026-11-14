@@ -1,7 +1,8 @@
 #ifndef _CPOSEASTRANSFORMS_LINEAR
 #define _CPOSEASTRANSFORMS_LINEAR
 
-#include "types.h"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"

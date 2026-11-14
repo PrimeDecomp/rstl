@@ -1,7 +1,7 @@
 #ifndef _COUTPUTSTREAMVECTOR
 #define _COUTPUTSTREAMVECTOR
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Streams/COutputStream.hpp"
 #include "rstl/vector.hpp"

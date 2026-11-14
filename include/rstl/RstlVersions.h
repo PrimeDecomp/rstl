@@ -548,6 +548,13 @@
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
 #define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_CORRUPTION)
 
+// Expands to `virtual` on the Wii (Trilogy) versions only, for members that became virtual there.
+#if RSTL_VERSION >= RSTL_R32J
+#define RSTL_TRILOGY_VIRTUAL virtual
+#else
+#define RSTL_TRILOGY_VIRTUAL
+#endif
+
 // ============================================================================================
 // Kyoto: top-level files (resources, paks, tokens, object tags, DVD requests)
 // ============================================================================================
@@ -649,6 +656,12 @@
 #define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_CORRUPTION)
 // CAdvancementDeltas defines the translation-only and rotation-only blends.
 #define RSTL_KYOTO_ADVANCEMENT_PARTIAL_BLENDS (RSTL_CORRUPTION)
+// 
+#if RSTL_VERSION < RSTL_GM8P_00
+#define RSTL_KYOTO_ANIMATION_INLINE inline
+#else
+#define RSTL_KYOTO_ANIMATION_INLINE
+#endif
 
 // ============================================================================================
 // Kyoto/Audio
@@ -810,6 +823,11 @@
 // CTri declares a copy constructor defined out of line.
 #define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_CORRUPTION)
 
+#if RSTL_CORRUPTION
+#undef FLT_MAX
+#define FLT_MAX (*(float*)__float_max)
+#endif
+
 // ============================================================================================
 // Kyoto/Particles
 // ============================================================================================
@@ -867,6 +885,7 @@
 // CLineInstruction declares its destructor explicitly, giving the virtual order from R32J on.
 #define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 
+#include "rstl/macros.hpp"
 #include "Kyoto/Platform.h"
 
 #endif // _RSTL_VERSIONS_H

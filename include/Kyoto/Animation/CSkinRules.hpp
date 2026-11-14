@@ -1,5 +1,6 @@
 #ifndef _CSKINRULES
 #define _CSKINRULES
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/CVirtualBone.hpp"

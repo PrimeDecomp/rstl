@@ -1,12 +1,13 @@
 #ifndef _CGRAPHICS
 #define _CGRAPHICS
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #if RSTL_PRIME1
 #include "GameVersions.h"
 #endif
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/CTimeProvider.hpp"
 #include "Kyoto/Graphics/CColor.hpp"

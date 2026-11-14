@@ -1,7 +1,7 @@
 #ifndef _CBBASUPPORT
 #define _CBBASUPPORT
 
-#include "types.h"
+#include "rstl/types.h"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CGuid.hpp"

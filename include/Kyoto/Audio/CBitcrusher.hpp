@@ -1,6 +1,7 @@
 #ifndef _CBITCRUSHER
 #define _CBITCRUSHER
 
+#include "rstl/static_assert.hpp"
 #include "Kyoto/Audio/AudioEffectX.hpp"
 
 // Guessed name, supported by the native program name and quantization parameters.

@@ -1,5 +1,6 @@
 #ifndef _CMETAANIMPHASEBLEND
 #define _CMETAANIMPHASEBLEND
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Animation/IMetaAnim.hpp"

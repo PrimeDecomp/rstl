@@ -1,5 +1,6 @@
 #ifndef _CEFFECTCOMPONENT
 #define _CEFFECTCOMPONENT
+#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "Kyoto/Particles/CParticleData.hpp"
