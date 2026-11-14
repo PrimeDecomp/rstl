@@ -649,6 +649,12 @@
 #define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_CORRUPTION)
 // CAdvancementDeltas defines the translation-only and rotation-only blends.
 #define RSTL_KYOTO_ADVANCEMENT_PARTIAL_BLENDS (RSTL_CORRUPTION)
+// 
+#if RSTL_VERSION < RSTL_GM8P_00
+#define RSTL_KYOTO_ANIMATION_INLINE inline
+#else
+#define RSTL_KYOTO_ANIMATION_INLINE
+#endif
 
 // ============================================================================================
 // Kyoto/Audio
@@ -867,14 +873,7 @@
 // CLineInstruction declares its destructor explicitly, giving the virtual order from R32J on.
 #define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 
-#if VERSION < VERSION_GM8P_00
-#define NTSC_INLINE inline
-#else
-#define NTSC_INLINE
-#endif
-
 #include "rstl/macros.hpp"
-#include "GameVersions.h"
 #include "Kyoto/Platform.h"
 
 #endif // _RSTL_VERSIONS_H
