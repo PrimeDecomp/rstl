@@ -26,6 +26,8 @@
 #include <string.h>
 
 #if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
+enum { kNumSmallAllocEntries = RSTL_KYOTO_ALLOCATOR_SMALL_POOL_ENTRIES };
+
 /* Here just to make sure the data section matches */
 #if RSTL_KYOTO_DEBUG_BUILD
 static const char* const string_NULL = "<NULL>";
@@ -34,7 +36,11 @@ static const char* string_NULL = "<NULL>";
 #endif
 static const char* string_SOURCE_MODULE_UNLOADED = "<SOURCE MODULE UNLOADED>";
 static const char* string_ = "";
+#if RSTL_KYOTO_DEBUG_BUILD
+uint gAllocationTicks = 0; // Guessed name
+#else
 static int gAllocatorTime = 0;
+#endif
 #if RSTL_KYOTO_DEBUG_BUILD
 static const uchar kPostGuard[] = {
     0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef,
@@ -134,8 +140,12 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   mPhysicalAddr = reinterpret_cast< void* >(
       reinterpret_cast< intptr_t >(mFirst) -
       (reinterpret_cast< uintptr_t >(mFirst) & kAllocatorPointerTopNybbleMask));
+#if RSTL_KYOTO_DEBUG_BUILD
+  rs_debugger_printf("TotalMem:%d\tHead:0x%08lx\tArenaLow:0x%08lx.\n", mHeapSize, mFirst,
+                     OSGetArenaLo());
+#else
   OSGetArenaLo();
-#if !RSTL_KYOTO_PROTO_SOURCE_FORMS
+#endif
   mLast = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< uintptr_t >(mFirst) + mHeapSize -
                                             sizeof(SGameMemInfo));
 
@@ -144,13 +154,6 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   const SGameMemInfo& head = SGameMemInfo(
       nullptr, headNext, headNext, mHeapSize - sizeof(SGameMemInfo) * 2, "MemHead", "MemHead");
   *headDest = head;
-#else
-  mLast = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< char* >(mFirst - 1) + mHeapSize);
-
-  const SGameMemInfo& head = SGameMemInfo(
-      nullptr, mLast, mLast, mHeapSize - sizeof(SGameMemInfo) * 2, "MemHead", "MemHead");
-  *mFirst = head;
-#endif
   const SGameMemInfo& tail = SGameMemInfo(mFirst, nullptr, nullptr, 0, "MemTail", "MemTail");
   *mLast = tail;
   for (uint i = 0; i < 16; i++) {
@@ -165,7 +168,7 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   mFreeHeapBytes = mHeapSize;
   mPeakHeapAllocations = 0;
   mPeakAllocatedHeapBytes = 0;
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET && !RSTL_KYOTO_PROTO_SOURCE_FORMS
+#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
   mPeriodicPeakAllocatedHeapBytes = 0;
 #endif
   mMinAllocationSize = 0;
@@ -174,37 +177,28 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   mSmallHeapAllocations = 0;
   mInitialized = 1;
 
-  mSmallAllocMainData = Alloc(0xb0000, kHI_None, kSC_Unk1, kTP_Heap,
-                              CCallStack(0xffffffff, "SmallAllocMainData   ", " - Ignore"));
+  mSmallAllocMainData = Alloc(kNumSmallAllocEntries * 4, kHI_None, kSC_Unk1, kTP_Heap,
+                              CCallStack(-1, "SmallAllocMainData   ", " - Ignore"));
 
-  mSmallAllocBookKeeping = Alloc(0x16000, kHI_None, kSC_Unk1, kTP_Heap,
-                                 CCallStack(0xffffffff, "SmallAllocBookKeeping", " - Ignore"));
+  mSmallAllocBookKeeping = Alloc(kNumSmallAllocEntries / 2, kHI_None, kSC_Unk1, kTP_Heap,
+                                 CCallStack(-1, "SmallAllocBookKeeping", " - Ignore"));
 
   mSmallAllocPool = new (Alloc(0x20, kHI_None, kSC_Unk1, kTP_Heap,
-                               CCallStack(0xffffffff, "SmallAllocClass      ", " - Ignore")))
-      CSmallAllocPool(0x2c000, mSmallAllocMainData, mSmallAllocBookKeeping);
+                               CCallStack(-1, "SmallAllocClass      ", " - Ignore")))
+      CSmallAllocPool(kNumSmallAllocEntries, mSmallAllocMainData, mSmallAllocBookKeeping);
 
   mMediumPool =
       new (Alloc(0x1c, kHI_None, kSC_Unk1, kTP_Heap,
-                 CCallStack(0xffffffff, "MediumAllocClass      ", " - Ignore"))) CMediumAllocPool();
+                 CCallStack(-1, "MediumAllocClass      ", " - Ignore"))) CMediumAllocPool();
 
-#if !RSTL_KYOTO_PROTO_SOURCE_FORMS
   const char* line = "MediumAllocMainData   ";
   enum EMediumPoolSize { kMPS_MainDataSize = 0x20000 };
   EMediumPoolSize mediumSize = kMPS_MainDataSize;
   mInitialMediumPoolData =
       Alloc(mediumSize + CMediumAllocPool::GetBookKeepingMemoryRequired(0x1000), kHI_None, kSC_Unk1,
-            kTP_Heap, CCallStack(0xffffffff, line, " - Ignore"));
+            kTP_Heap, CCallStack(-1, line, " - Ignore"));
   mCurrentHeapAllocations -= 4;
-  mSmallPoolReservedBytes = 0xc6000;
-#else
-  uint mediumSize = CMediumAllocPool::GetAllocMemoryRequired(0x1000);
-  mediumSize += CMediumAllocPool::GetBookKeepingMemoryRequired(0x1000);
-  mInitialMediumPoolData = Alloc(mediumSize, kHI_None, kSC_Unk1, kTP_Heap,
-                                 CCallStack(0xffffffff, "MediumAllocMainData   ", " - Ignore"));
-  mSmallPoolReservedBytes = 0xc6000;
-  mCurrentHeapAllocations -= 4;
-#endif
+  mSmallPoolReservedBytes = kNumSmallAllocEntries * 4 + kNumSmallAllocEntries / 2;
   return true;
 }
 
@@ -249,9 +243,25 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
     }
 
     if (buf != nullptr) {
+#if RSTL_KYOTO_DEBUG_BUILD
+      gAllocationTicks += OSGetTick() - startTick;
+#else
       gAllocatorTime += (OSGetTick() - startTick);
+#endif
       return buf;
     }
+#if RSTL_KYOTO_DEBUG_BUILD
+    if (!mSmallAllocFailed) {
+      rs_debugger_printf("**************************************************\n");
+      rs_debugger_printf("************** Performance warning! **************\n");
+      rs_debugger_printf("*************** SmallAlloc Failed! ***************\n");
+      rs_debugger_printf("Num Entries:%d\tNumAllocs:%d\tNumFreeBlocks:%d\n",
+                         mSmallAllocPool->GetTotalEntries(), mSmallAllocPool->GetNumAllocs(),
+                         mSmallAllocPool->GetNumBlocksAvailable());
+      rs_debugger_printf("Try increasing 'kNumSmallAllocEntries' in CGameAllocator.cpp.\n");
+      rs_debugger_printf("**************************************************\n");
+    }
+#endif
     mSmallAllocRetryDelay = 25;
     mSmallAllocFailed = true;
   }
@@ -282,15 +292,30 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
     }
 
     if (buf != nullptr) {
+#if RSTL_KYOTO_DEBUG_BUILD
+      gAllocationTicks += OSGetTick() - startTick;
+#else
       gAllocatorTime += OSGetTick() - startTick;
+#endif
       return buf;
     }
 
 #if RSTL_KYOTO_ALLOCATOR_DEBUG_QUERIES
     if (!mMediumAllocFailed) {
+#if RSTL_KYOTO_DEBUG_BUILD
+      rs_debugger_printf("**************************************************\n");
+      rs_debugger_printf("************** Performance warning! **************\n");
+      rs_debugger_printf("*************** MediumAlloc Failed! ***************\n");
+      rs_debugger_printf("Num Entries:%d\tNumAllocs:%d\tNumFreeBlocks:%d\n",
+                         mMediumPool->GetTotalEntries(), mMediumPool->GetNumAllocs(),
+                         mMediumPool->GetNumBlocksAvailable());
+      rs_debugger_printf("No 64K blocks available.\n");
+      rs_debugger_printf("**************************************************\n");
+#else
       mMediumPool->GetTotalEntries();
       mMediumPool->GetNumAllocs();
       mMediumPool->GetNumBlocksAvailable();
+#endif
     }
 #endif
     mMediumAllocFailed = true;
@@ -307,8 +332,16 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
   }
 
   if (info == nullptr) {
+#if RSTL_KYOTO_DEBUG_BUILD
+    rs_debugger_printf("+++++++++ Alloc Failed! ++++++++++++++\n");
+    rs_debugger_printf("size:%d\tRealAlloced:%d\tFree:%d\tNumAllocs:%d\n", size,
+                       mAllocatedHeapBytes, mFreeHeapBytes, mCurrentHeapAllocations);
+#endif
     void* mediumBuf = nullptr;
     if (mOomCallback) {
+#if RSTL_KYOTO_DEBUG_BUILD
+      rs_debugger_printf("+++++++++ Trying emergency callback ++++++++\n");
+#endif
       mOomCallback(mOomTarget, size);
 
       static bool bTriedCallback = false;
@@ -321,7 +354,13 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
       }
     }
     if (mediumBuf == nullptr) {
-#if RSTL_KYOTO_ALLOCATOR_DEBUG_QUERIES
+#if RSTL_KYOTO_DEBUG_BUILD
+      rs_debugger_printf("**************************************************\n");
+      rs_debugger_printf("***************** Alloc Failed! ******************\n");
+      rs_debugger_printf("size:%d\tRealAlloced:%d\tFree:%d\tNumAllocs:%d\n", size,
+                         mAllocatedHeapBytes, mFreeHeapBytes, mCurrentHeapAllocations);
+      rs_debugger_printf("%s\t%s\n", callstack.GetFileAndLineText(), callstack.GetTypeText());
+#elif RSTL_KYOTO_ALLOCATOR_DEBUG_QUERIES
       (void)callstack.GetFileAndLineText();
       (void)callstack.GetTypeText();
 #endif
@@ -337,7 +376,11 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
   }
 
   UpdateAllocDebugStats(size, roundedSize, tmp);
+#if RSTL_KYOTO_DEBUG_BUILD
+  gAllocationTicks += OSGetTick() - startTick;
+#else
   gAllocatorTime += OSGetTick() - startTick;
+#endif
   return ++info;
 }
 
@@ -398,12 +441,8 @@ uint CGameAllocator::FixupAllocPtrs(SGameMemInfo* info, const uint len, uint rou
 
   const bool topOfHeap = (hint & kHI_TopOfHeap) != 0;
   uint ret = 0;
-#if !RSTL_KYOTO_PROTO_SOURCE_FORMS
   const SGameMemInfo* initialInfo = info;
   const size_t blockLength = initialInfo->GetLength();
-#else
-  const size_t blockLength = info->mSize;
-#endif
   if (blockLength == roundedLen + sizeof(SGameMemInfo)) {
     ret = sizeof(SGameMemInfo);
     roundedLen += sizeof(SGameMemInfo);
@@ -423,7 +462,6 @@ uint CGameAllocator::FixupAllocPtrs(SGameMemInfo* info, const uint len, uint rou
       AddFreeEntryToFreeList(info);
       newPtr = newInfo;
     } else {
-#if !RSTL_KYOTO_PROTO_SOURCE_FORMS
       newInfo = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< uintptr_t >(info) + roundedLen +
                                                   sizeof(SGameMemInfo));
       SGameMemInfo* nextFree = info->mNextFree;
@@ -431,13 +469,6 @@ uint CGameAllocator::FixupAllocPtrs(SGameMemInfo* info, const uint len, uint rou
                                                    ~(kAllocatorPointerBits - 1));
       const SGameMemInfo& block = SGameMemInfo(
           info, infoNext, nextFree, info->mSize - roundedLen - sizeof(SGameMemInfo), "", "");
-#else
-      uint offset = roundedLen + sizeof(SGameMemInfo);
-      newInfo = reinterpret_cast< SGameMemInfo* >(reinterpret_cast< char* >(info) + offset);
-      const SGameMemInfo& block =
-          SGameMemInfo(info, infoNext, info->GetNextFree(),
-                       info->mSize - roundedLen - sizeof(SGameMemInfo), "", "");
-#endif
       *newInfo = block;
       AddFreeEntryToFreeList(newInfo);
     }
@@ -455,6 +486,11 @@ uint CGameAllocator::FixupAllocPtrs(SGameMemInfo* info, const uint len, uint rou
   newPtr->SetTopOfHeapAllocated(topOfHeap);
   newPtr->SetAllocated(true);
   newPtr->mSize = len;
+#if RSTL_KYOTO_DEBUG_BUILD
+  char* data = reinterpret_cast< char* >(newPtr + 1);
+  memset(data, 0xcd, len);
+  memset(data + len, 0xef, roundedLen - len);
+#endif
   return ret;
 }
 
@@ -1317,13 +1353,22 @@ void CGameAllocator::DumpAllocations() const {
 static inline bool DoWait(int v) { return (v % 4) == 0; }
 
 void CGameAllocator::DumpAllocations() const {
-#if RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK
+#if RSTL_KYOTO_DEBUG_BUILD
+  rs_debugger_printf("\nMemDump\n");
+  rs_debugger_printf("\nMemDump\nLargest Free Chunk:%d\n", GetLargestFreeChunk());
+#elif RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK
   GetLargestFreeChunk();
 #endif
   uint i = 0;
   SGameMemInfo* iter = mFirst;
 
   while (iter != nullptr) {
+#if RSTL_KYOTO_DEBUG_BUILD
+    rs_debugger_printf("%s:0x%08lx\tSize:%08d\tPrev:0x%08lx\tNext:0x%08lx\tNextFree:0x%08lx\t%s\t%s\n",
+                       iter->IsAllocated() ? "Alloced" : "Free   ", iter, iter->mSize,
+                       iter->GetPrev(), iter->GetNext(), iter->GetNextFree(),
+                       iter->mFileAndLine ? iter->mFileAndLine : "?", iter->mType ? iter->mType : "?");
+#endif
     ++i;
 
     if (DoWait(i)) {
@@ -1331,6 +1376,9 @@ void CGameAllocator::DumpAllocations() const {
     }
     iter = iter->GetNext();
   }
+#if RSTL_KYOTO_DEBUG_BUILD
+  rs_debugger_printf("%d:Entries\n", i);
+#endif
 }
 
 #if RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK
