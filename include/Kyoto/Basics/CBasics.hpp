@@ -4,6 +4,7 @@
 #include "rstl/types.h"
 
 #include "rstl/RstlVersions.h"
+#include "Kyoto/ByteOrder.hpp"
 
 #include <stdarg.h>
 

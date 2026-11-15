@@ -1,7 +1,9 @@
 #ifndef _CSTRINGTABLE
 #define _CSTRINGTABLE
+
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "Kyoto/ByteOrder.hpp"
 #if RSTL_PRIME1
 #include "stdint.h"
 #endif
