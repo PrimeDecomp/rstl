@@ -760,6 +760,8 @@
 #define RSTL_KYOTO_PALETTE_GPU_MEMORY (RSTL_CORRUPTION)
 // GPUMemory::EnsureAllocation marks itself allocating once it has the memory.
 #define RSTL_KYOTO_GPU_MEMORY_LATE_ALLOCATION_FLAG (RSTL_CORRUPTION)
+// GPUMemory tracks central 64-bit draw-sync tokens and peak buffer usage.
+#define RSTL_KYOTO_GPU_MEMORY_EXTENDED_TOKENS (RSTL_VERSION == RSTL_G2MEAB)
 // CTexture can cap a texture's size as it loads and records the mip bytes it skips.
 #define RSTL_KYOTO_TEXTURE_SECONDARY_MEMORY (RSTL_CORRUPTION)
 // The ordinary spare-texture loader takes a min/mag filter.
