@@ -28,7 +28,6 @@
 #if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 enum { kNumSmallAllocEntries = RSTL_KYOTO_ALLOCATOR_SMALL_POOL_ENTRIES };
 
-/* Here just to make sure the data section matches */
 #if RSTL_KYOTO_DEBUG_BUILD
 static const char* const string_NULL = "<NULL>";
 #else
