@@ -2879,7 +2879,9 @@ void CGraphics::SetProgressiveMode(bool progressive) {
 #endif
 }
 
+#if !RSTL_PRIME1
 int CGraphics::GetScreenBottomMargin() { return Is50Hz() ? 50 : 44; }
+#endif
 
 void CGraphics::BlankScreen() {
   mFirstFrame = false;

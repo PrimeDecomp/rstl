@@ -11,7 +11,7 @@
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/Platform.h"
-
+#include "Kyoto/ByteOrder.hpp"
 #include "dolphin/gx/GXVert.h"
 
 #include "string.h"
