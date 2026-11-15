@@ -9,6 +9,10 @@
 #include "rstl/functional.hpp"
 #include "rstl/iterator.hpp"
 #include "rstl/rmemory_allocator.hpp"
+
+class CInputStream;
+class COutputStream;
+
 namespace rstl {
 template < typename T >
 struct list_insert_param {
@@ -50,6 +54,9 @@ public:
   , mEmpty_prev(reinterpret_cast< node* >(&mEmpty_prev))
   , mEmpty_next(reinterpret_cast< node* >(&mEmpty_prev))
   , mCount(0) {}
+
+  list(CInputStream& in, const Alloc& alloc = Alloc());
+  void PutTo(COutputStream& out) const;
 
   struct destroy_helper {
     destroy_helper(list* l) : mList(l), mActive(true) {}
