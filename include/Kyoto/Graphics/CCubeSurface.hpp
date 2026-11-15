@@ -1,15 +1,14 @@
 #ifndef _CCUBESURFACE
 #define _CCUBESURFACE
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
-
+#include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"
+#include "rstl/static_assert.hpp"
 
 #if defined(TARGET_PC)
-#include "Metaforce/CModelSectionReader.hpp"
+#include "Metaforce/Game/CModelSectionReader.hpp"
 #endif
 
 class CCubeModel;
