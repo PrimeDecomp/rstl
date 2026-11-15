@@ -2,6 +2,7 @@
 #include "Kyoto/Math/CMath.hpp"
 #include "rstl/math.hpp"
 #include "float.h"
+#include "math.h"
 
 const CVector2f CVector2f::skZeroVector = CVector2f(0.f, 0.f);
 
@@ -56,12 +57,16 @@ CVector2f CVector2f::AsNormalized() const {
 }
 
 bool CVector2f::IsNotInf() const {
+#ifdef __MWERKS__
   int x = __HI(mX);
   int y = __HI(mY);
   if ((x & 0x7f800000) == 0x7f800000 || (y & 0x7f800000) == 0x7f800000) {
     return false;
   }
   return true;
+#else
+  return isfinite(mX) && isfinite(mY);
+#endif
 }
 
 bool CVector2f::IsNormalizable() const { return IsNotInf() && MagSquared() >= 9.99999943e-29f; }
