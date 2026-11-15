@@ -1,19 +1,20 @@
 #include "rstl/RstlVersions.h"
-// The prototype's string helpers live in RstlExtras.cpp.
-#if !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS
+#if RSTL_STRING_EXTRAS_PROTO_API
+#define RS_TTOKEN_FILE "TToken.H"
+#endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/math.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #if RSTL_STRING_LIST_FACTORY
-#if RSTL_PRIME1
 #include "Kyoto/CFactoryMgr.hpp"
-#else
-#include "Kyoto/CFactoryMgr.hpp"
-#endif
 #endif
 #include "Kyoto/Streams/CInputStream.hpp"
+#if RSTL_STRING_EXTRAS_PROTO_API
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#endif
 
 #if RSTL_STRING_CREATE_FROM_REAL
 #include <stdio.h>
@@ -92,10 +93,15 @@ int CStringExtras::CompareCaseInsensitive(const rstl::string& left, const rstl::
 rstl::string CStringExtras::ConvertToLowerCase(const rstl::string& str) {
   rstl::string ret(str);
   for (int i = 0; i < ret.length(); ++i) {
+#if RSTL_STRING_EXTRAS_PROTO_API
+    char& c = ret[i];
+    c = ConvertToLowerCase(c);
+#else
     const unsigned char& c = reinterpret_cast< const unsigned char* >(ret.data())[i];
     ret.reserve(ret.length());
     char& out = const_cast< char* >(ret.data())[i];
     out = ConvertToLowerCase(c);
+#endif
   }
   return ret;
 }
@@ -116,7 +122,13 @@ char CStringExtras::ConvertToUpperCase(char c) {
   return c;
 }
 
-int CStringExtras::ConvertToLowerCase(int c) {
+#if RSTL_STRING_EXTRAS_PROTO_API
+typedef char CStringExtrasLowerChar;
+#else
+typedef int CStringExtrasLowerChar;
+#endif
+
+CStringExtrasLowerChar CStringExtras::ConvertToLowerCase(CStringExtrasLowerChar c) {
   const char value = static_cast< char >(c);
   if (value >= CCast::ToChar('A') && value <= CCast::ToChar('Z')) {
     return CCast::ToChar(c + CCast::ToChar(' '));
@@ -131,7 +143,11 @@ rstl::string CStringExtras::CreateFromInteger(int v) {
 #if !RSTL_STRING_EXTRAS_AT_ACCESS
   schar digits[24];
 #else
+#if RSTL_STRING_EXTRAS_PROTO_API
+  char digits[24];
+#else
   signed char digits[24];
+#endif
 #endif
   if (v == 0) {
     return rstl::string_l("0");
@@ -158,17 +174,77 @@ rstl::string CStringExtras::CreateFromInteger(int v) {
 #if RSTL_STRING_CREATE_FROM_REAL
 rstl::string CStringExtras::CreateFromReal(float v, int i) {
   char a[16];
-  char b[136];
+  char b[RSTL_STRING_EXTRAS_PROTO_API ? 128 : 136];
 
+#if RSTL_STRING_EXTRAS_PROTO_API
+  int precision = i > 12 ? 12 : i;
+  precision = precision > 0 ? precision : 0;
+  sprintf(a, "%%.%df", precision);
+#else
   sprintf(b, "%%.%df", (i > 12) ? 12 : i);
+#endif
   sprintf(b, a, v);
   return rstl::string(b);
 }
 #endif
 
+#if RSTL_STRING_EXTRAS_PROTO_API
+float CStringExtras::ConvertToReal(const rstl::string& str) {
+  float result = 0.f;
+  sscanf(TrimString(str).data(), "%f", &result);
+  return result;
+}
+
+int CStringExtras::ConvertToInteger(const rstl::string& str) {
+  rstl::string::const_iterator begin = str.begin();
+  rstl::string::const_iterator end = str.end();
+  while (begin != end && *begin == ' ') {
+    ++begin;
+  }
+  while (end != begin && *(end - 1) == ' ') {
+    end = end - 1;
+  }
+  if (end == begin) {
+    RS_VERIFY_THROW_IN("CStringExtras.cpp", 447, false, kException_NotInt, "kException_NotInt");
+  }
+
+  int result = 0;
+  int scale = 1;
+  do {
+    end -= 1;
+    const char c = *end;
+    if (c >= '0' && c <= '9') {
+      result += scale * (c - '0');
+      scale *= 10;
+    } else if (c == '-' || c == '+') {
+      if (c == '-') {
+        result *= -1;
+      }
+      if (end == begin) {
+        return result;
+      }
+      RS_VERIFY_THROW_IN("CStringExtras.cpp", 482, false, kException_NotInt, "kException_NotInt");
+    } else {
+      RS_VERIFY_THROW_IN("CStringExtras.cpp", 488, false, kException_NotInt, "kException_NotInt");
+    }
+  } while (end != begin);
+  return result;
+}
+
+#endif
+
 rstl::string CStringExtras::ConvertToANSI(const rstl::wstring& str) {
+#if RSTL_STRING_EXTRAS_PROTO_API
+  if (str.length() == 0) {
+    return rstl::string();
+  }
+#endif
   rstl::string ret;
+#if RSTL_STRING_EXTRAS_PROTO_API
+  ret.reserve(str.size());
+#else
   ret.reserve(str.size() + 1);
+#endif
 
   for (int i = 0; i < static_cast< int >(str.size()); ++i) {
 #if !RSTL_STRING_EXTRAS_AT_ACCESS
@@ -191,7 +267,11 @@ rstl::wstring CStringExtras::ConvertToUNICODE(const rstl::string& str) {
 
 #endif
   rstl::wstring ret;
+#if RSTL_STRING_EXTRAS_PROTO_API
+  ret.reserve(str.size());
+#else
   ret.reserve(str.size() + 1);
+#endif
 
   for (int i = 0; i < static_cast< int >(str.size()); ++i) {
     ret.append(1, static_cast< wchar_t >(str.at(i)));
@@ -246,9 +326,52 @@ rstl::vector< rstl::string > CStringExtras::TokenizeString(const rstl::string& s
   return ret;
 }
 
-#if RSTL_STRING_LIST_FACTORY
-CFactoryFnReturn FStringListFactory(const SObjectTag&, CInputStream& in, const CVParamTransfer&) {
-  return rs_new rstl::vector< rstl::string >(in);
+#if RSTL_STRING_EXTRAS_PROTO_API
+rstl::string CStringExtras::TrimString(const rstl::string& str) {
+  rstl::string whitespace = rstl::string_l(" \t\n\r\"");
+  return TrimString(str, whitespace);
+}
+
+rstl::string CStringExtras::TrimString(const rstl::string& str, const rstl::string& chars) {
+  int first = 0;
+  int last = str.length();
+  while (first < last) {
+    if (chars.find(str.at(first)) == -1) {
+      break;
+    }
+    ++first;
+  }
+  while (last > first) {
+    if (chars.find(str.at(last - 1)) == -1) {
+      break;
+    }
+    --last;
+  }
+  return str.substr(first, last - first);
+}
+
+rstl::string CStringExtras::Format(const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  const char* text = CBasics::Stringize(fmt, args);
+  va_end(args);
+  return rstl::string(text);
 }
 #endif
-#endif // !RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS
+
+#if RSTL_STRING_LIST_FACTORY
+CFactoryFnReturn FStringListFactory(const SObjectTag&,
+#if RSTL_STRING_EXTRAS_PROTO_API
+                                  const rstl::auto_ptr< uchar >& buffer, int size,
+#else
+                                  CInputStream& in,
+#endif
+                                  const CVParamTransfer&) {
+#if RSTL_STRING_EXTRAS_PROTO_API
+  CMemoryInStream in(buffer.get(), size);
+  return rs_new_line_in("CStringExtras.cpp", 1141) rstl::vector< rstl::string >(in);
+#else
+  return rs_new rstl::vector< rstl::string >(in);
+#endif
+}
+#endif
