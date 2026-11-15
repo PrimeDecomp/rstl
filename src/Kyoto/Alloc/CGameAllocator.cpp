@@ -36,7 +36,7 @@ static const char* string_NULL = "<NULL>";
 static const char* string_SOURCE_MODULE_UNLOADED = "<SOURCE MODULE UNLOADED>";
 static const char* string_ = "";
 #if RSTL_KYOTO_DEBUG_BUILD
-uint gAllocationTicks = 0; // Guessed name
+uint gAllocatorTime = 0; // Guessed name
 #else
 static int gAllocatorTime = 0;
 #endif
@@ -242,11 +242,7 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
     }
 
     if (buf != nullptr) {
-#if RSTL_KYOTO_DEBUG_BUILD
-      gAllocationTicks += OSGetTick() - startTick;
-#else
-      gAllocatorTime += (OSGetTick() - startTick);
-#endif
+      gAllocatorTime += OSGetTick() - startTick;
       return buf;
     }
 #if RSTL_KYOTO_DEBUG_BUILD
@@ -291,11 +287,7 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
     }
 
     if (buf != nullptr) {
-#if RSTL_KYOTO_DEBUG_BUILD
-      gAllocationTicks += OSGetTick() - startTick;
-#else
       gAllocatorTime += OSGetTick() - startTick;
-#endif
       return buf;
     }
 
@@ -375,11 +367,7 @@ void* CGameAllocator::Alloc(size_t size, const EHint hint, const EScope scope, c
   }
 
   UpdateAllocDebugStats(size, roundedSize, tmp);
-#if RSTL_KYOTO_DEBUG_BUILD
-  gAllocationTicks += OSGetTick() - startTick;
-#else
   gAllocatorTime += OSGetTick() - startTick;
-#endif
   return ++info;
 }
 
