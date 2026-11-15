@@ -625,12 +625,13 @@
 #endif
 // `GetMetrics(bool resetPeriodicPeak, bool resetPeak)` and the periodic peak in `SMetrics`.
 #define RSTL_KYOTO_ALLOCATOR_METRICS_RESET (!RSTL_PRIME1)
+#define RSTL_KYOTO_ALLOCATOR_SMALL_POOL_ENTRIES (RSTL_KYOTO_DEBUG_BUILD ? 0x36000 : 0x2c000)
 // `SMetrics` declares a copy constructor.
 #define RSTL_KYOTO_METRICS_COPY_CTOR (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // CGameAllocator::Alloc queries pool statistics and call-stack text whose results are unused.
 #define RSTL_KYOTO_ALLOCATOR_DEBUG_QUERIES (RSTL_PRIME1 || RSTL_CORRUPTION)
 // CGameAllocator::DumpAllocations calls the unit's `GetLargestFreeChunk`.
-#define RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK RSTL_PRIME1
+#define RSTL_KYOTO_ALLOCATOR_LARGEST_FREE_CHUNK (RSTL_PRIME1 || RSTL_KYOTO_DEBUG_BUILD)
 // Wii's small pool records the last allocation size and returns a block count from Free.
 #define RSTL_KYOTO_SMALL_ALLOC_POOL_BLOCK_COUNTS (RSTL_VERSION >= RSTL_RM3E)
 // Plain `new` / `new[]` are inline wrappers passing "??(??)" to the source-position operator new.
