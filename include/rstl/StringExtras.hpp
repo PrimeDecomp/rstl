@@ -26,6 +26,8 @@ public:
   static rstl::string CreateFromReal(float v, int precision);
   static int ConvertToInteger(const rstl::string& str);  // Guessed name
   static float ConvertToReal(const rstl::string& str);   // Guessed name
+  static rstl::string TrimString(const rstl::string& str); // Guessed name
+  static rstl::string TrimString(const rstl::string& str, const rstl::string& chars); // Guessed name
 #elif RSTL_STRING_CREATE_FROM_REAL
   static rstl::string CreateFromReal(float v, int i);
 #endif
@@ -35,5 +37,19 @@ public:
   static rstl::string Format(const char* fmt, ...);  // Guessed name
   static rstl::vector< rstl::string > TokenizeString(const rstl::string&, const char*, int);
 };
+
+#if RSTL_STRING_EXTRAS_PROTO_API
+class CFactoryFnReturn;
+class CVParamTransfer;
+class SObjectTag;
+namespace rstl {
+template < typename T >
+class auto_ptr;
+}
+
+// Guessed name
+CFactoryFnReturn FStringListFactory(const SObjectTag&, const rstl::auto_ptr< uchar >&, int,
+                                  const CVParamTransfer&);
+#endif
 
 #endif // _RSTL_STRINGEXTRAS

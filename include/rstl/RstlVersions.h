@@ -505,11 +505,9 @@
 // `ConvertToUNICODE` returns early for an empty string.
 #define RSTL_UNICODE_EMPTY_EARLY_RETURN (RSTL_VERSION >= RSTL_P2ME)
 // `CStringExtras::CreateFromReal` exists.
-#define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_P2ME)
-// The prototype's API: `ConvertToLowerCase(char)`, `ConvertToInteger`, `ConvertToReal`, `Format`.
+#define RSTL_STRING_CREATE_FROM_REAL (RSTL_VERSION < RSTL_P2ME || RSTL_CORRUPTION)
+// The prototype's API: narrow-char lowercase, numeric parsing, trimming and formatting.
 #define RSTL_STRING_EXTRAS_PROTO_API (RSTL_CORRUPTION)
-// The code lives in RstlExtras.cpp (CStringExtras.cpp is empty).
-#define RSTL_STRING_EXTRAS_IN_RSTL_EXTRAS (RSTL_CORRUPTION)
 
 // ============================================================================================
 // Kyoto: across folders
