@@ -29,7 +29,7 @@
 #include "dolphin/types.h"
 
 #if defined(TARGET_PC)
-#include "Metaforce/CModelSectionReader.hpp"
+#include "Metaforce/Game/CModelSectionReader.hpp"
 #include <borealis/log.hpp>
 #include <limits>
 
