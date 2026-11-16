@@ -219,6 +219,8 @@
 // `advance_iterator` is `inline`.
 #define RSTL_INLINE_ADVANCE_ITERATOR                                                            \
   (RSTL_VERSION >= RSTL_P2ME && (!RSTL_CORRUPTION || RSTL_VERSION == RSTL_G2MEAB))
+// Mutable pointer iterators increment their stored pointer with `+= 1`.
+#define RSTL_POINTER_ITERATOR_COMPOUND_INCREMENT (RSTL_VERSION >= RSTL_GM8P_00)
 // `pointer_iterator` `operator+` / `operator-` copy the iterator and use `+=` / `-=`.
 #define RSTL_POINTER_ITERATOR_COPY_ARITHMETIC (RSTL_VERSION >= RSTL_R3ME_00)
 // `const_linear_iterator` builds `+`/`-` results directly, and `operator-` returns `long`.
