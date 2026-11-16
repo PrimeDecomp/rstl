@@ -77,7 +77,11 @@ public:
   // TODO map says const, but breaks CScriptMazeNode::GenerateObjects
   T* operator->() { return this->current; }
   pointer_iterator& operator++() {
+#if RSTL_POINTER_ITERATOR_COMPOUND_INCREMENT
+    this->current += 1;
+#else
     ++this->current;
+#endif
     return *this;
   }
   pointer_iterator operator++(int) { return pointer_iterator(this->current++); }
