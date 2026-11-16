@@ -752,6 +752,11 @@
 // Corruption's CGX: extended GX state, out-of-line helpers, GXBool z mode, apply_fog in the
 // header and its own function order.
 #define RSTL_KYOTO_CGX_CORRUPTION (RSTL_CORRUPTION)
+// CGX_Impl.hpp gives its includers inline TEV, channel, alpha-compare and texture-coordinate
+// setters. From PAL Prime on they are defined only in CGX.cpp, so callers no longer inline them.
+#define RSTL_KYOTO_CGX_INLINE_SETTERS (RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00)
+// CGX::ResetGXStates sets the XF flush delay and the dither mode (of Prime, only GM8J01_00).
+#define RSTL_KYOTO_CGX_RESET_MISC (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8J_00)
 // CGX keeps its state behind the `.sdata` pointer `CGX::gpGXState`.
 #define RSTL_CGX_STATE_POINTER RSTL_ECHOES_GC
 // Corruption's CLight: processed color, no hard-light helpers, and its own function order.

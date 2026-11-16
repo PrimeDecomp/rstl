@@ -7,24 +7,31 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "dolphin/gx.h"
-#endif
 #include "Kyoto/Platform.h"
 
 // TODO: figure out why MSVC doesn't like this
 #if !defined(TARGET_PC) || defined(CGX_CPP) || CLANGD
 
+// CGX.cpp defines CGX_INLINE empty and includes this file to define these functions out of line.
+// Other includers get inline definitions of the rest: the setters only where
+// RSTL_KYOTO_CGX_INLINE_SETTERS, and CGX_IMPL_PRIME's only in Prime.
 #ifndef CGX_INLINE
 #define CGX_INLINE inline
-#if RSTL_PRIME1
-#define CGX_INLINE_HEADER
-#endif
 #endif
 
-// Setters wrapped in "!defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00" are only
-// defined in CGX.cpp from PAL on, so callers no longer inline them.
+#if defined(CGX_CPP) || RSTL_KYOTO_CGX_INLINE_SETTERS
+#define CGX_IMPL_SETTERS 1
+#else
+#define CGX_IMPL_SETTERS 0
+#endif
+
+#if defined(CGX_CPP) || RSTL_PRIME1
+#define CGX_IMPL_PRIME 1
+#else
+#define CGX_IMPL_PRIME 0
+#endif
 
 CGX_INLINE void CGX::SetNumChans(uchar num) {
   CGX_STATE.mNumChans = num;
@@ -34,7 +41,6 @@ CGX_INLINE void CGX::SetNumChans(uchar num) {
 CGX_INLINE void CGX::SetNumTexGens(uchar num) {
   if (num != CGX_STATE.mNumTexGens) {
     CGX_STATE.mNumTexGens = num;
-
     GXSetNumTexGens(num);
   }
 }
@@ -42,7 +48,6 @@ CGX_INLINE void CGX::SetNumTexGens(uchar num) {
 CGX_INLINE void CGX::SetChanAmbColor(EChannelId channel, const GXColor& color) {
   if (!CompareGXColors(color, CGX_STATE.mChanAmbColors[channel])) {
     CopyGXColor(CGX_STATE.mChanAmbColors[channel], color);
-
     GXSetChanAmbColor(static_cast< GXChannelID >(GX_COLOR0A0 + channel), color);
   }
 }
@@ -50,19 +55,16 @@ CGX_INLINE void CGX::SetChanAmbColor(EChannelId channel, const GXColor& color) {
 CGX_INLINE GXColor CGX::GetChanAmbColor(EChannelId channel) {
   const GXColor color = CGX_STATE.mChanAmbColors[channel];
   return color;
-
 }
 
 CGX_INLINE void CGX::SetChanMatColor(EChannelId channel, const GXColor& color) {
   if (!CompareGXColors(color, CGX_STATE.mChanMatColors[channel])) {
     CopyGXColor(CGX_STATE.mChanMatColors[channel], color);
-
     GXSetChanMatColor(static_cast< GXChannelID >(GX_COLOR0A0 + channel), color);
   }
 }
 
-#if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+#if CGX_IMPL_SETTERS
 CGX_INLINE void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc ambSrc,
                                  GXColorSrc matSrc, GXLightID lights, GXDiffuseFn diffFn,
                                  GXAttnFn attnFn) {
@@ -78,9 +80,7 @@ CGX_INLINE void CGX::SetChanCtrl(EChannelId channel, GXBool enable, GXColorSrc a
   CGX_STATE.mChanFlags =
       ((flags != prevFlags) << (channel + 1)) | (CGX_STATE.mChanFlags & ~(1 << (channel + 1)));
 }
-#endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetChanCtrl_Compressed(EChannelId channel, GXLightID lights, uint ctrl) {
   ushort& state = CGX_STATE.mChanCtrls[channel];
   ushort prevFlags = CGX_STATE.mPrevChanCtrls[channel];
@@ -90,12 +90,10 @@ CGX_INLINE void CGX::SetChanCtrl_Compressed(EChannelId channel, GXLightID lights
       ((flags != prevFlags) << (channel + 1)) | (CGX_STATE.mChanFlags & ~(1 << (channel + 1)));
 }
 #endif
-#endif
 
 CGX_INLINE void CGX::SetNumTevStages(uchar num) {
   if (CGX_STATE.mNumTevStages != num) {
     CGX_STATE.mNumTevStages = num;
-
     GXSetNumTevStages(num);
   }
 }
@@ -103,21 +101,39 @@ CGX_INLINE void CGX::SetNumTevStages(uchar num) {
 CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
   if (!CompareGXColors(CGX_STATE.mKColors[id], color)) {
     CopyGXColor(CGX_STATE.mKColors[id], color);
-
     GXSetTevKColor(id, color);
   }
 }
 
-CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
+inline void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
   if (!(*reinterpret_cast< const CColor* >(&CGX_STATE.mKColors[id]) == color)) {
     CopyGXColor(CGX_STATE.mKColors[id], color.GetGXColor());
-
     GXSetTevKColor(id, color.GetGXColor());
   }
 }
 
-#if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+#if RSTL_KYOTO_CGX_CORRUPTION
+CGX_INLINE void CGX::SetTevSwapMode(GXTevStageID stage, GXTevSwapSel rasSel, GXTevSwapSel texSel) {
+  STevState& state = CGX_STATE.mTevStates[stage];
+  const uchar flags = rasSel | (texSel << 2);
+  if (flags != state.mSwapMode) {
+    GXSetTevSwapMode(stage, rasSel, texSel);
+    state.mSwapMode = flags;
+  }
+}
+
+CGX_INLINE void CGX::SetTevSwapModeTable(GXTevSwapSel table, GXTevColorChan red,
+                                         GXTevColorChan green, GXTevColorChan blue,
+                                         GXTevColorChan alpha) {
+  const uchar flags = red | (green << 2) | (blue << 4) | (alpha << 6);
+  if (flags != CGX_STATE.mTevSwapTables[table]) {
+    GXSetTevSwapModeTable(table, red, green, blue, alpha);
+    CGX_STATE.mTevSwapTables[table] = flags;
+  }
+}
+#endif
+
+#if CGX_IMPL_SETTERS
 CGX_INLINE void CGX::SetTevColorIn(GXTevStageID stageId, GXTevColorArg a, GXTevColorArg b,
                                    GXTevColorArg c, GXTevColorArg d) {
   const uint flags = (a & 0x1F) | ((b & 0x1F) << 5) | ((c & 0x1F) << 10) | ((d & 0x1F) << 15);
@@ -160,9 +176,7 @@ CGX_INLINE void CGX::SetTevAlphaIn_Compressed(GXTevStageID stageId, uint flags) 
                     static_cast< GXTevAlphaArg >(ShiftRightAndMask(flags, 0x1F, 15)));
   }
 }
-#endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTevColorOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias,
                                    GXTevScale scale, GXBool clamp, GXTevRegID outReg) {
   const uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
@@ -176,6 +190,7 @@ CGX_INLINE void CGX::SetTevColorOp(GXTevStageID stageId, GXTevOp op, GXTevBias b
 }
 #endif
 
+#if CGX_IMPL_PRIME
 CGX_INLINE void CGX::SetTevColorOp_Compressed(GXTevStageID stageId, uint flags) {
   STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mColorOps) {
@@ -187,8 +202,9 @@ CGX_INLINE void CGX::SetTevColorOp_Compressed(GXTevStageID stageId, uint flags) 
                     static_cast< GXTevRegID >(ShiftRightAndMask(flags, 3, 9)));
   }
 }
+#endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+#if CGX_IMPL_SETTERS
 CGX_INLINE void CGX::SetTevAlphaOp(GXTevStageID stageId, GXTevOp op, GXTevBias bias,
                                    GXTevScale scale, GXBool clamp, GXTevRegID outReg) {
   uint flags = MaskAndShiftLeft(op, 0xF, 0) | MaskAndShiftLeft(bias, 3, 4) |
@@ -202,6 +218,7 @@ CGX_INLINE void CGX::SetTevAlphaOp(GXTevStageID stageId, GXTevOp op, GXTevBias b
 }
 #endif
 
+#if CGX_IMPL_PRIME
 CGX_INLINE void CGX::SetTevAlphaOp_Compressed(GXTevStageID stageId, uint flags) {
   STevState& state = CGX_STATE.mTevStates[stageId];
   if (flags != state.mAlphaOps) {
@@ -217,7 +234,6 @@ CGX_INLINE void CGX::SetTevAlphaOp_Compressed(GXTevStageID stageId, uint flags) 
 
 CGX_INLINE void CGX::SetTevKColorSel(GXTevStageID stageId, GXTevKColorSel sel) {
   STevState& state = CGX_STATE.mTevStates[stageId];
-
   if (sel != state.mKColorSel) {
     state.mKColorSel = sel;
     GXSetTevKColorSel(stageId, sel);
@@ -226,7 +242,6 @@ CGX_INLINE void CGX::SetTevKColorSel(GXTevStageID stageId, GXTevKColorSel sel) {
 
 CGX_INLINE void CGX::SetTevKAlphaSel(GXTevStageID stageId, GXTevKAlphaSel sel) {
   STevState& state = CGX_STATE.mTevStates[stageId];
-
   if (sel != state.mKAlphaSel) {
     state.mKAlphaSel = sel;
     GXSetTevKAlphaSel(stageId, sel);
@@ -237,7 +252,6 @@ CGX_INLINE void CGX::SetTevOrder(GXTevStageID stageId, GXTexCoordID texCoord, GX
                                  GXChannelID color) {
   STevState& state = CGX_STATE.mTevStates[stageId];
   uint flags = (texCoord & 0xFF) | ((texMap & 0xFF) << 8) | ((color & 0xFF) << 16);
-
   if (state.mTevOrderFlags != flags) {
     state.mTevOrderFlags = flags;
     GXSetTevOrder(stageId, texCoord, texMap, color);
@@ -249,28 +263,24 @@ CGX_INLINE void CGX::SetBlendMode(GXBlendMode mode, GXBlendFactor srcFac, GXBlen
   uint flags = MaskAndShiftLeft(mode, 3, 0) | MaskAndShiftLeft(srcFac, 7, 2) |
                MaskAndShiftLeft(dstFac, 7, 5) | MaskAndShiftLeft(op, 0xF, 8);
   if (flags != CGX_STATE.mBlendMode) {
-
     update_fog(flags);
     CGX_STATE.mBlendMode = flags;
-
     GXSetBlendMode(mode, srcFac, dstFac, op);
   }
 }
 
 CGX_INLINE void CGX::SetZMode(const TZModeFlag compareEnable, GXCompare func,
                               const TZModeFlag updateEnable) {
-
   uchar flags = MaskAndShiftLeft(compareEnable, 0xFF, 0) | MaskAndShiftLeft(updateEnable, 0xFF, 1) |
                 MaskAndShiftLeft(func, 0xFF, 2);
   if (flags != CGX_STATE.mZmode) {
     CGX_STATE.mZmode = flags;
-
     GXSetZMode(compareEnable, func, updateEnable);
   }
 }
 
-#if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+// The other games define SetAlphaCompare later in CGX.cpp, with an always-pass fast path.
+#if RSTL_PRIME1 && CGX_IMPL_SETTERS
 CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, GXCompare comp1,
                                      uchar ref1) {
   uint flags = MaskAndShiftLeft(comp0, 7, 0) | MaskAndShiftLeft(ref0, 0xFF, 3) |
@@ -283,9 +293,8 @@ CGX_INLINE void CGX::SetAlphaCompare(GXCompare comp0, uchar ref0, GXAlphaOp op, 
   }
 }
 #endif
-#endif
 
-#if !RSTL_PRIME1 || !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+#if CGX_IMPL_SETTERS || !RSTL_PRIME1
 CGX_INLINE void
 CGX::SetTevIndirect(RSTL_PRIME1_CONST GXTevStageID stageId,
                     RSTL_PRIME1_CONST GXIndTexStageID indStage,
@@ -309,19 +318,21 @@ CGX::SetTevIndirect(RSTL_PRIME1_CONST GXTevStageID stageId,
 
 CGX_INLINE void CGX::SetTevDirect(GXTevStageID stageId) {
   STevState& state = CGX_STATE.mTevStates[stageId];
-
   if (state.mIndFlags != 0) {
     state.mIndFlags = 0;
     GXSetTevDirect(stageId);
   }
 }
 
-#if RSTL_PRIME1
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
+#if CGX_IMPL_SETTERS
 CGX_INLINE void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src,
                                     GXTexMtx mtx, GXBool normalize, GXPTTexMtx postMtx) {
   STexState& state = CGX_STATE.mTexStates[dstCoord];
+#if RSTL_KYOTO_CGX_CORRUPTION
+  uint vm = mtx / 3;
+#else
   uint vm = (mtx - GX_TEXMTX0) / 3;
+#endif
   uint vp = postMtx - GX_PTTEXMTX0;
 #if NONMATCHING
   // Similarly to GXTexMtx, this should also be divided by 3
@@ -334,9 +345,7 @@ CGX_INLINE void CGX::SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTe
     GXSetTexCoordGen2(dstCoord, fn, src, mtx, normalize, postMtx);
   }
 }
-#endif
 
-#if !defined(CGX_INLINE_HEADER) || RSTL_VERSION < RSTL_GM8P_00
 CGX_INLINE void CGX::SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags) {
   STexState& state = CGX_STATE.mTexStates[dstCoord];
   if (state.mCoordGen != flags) {
@@ -349,17 +358,16 @@ CGX_INLINE void CGX::SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags
   }
 }
 #endif
-#endif
 
 CGX_INLINE void CGX::SetNumIndStages(uchar num) {
   if (CGX_STATE.mNumIndStages != num) {
     CGX_STATE.mNumIndStages = num;
-
     GXSetNumIndStages(num);
   }
 }
 
-CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride IF_TARGET_PC(, size_t size, bool le)) {
+CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data,
+                              uchar stride IF_TARGET_PC(, size_t size, bool le)) {
 #if RSTL_PRIME1
   uint idx = attr - GX_VA_POS;
   if (data == nullptr || IF_TARGET_PC_OR(false, CGX_STATE.mArrayPtrs[idx] == data)) {
@@ -370,6 +378,16 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride IF_TAR
   if (data == nullptr) {
     return;
   }
+#if RSTL_KYOTO_CGX_CORRUPTION
+  if (attr >= GX_VA_POS && attr < GX_VA_MAX_ATTR) {
+    uint idx = attr - GX_VA_POS;
+    if (CGX_STATE.mArrayPtrs[idx] == data && CGX_STATE.mArrayStrides[idx] == stride) {
+      return;
+    }
+    CGX_STATE.mArrayPtrs[idx] = data;
+    CGX_STATE.mArrayStrides[idx] = stride;
+  }
+#else
   if (attr >= GX_VA_POS && attr < GX_POS_MTX_ARRAY) {
     uint idx = attr - GX_VA_POS;
     if (IF_TARGET_PC_OR(false, CGX_STATE.mArrayPtrs[idx] == data)) {
@@ -378,26 +396,28 @@ CGX_INLINE void CGX::SetArray(GXAttr attr, const void* data, uchar stride IF_TAR
     CGX_STATE.mArrayPtrs[idx] = data;
   }
 #endif
+#endif
 
 #if defined(TARGET_PC)
   GXSetArray(attr, data, size, stride, le);
 #else
-  GXSetArray(attr, data, stride);
+  GXSetArray(attr, const_cast< void* >(data), stride);
 #endif
 }
 
+// The other games define CallDisplayList later in CGX.cpp, and the prototype Begin and End too.
 #if RSTL_PRIME1
 CGX_INLINE void CGX::CallDisplayList(const void* ptr, size_t size) {
   if (CGX_STATE.mChanFlags != 0) {
     FlushState();
   }
-  GXCallDisplayList(ptr, size);
+  GXCallDisplayList(const_cast< void* >(ptr), size);
 }
 #endif
 
+#if !RSTL_KYOTO_CGX_CORRUPTION
 CGX_INLINE void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
   if (CGX_STATE.mChanFlags != 0) {
-
     FlushState();
   }
   GXBegin(prim, fmt, numVtx);
@@ -405,7 +425,8 @@ CGX_INLINE void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
 
 CGX_INLINE void CGX::End() { GXEnd(); }
 
-CGX_INLINE void CGX::apply_fog() {
+// The prototype defines apply_fog in CGX.hpp.
+inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
            CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
@@ -413,8 +434,9 @@ CGX_INLINE void CGX::apply_fog() {
            (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
                                                                  : CGX_STATE.mFogParams.mFogColor);
 }
+#endif
 
-#if RSTL_PRIME1
+#if CGX_IMPL_PRIME
 CGX_INLINE void CGX::SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
                             const GXColor& color) {
   CGX_STATE.mFogType = type;
@@ -433,8 +455,10 @@ CGX_INLINE void CGX::SetLineWidth(uchar width, GXTexOffset offset) {
     GXSetLineWidth(width, offset);
   }
 }
-#endif // RSTL_PRIME1
+#endif
 
+#undef CGX_IMPL_SETTERS
+#undef CGX_IMPL_PRIME
 
 #endif // !defined(TARGET_PC) || defined(CGX_CPP)
 
