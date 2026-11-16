@@ -1,7 +1,6 @@
 #include "Kyoto/Alloc/Assert.hpp"
 
-// Guessed name. Prints a formatted assertion report and the backtrace to the screen.
-extern "C" void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...);
+#include "Kyoto/Basics/RAssertDolphin.hpp"
 
 // Guessed name for the two local string helpers.
 static inline bool HasText(const char* text) { return text != nullptr && *text != '\0'; }

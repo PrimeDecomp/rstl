@@ -689,12 +689,22 @@
 #define RSTL_KYOTO_CAST_UINT32_INT (RSTL_CORRUPTION)
 // CStopwatch::Wait skips waits at or below FLT_EPSILON.
 #define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
+// The prototype has diagnostic callbacks and a graphics assertion screen.
+#define RSTL_KYOTO_SCREEN_ASSERTIONS (RSTL_VERSION == RSTL_G2MEAB)
+// Select the fatal entry separately from the prototype's debug-print API.
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#define RSTL_KYOTO_FATAL_PRINTF_NAME RAssert_PrintFatalMessage
+#else
+#define RSTL_KYOTO_FATAL_PRINTF_NAME rs_debugger_printf
+#endif
 // Stringize uses `vsnprintf` instead of `vsprintf`.
 #define RSTL_KYOTO_STRINGIZE_VSNPRINTF (!RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ)
 // Stringize has a `va_list` overload.
 #define RSTL_KYOTO_STRINGIZE_VA_LIST (RSTL_VERSION >= RSTL_G2MEAB)
 // The variadic Stringize delegates to the `va_list` overload.
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_CORRUPTION)
+// Address queries follow the prototype's existing int interface.
+#define RSTL_KYOTO_REL_DEBUG_INT_ADDRESS (RSTL_VERSION == RSTL_G2MEAB)
 // The fatal error handler switches to a clean OSContext and waits for controller port 1.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
 // Echoes' fatal error handler: halts audio and DVD, resets when idle, names REL addresses.

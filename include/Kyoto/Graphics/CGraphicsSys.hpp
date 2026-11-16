@@ -14,6 +14,8 @@ public:
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys);
   CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive);
   ~CGraphicsSys();
+  // Guessed name
+  static bool IsInitialized() { return mGraphicsInitialized; }
 
 private:
 #if RSTL_PRIME1

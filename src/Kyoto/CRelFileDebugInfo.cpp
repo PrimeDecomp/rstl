@@ -14,7 +14,7 @@ void CRelFileDebugInfo::Register(const char* name, const void* start, uint size)
     return;
   }
   mName = name;
-  mStart = reinterpret_cast< uintptr_t >(start);
+  mStart = reinterpret_cast< TRelFileDebugStart >(start);
   mSize = size;
   mNext = mspHead;
   if (mNext != nullptr) {
@@ -37,9 +37,9 @@ void CRelFileDebugInfo::Unregister() {
   mPrev = nullptr;
 }
 
-bool CRelFileDebugInfo::Contains(uintptr_t address) const { return address - mStart < mSize; }
+bool CRelFileDebugInfo::Contains(TRelFileDebugAddress address) const { return address - mStart < mSize; }
 
-CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(uintptr_t address) {
+CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(TRelFileDebugAddress address) {
   for (CRelFileDebugInfo* info = mspHead; info != nullptr; info = info->mNext) {
     if (info->Contains(address)) {
       return info;
