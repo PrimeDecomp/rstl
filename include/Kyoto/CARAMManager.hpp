@@ -1,6 +1,7 @@
 #ifndef _CARAMMANAGER
 #define _CARAMMANAGER
 
+#include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
 
 #include "rstl/types.h"
@@ -39,10 +40,8 @@ public:
 #if RSTL_PRIME1
   static uint GetAllocatedBytes() { return mChunksAllocated * mChunkSize; }
   static uint GetCapacityBytes() { return mNumChunks * mChunkSize; }
-  static bool Initialize(uint);
-#else
-  static bool Initialize(uint chunkSize, uint size, uint secondChunkSize);
 #endif
+  static bool Initialize(uint chunkSize IF_NOT_RSTL_PRIME1(, uint size, uint secondChunkSize));
 
   static void Shutdown();
 
@@ -129,7 +128,7 @@ inline void* CARAMManager::GetInvalidAlloc() { return reinterpret_cast< void* >(
 #endif
 
 #if defined(TARGET_PC)
-inline bool CARAMManager::Initialize(uint) { return true; }
+inline bool CARAMManager::Initialize(uint IF_NOT_RSTL_PRIME1(, uint size, uint secondChunkSize)) { return true; }
 inline void CARAMManager::Shutdown() {}
 inline bool CARAMManager::IsDMACompleted(uint handle) { return true; }
 inline void CARAMManager::WaitForDMACompletion(uint handle) {}
