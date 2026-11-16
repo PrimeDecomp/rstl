@@ -187,9 +187,13 @@ void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...) 
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar) {
 #if defined(TARGET_PC)
+#if RSTL_KYOTO_REL_ERROR_HANDLER
+  const bool hasMessage = rs_debugger_buffer != nullptr && rs_debugger_buffer[0] != '\0';
+#else
+  const bool hasMessage = rs_debugger_buffer_size > 0;
+#endif
   OSPanic(__FILE__, __LINE__, "Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
-          rs_debugger_buffer_size > 0 ? ": " : "",
-          rs_debugger_buffer_size > 0 ? rs_debugger_buffer : "");
+          hasMessage ? ": " : "", hasMessage ? rs_debugger_buffer : "");
 #else
 #if RSTL_KYOTO_REL_ERROR_HANDLER
   char buffer[1024];
