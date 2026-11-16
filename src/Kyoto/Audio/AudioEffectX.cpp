@@ -35,7 +35,7 @@ long AudioEffectX::dispatcher(long opcode, long index, long value, void* ptr, fl
   case kEO_GetCurrentPosition:
     return reportCurrentPosition();
   case kEO_GetDestinationBuffer:
-    return reinterpret_cast< long >(reportDestinationBuffer());
+    return reinterpret_cast< ptrdiff_t >(reportDestinationBuffer());
   case kEO_OfflineNotify:
     return offlineNotify(static_cast< VstAudioFile* >(ptr), value, index != 0);
   case kEO_OfflinePrepare:
@@ -319,4 +319,3 @@ bool AudioEffectX::updateDisplay() {
     return mAudioMaster(&mEffect, kAM_UpdateDisplay, 0, 0, nullptr, 0.f) != 0;
   return false;
 }
-
