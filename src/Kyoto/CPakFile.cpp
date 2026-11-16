@@ -114,12 +114,10 @@ CPakFile::CPakFile(const rstl::string& filename, bool buildDepList, bool worldPa
 , mAsyncLoadPhase(kAP_Warmup)
 , mResTableOffset(0)
 , mResTableCount(0)
-#if RSTL_PRIME1
-#if !defined(TARGET_PC)
-, mpARAMHeader(CARAMManager::GetInvalidAlloc())
-#endif
-#else
+#if !RSTL_PRIME1
 , mFakeStaticSize(0)
+#endif
+#if !defined(TARGET_PC)
 , mpARAMHeader(CARAMManager::GetInvalidAlloc())
 #endif
 , mCurrentSeek(-1) {
