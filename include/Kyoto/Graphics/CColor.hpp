@@ -150,13 +150,7 @@ public:
   }
 #ifdef __MWERKS__
   CColor WithAlphaOf(float a) const {
-#if !RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST
     return CColor((mRgba & ~0xff) | CCast::ToUint8(a * 255.f));
-#else
-    const float value = a;
-    const float byteScale = 255.f;
-    return CColor((mRgba & ~0xff) | CCast::ToUint8(byteScale * value));
-#endif
   }
 #else
   CColor WithAlphaOf(float a) const { return CColor(mR, mG, mB, CCast::ToUint8(a * 255.f)); }

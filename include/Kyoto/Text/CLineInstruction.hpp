@@ -34,10 +34,6 @@ public:
 #if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
   bool IsLineInstruction() const override { return true; }
 #endif
-#if RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR
-  ~CLineInstruction() {}
-#endif
-
   void InvokeTTB(CFontRenderState& state) const;
   void TestLargestFont(int width, int height, int baseline);
   void TestLargestImage(int width, int height, int baseline);

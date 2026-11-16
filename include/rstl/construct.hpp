@@ -591,20 +591,12 @@ RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
 #endif
 
 template < typename It, typename T >
-#if RSTL_COPY_RANGE_OUTPUT_PARAM
-static inline T uninitialized_copy(It begin, It end, T tmp) {
-#else
 static inline T uninitialized_copy(It begin, It end, T out) {
-#endif
 #if RSTL_RANGE_PRECONDITIONS
   RSTL_PRECONDITION(begin <= end);
 #endif
-#if RSTL_COPY_RANGE_OUTPUT_PARAM
-  RSTL_PRECONDITION(begin == end || tmp != nullptr);
-#else
   RSTL_PRECONDITION(begin == end || out != nullptr);
   T tmp = out;
-#endif
   It cur = begin;
 #if RSTL_PREINCREMENT_COPY_LOOPS
   for (; cur != end; ++cur, ++tmp) {
@@ -650,14 +642,9 @@ static inline D uninitialized_copy_n(S src, int n, D dest) {
 #if RSTL_COPY_N_PRECONDITION
   RSTL_PRECONDITION(n >= 0);
 #endif
-#if RSTL_COPY_N_COUNTER_FIRST
-  int remaining = n;
-#endif
   S it = src;
   D cur = dest;
-#if RSTL_COPY_N_COUNTER_FIRST
-  for (; remaining != 0; --remaining, ++it, ++cur) {
-#elif RSTL_COUNTED_COPY_N_LOOP
+#if RSTL_COUNTED_COPY_N_LOOP
   for (int remaining = n; remaining != 0; --remaining, ++it, ++cur) {
 #elif RSTL_PREINCREMENT_COPY_LOOPS
   for (int i = 0; i != n; ++it, ++i, ++cur) {

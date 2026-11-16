@@ -145,14 +145,10 @@
 #define RSTL_RANGE_PRECONDITIONS RSTL_ECHOES
 // The pointer overload of `uninitialized_copy` also checks `begin <= end`.
 #define RSTL_POINTER_COPY_PRECONDITION (RSTL_CORRUPTION)
-// Generic range copies advance the output parameter directly.
-#define RSTL_COPY_RANGE_OUTPUT_PARAM (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // `uninitialized_copy` steps `++cur, ++tmp` and `uninitialized_copy_n` pre-increments.
 #define RSTL_PREINCREMENT_COPY_LOOPS (RSTL_ECHOES || RSTL_VERSION >= RSTL_R3IJ)
 // `uninitialized_copy_n` counts down a `remaining` variable.
 #define RSTL_COUNTED_COPY_N_LOOP (RSTL_ECHOES || RSTL_VERSION >= RSTL_R32J)
-// ...and declares that counter before the iterator copies.
-#define RSTL_COPY_N_COUNTER_FIRST (RSTL_VERSION >= RSTL_R3ME_00)
 // `uninitialized_copy_n` starts with the `n >= 0` precondition.
 #define RSTL_COPY_N_PRECONDITION (RSTL_CORRUPTION)
 // Counted copies read through a const source (needs mutable overloads with the extern declaration).
@@ -293,8 +289,6 @@
 #define RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK (RSTL_CORRUPTION)
 // The `erase` move loop declares its destination iterator before the source.
 #define RSTL_VECTOR_ERASE_DEST_FIRST (RSTL_VERSION >= RSTL_R32J)
-// Trivially destructible elements skip cleanup before iterators are constructed (Wii Echoes).
-#define RSTL_VECTOR_SKIP_TRIVIAL_DESTRUCTION (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 
 // ============================================================================================
 // rstl: reserved_vector
@@ -762,8 +756,6 @@
 #define RSTL_KYOTO_LIGHT_CORRUPTION (RSTL_CORRUPTION)
 // Wii builds read the CColor yellow and grey constants directly instead of through getters.
 #define RSTL_CCOLOR_INLINE_CONSTANTS (RSTL_VERSION >= RSTL_RM3E)
-// CColor::WithAlphaOf multiplies the byte scale by the alpha.
-#define RSTL_KYOTO_COLOR_ALPHA_SCALE_FIRST (RSTL_VERSION >= RSTL_R32J)
 // CColor::ToRGB5A3 widens its channels to `uint`.
 #define RSTL_KYOTO_COLOR_UINT_RGB5A3_CHANNELS (RSTL_CORRUPTION)
 // CGraphicsPalette can keep its entries in GPU memory (otherwise UnLock stores the entry range).
@@ -893,8 +885,6 @@
 
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
-// CLineInstruction declares its destructor explicitly, giving the virtual order from R32J on.
-#define RSTL_KYOTO_LINE_INSTRUCTION_INLINE_DTOR (RSTL_VERSION >= RSTL_R32J)
 
 #include "rstl/macros.hpp"
 #include "Kyoto/Platform.h"
