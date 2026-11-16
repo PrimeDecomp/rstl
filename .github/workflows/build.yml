@@ -70,6 +70,18 @@ jobs:
           # Corruption Prototype
           - game: corruption-proto
             version: G2MEAB
+
+          # Corruption
+          - game: corruption
+            version: RM3E01
+          - game: corruption
+            version: RM3P01
+          - game: corruption
+            version: RM3J01
+          - game: corruption
+            version: R3ME01
+          - game: corruption
+            version: R3MP01
     defaults:
       run:
         working-directory: game
