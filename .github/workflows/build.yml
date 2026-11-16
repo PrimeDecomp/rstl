@@ -181,12 +181,22 @@ jobs:
           tr '\n' '\0' < "$RUNNER_TEMP/unchanged.txt" | xargs -0 -r touch -t 200001010000 --
           
       - name: Build
+        if: ${{ matrix.game != 'corruption' }} 
         env:
           MAP_FLAG: ${{ github.event_name == 'workflow_dispatch' && '--map' || '' }}
         run: |
           python3 -m venv .venv
           .venv/bin/python configure.py --portable-build-ninja $MAP_FLAG --version ${{ matrix.version }}
           mwcc-tools run ninja all_source progress build/${{ matrix.version }}/report.json
+
+      - name: Build (Corruption)
+        if: ${{ matrix.game == 'corruption' }} 
+        env:
+          MAP_FLAG: ${{ github.event_name == 'workflow_dispatch' && '--map' || '' }}
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python configure.py $MAP_FLAG --version ${{ matrix.version }}
+          ninja all_source progress build/${{ matrix.version }}/report.json
   
       - name: Save tool cache
         uses: actions/cache/save@v6
