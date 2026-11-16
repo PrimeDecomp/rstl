@@ -29,6 +29,36 @@ typedef int ErrorDataAddress;
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar);
 void SetErrorHandlers();
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+// Guessed name
+#endif
+void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...);
+
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+// Guessed name
+typedef int (*TRAssertDebuggerPrintCallback)(const char* message);
+// Guessed name
+typedef void (*TRAssertDiagnosticPrintCallback)(const char* format, ...);
+
+extern "C" {
+// Guessed name
+bool RAssert_IsDebuggerPresentCached();
+// Guessed name
+TRAssertDiagnosticPrintCallback
+RAssert_SetDiagnosticPrintCallback(TRAssertDiagnosticPrintCallback callback);
+// Guessed name
+int RAssert_ConsumeDebuggerPrintCallback(const char* message);
+// Guessed name
+void RAssert_DiscardDiagnosticCallback(const char* format, ...);
+// Guessed name
+TRAssertDebuggerPrintCallback
+RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback);
 void rs_debugger_printf(const char* format, ...);
+void rs_halt_cpu();
+}
+#endif
+
+// Guessed name
+extern "C" void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...);
 
 #endif // _RASSERTDOLPHIN

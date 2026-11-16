@@ -515,10 +515,10 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     break;
 #else
   case VI_MPAL:
-    rs_debugger_printf("MPAL TV Format not compatible with PAL build");
+    RSTL_KYOTO_FATAL_PRINTF_NAME("MPAL TV Format not compatible with PAL build");
     break;
   case VI_NTSC:
-    rs_debugger_printf("NTSC TV Format not compatible with PAL build");
+    RSTL_KYOTO_FATAL_PRINTF_NAME("NTSC TV Format not compatible with PAL build");
     break;
 #endif
   case VI_PAL:
@@ -564,7 +564,7 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     break;
   case VI_PAL:
   case VI_EURGB60:
-    rs_debugger_printf("PAL TV Format not compatible with NTSC build");
+    RSTL_KYOTO_FATAL_PRINTF_NAME("PAL TV Format not compatible with NTSC build");
     break;
   }
   GXAdjustForOverscan(mode, &mRenderModeObj, 0, 16);

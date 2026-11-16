@@ -1,6 +1,12 @@
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 
 #include "Kyoto/CRelFileDebugInfo.hpp"
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#include "Kyoto/Graphics/CGX.hpp"
+#include "Kyoto/Graphics/CGraphics.hpp"
+#include "Kyoto/Graphics/CGraphicsSys.hpp"
+#include "Kyoto/Text/CFont.hpp"
+#endif
 #if RSTL_KYOTO_REL_ERROR_HANDLER
 #include "dolphin/ai.h"
 #include "dolphin/dvd.h"
@@ -8,17 +14,30 @@
 #else
 #include "dolphin/os/OSError.h"
 #endif
+#include "dolphin/db.h"
 #include "dolphin/os/OSMemory.h"
 #include "dolphin/pad.h"
 #include "dolphin/vi.h"
 
 #include <stdarg.h>
 #include <stdio.h>
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#define RASSERT_BUILD_NAME "Release"
+static bool sDebuggerChecked; // Guessed name
+static bool sDebuggerPresent; // Guessed name
+TRAssertDiagnosticPrintCallback gpfnWarningPrintf = rs_debugger_printf;
+#else
+#define RASSERT_BUILD_NAME "Production"
+#endif
+
 #if RSTL_KYOTO_REL_ERROR_HANDLER
 #include <string.h>
 
-// rs_debugger_printf formats the message on its own stack; ErrorHandler copies it into `buffer`.
+// Fatal printing formats the message on its own stack; ErrorHandler copies it into buffer.
 static bool SkipFatal = false;
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+static TRAssertDebuggerPrintCallback sDebuggerPrintCallback; // Guessed name
+#endif
 static char* rs_debugger_buffer = nullptr;
 // Stack frames to leave out of the backtrace, from a "SKIP<n>" message prefix.
 static int rs_debugger_size = 0;
@@ -34,6 +53,7 @@ static int rs_debugger_buffer_size;
 #endif
 static const GXColor bg = {128, 0, 0, 0};
 static const GXColor fg = {255, 255, 255, 0};
+#if !RSTL_KYOTO_SCREEN_ASSERTIONS
 static const uchar ExitButtons[4] = {PAD_BUTTON_RIGHT, PAD_BUTTON_LEFT, PAD_BUTTON_DOWN,
                                      PAD_BUTTON_UP};
 #define INITIAL_COMBO (PAD_BUTTON_X | PAD_BUTTON_Y | PAD_TRIGGER_Z)
@@ -46,6 +66,124 @@ static void hack() {
   static const char* tmp3 = " 0x%08x: %s";
 #endif
 }
+
+#endif
+
+#if RSTL_KYOTO_SCREEN_ASSERTIONS
+bool RAssert_IsDebuggerPresentCached() {
+  if (!sDebuggerChecked) {
+    sDebuggerChecked = true;
+    sDebuggerPresent = DBIsDebuggerPresent() != 0;
+  }
+  return sDebuggerPresent;
+}
+
+TRAssertDiagnosticPrintCallback
+RAssert_SetDiagnosticPrintCallback(TRAssertDiagnosticPrintCallback callback) {
+  TRAssertDiagnosticPrintCallback old = gpfnWarningPrintf;
+  gpfnWarningPrintf = callback;
+  return old;
+}
+
+int RAssert_ConsumeDebuggerPrintCallback(const char*) { return 1; }
+
+void RAssert_DiscardDiagnosticCallback(const char*, ...) {}
+
+TRAssertDebuggerPrintCallback
+RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback) {
+  TRAssertDebuggerPrintCallback old = sDebuggerPrintCallback;
+  sDebuggerPrintCallback = callback;
+  return old;
+}
+
+void rs_debugger_printf(const char* format, ...) {
+  va_list arg;
+  char buffer[1024];
+  va_start(arg, format);
+  vsnprintf(buffer, sizeof(buffer), format, arg);
+  va_end(arg);
+
+  if (sDebuggerPrintCallback != nullptr) {
+    if (sDebuggerPrintCallback(buffer) == 0) {
+      OSReport("%s", buffer);
+    }
+  } else {
+    OSReport("%s", buffer);
+  }
+}
+
+void rs_halt_cpu() {
+  SkipFatal = true;
+  asm { opword 0 }
+}
+
+void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...) {
+  va_list arg;
+  char buffer[1024];
+  va_start(arg, format);
+  vsnprintf(buffer, sizeof(buffer), format, arg);
+  va_end(arg);
+  OSReport("%s", buffer);
+
+  if (CGraphicsSys::IsInitialized() && !RAssert_IsDebuggerPresentCached()) {
+    CGraphics::BeginScene();
+    const GXRenderModeObj& mode = CGraphics::GetRenderMode();
+    CGraphics::SetViewport(0, 0, mode.fbWidth, mode.xfbHeight);
+    CGraphics::SetScissor(0, 0, mode.fbWidth, mode.xfbHeight);
+    GXSetTevColor(GX_TEVREG0, CColor::Red().GetGXColor());
+    CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+    CGX::SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE,
+                       GX_TEVPREV);
+    CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
+    CGX::SetTevDirect(GX_TEVSTAGE0);
+    CGX::SetNumTevStages(1);
+    CGX::SetNumTexGens(1);
+    CGX::SetNumChans(0);
+    CGX::SetNumIndStages(0);
+    CGX::SetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+    CGX::SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+    CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+
+    int y = mode.xfbHeight;
+    CFont font(1.f);
+    for (char* line = strtok(buffer, "\n"); line != nullptr; line = strtok(nullptr, "\n")) {
+      int remaining = strlen(line);
+      do {
+        int count = remaining > 40 ? 40 : remaining;
+        char saved = line[count];
+        line[count] = '\0';
+        y -= font.GetFontSize();
+        font.DrawString(line, 0, y, CColor::White());
+        remaining -= count;
+        line[count] = saved;
+        line += count;
+      } while (remaining != 0);
+    }
+
+    int i = 0;
+    u32* frame = reinterpret_cast< u32* >(OSGetStackPointer());
+    for (; frame != nullptr && frame != reinterpret_cast< u32* >(-1) && i++ < 16;
+         frame = reinterpret_cast< u32* >(*frame)) {
+      uint address = frame[1];
+      sprintf(buffer, "0x%08x: 0x%08x 0x%08x", frame, *frame, address);
+      y -= font.GetFontSize();
+      font.DrawString(buffer, 0, y, CColor::White());
+      const CRelFileDebugInfo* info = CRelFileDebugInfo::FindByAddress(address);
+      if (info != nullptr) {
+        sprintf(buffer, " 0x%08x: %s", address - info->GetStart(), info->GetName());
+        y -= font.GetFontSize();
+        font.DrawString(buffer, 0, y, CColor::White());
+      }
+    }
+    CGraphics::EndScene();
+    GXDrawDone();
+    GXFlush();
+    GXDrawDone();
+    VIWaitForRetrace();
+    VIWaitForRetrace();
+  }
+}
+#endif
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar) {
 #if defined(TARGET_PC)
@@ -84,6 +222,7 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
   AIStartDMA();
   DVDCancelAllAsync(nullptr);
 #endif
+#if !RSTL_KYOTO_SCREEN_ASSERTIONS
   loopExitCriteria = 0;
   PADControlMotor(0, 0);
   VISetBlack(1);
@@ -129,7 +268,6 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
 #endif
 
     if (pads[1].err == PAD_ERR_NONE) {
-      // Dunno why we're doing this but, it matches...
       *(uint*)exitButtons = *(uint*)ExitButtons;
 
       // Check for X + Y + Z to initiate loop exit
@@ -159,7 +297,9 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
   VISetBlack(0);
   VIFlush();
 
-  OSReport("Unhandled exception %d - Production\n", code);
+#endif
+
+  OSReport("Unhandled exception %d - " RASSERT_BUILD_NAME "\n", code);
   OSReport("%s\n", BuildTime);
   OSReport("------------------------- Context 0x%08x -------------------------\n", context);
 
@@ -180,16 +320,16 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
   }
   uint len = strlen(buffer);
   if (len != 0) {
-    len += sprintf(buffer + len, " - Production\n");
+    len += sprintf(buffer + len, " - " RASSERT_BUILD_NAME "\n");
   } else {
-    len += sprintf(buffer, "Exception %d - Production\n", code);
+    len += sprintf(buffer, "Exception %d - " RASSERT_BUILD_NAME "\n", code);
   }
 #else
   len = rs_debugger_buffer_size;
   if (rs_debugger_buffer_size != 0) {
-    len += sprintf(rs_debugger_buffer + rs_debugger_buffer_size, " - Production\n");
+    len += sprintf(rs_debugger_buffer + rs_debugger_buffer_size, " - " RASSERT_BUILD_NAME "\n");
   } else {
-    len += sprintf(rs_debugger_buffer, "Exception %d - Production\n", code);
+    len += sprintf(rs_debugger_buffer, "Exception %d - " RASSERT_BUILD_NAME "\n", code);
   }
 #endif
 
@@ -250,7 +390,7 @@ void SetErrorHandlers() {
 #endif
 }
 
-void rs_debugger_printf(const char* format, ...) {
+void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...) {
   va_list arg;
 
 #if RSTL_KYOTO_REL_ERROR_HANDLER

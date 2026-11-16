@@ -2,11 +2,23 @@
 #define _CRELFILEDEBUGINFO
 
 #include "rstl/static_assert.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 #include <stdint.h>
 
-// Guessed class and method names. Address range of a linked REL file, kept in a global list so
-// the exception handler can report addresses as offsets into the file.
+#if RSTL_KYOTO_REL_DEBUG_INT_ADDRESS
+// Guessed name
+typedef int TRelFileDebugAddress;
+// Guessed name
+typedef uint TRelFileDebugStart;
+#else
+// Guessed name
+typedef uintptr_t TRelFileDebugAddress;
+// Guessed name
+typedef uintptr_t TRelFileDebugStart;
+#endif
+
+// Guessed name
 class CRelFileDebugInfo {
 public:
   CRelFileDebugInfo();
@@ -14,16 +26,16 @@ public:
 
   void Register(const char* name, const void* start, uint size);
   void Unregister();
-  bool Contains(uintptr_t address) const;
+  bool Contains(TRelFileDebugAddress address) const;
 
   const char* GetName() const { return mName; }
-  uintptr_t GetStart() const { return mStart; }
+  TRelFileDebugStart GetStart() const { return mStart; }
 
-  static CRelFileDebugInfo* FindByAddress(uintptr_t address);
+  static CRelFileDebugInfo* FindByAddress(TRelFileDebugAddress address);
 
 private:
   const char* mName;
-  uintptr_t mStart;
+  TRelFileDebugStart mStart;
   uint mSize;
   CRelFileDebugInfo* mNext;
   CRelFileDebugInfo* mPrev;
