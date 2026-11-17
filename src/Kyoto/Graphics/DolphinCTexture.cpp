@@ -815,7 +815,8 @@ void CTexture::InvalidateTexmap(GXTexMapID texmap) { sLoadedTextures[texmap] = 0
 void CTexture::ScheduleDeletion() {
 #if IS_TARGET_PC
   GXDestroyTexObj(&mTexObj);
-  for (auto& tex : sLoadedTextures) {
+  for (int i = 0; i < GX_MAX_TEXMAP; ++i) {
+    auto& tex = reinterpret_cast<CTexture*&>(sLoadedTextures[i]);
     if (tex == this) {
       tex = nullptr;
     }

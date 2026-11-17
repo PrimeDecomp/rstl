@@ -22,7 +22,7 @@ CFoldySurface::CFoldySurface(const TToken< CModel >& model, float lowerX, float 
                              const CVector3f& upperOffset)
 : mModel(model, true), mPositions(nullptr), mVertexCount(0), mDisplayListSize(0) {
   const CCubeModel& cubeModel = *mModel.GetObject()->GetModelInstance();
-  const CCubeSurface firstSurface = cubeModel.GetModelInstance().Surfaces().front();
+  const CCubeSurface firstSurface = cubeModel.GetSurface(0);
   const CCubeMaterial material = cubeModel.GetMaterial(firstSurface);
   uint displayListSize = 0;
   const uint vertexStride = CDisplayListReader::GetVertexStride(material.GetVertexDesc());
@@ -32,8 +32,8 @@ CFoldySurface::CFoldySurface(const TToken< CModel >& model, float lowerX, float 
     ushort value;
     uchar bytes[2];
   } shortValue;
-  for (int i = 0; i < cubeModel.GetModelInstance().Surfaces().size(); ++i) {
-    const CCubeSurface surface(cubeModel.GetModelInstance().Surfaces()[i]);
+  for (int i = 0; i < cubeModel.GetSurfaceCount(); ++i) {
+    const CCubeSurface surface(cubeModel.GetSurface(i));
     const uchar* source = static_cast< const uchar* >(surface.GetDisplayList());
     const uchar* end = source + surface.GetDisplayListSize();
     const uchar* cursor = source;
@@ -87,8 +87,8 @@ CFoldySurface::CFoldySurface(const TToken< CModel >& model, float lowerX, float 
     rstl::single_ptr< uchar > data(
         static_cast< uchar* >(CMemory::Alloc(alignedSize, IAllocator::kHI_RoundUpLen)));
     uchar* output = data.get();
-    for (int i = 0; i < cubeModel.GetModelInstance().Surfaces().size(); ++i) {
-      const CCubeSurface surface(cubeModel.GetModelInstance().Surfaces()[i]);
+    for (int i = 0; i < cubeModel.GetSurfaceCount(); ++i) {
+      const CCubeSurface surface(cubeModel.GetSurface(i));
       const uchar* const source = static_cast< const uchar* >(surface.GetDisplayList());
       const size_t size = surface.GetDisplayListSize();
       const uchar* cursor = source;
@@ -160,11 +160,11 @@ void CFoldySurface::SetMaterialCurrent(const CModelFlags& flags) const {
   mModel.GetObject()->PreDrawModel(flags);
   mModel.GetObject()->Touch(0);
   const CCubeModel& cubeModel = *mModel.GetObject()->GetModelInstance();
-  const CCubeSurface surface(cubeModel.GetModelInstance().Surfaces().front());
+  const CCubeSurface surface(cubeModel.GetSurface(0));
   cubeModel.GetMaterial(surface).SetCurrent(flags, surface, cubeModel);
   cubeModel.SetArraysCurrent();
   if (mVertexCount != 0) {
-    CGX::SetArray(GX_VA_POS, mPositions.get(), sizeof(CVector3f));
+    CGX::SetArray(GX_VA_POS, mPositions.get(), sizeof(CVector3f) IF_TARGET_PC(, mVertexCount * sizeof(CVector3f), true));
   }
   CGX::SetVtxDesc(GX_VA_PNMTXIDX, GX_DIRECT);
 }
@@ -173,4 +173,3 @@ void CFoldySurface::ResetRenderState() const {
   CGX::SetVtxDesc(GX_VA_PNMTXIDX, GX_NONE);
   GXSetCurrentMtx(GX_PNMTX0);
 }
-

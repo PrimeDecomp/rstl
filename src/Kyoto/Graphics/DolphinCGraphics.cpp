@@ -501,6 +501,7 @@ static void SetProgressiveFilter(GXRenderModeObj& mode) {
 #endif
 
 void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
+  IF_TARGET_PC(auto& mRenderModeObj = metaforce::GetRenderMode());
   if (!initial) {
     CFrameDelayedKiller::StallAndFlushAllAllocations();
   }
@@ -807,6 +808,7 @@ void CGraphics::InitGraphicsDefaults() {
 
 #if RSTL_KYOTO_GRAPHICS_ARENA
 void CGraphics::ConfigureFrameBuffer() {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
 #else
 void CGraphics::ConfigureFrameBuffer(const COsContext& osContext) {
 #if !defined(TARGET_PC)
@@ -1378,6 +1380,7 @@ void CGraphics::SetViewport(int left, int bottom, int width, int height) {
 
 #if !RSTL_PRIME1
 int CGraphics::GetViewportTop(int bottom) {
+  IF_TARGET_PC(const auto& mRenderModeObj = metaforce::GetRenderMode());
   return mRenderModeObj.efbHeight - (bottom + mViewport.mHeight);
 }
 #endif
@@ -1496,7 +1499,7 @@ void CGraphics::VideoPreCallback(u32 retraceCount) {
     mpCurrenFrameBuf = frameBuf;
 #endif
   }
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !IS_TARGET_PC
   static int stalledRetraces = 0;
   static u32 lastOverflowCount = 0;
   GXBool overHighWaterMark;
@@ -2981,22 +2984,26 @@ void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = 
 #endif
 #endif
 
-CGraphicsSys::CGraphicsSys(const COsContext& osContext IF_NOT_TARGET_PC(, const CMemorySys& memorySys)
+CGraphicsSys::CGraphicsSys(const COsContext& osContext 
+#if !IS_TARGET_PC
+                           , const CMemorySys& memorySys
 #if RSTL_KYOTO_GRAPHICS_ARENA
                            , bool progressive
-#elif !IS_TARGET_PC
+#else
                            , uint fifoSize, void* fifoBase
+#endif
 #endif
 ) {
   if (mGraphicsInitialized != true) {
 
-    mGraphicsInitialized = CGraphics::Startup(osContext,
+    mGraphicsInitialized = CGraphics::Startup(osContext
+#if !IS_TARGET_PC
 #if RSTL_KYOTO_GRAPHICS_ARENA
-                                              progressive
-#elif !IS_TARGET_PC
-                                              fifoSize, fifoBase
+                                              , progressive
 #else
-                                              0x10000, nullptr
+                                              fifoSize, fifoBase
+                                              // 0x10000, nullptr
+#endif
 #endif
     );
   }

@@ -161,9 +161,14 @@ public:
   }
 
 #if defined(TARGET_PC)
+  int GetSurfaceCount() const { return mSurfaces.size(); }
+  CCubeSurface GetSurface(int index) const { return CCubeSurface(&mSurfaces[index]); }
   size_t GetSurfaceStorageSize() const {
     return mSurfaces.capacity() * sizeof(CCubeSurface::SSurfaceData);
   }
+#else
+  int GetSurfaceCount() const { return mInstance.Surfaces().size(); }
+  CCubeSurface GetSurface(int index) const { return CCubeSurface(mInstance.Surfaces()[index]); }
 #endif
 
 private:
