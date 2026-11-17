@@ -904,6 +904,8 @@
 #define RSTL_COLLISION_SURFACE_UNIT_NORMAL RSTL_PRIME1
 // CCollisionEdge::GetVertIndex1/2 return `int` instead of `ushort` (Echoes, not Prime or the prototype).
 #define RSTL_COLLISION_EDGE_INT_INDICES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CAreaRenderOctTree::Node::GetNodeBounds uses Prime's two-axis table for the XY/XZ/ZX subdivisions.
+#define RSTL_RENDER_OCTTREE_PRIME_AXES RSTL_PRIME1
 
 #include "rstl/macros.hpp"
 #include "Kyoto/Platform.h"
