@@ -150,10 +150,9 @@ public:
     Add(m6);
   }
   explicit CMaterialList(u64 value) : mValue(value) {}
-#if !RSTL_PRIME1
   // Guessed identity: adjacent to BitPosition; consumes one aligned 64-bit value.
+  // Prime's object has no definition, since the original has no such function.
   explicit CMaterialList(CInputStream& in);
-#endif
   u64 GetValue() const { return mValue; }
 
   void Add(RSTL_KYOTO_SCALAR_PARAM_CONST EMaterialTypes material) { mValue |= u64(1) << material; }

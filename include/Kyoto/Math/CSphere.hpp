@@ -15,14 +15,10 @@ class CTransform4f;
 class CSphere {
 public:
   CSphere(const CVector3f& pos, RSTL_KYOTO_SCALAR_PARAM_CONST float radius) : mCenter(pos), mRadius(radius) {}
-#if !RSTL_PRIME1
   explicit CSphere(CInputStream& in) : mCenter(in), mRadius(in.ReadFloat()) {}
-#endif
 
   const CVector3f& GetCenter() const { return mCenter; }
-#if !RSTL_PRIME1
   void SetCenter(const CVector3f& center) { mCenter = center; }
-#endif
   RSTL_PRIME1_CONST float GetRadius() const { return mRadius; }
 
   CUnitVector3f GetSurfaceNormal(const CVector3f& v) const;

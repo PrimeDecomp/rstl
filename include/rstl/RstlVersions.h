@@ -906,6 +906,9 @@
 #define RSTL_COLLISION_EDGE_INT_INDICES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // CAreaRenderOctTree::Node::GetNodeBounds uses Prime's two-axis table for the XY/XZ/ZX subdivisions.
 #define RSTL_RENDER_OCTTREE_PRIME_AXES RSTL_PRIME1
+// CCollidableCollisionSurface::GetType precedes SetStaticTableIndex in the Wii builds from R32J on (Echoes R32J,
+// R3ME and R3MP and Prime Trilogy), not in the GameCube builds or R3IJ.
+#define RSTL_COLLISION_SURFACE_TYPE_FIRST (RSTL_VERSION >= RSTL_R32J)
 
 #include "rstl/macros.hpp"
 #include "Kyoto/Platform.h"
