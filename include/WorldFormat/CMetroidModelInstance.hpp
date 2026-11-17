@@ -3,13 +3,18 @@
 
 #include "rstl/RstlVersions.h"
 
-#include "rstl/static_assert.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
+#include "Kyoto/Graphics/ModelTypes.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
+#include "rstl/static_assert.hpp"
 #include "rstl/vector.hpp"
 
+#if defined(TARGET_PC)
+#include "Metaforce/Game/CModelSectionReader.hpp"
+#include <vector>
+#endif
 
 class CMetroidModelInstance {
 public:
@@ -32,25 +37,37 @@ public:
   };
 #endif
 
+#if defined(TARGET_PC)
+  CMetroidModelInstance(TModelData header, TModelData materialData, const SModelArrays& arrays,
+                        const std::vector< TModelData >& surfaces IF_NOT_RSTL_PRIME1(
+                            , std::span< uchar > section1, std::span< uchar > section2));
+#else
   CMetroidModelInstance(const void* header, const void* materials, const void* positions,
                         const void* normals, const void* colors, const void* texCoords,
-                        const void* packedTexCoords, const rstl::vector< TSurface >& surfaces
-#if !RSTL_PRIME1
-                        ,
-                        const void* const& section1, const void* const& section2
+                        const void* packedTexCoords,
+                        const rstl::vector< TSurface >& surfaces IF_NOT_RSTL_PRIME1(
+                            , const void* const& section1, const void* const& section2));
 #endif
-  );
-#if RSTL_PRIME1
-  ~CMetroidModelInstance() {}
-#endif
+  IF_RSTL_PRIME1(~CMetroidModelInstance() {})
 
+  const void* GetMaterialPointer() const { return GetModelDataPointer(mMaterialData); }
+#if defined(TARGET_PC)
+  const std::vector< TModelData >& GetSurfaces() const { return mSurfaces; }
+  const SModelArrays& GetArrays() const { return mArrays; }
+  const void* GetVertexPointer() const { return mArrays.positions.data(); }
+  const void* GetNormalPointer() const { return mArrays.normals.data(); }
+  const void* GetColorPointer() const { return mArrays.colors.data(); }
+  const void* GetTCPointer() const { return mArrays.texCoords.data(); }
+  const void* GetPackedTCPointer() const { return mArrays.packedTexCoords.data(); }
+#else
   const rstl::vector< TSurface >& GetSurfaces() const { return mSurfaces; }
   const void* GetVertexPointer() const { return mPositions; }
-  const void* GetMaterialPointer() const { return mMaterialData; }
   const void* GetNormalPointer() const { return mNormals; }
   const void* GetColorPointer() const { return mColors; }
   const void* GetTCPointer() const { return mTexCoords; }
   const void* GetPackedTCPointer() const { return mPackedTexCoords; }
+#endif
+
   const CAABox& GetBoundingBox() const { return mWorldBounds; }
   int GetFlags() const { return mVisorFlags; }
 #if !RSTL_PRIME1
@@ -78,10 +95,10 @@ public:
   // Guessed name. The material section starts with the texture count and texture IDs; surface
   // loops read the count once per model and pass it to GetMaterialByIndex.
   uint GetTextureCount() const {
-    return CBasics::SwapBytes(*static_cast< const uint* >(mMaterialData));
+    return CBasics::SwapBytes(*static_cast< const uint* >(GetMaterialPointer()));
   }
   CCubeMaterial GetMaterialByIndex(uint textureCount, uint index) const {
-    const uchar* data = static_cast< const uchar* >(mMaterialData);
+    const uchar* data = static_cast< const uchar* >(GetMaterialPointer());
     data += (textureCount + 1) * sizeof(uint);
     const uint count = CBasics::SwapBytes(*reinterpret_cast< const uint* >(data));
     data += sizeof(uint);
@@ -95,7 +112,7 @@ public:
   }
 
   CCubeMaterial GetMaterialByIndex(uint index) const {
-    const uint* data = static_cast< const uint* >(mMaterialData);
+    const uint* data = static_cast< const uint* >(GetMaterialPointer());
     const uint* offsets = data + CBasics::SwapBytes(data[0]) + 1;
     const uint count = CBasics::SwapBytes(offsets[0]);
     const uint* table = offsets + 1;
@@ -111,13 +128,18 @@ private:
   int mVisorFlags;
   CTransform4f mWorldTransform;
   CAABox mWorldBounds;
-  const void* mMaterialData;
+  TModelData mMaterialData;
+#if defined(TARGET_PC)
+  std::vector< TModelData > mSurfaces;
+  SModelArrays mArrays;
+#else
   rstl::vector< TSurface > mSurfaces;
   const void* mPositions;
   const void* mNormals;
   const void* mColors;
   const void* mTexCoords;
   const void* mPackedTexCoords;
+#endif
 #if !RSTL_PRIME1
   const void* x74_;
   const void* mSurfaceGroups; // Guessed name.
@@ -129,6 +151,5 @@ CHECK_SIZEOF(CMetroidModelInstance, 0x74)
 CHECK_SIZEOF(CMetroidModelInstance, 0x7c)
 NESTED_CHECK_SIZEOF(CMetroidModelInstance, CSurfaceGroups, 4)
 #endif
-
 
 #endif // _CMETROIDMODELINSTANCE

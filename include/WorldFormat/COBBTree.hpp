@@ -84,6 +84,9 @@ public:
 
     static void SetAllocator(CSimpleAllocator* allocator);
     void* operator new(size_t size, const char* file, int line);
+#if defined(TARGET_PC)
+    void* operator new(size_t size) { return operator new(size, "COBBTree", 0); }
+#endif
     void operator delete(void* ptr, size_t size);
 #if RSTL_PRIME1
     void operator delete(void* ptr, const char* file, int line);
