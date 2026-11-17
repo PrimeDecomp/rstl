@@ -69,8 +69,15 @@ void operator delete[](void* ptr) {
 }
 #else
 #if RSTL_KYOTO_INLINE_GLOBAL_NEW
-__attribute__((weak)) void operator delete(void* ptr) { CMemory::Free(ptr); }
-__attribute__((weak)) void operator delete[](void* ptr) { CMemory::Free(ptr); }
+#ifdef __MWERKS__
+__attribute__((weak))
+#endif
+void operator delete(void* ptr) { CMemory::Free(ptr); }
+
+#ifdef __MWERKS__
+__attribute__((weak))
+#endif
+void operator delete[](void* ptr) { CMemory::Free(ptr); }
 #endif
 #endif
 

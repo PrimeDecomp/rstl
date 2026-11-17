@@ -198,12 +198,7 @@ bool CARAMManager::CAramPool::Free(const void* ptr)
     return false;
   }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   uint blockStart = (reinterpret_cast< uintptr_t >(ptr) - mpARAMStart) / mChunkSize;
-#else
-  uint blockStart = (reinterpret_cast< u32 >(ptr) - mpARAMStart) / mChunkSize;
-#endif
 
   uint blockCount = mpBookKeepingMemory[blockStart];
   mChunksAllocated -= blockCount;

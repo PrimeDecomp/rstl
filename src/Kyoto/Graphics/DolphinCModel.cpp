@@ -163,7 +163,7 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
   CModelSectionReader reader({mData.get(), mResourceSize});
   mMatSets.reserve(reader.GetMaterialSetCount());
   for (uint i = 0; i < reader.GetMaterialSetCount(); ++i) {
-    mMatSets.push_back(SShader(reader.Next()));
+    mMatSets.push_back(SShader(reader.Next() IF_NOT_RSTL_PRIME1(, this)));
     auto& shader = mMatSets.back();
     CCubeModel::MakeTexturesFromMats(shader.mData, shader.mTextures, store, true);
   }

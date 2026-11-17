@@ -12,7 +12,7 @@
 
 #include "float.h"
 
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && defined(__MWERKS__)
 // This unit reads the MSL __float_max global instead of folding the constant.
 #undef FLT_MAX
 #define FLT_MAX (*(float*)__float_max)
@@ -466,4 +466,3 @@ CVector3f CAABox::ClosestPointAlongVector(const CVector3f& vec) const {
                    CMath::FastFSel(vec.GetY(), min.GetY(), max.GetY()),
                    CMath::FastFSel(vec.GetZ(), min.GetZ(), max.GetZ()));
 }
-
