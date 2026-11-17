@@ -296,6 +296,9 @@
 | `RSTL_KYOTO_PROTO_STREAM_HELPERS` | 0 | 0 | 1 |
 | `RSTL_KYOTO_ZIP_OUTPUT_FINISH` | 0 | 0 | 1 |
 | `RSTL_GUI_TEXT_LINE_SPACING` | 0 | 0 | 1 |
+| `RSTL_COLLISION_SURFACE_WIDE_FLAGS` | 1 | 1 | 1 |
+| `RSTL_COLLISION_SURFACE_UNIT_NORMAL` | 0 | 0 | 0 |
+| `RSTL_COLLISION_EDGE_INT_INDICES` | 1 | 1 | 0 |
 | `RSTL_ECHOES_CONST` | `const` | `const` | `const` |
 | `RSTL_KYOTO_SCALAR_PARAM_CONST` | `const` | `const` | (empty) |
 | `RSTL_KYOTO_TIMESCALE_CONST` | (empty) | (empty) | `const` |

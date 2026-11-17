@@ -893,6 +893,20 @@
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 
+// ============================================================================================
+// WorldFormat
+// ============================================================================================
+
+// CCollisionSurface carries 64-bit surface flags (size 0x30) instead of Prime's 32-bit flags (0x28).
+#define RSTL_COLLISION_SURFACE_WIDE_FLAGS (!RSTL_PRIME1)
+// CCollisionSurface::GetNormal returns the CUnitVector3f converted from the cross product, instead of an
+// `AsNormalized` CVector3f.
+#define RSTL_COLLISION_SURFACE_UNIT_NORMAL RSTL_PRIME1
+// CCollisionEdge::GetVertIndex1/2 return `int` instead of `ushort` (Echoes, not Prime or the prototype).
+#define RSTL_COLLISION_EDGE_INT_INDICES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CAreaRenderOctTree::Node::GetNodeBounds uses Prime's two-axis table for the XY/XZ/ZX subdivisions.
+#define RSTL_RENDER_OCTTREE_PRIME_AXES RSTL_PRIME1
+
 #include "rstl/macros.hpp"
 #include "Kyoto/Platform.h"
 

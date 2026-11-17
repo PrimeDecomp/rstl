@@ -1,0 +1,287 @@
+#include "Collision/COBBox.hpp"
+
+#include "rstl/RstlVersions.h"
+
+#include "Collision/CMRay.hpp"
+#include "Collision/CollisionUtil.hpp"
+
+#include "Kyoto/Math/CMath.hpp"
+#include "Kyoto/Math/CQuad.hpp"
+#include "Kyoto/Streams/CInputStream.hpp"
+
+#include <float.h>
+#include <math.h>
+
+COBBox::COBBox(const CTransform4f& xf, const CVector3f& extents)
+: mTransform(xf), mExtents(extents) {}
+
+COBBox::COBBox(CInputStream& in) : mTransform(in), mExtents(in) {}
+
+CAABox COBBox::CalculateAABox(const CTransform4f& xf) const {
+  const CTransform4f transform = xf * mTransform;
+  CAABox bounds = CAABox::MakeMaxInvertedBox();
+  const CVector3f& positive = mExtents * 1.f;
+  const CVector3f& negative = mExtents * -1.f;
+
+  for (int i = 0; i < 8; ++i) {
+    const CVector3f& point = CVector3f(i & 1 ? positive.GetX() : negative.GetX(),
+                                       i & 2 ? positive.GetY() : negative.GetY(),
+                                       i & 4 ? positive.GetZ() : negative.GetZ());
+    bounds.AccumulateBounds(transform * point);
+  }
+
+  return bounds;
+}
+
+COBBox COBBox::FromAABox(const CAABox& box, const CTransform4f& xf) {
+  CVector3f center = box.GetCenterPoint();
+  CVector3f extents = box.GetMaxPoint() - center;
+  CTransform4f finalTransform = xf * CTransform4f::Translate(center);
+  return COBBox(finalTransform, extents);
+}
+
+bool COBBox::LineIntersectsBox(const CMRay& ray, float& penetration) const {
+  CAABox box(-mExtents, mExtents);
+  CMRay unscaledRay = ray.GetInvUnscaledTransformRay(mTransform);
+  CVector3f direction = CVector3f::Zero();
+  return CollisionUtil::RayAABoxIntersection(unscaledRay, box, direction, penetration) != 0;
+}
+
+#if !RSTL_PRIME1
+bool COBBox::LineIntersectsBox(const CMRay& ray, CVector3f& point, float& penetration,
+                               CVector3f* normal) const {
+  CAABox box(-mExtents, mExtents);
+  CMRay unscaledRay = ray.GetInvUnscaledTransformRay(mTransform);
+  CVector3f direction = CVector3f::Zero();
+  if (CollisionUtil::RayAABoxIntersection(unscaledRay, box, direction, penetration) != 0) {
+    point = ray.GetPoint(penetration);
+    if (normal != nullptr) {
+      *normal = mTransform.Rotate(direction);
+    }
+    return true;
+  }
+  return false;
+}
+
+CQuad COBBox::GetQuad(CAABox::EBoxFaceId face) const {
+  switch (face) {
+  case CAABox::kF_YMin: {
+    const CVector3f v3 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 =
+        mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 = mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  case CAABox::kF_YMax: {
+    const CVector3f v3 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 =
+        mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 = mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  case CAABox::kF_XMin: {
+    const CVector3f v3 =
+        mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 = mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  case CAABox::kF_XMax: {
+    const CVector3f v3 =
+        mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 = mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  case CAABox::kF_ZMax: {
+    const CVector3f v3 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v2 = mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v1 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 = mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  case CAABox::kF_ZMin: {
+    const CVector3f v3 =
+        mTransform * CVector3f(-mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 = mTransform * CVector3f(mExtents.GetX(), mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 =
+        mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v0 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  default: {
+    const CVector3f v3 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v2 =
+        mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), -mExtents.GetZ());
+    const CVector3f v1 = mTransform * CVector3f(mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    const CVector3f v0 =
+        mTransform * CVector3f(-mExtents.GetX(), -mExtents.GetY(), mExtents.GetZ());
+    return CQuad(v0, v1, v2, v3);
+  }
+  }
+}
+#endif
+
+bool COBBox::IntersectsAABox(const CAABox& box) const {
+  return OBBIntersectsBox(FromAABox(box, CTransform4f::Identity()));
+}
+
+#if RSTL_PRIME1
+static inline CVector3f BoxOffset(const CVector3f& lhs, const CVector3f& rhs) {
+  float left, right;
+  right = rhs[kDY];
+  left = lhs[kDY];
+  float y = left - right;
+
+  right = rhs[kDX];
+  left = lhs[kDX];
+  right = left - right;
+  float x = right;
+
+  right = rhs[kDZ];
+  left = lhs[kDZ];
+  float leftZ = left;
+  right = leftZ - right;
+
+  return CVector3f(x, y, right);
+}
+#endif
+
+bool COBBox::OBBIntersectsBox(const COBBox& other) const {
+#if RSTL_PRIME1
+  const CVector3f delta = BoxOffset(other.mTransform.GetTranslation(), mTransform.GetTranslation());
+#else
+  const CVector3f delta = other.mTransform.GetTranslation() - mTransform.GetTranslation();
+#endif
+  const CVector3f axes[3] = {mTransform.GetColumn(kDX), mTransform.GetColumn(kDY),
+                             mTransform.GetColumn(kDZ)};
+  const CVector3f otherAxes[3] = {other.mTransform.GetColumn(kDX), other.mTransform.GetColumn(kDY),
+                                  other.mTransform.GetColumn(kDZ)};
+  const CVector3f translation(CVector3f::Dot(delta, axes[0]), CVector3f::Dot(delta, axes[1]),
+                              CVector3f::Dot(delta, axes[2]));
+  const CVector3f& extents = mExtents;
+  const CVector3f& otherExtents = other.GetSize();
+  float rotation[3][3];
+  float ra, rb, t;
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      rotation[i][j] = CVector3f::Dot(axes[i], otherAxes[j]);
+    }
+  }
+
+  for (int i = 0; i < 3; ++i) {
+    ra = extents[i];
+    rb = otherExtents[kDX] * CMath::AbsF(rotation[i][0]) +
+         otherExtents[kDY] * CMath::AbsF(rotation[i][1]) +
+         otherExtents[kDZ] * CMath::AbsF(rotation[i][2]);
+    t = CMath::AbsF(translation[i]);
+    if (t > ra + rb + FLT_EPSILON) {
+      return false;
+    }
+  }
+
+  for (int j = 0; j < 3; ++j) {
+    ra = extents[kDX] * CMath::AbsF(rotation[0][j]) + extents[kDY] * CMath::AbsF(rotation[1][j]) +
+         extents[kDZ] * CMath::AbsF(rotation[2][j]);
+    rb = otherExtents[j];
+    t = CMath::AbsF(translation[0] * rotation[0][j] + translation[1] * rotation[1][j] +
+                    translation[2] * rotation[2][j]);
+    if (t > ra + rb + FLT_EPSILON) {
+      return false;
+    }
+  }
+
+  // Test the axis A0 x B0.
+  ra = extents[kDY] * CMath::AbsF(rotation[2][0]) + extents[kDZ] * CMath::AbsF(rotation[1][0]);
+  rb = otherExtents[kDY] * CMath::AbsF(rotation[0][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[0][1]);
+  t = CMath::AbsF(translation[2] * rotation[1][0] - translation[1] * rotation[2][0]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A0 x B1.
+  ra = extents[kDY] * CMath::AbsF(rotation[2][1]) + extents[kDZ] * CMath::AbsF(rotation[1][1]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[0][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[0][0]);
+  t = CMath::AbsF(translation[2] * rotation[1][1] - translation[1] * rotation[2][1]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A0 x B2.
+  ra = extents[kDY] * CMath::AbsF(rotation[2][2]) + extents[kDZ] * CMath::AbsF(rotation[1][2]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[0][1]) +
+       otherExtents[kDY] * CMath::AbsF(rotation[0][0]);
+  t = CMath::AbsF(translation[2] * rotation[1][2] - translation[1] * rotation[2][2]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A1 x B0.
+  ra = extents[kDX] * CMath::AbsF(rotation[2][0]) + extents[kDZ] * CMath::AbsF(rotation[0][0]);
+  rb = otherExtents[kDY] * CMath::AbsF(rotation[1][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[1][1]);
+  t = CMath::AbsF(translation[0] * rotation[2][0] - translation[2] * rotation[0][0]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A1 x B1.
+  ra = extents[kDX] * CMath::AbsF(rotation[2][1]) + extents[kDZ] * CMath::AbsF(rotation[0][1]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[1][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[1][0]);
+  t = CMath::AbsF(translation[0] * rotation[2][1] - translation[2] * rotation[0][1]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A1 x B2.
+  ra = extents[kDX] * CMath::AbsF(rotation[2][2]) + extents[kDZ] * CMath::AbsF(rotation[0][2]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[1][1]) +
+       otherExtents[kDY] * CMath::AbsF(rotation[1][0]);
+  t = CMath::AbsF(translation[0] * rotation[2][2] - translation[2] * rotation[0][2]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A2 x B0.
+  ra = extents[kDX] * CMath::AbsF(rotation[1][0]) + extents[kDY] * CMath::AbsF(rotation[0][0]);
+  rb = otherExtents[kDY] * CMath::AbsF(rotation[2][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[2][1]);
+  t = CMath::AbsF(translation[1] * rotation[0][0] - translation[0] * rotation[1][0]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A2 x B1.
+  ra = extents[kDX] * CMath::AbsF(rotation[1][1]) + extents[kDY] * CMath::AbsF(rotation[0][1]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[2][2]) +
+       otherExtents[kDZ] * CMath::AbsF(rotation[2][0]);
+  t = CMath::AbsF(translation[1] * rotation[0][1] - translation[0] * rotation[1][1]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  // Test the axis A2 x B2.
+  ra = extents[kDX] * CMath::AbsF(rotation[1][2]) + extents[kDY] * CMath::AbsF(rotation[0][2]);
+  rb = otherExtents[kDX] * CMath::AbsF(rotation[2][1]) +
+       otherExtents[kDY] * CMath::AbsF(rotation[2][0]);
+  t = CMath::AbsF(translation[1] * rotation[0][2] - translation[0] * rotation[1][2]);
+  if (t > ra + rb + FLT_EPSILON) {
+    return false;
+  }
+
+  return true;
+}

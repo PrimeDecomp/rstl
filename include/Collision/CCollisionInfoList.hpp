@@ -1,0 +1,72 @@
+#ifndef _CCOLLISIONINFOLIST
+#define _CCOLLISIONINFOLIST
+
+#include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
+
+#include "Collision/CCollisionInfo.hpp"
+#include "rstl/reserved_vector.hpp"
+
+class CCollisionInfoList {
+  rstl::reserved_vector< CCollisionInfo, 32 > mList;
+
+public:
+  typedef rstl::reserved_vector< CCollisionInfo, 32 >::iterator iterator;
+  typedef rstl::reserved_vector< CCollisionInfo, 32 >::const_iterator const_iterator;
+
+  void Add(const CCollisionInfo& info, bool swap = false) {
+    if (mList.size() == 32) {
+      return;
+    }
+    if (!swap) {
+      mList.push_back(info);
+    } else {
+      mList.push_back(info.GetSwapped(CCollisionInfo::kSM_Swap));
+    }
+  }
+  void Clear() { mList.clear(); }
+  CVector3f GetAverageLeftNormal() const {
+    CVector3f ret = CVector3f::Zero();
+    for (const_iterator it = Begin(); it != End(); ++it) {
+      ret += it->GetNormalLeft();
+    }
+    return ret / static_cast< float >(GetCount());
+  }
+  CVector3f GetAveragePoint() const {
+    CVector3f ret = CVector3f::Zero();
+    for (const_iterator it = Begin(); it != End(); ++it) {
+      ret += it->GetPoint();
+    }
+    return ret / static_cast< float >(GetCount());
+  }
+  CMaterialList GetUnionOfAllLeftMaterials() const {
+    CMaterialList ret;
+    for (const_iterator it = Begin(); it != End(); ++it) {
+      ret.Add(it->GetMaterialLeft());
+    }
+    return ret;
+  }
+  int GetCount() const { return mList.size(); }
+  rstl::reserved_vector< CCollisionInfo, 32 >& GetList() { return mList; }
+  const rstl::reserved_vector< CCollisionInfo, 32 >& GetList() const { return mList; }
+  CCollisionInfo& operator[](int idx) { return mList[idx]; }
+  const CCollisionInfo& operator[](int idx) const { return mList[idx]; }
+  void Swap(RSTL_PRIME1_CONST int idx) {
+    for (int i = idx; i < GetCount(); ++i) {
+      mList[i].Swap();
+    }
+  }
+#if !RSTL_PRIME1
+  CVector3f GetCombinedNormalLeft() const;
+#endif
+
+  iterator End() { return mList.end(); }
+  const_iterator End() const { return mList.end(); }
+  iterator Begin() { return mList.begin(); }
+  const_iterator Begin() const { return mList.begin(); }
+};
+#if !RSTL_PRIME1
+CHECK_SIZEOF(CCollisionInfoList, 0xc04)
+#endif
+
+#endif // _CCOLLISIONINFOLIST
