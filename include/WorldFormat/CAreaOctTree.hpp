@@ -32,7 +32,11 @@ public:
     rstl::optional_object< CCollisionSurface > mSurface;
     float mT;
 
+#if RSTL_PRIME1
     SRayResult() : mPlane(0.f, CUnitVector3f(1.f, 0.f, 0.f)), mT(0.f) {}
+#else
+    SRayResult() : mPlane(0.f, CVector3f::Right()), mT(0.f) {}
+#endif
   };
 
   class TriListReference {
