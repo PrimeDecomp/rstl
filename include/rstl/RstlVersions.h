@@ -337,8 +337,6 @@
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_P2ME)
 // `destroy` calls `clear()` instead of erasing the range.
 #define RSTL_LIST_DESTROY_CALLS_CLEAR (RSTL_VERSION >= RSTL_GM8P_00)
-// `~list` calls the element destructor directly instead of `rstl::destroy`.
-#define RSTL_LIST_DIRECT_DTOR_CALL (RSTL_CORRUPTION)
 // Iterators have real postfix `++` / `--`.
 #define RSTL_LIST_POSTFIX_ITERATORS (RSTL_VERSION >= RSTL_P2ME)
 // The sentinel `mEmpty_prev` is a plain, unaligned pointer.

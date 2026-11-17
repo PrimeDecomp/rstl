@@ -446,10 +446,7 @@ list< T, Alloc >::~list() {
     node* it = cur;
     node* next = cur->get_next();
     cur = next;
-#if RSTL_LIST_DIRECT_DTOR_CALL
-    it->get_value()->~T();
-    GetAllocator().deallocate(it);
-#elif RSTL_ALLOCATOR_INSTANCE
+#if RSTL_ALLOCATOR_INSTANCE
     rstl::destroy(it->get_value());
     GetAllocator().deallocate(it);
 #else
