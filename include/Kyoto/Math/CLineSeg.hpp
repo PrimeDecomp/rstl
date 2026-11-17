@@ -14,6 +14,8 @@ public:
   : CLine(start, CUnitVector3f((end - start).AsNormalized())), mEnd(end) {}
 
   const CVector3f& GetEndPoint() const { return mEnd; }
+  // Guessed name
+  CVector3f GetClosestPoint(const CVector3f& point) const;
 
 private:
   CVector3f mEnd;
