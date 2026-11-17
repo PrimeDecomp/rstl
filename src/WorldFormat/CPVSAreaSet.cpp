@@ -5,6 +5,10 @@
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "rstl/auto_ptr.hpp"
 
+#if defined(TARGET_PC)
+#include "Metaforce/Endian.hpp"
+#endif
+
 CPVSAreaSet::CPVSAreaSet(int numFeatures, int numLights, int num2ndLights, int numActors,
                          int leafSize, int lightIndexCount, const char* entityIds,
                          const char* lightLeaves, const char* octreeData)
@@ -64,5 +68,9 @@ CPVSVisSet CPVSAreaSet::GetLightSet(int lightIndex) const {
 }
 
 int CPVSAreaSet::GetEntityIdByIndex(uint index) const {
+#if defined(TARGET_PC)
+  return read_bits< int >(mEntityIds + index * 4);
+#else
   return CBasics::SwapBytes(reinterpret_cast< const int* >(mEntityIds)[index]);
+#endif
 }

@@ -10,6 +10,12 @@
 #endif
 #include <string.h>
 
+#if defined(TARGET_PC)
+#include <borealis/log.hpp>
+
+#include "Metaforce/Endian.hpp"
+#endif
+
 #if TARGET_BIG_ENDIAN
 static const CTransform4f& TransformFromData(const void* ptr) {
   return *static_cast< const CTransform4f* >(ptr);
@@ -40,27 +46,44 @@ static CAABox BoundingBoxFromData(const void* ptr) {
 #endif
 }
 
-CMetroidModelInstance::CMetroidModelInstance(const void* header, const void* materials,
-                                             const void* positions, const void* normals,
-                                             const void* colors, const void* texCoords,
-                                             const void* packedTexCoords,
-                                             const rstl::vector< TSurface >& surfaces
+#if defined(TARGET_PC)
+namespace {
+constexpr borealis::Log Log{"CMetroidModelInstance"};
+
+const uchar* CheckedModelHeader(TModelData header) {
+  if (header.size() < 76) {
+    Log.fatal("Truncated MREA model header");
+  }
+  return header.data();
+}
+} // namespace
+
+CMetroidModelInstance::CMetroidModelInstance(
+    TModelData header, TModelData materialData, const SModelArrays& arrays,
+    const std::vector< TModelData >& surfaces IF_NOT_RSTL_PRIME1(, std::span< uchar > section1,
+                                                                 std::span< uchar > section2))
+: mVisorFlags(read_bits< uint >(CheckedModelHeader(header)))
+, mWorldTransform(TransformFromData(header.data() + 4))
+, mWorldBounds(ReadModelBounds(header.subspan(52, 24)))
+, mMaterialData(materialData)
+, mSurfaces(surfaces)
+, mArrays(arrays)
 #if !RSTL_PRIME1
-                                             ,
-                                             const void* const& section1,
-                                             const void* const& section2
+, x74_(PrepareUShortTable(section1).data())
+, mSurfaceGroups(PrepareUShortTable(section2).data())
 #endif
-                                             )
-#if RSTL_PRIME1
-: mVisorFlags(CBasics::SwapBytes(*reinterpret_cast< const uint* >(header)))
-, mWorldTransform(TransformFromData((uchar*)header + sizeof(uint)))
-, mWorldBounds(BoundingBoxFromData((uchar*)header + sizeof(CTransform4f) + sizeof(uint)))
+{
+}
 #else
-: mVisorFlags(*static_cast< const uint* >(header))
+CMetroidModelInstance::CMetroidModelInstance(
+    const void* header, const void* materials, const void* positions, const void* normals,
+    const void* colors, const void* texCoords, const void* packedTexCoords,
+    const rstl::vector< TSurface >& surfaces IF_NOT_RSTL_PRIME1(, const void* const& section1,
+                                                                const void* const& section2))
+: mVisorFlags(CBasics::SwapBytes(*static_cast< const uint* >(header)))
 , mWorldTransform(TransformFromData(static_cast< const uchar* >(header) + sizeof(uint)))
 , mWorldBounds(BoundingBoxFromData(static_cast< const uchar* >(header) + sizeof(CTransform4f) +
                                    sizeof(uint)))
-#endif
 , mMaterialData(materials)
 , mSurfaces(surfaces)
 , mPositions(positions)
@@ -68,12 +91,17 @@ CMetroidModelInstance::CMetroidModelInstance(const void* header, const void* mat
 , mColors(colors)
 , mTexCoords(texCoords)
 #if RSTL_PRIME1
-, mPackedTexCoords(packedTexCoords) {}
+, mPackedTexCoords(packedTexCoords)
 #else
 , mPackedTexCoords(packedTexCoords)
 , x74_(section1)
-, mSurfaceGroups(section2) {}
+, mSurfaceGroups(section2)
+#endif
+{
+}
+#endif
 
+#if !RSTL_PRIME1
 const ushort* CMetroidModelInstance::CSurfaceGroups::GetSurfaceIndices(int group) const {
   const int start = group != 0 ? mData[group] : 0;
   return mData + (mData[0] + 1) + start;
