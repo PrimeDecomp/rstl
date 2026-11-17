@@ -454,6 +454,9 @@ struct optional_object_value_policy {
 #if RSTL_DESTROY_IMPL_EXTERN_DECL
 template < typename T >
 void destroy_impl(T* in);
+
+template < typename It >
+void destroy_impl(It begin, It end);
 #endif
 
 template < typename T >
