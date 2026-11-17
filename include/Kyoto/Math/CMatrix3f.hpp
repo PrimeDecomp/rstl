@@ -65,6 +65,13 @@ public:
 
   void AddScaledMatrix(const CMatrix3f& mat, float scale);
 
+  // Guessed name
+  inline CVector3f& GetRow(EDimX dim) { return *reinterpret_cast< CVector3f* >(&m00); }
+  // Guessed name
+  inline CVector3f& GetRow(EDimY dim) { return *reinterpret_cast< CVector3f* >(&m10); }
+  // Guessed name
+  inline CVector3f& GetRow(EDimZ dim) { return *reinterpret_cast< CVector3f* >(&m20); }
+
   // TODO: names/check
   inline const CVector3f& GetRow(EDimX dim) const {
     return *reinterpret_cast< const CVector3f* >(&m00);

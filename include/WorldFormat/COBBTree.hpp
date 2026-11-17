@@ -148,6 +148,7 @@ public:
   const CNode* GetRoot() const { return mRoot; }
   const SIndexData& GetIndexData() const { return mIndexData; }
 #endif
+  const CNode& GetRootNode() const { return *mRoot; }
   CAABox CalculateLocalAABox() const;
 
   static rstl::auto_ptr< COBBTree > BuildOrientedBoundingBoxTree(const CVector3f& extent,

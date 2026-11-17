@@ -11,6 +11,11 @@
 
 class CInputStream;
 
+#if RSTL_PRIME1
+// Prime's symbols name this class CCollidableOBBTreeGroupContainer; Echoes' name it COBBTreeGroup.
+#define COBBTreeGroup CCollidableOBBTreeGroupContainer
+#endif
+
 class COBBTreeGroup {
 public:
   explicit COBBTreeGroup(CInputStream& in);
@@ -18,6 +23,7 @@ public:
   explicit COBBTreeGroup(rstl::auto_ptr< COBBTree >& tree);
 
   int NumTrees() const { return mTrees.size(); }
+  const CAABox& GetAABox(int idx) const { return mAabbs[idx]; }
   COBBTree* GetTree(int idx) const { return mTrees[idx].get(); } // Guessed name.
 
 private:
