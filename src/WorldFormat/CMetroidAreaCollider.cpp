@@ -396,9 +396,6 @@ bool CMetroidAreaCollider::AABoxCollisionCheck(const CAreaOctTree& octTree, cons
   };
   CAABoxAreaCache cache(aabb, planes, filter, matList, list);
   ResetInternalCounters();
-#if RSTL_PRIME1
-
-#endif
   return AABoxCollisionCheck_Internal(octTree.GetRootNode(), cache);
 }
 
@@ -832,11 +829,7 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
                     triMagD < dOut) {
                   triRet = true;
                   infoOut = CCollisionInfo(intersectPoint - sphere.GetRadius() * surfNormal,
-#if RSTL_PRIME1
-                                           matList, triMat, surfNormal);
-#else
-                                           matList, triMat, surfNormal, -1);
-#endif
+                                           matList, triMat, surfNormal COLLISION_OBJECT_ID);
                   dOut = triMagD;
                   ret = true;
                 }
@@ -882,11 +875,7 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
                                     (sphere.GetCenter() + static_cast< float >(eMag) * dir - ePoint)
                                         .AsNormalized();
                                 infoOut = CCollisionInfo(ePoint, matList, CMaterialList(edgeMatVal),
-#if RSTL_PRIME1
-                                                         eNormal);
-#else
-                                                         eNormal, -1);
-#endif
+                                                         eNormal COLLISION_OBJECT_ID);
                                 dOut = eMag;
                                 ret = true;
                                 testVert[k] = false;
@@ -928,11 +917,7 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
                                 .AsNormalized();
                         infoOut = CCollisionInfo(surf.GetVert(k), matList,
                                                  CMaterialList(owner.GetVertMaterial(vertIdx)),
-#if RSTL_PRIME1
-                                                 vNormal);
-#else
-                                                 vNormal, -1);
-#endif
+                                                 vNormal COLLISION_OBJECT_ID);
                         dOut = d;
                         ret = true;
                       }
@@ -1131,11 +1116,7 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
                                                          normal, point) &&
                   d < dOut) {
                 triRet = true;
-#if RSTL_PRIME1
-                infoOut = CCollisionInfo(point, matList, triMat, normal);
-#else
-                infoOut = CCollisionInfo(point, matList, triMat, normal, -1);
-#endif
+                infoOut = CCollisionInfo(point, matList, triMat, normal COLLISION_OBJECT_ID);
                 ret = true;
                 dOut = d;
               }
@@ -1185,11 +1166,7 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
                                                        components.mEdges, dir, d, normal, point) &&
                         d < dOut) {
                       triRet = true;
-#if RSTL_PRIME1
-                      infoOut = CCollisionInfo(point, matList, CMaterialList(edgeMat), normal);
-#else
-                      infoOut = CCollisionInfo(point, matList, CMaterialList(edgeMat), normal, -1);
-#endif
+                      infoOut = CCollisionInfo(point, matList, CMaterialList(edgeMat), normal COLLISION_OBJECT_ID);
                       ret = true;
                       dOut = d;
                     }
@@ -1625,9 +1602,7 @@ CMetroidAreaCollider::CMovingAABoxComponents::CMovingAABoxComponents(const CAABo
 : mAabb(aabb) {
   bool edgeFlags[12] = {};
   bool vertFlags[8] = {};
-#if RSTL_PRIME1
-  uint useFaces = 0;
-#else
+#if !RSTL_PRIME1
   static rstl::reserved_vector< rstl::pair< int, int >, 12 > edgeIndices;
   static rstl::reserved_vector< SBoxEdge, 12 > edges;
   static int edgeAxes[12];
@@ -1649,16 +1624,10 @@ CMetroidAreaCollider::CMovingAABoxComponents::CMovingAABoxComponents(const CAABo
       uint face = i * 2 + (dir[i] < 0.f);
       FlagEdgeIndicesForFace(face, edgeFlags);
       FlagVertexIndicesForFace(face, vertFlags);
-#if RSTL_PRIME1
-      useFaces += 1;
-#else
       ++faceCount;
-#endif
     }
   }
-#if RSTL_PRIME1
-
-#else
+#if !RSTL_PRIME1
   double invX = 1.;
   double invY = 1.;
   double invZ = 1.;
@@ -1729,11 +1698,9 @@ CMetroidAreaCollider::CMovingAABoxComponents::CMovingAABoxComponents(const CAABo
   }
 #if RSTL_PRIME1
   }
-
-  if (useFaces == 1) {
-#else
-  if (faceCount == 1) {
 #endif
+
+  if (faceCount == 1) {
     mAabb = CAABox::MakeMaxInvertedBox();
     mAabb.AccumulateBounds(aabb.GetPoint(mVertIdxs[0]));
     mAabb.AccumulateBounds(aabb.GetPoint(mVertIdxs[1]));
