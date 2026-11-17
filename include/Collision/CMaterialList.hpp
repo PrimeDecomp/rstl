@@ -183,7 +183,9 @@ private:
 CHECK_SIZEOF(CMaterialList, 0x8)
 
 #if !RSTL_PRIME1
-ECHOES_RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CMaterialList)
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CMaterialList)
+} // namespace rstl
 #endif
 
 #endif // _CMATERIALLIST
