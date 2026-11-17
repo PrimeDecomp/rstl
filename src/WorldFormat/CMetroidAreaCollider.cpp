@@ -11,18 +11,10 @@
 
 #include "Collision/CMRay.hpp"
 #include "Collision/CollisionUtil.hpp"
-#if RSTL_PRIME1
 #include "WorldFormat/CCollisionEdge.hpp"
 
-#else
-#include "Kyoto/Basics/CBasics.hpp"
-#endif
 #include "Kyoto/Math/CMath.hpp"
-#if RSTL_PRIME1
 
-#else
-#include <float.h>
-#endif
 #include <math.h>
 #include <string.h>
 
@@ -35,6 +27,18 @@
 #define DupVertexListValue(i) spDupVertexList[i]
 #define DupEdgeListValue(i) spDupEdgeList[i]
 #define DupTriangleListValue(i) spDupTriangleList[i]
+#endif
+
+#if RSTL_PRIME1
+#define OCTREE_SURFACE(name, owner, index) const CCollisionSurface& name = (owner).GetMasterListTriangle(index)
+#define COLLISION_OBJECT_ID
+typedef ushort TTriIndex;
+typedef uint TMaterialBits;
+#else
+typedef uint TTriIndex;
+typedef u64 TMaterialBits;
+#define COLLISION_OBJECT_ID , -1
+#define OCTREE_SURFACE(name, owner, index) const CCollisionSurface name((owner).GetTriangle(index))
 #endif
 
 static uint gCalledClip = 0;
@@ -196,20 +200,12 @@ bool CMetroidAreaCollider::AABoxCollisionCheck_Internal(const CAreaOctTree::Node
     const CPlane* planes = cache.mPlanes;
     for (int j = 0; j < size; ++j) {
       ++gTrianglesProcessed;
-#if RSTL_PRIME1
       ushort triIdx = list.GetAt(j);
-#else
-      uint triIdx = list.GetAt(j);
-#endif
       if (sDupPrimitiveCheckCount == DupTriangleListValue(triIdx)) {
         ++gDupTrianglesProcessed;
       } else {
         DupTriangleListValue(triIdx) = sDupPrimitiveCheckCount;
-#if RSTL_PRIME1
-        const CCollisionSurface& surf = owner.GetMasterListTriangle(triIdx);
-#else
-        const CCollisionSurface surf(owner.GetTriangle(triIdx));
-#endif
+        OCTREE_SURFACE(surf, owner, triIdx);
         CMaterialList material(surf.GetSurfaceFlags());
         if (filter.Passes(material)) {
           if (CollisionUtil::TriBoxOverlap(cache.mCenter, cache.mHalfExtent, surf.GetVert(0),
@@ -218,12 +214,8 @@ bool CMetroidAreaCollider::AABoxCollisionCheck_Internal(const CAreaOctTree::Node
             if (ConvexPolyCollision(planes, &surf.GetVert(0), aabb)) {
               CPlane plane = surf.GetPlane();
               cache.mCollisionList.Add(CCollisionInfo(aabb, cache.mMaterial, material,
-#if RSTL_PRIME1
-                                                         plane.GetNormal(), -plane.GetNormal()),
-                                          false);
-#else
-                                                      plane.GetNormal(), -plane.GetNormal(), -1));
-#endif
+                                                      plane.GetNormal(),
+                                                      -plane.GetNormal() COLLISION_OBJECT_ID));
               ret = true;
             }
           }
@@ -289,11 +281,7 @@ bool CMetroidAreaCollider::AABoxCollisionCheck_Cached(const COctreeLeafCache& le
       int size = listRef.GetSize();
       for (int j = 0; j < size; ++j) {
         ++gTrianglesProcessed;
-#if RSTL_PRIME1
         ushort triIdx = listRef.GetAt(j);
-#else
-        uint triIdx = listRef.GetAt(j);
-#endif
         if (sDupPrimitiveCheckCount == DupTriangleListValue(triIdx)) {
           ++gDupTrianglesProcessed;
         } else {
@@ -407,9 +395,6 @@ bool CMetroidAreaCollider::AABoxCollisionCheck(const CAreaOctTree& octTree, cons
       CPlane(max, -yAxis), CPlane(min, zAxis),  CPlane(max, -zAxis),
   };
   CAABoxAreaCache cache(aabb, planes, filter, matList, list);
-#if RSTL_PRIME1
-
-#endif
   ResetInternalCounters();
 #if RSTL_PRIME1
 
@@ -435,11 +420,7 @@ bool CMetroidAreaCollider::AABoxCollisionCheckBoolean_Internal(
           int size = list.GetSize();
           for (int j = 0; j < size; ++j) {
             ++gTrianglesProcessed;
-#if RSTL_PRIME1
-            const CCollisionSurface& surf = owner.GetMasterListTriangle(list.GetAt(j));
-#else
-            const CCollisionSurface surf(owner.GetTriangle(list.GetAt(j)));
-#endif
+            OCTREE_SURFACE(surf, owner, list.GetAt(j));
             if (cache.mFilter.Passes(CMaterialList(surf.GetSurfaceFlags()))) {
               if (CollisionUtil::TriBoxOverlap(cache.mCenter, cache.mHalfExtent, surf.GetVert(0),
                                                surf.GetVert(1), surf.GetVert(2)) == true)
@@ -479,11 +460,7 @@ bool CMetroidAreaCollider::AABoxCollisionCheckBoolean_Cached(const COctreeLeafCa
       int size = list.GetSize();
       for (int j = 0; j < size; ++j) {
         ++gTrianglesProcessed;
-#if RSTL_PRIME1
-        const CCollisionSurface& surf = owner.GetMasterListTriangle(list.GetAt(j));
-#else
-        const CCollisionSurface surf(owner.GetTriangle(list.GetAt(j)));
-#endif
+        OCTREE_SURFACE(surf, owner, list.GetAt(j));
         if (filter.Passes(CMaterialList(surf.GetSurfaceFlags()))) {
           if (CollisionUtil::TriBoxOverlap(center, halfExtent, surf.GetVert(0), surf.GetVert(1),
                                            surf.GetVert(2)) == true)
@@ -561,31 +538,19 @@ bool CMetroidAreaCollider::SphereCollisionCheck_Internal(const CAreaOctTree::Nod
           int size = list.GetSize();
           for (int j = 0; j < size; ++j) {
             ++gTrianglesProcessed;
-#if RSTL_PRIME1
             ushort triIdx = list.GetAt(j);
-#else
-            uint triIdx = list.GetAt(j);
-#endif
             if (sDupPrimitiveCheckCount == DupTriangleListValue(triIdx)) {
               ++gDupTrianglesProcessed;
             } else {
               DupTriangleListValue(triIdx) = sDupPrimitiveCheckCount;
-#if RSTL_PRIME1
-              const CCollisionSurface& surf = owner.GetMasterListTriangle(triIdx);
-#else
-              const CCollisionSurface surf(owner.GetTriangle(triIdx));
-#endif
+              OCTREE_SURFACE(surf, owner, triIdx);
               CMaterialList material(surf.GetSurfaceFlags());
               if (cache.mFilter.Passes(material)) {
                 if (CollisionUtil::TriSphereIntersection(cache.mSphere, surf.GetVert(0),
                                                          surf.GetVert(1), surf.GetVert(2), point,
                                                          normal)) {
-                  cache.mCollisionList.Add(
-#if RSTL_PRIME1
-                      CCollisionInfo(point, cache.mMaterial, material, normal), false);
-#else
-                      CCollisionInfo(point, cache.mMaterial, material, normal, -1));
-#endif
+                  cache.mCollisionList.Add(CCollisionInfo(point, cache.mMaterial, material,
+                                                          normal COLLISION_OBJECT_ID));
                   ret = true;
                 }
               }
@@ -626,29 +591,17 @@ bool CMetroidAreaCollider::SphereCollisionCheck_Cached(const COctreeLeafCache& l
       int size = list.GetSize();
       for (int j = 0; j < size; ++j) {
         ++gTrianglesProcessed;
-#if RSTL_PRIME1
         ushort triIdx = list.GetAt(j);
-#else
-        uint triIdx = list.GetAt(j);
-#endif
         if (sDupPrimitiveCheckCount == DupTriangleListValue(triIdx)) {
           ++gDupTrianglesProcessed;
         } else {
           DupTriangleListValue(triIdx) = sDupPrimitiveCheckCount;
-#if RSTL_PRIME1
-          const CCollisionSurface& surf = owner.GetMasterListTriangle(triIdx);
-#else
-          const CCollisionSurface surf(owner.GetTriangle(triIdx));
-#endif
+          OCTREE_SURFACE(surf, owner, triIdx);
           CMaterialList material(surf.GetSurfaceFlags());
           if (filter.Passes(material)) {
             if (CollisionUtil::TriSphereIntersection(sphere, surf.GetVert(0), surf.GetVert(1),
                                                      surf.GetVert(2), point, normal)) {
-#if RSTL_PRIME1
-              clist.Add(CCollisionInfo(point, matList, material, normal), false);
-#else
-              clist.Add(CCollisionInfo(point, matList, material, normal, -1));
-#endif
+              clist.Add(CCollisionInfo(point, matList, material, normal COLLISION_OBJECT_ID));
               ret = true;
             }
           }
@@ -719,11 +672,7 @@ bool CMetroidAreaCollider::SphereCollisionCheckBoolean_Internal(
           int size = list.GetSize();
           for (int j = 0; j < size; ++j) {
             ++gTrianglesProcessed;
-#if RSTL_PRIME1
-            const CCollisionSurface& surf = owner.GetMasterListTriangle(list.GetAt(j));
-#else
-            const CCollisionSurface surf(owner.GetTriangle(list.GetAt(j)));
-#endif
+            OCTREE_SURFACE(surf, owner, list.GetAt(j));
             if (cache.mFilter.Passes(CMaterialList(surf.GetSurfaceFlags()))) {
               if (CollisionUtil::TriSphereOverlap(cache.mSphere, surf.GetVert(0), surf.GetVert(1),
                                                   surf.GetVert(2)) == true)
@@ -757,11 +706,7 @@ bool CMetroidAreaCollider::SphereCollisionCheckBoolean_Cached(const COctreeLeafC
       int size = list.GetSize();
       for (int j = 0; j < size; ++j) {
         ++gTrianglesProcessed;
-#if RSTL_PRIME1
-        const CCollisionSurface& surf = owner.GetMasterListTriangle(list.GetAt(j));
-#else
-        const CCollisionSurface surf(owner.GetTriangle(list.GetAt(j)));
-#endif
+        OCTREE_SURFACE(surf, owner, list.GetAt(j));
         if (filter.Passes(CMaterialList(surf.GetSurfaceFlags()))) {
           if (CollisionUtil::TriSphereOverlap(sphere, surf.GetVert(0), surf.GetVert(1),
                                               surf.GetVert(2)) == true)
@@ -844,19 +789,11 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
       const CAreaOctTree& owner = node.GetOwner();
       int listSize = list.GetSize();
       for (int j = 0; j < listSize; ++j) {
-#if RSTL_PRIME1
-        ushort triIdx = list.GetAt(j);
-#else
-        uint triIdx = list.GetAt(j);
-#endif
+        TTriIndex triIdx = list.GetAt(j);
         if (sDupPrimitiveCheckCount != DupTriangleListValue(triIdx)) {
           DupTriangleListValue(triIdx) = sDupPrimitiveCheckCount;
           ++gTrianglesProcessed;
-#if RSTL_PRIME1
-          uint matValue = owner.GetTriangleMaterial(triIdx);
-#else
-          u64 matValue = owner.GetTriangleMaterial(triIdx);
-#endif
+          TMaterialBits matValue = owner.GetTriangleMaterial(triIdx);
           CMaterialList triMat(matValue);
           if (filter.Passes(triMat)) {
             ushort vertIndices[3];
@@ -913,13 +850,8 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
                     int edgeIdx = edgeIndices[k];
                     if (sDupPrimitiveCheckCount != DupEdgeListValue(edgeIdx)) {
                       DupEdgeListValue(edgeIdx) = sDupPrimitiveCheckCount;
-#if RSTL_PRIME1
-                      uint edgeMatVal = owner.GetEdgeMaterial(edgeIdx);
-                      if (!(edgeMatVal & (1u << kMT_NoEdgeCollision))) {
-#else
-                      u64 edgeMatVal = owner.GetEdgeMaterial(edgeIdx);
-                      if (!(edgeMatVal & (u64(1) << kMT_NoEdgeCollision))) {
-#endif
+                      TMaterialBits edgeMatVal = owner.GetEdgeMaterial(edgeIdx);
+                      if (!(edgeMatVal & (TMaterialBits(1) << kMT_NoEdgeCollision))) {
                         static int mod3[4] = {0, 1, 2, 0};
                         CVector3f edgeVec = surf.GetVert(mod3[k + 1]) - surf.GetVert(k);
                         float edgeVecMag = edgeVec.Magnitude();
@@ -981,7 +913,7 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
 #if RSTL_PRIME1
                     if (sDupPrimitiveCheckCount != DupVertexListValue(vertIdx)) {
 #else
-                    if (!(owner.GetVertMaterial(vertIdx) & (u64(1) << kMT_NoEdgeCollision)) &&
+                    if (!(owner.GetVertMaterial(vertIdx) & (TMaterialBits(1) << kMT_NoEdgeCollision)) &&
                         sDupPrimitiveCheckCount != DupVertexListValue(vertIdx)) {
 #endif
                       DupVertexListValue(vertIdx) = sDupPrimitiveCheckCount;
@@ -1091,8 +1023,8 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
 
       for (int k = 0; k < 3; ++k) {
         int vertIdx = vertIndices[k];
-        u64 vertMat = iterator.GetGeometry().GetVertMaterial(vertIdx);
-        if (!(vertMat & (u64(1) << kMT_NoEdgeCollision)) &&
+        TMaterialBits vertMat = iterator.GetGeometry().GetVertMaterial(vertIdx);
+        if (!(vertMat & (TMaterialBits(1) << kMT_NoEdgeCollision)) &&
             sDupPrimitiveCheckCount != DupVertexListValue(vertIdx)) {
           DupVertexListValue(vertIdx) = sDupPrimitiveCheckCount;
           const CVector3f& vtx = surf.GetVert(k);
@@ -1114,8 +1046,8 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
       const ushort* edgeIndices = iterator.GetGeometry().GetTriangleEdgeIndices(triIdx);
       for (int k = 0; k < 3; ++k) {
         int edgeIdx = edgeIndices[k];
-        u64 edgeMat = iterator.GetGeometry().GetEdgeMaterial(edgeIdx);
-        if (!(edgeMat & (u64(1) << kMT_NoEdgeCollision))) {
+        TMaterialBits edgeMat = iterator.GetGeometry().GetEdgeMaterial(edgeIdx);
+        if (!(edgeMat & (TMaterialBits(1) << kMT_NoEdgeCollision))) {
           if (sDupPrimitiveCheckCount != DupEdgeListValue(edgeIdx)) {
             DupEdgeListValue(edgeIdx) = sDupPrimitiveCheckCount;
             d = dOut;
@@ -1179,19 +1111,11 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
       const CAreaOctTree& owner = node.GetOwner();
       int listSize = list.GetSize();
       for (int j = 0; j < listSize; ++j) {
-#if RSTL_PRIME1
-        ushort triIdx = list.GetAt(j);
-#else
-        uint triIdx = list.GetAt(j);
-#endif
+        TTriIndex triIdx = list.GetAt(j);
         if (sDupPrimitiveCheckCount != DupTriangleListValue(triIdx)) {
           DupTriangleListValue(triIdx) = sDupPrimitiveCheckCount;
           ++gTrianglesProcessed;
-#if RSTL_PRIME1
-          uint matValue = owner.GetTriangleMaterial(triIdx);
-#else
-          u64 matValue = owner.GetTriangleMaterial(triIdx);
-#endif
+          TMaterialBits matValue = owner.GetTriangleMaterial(triIdx);
           CMaterialList triMat(matValue);
           if (filter.Passes(triMat)) {
             ushort vertIndices[3];
@@ -1221,8 +1145,8 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
 #if RSTL_PRIME1
                 if (sDupPrimitiveCheckCount != DupVertexListValue(vertIdx)) {
 #else
-                u64 vertMat = owner.GetVertMaterial(vertIdx);
-                if (!(vertMat & (u64(1) << kMT_NoEdgeCollision)) &&
+                TMaterialBits vertMat = owner.GetVertMaterial(vertIdx);
+                if (!(vertMat & (TMaterialBits(1) << kMT_NoEdgeCollision)) &&
                     sDupPrimitiveCheckCount != DupVertexListValue(vertIdx)) {
 #endif
                   DupVertexListValue(vertIdx) = sDupPrimitiveCheckCount;
@@ -1252,13 +1176,8 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
                 int edgeIdx = edgeIndices[k];
                 if (sDupPrimitiveCheckCount != DupEdgeListValue(edgeIdx)) {
                   DupEdgeListValue(edgeIdx) = sDupPrimitiveCheckCount;
-#if RSTL_PRIME1
-                  uint edgeMat = owner.GetEdgeMaterial(edgeIdx);
-                  if (!(edgeMat & (1u << kMT_NoEdgeCollision))) {
-#else
-                  u64 edgeMat = owner.GetEdgeMaterial(edgeIdx);
-                  if (!(edgeMat & (u64(1) << kMT_NoEdgeCollision))) {
-#endif
+                  TMaterialBits edgeMat = owner.GetEdgeMaterial(edgeIdx);
+                  if (!(edgeMat & (TMaterialBits(1) << kMT_NoEdgeCollision))) {
                     d = dOut;
                     const CCollisionEdge& edge = owner.GetEdge(edgeIdx);
                     if (MovingAABoxCollisionCheck_Edge(owner.GetVert(edge.GetVertIndex1()),
@@ -1493,21 +1412,12 @@ void CAreaCollisionCache::AddOctreeLeafCache(
   if (leafCache.HasCacheOverflowed())
     mLeafOverflow = true;
 
-#if RSTL_PRIME1
   if (mLeafCaches.size() < 3) {
     mLeafCaches.push_back(leafCache);
   } else {
     mLeafOverflow = true;
     mCacheOverflow = true;
   }
-#else
-  if (mLeafCaches.size() < mLeafCaches.capacity())
-    mLeafCaches.push_back(leafCache);
-  else {
-    mLeafOverflow = true;
-    mCacheOverflow = true;
-  }
-#endif
 }
 
 void CAreaCollisionCache::SetCacheBounds(const CAABox& aabb) { mAabb = aabb; }
@@ -1522,7 +1432,6 @@ void CMetroidAreaCollider::BuildOctreeLeafCache(const CAreaOctTree::Node& node, 
                                                 COctreeLeafCache& leafCache) {
   for (int i = 0; i < 8; ++i) {
     CAreaOctTree::Node::ETreeType type = node.GetChildType(i);
-#if RSTL_PRIME1
     if (type != CAreaOctTree::Node::kTT_Invalid) {
       CAreaOctTree::Node ch = node.GetChild(i);
       if (aabb.DoBoundsOverlap(ch.GetBoundingBox())) {
@@ -1532,17 +1441,6 @@ void CMetroidAreaCollider::BuildOctreeLeafCache(const CAreaOctTree::Node& node, 
           BuildOctreeLeafCache(ch, aabb, leafCache);
       }
     }
-#else
-    if (type == CAreaOctTree::Node::kTT_Invalid)
-      continue;
-    CAreaOctTree::Node child = node.GetChild(i);
-    if (!aabb.DoBoundsOverlap(child.GetBoundingBox()))
-      continue;
-    if (type == CAreaOctTree::Node::kTT_Leaf)
-      leafCache.AddLeaf(child);
-    else
-      BuildOctreeLeafCache(child, aabb, leafCache);
-#endif
   }
 }
 
@@ -1745,9 +1643,7 @@ CMetroidAreaCollider::CMovingAABoxComponents::CMovingAABoxComponents(const CAABo
   }
 #endif
 
-#if !RSTL_PRIME1
   uint faceCount = 0;
-#endif
   for (int i = 0; i < 3; ++i) {
     if (dir[i] != 0.f) {
       uint face = i * 2 + (dir[i] < 0.f);
