@@ -2978,34 +2978,27 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
     }
   }
 }
+#endif
 
 #if RSTL_KYOTO_GRAPHICS_STREAM_VERTEX_DELAY
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
 #endif
-#endif
 
-CGraphicsSys::CGraphicsSys(const COsContext& osContext 
-#if !IS_TARGET_PC
-                           , const CMemorySys& memorySys
-#if RSTL_KYOTO_GRAPHICS_ARENA
-                           , bool progressive
-#else
-                           , uint fifoSize, void* fifoBase
-#endif
-#endif
-) {
+CGraphicsSys::CGraphicsSys(const COsContext& osContext) {
   if (mGraphicsInitialized != true) {
+    mGraphicsInitialized = CGraphics::Startup(osContext);
+  }
+}
 
-    mGraphicsInitialized = CGraphics::Startup(osContext
-#if !IS_TARGET_PC
-#if RSTL_KYOTO_GRAPHICS_ARENA
-                                              , progressive
-#else
-                                              fifoSize, fifoBase
-                                              // 0x10000, nullptr
-#endif
-#endif
-    );
+CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive){
+  if (mGraphicsInitialized != true) {
+    mGraphicsInitialized = CGraphics::Startup(osContext, progressive);
+  }
+}
+
+CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint fifoSize, void* fifoBase) {
+  if (mGraphicsInitialized != true) {
+    mGraphicsInitialized = CGraphics::Startup(osContext, fifoSize, fifoBase);
   }
 }
 
