@@ -833,9 +833,13 @@
 // CTri declares a copy constructor defined out of line.
 #define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_CORRUPTION)
 
+// FLT_MAX as a constant, where libc's FLT_MAX would read __float_max instead.
+#define RSTL_FLT_MAX 3.402823466e+38f
+// FLT_MAX in shared code: libc's on Corruption, the constant otherwise.
 #if RSTL_CORRUPTION
-#undef FLT_MAX
-#define FLT_MAX (*(float*)__float_max)
+#define RSTL_KYOTO_FLT_MAX FLT_MAX
+#else
+#define RSTL_KYOTO_FLT_MAX RSTL_FLT_MAX
 #endif
 
 // ============================================================================================

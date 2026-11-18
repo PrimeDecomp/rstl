@@ -1037,8 +1037,8 @@ void AddAverageToFront(const CCollisionInfoList& in, CCollisionInfoList& out) {
 
 bool AABox_ABBox_Moving(const CAABox& aabb0, const CAABox& aabb1, const CVector3f& dir, double& d,
                         CVector3f& point, CVector3f& normal) {
-  CVector3d vecMin(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-  CVector3d vecMax(FLT_MAX, FLT_MAX, FLT_MAX);
+  CVector3d vecMin(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
+  CVector3d vecMax(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
 
   const CVector3f& leftMin = aabb0.GetMinPoint();
   const CVector3f& rightMin = aabb1.GetMinPoint();

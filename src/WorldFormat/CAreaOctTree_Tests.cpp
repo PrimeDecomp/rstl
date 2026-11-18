@@ -11,12 +11,6 @@
 #include "math.h"
 #include "rstl/algorithm.hpp"
 
-#if !RSTL_PRIME1
-// This unit reads the MSL __float_max global instead of folding the constant.
-#undef FLT_MAX
-#define FLT_MAX (*(float*)__float_max)
-#endif
-
 struct SSubdivision {
   int count;
   CVector3i axes;

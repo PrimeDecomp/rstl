@@ -778,8 +778,8 @@ void CParticleElectric::CreateNewParticles(int count) {
         line.mVerts = mCalculatedVerts;
         UpdateLine(allocIdx, 0);
         if (!mHaveSSWH) {
-          mMinBounds = CVector3f(FLT_MAX, FLT_MAX, FLT_MAX);
-          mMaxBounds = CVector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+          mMinBounds = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
+          mMaxBounds = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
           for (int j = 0; j < mCalculatedVerts.size(); ++j) {
             const CVector3f& vert = mCalculatedVerts[j];
             mMaxBounds = CVector3f(rstl::max_val(vert.GetX(), mMaxBounds.GetX()),

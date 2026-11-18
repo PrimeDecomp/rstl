@@ -30,7 +30,7 @@ float CParticlePOINode::GetMaximumDistance() const {
   if (GetFlags() & 0x2000000) {
     return 20.f;
   }
-  return FLT_MAX;
+  return RSTL_KYOTO_FLT_MAX;
 }
 #endif
 

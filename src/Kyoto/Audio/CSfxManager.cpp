@@ -1366,7 +1366,7 @@ void CSfxManager::Update(float dt) {
         emitter->GetEmitter().mMaxVol = volume;
       }
       int closest = -1;
-      float distance = FLT_MAX;
+      float distance = RSTL_KYOTO_FLT_MAX;
       for (int k = primary; k < 4; ++k) {
         if (channel.mListeners[k].mActive) {
           const float candidate =

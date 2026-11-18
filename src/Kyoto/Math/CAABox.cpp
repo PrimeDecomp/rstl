@@ -12,12 +12,6 @@
 
 #include "float.h"
 
-#if !RSTL_PRIME1 && defined(__MWERKS__)
-// This unit reads the MSL __float_max global instead of folding the constant.
-#undef FLT_MAX
-#define FLT_MAX (*(float*)__float_max)
-#endif
-
 CAABox CAABox::mskInvertedBox(FLT_MAX, FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 CAABox CAABox::mskNullBox(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 
