@@ -56,6 +56,16 @@
 // The Corruption prototype and retail. Retail (no build) provisionally takes the prototype forms;
 // record a retail difference by excluding RSTL_RM3E/P/J from the macro concerned.
 #define RSTL_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J)
+// The largest finite float as a constant. libc's FLT_MAX is the same constant on Revolution and on
+// Metroid Prime's Dolphin SDKs, but reads the __float_max global on the Echoes and Corruption
+// prototype Dolphin SDKs; code whose original folded the constant on those uses this instead.
+#define RSTL_FLT_MAX 3.402823466e+38f
+// Shared Kyoto code: Corruption reads libc's FLT_MAX; Prime and Echoes fold the constant.
+#if RSTL_CORRUPTION
+#define RSTL_KYOTO_FLT_MAX FLT_MAX
+#else
+#define RSTL_KYOTO_FLT_MAX RSTL_FLT_MAX
+#endif
 // Trilogy as built for Echoes, whose fill and `reserved_vector` details are Echoes-era.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 
@@ -832,11 +842,6 @@
 #define RSTL_KYOTO_SPHERE_BOUNDING_BOX (RSTL_CORRUPTION)
 // CTri declares a copy constructor defined out of line.
 #define RSTL_KYOTO_TRI_OUT_OF_LINE_COPY (RSTL_CORRUPTION)
-
-#if RSTL_CORRUPTION
-#undef FLT_MAX
-#define FLT_MAX (*(float*)__float_max)
-#endif
 
 // ============================================================================================
 // Kyoto/Particles

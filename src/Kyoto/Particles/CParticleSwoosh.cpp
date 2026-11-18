@@ -289,8 +289,8 @@ void CParticleSwoosh::UpdateTranslationAndOrientation() {
     return;
   }
   mMaxRadius = 0.f;
-  mAabbMin = CVector3f(FLT_MAX, FLT_MAX, FLT_MAX);
-  mAabbMax = CVector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  mAabbMin = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
+  mAabbMax = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
   CParticleGlobals::SetParticleLifetime(mLENG);
   CParticleGlobals::SetEmitterTime(mCurFrame);
   int i = 0;
@@ -1388,8 +1388,8 @@ rstl::optional_object< CAABox > CParticleSwoosh::GetBounds() const {
 #if !RSTL_PRIME1
 void CParticleSwoosh::UpdateAllBounds() {
   mMaxRadius = 0.f;
-  mAabbMin = CVector3f(FLT_MAX, FLT_MAX, FLT_MAX);
-  mAabbMax = CVector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  mAabbMin = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
+  mAabbMax = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
   for (int i = 0; i < mSwooshes.capacity(); ++i) {
     SSwooshData& swoosh = mSwooshes.data()[i];
     if (!swoosh.mActive) {

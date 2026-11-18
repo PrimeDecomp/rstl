@@ -702,8 +702,8 @@ bool CElementGen::InternalUpdate(double dt) {
                                           )) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-    mAabbMin = CVector3f(FLT_MAX, FLT_MAX, FLT_MAX);
-    mAabbMax = CVector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    mAabbMin = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
+    mAabbMax = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
 #else
     mAabbMin = CVector3f(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
     mAabbMax = CVector3f(-3.4028235e38f, -3.4028235e38f, -3.4028235e38f);

@@ -215,8 +215,8 @@ CMayaSpline::CMayaSpline()
 : mPreInfinity(kIT_Constant)
 , mPostInfinity(kIT_Constant)
 , mClampMode(kCM_None)
-, mMinAmplitude(-FLT_MAX)
-, mMaxAmplitude(FLT_MAX) {}
+, mMinAmplitude(-RSTL_KYOTO_FLT_MAX)
+, mMaxAmplitude(RSTL_KYOTO_FLT_MAX) {}
 
 float CMayaSpline::EvaluateHermite(float time) const {
   const float t = time - mCache.mMinTime;
@@ -988,7 +988,7 @@ CMayaSpline CMayaSpline::CreateFor(float timeA, float amplitudeA, float timeB, f
   knots.reserve(2);
   knots.push_back_unsafe(CMayaSplineKnot(timeA, amplitudeA, 2, 2));
   knots.push_back_unsafe(CMayaSplineKnot(timeB, amplitudeB, 2, 2));
-  return CMayaSpline(knots, 0, 0, 0, -FLT_MAX, FLT_MAX);
+  return CMayaSpline(knots, 0, 0, 0, -RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
 }
 
 CMayaSpline CMayaSpline::BuildSpline(const CMayaSplineKnot* knots, uint count, int clampMode,
