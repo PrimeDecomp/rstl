@@ -2,7 +2,10 @@
 #include "rstl/macros.hpp"
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
+#if RSTL_AI_CALLBACK_USES_AUDIO_SYS
 #include "Kyoto/Audio/CAudioSys.hpp"
+#endif
 #include "dolphin/os.h"
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
@@ -24,8 +27,10 @@ void CAIInterruptManager::InstallAICallback() {
 #if IS_TARGET_PC
   sndPCSetOutputCallback(sCallbacks.empty() ? nullptr : AICallback);
 #else
+#if RSTL_AI_CALLBACK_USES_AUDIO_SYS
   bool old = CAudioSys::IsAICallbackEnabled();
   CAudioSys::EnableAICallback(true);
+#endif
 
   if (!sDMACallbackInstalled && sCallbacks.size() != 0) {
     sOldDMACallback = AIRegisterDMACallback(AICallback);
@@ -36,7 +41,9 @@ void CAIInterruptManager::InstallAICallback() {
     sDMACallbackInstalled = false;
   }
 
+#if RSTL_AI_CALLBACK_USES_AUDIO_SYS
   CAudioSys::EnableAICallback(old);
+#endif
 #endif
 }
 
@@ -51,6 +58,8 @@ void CAIInterruptManager::AICallback(IF_TARGET_PC(short* output, size_t frames, 
 void CAIInterruptManager::RunDMACallback(const FAudioCallback callback) {
   volatile const bool old = OSDisableInterrupts();
   if (rstl::find(sCallbacks.begin(), sCallbacks.end(), callback) == sCallbacks.end()) {
+    RS_VERIFY_THROW_DIRECT(124, sCallbacks.size() != sCallbacks.capacity(), false,
+                           "Out of audio callback slots!");
     sCallbacks.push_back(callback);
   }
 
