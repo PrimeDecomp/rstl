@@ -239,6 +239,7 @@ public:
 
   static float FastMin(float a, float b) { return FastFSel(a - b, b, a); }
   static bool IsWithinTolerance(float x, float y, float epsilon); // Guessed name
+  static bool IsInfinite(float x) { return isinf(x); }
   static bool IsNaN(float x) { return isnan(x); }
   static float FastMax(float a, float b) {
 #if RSTL_PRIME1
