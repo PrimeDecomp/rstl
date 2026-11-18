@@ -16,12 +16,8 @@ class CCollisionInfoList;
 class CMRay;
 class COBBox;
 class CSphere;
-#if !RSTL_PRIME1
-// Guessed names for the shared packed collision cache and its writer.
 class CCollisionCache;
 class CCollisionCacheWriter;
-#endif
-
 
 class CRayCastInfo {
   friend class CCollidableOBBTree;

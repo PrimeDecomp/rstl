@@ -55,9 +55,9 @@ struct SCollisionCacheIteratorState {
 CHECK_SIZEOF(SCollisionCacheIteratorState, 0x38)
 
 // Guessed name
-class CCollisionCacheIterator : private SCollisionCacheIteratorState {
+class CCollisionCacheIterator : public SCollisionCacheIteratorState {
+  // Inherits with `public` because matching code needs direct access to mGeometry
   friend class CCollisionCache;
-  friend class CGameCollision;
 
 public:
   CCollisionCacheIterator();
