@@ -20,13 +20,13 @@ public:
 
   TConnection(Key key, Owner* owner, DisconnectFn disconnect)
   : mKey(key), mOwner(owner), mDisconnect(disconnect) {}
+  void Detach() { mOwner = nullptr; }
   ~TConnection() {
     if (mOwner != nullptr) {
       (mOwner->*mDisconnect)(mKey);
     }
   }
 
-  void Detach() { mOwner = nullptr; }
   void SetKey(Key key) { mKey = key; }
 
 private:
