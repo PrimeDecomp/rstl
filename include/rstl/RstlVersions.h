@@ -553,6 +553,8 @@
 // Kyoto: top-level files (resources, paks, tokens, object tags, DVD requests)
 // ============================================================================================
 
+// SObjectTag's default constructor sets an invalid type and asset ID.
+#define RSTL_KYOTO_OBJECT_TAG_DEFAULT_INVALID (RSTL_CORRUPTION)
 // SObjectTag is declared trivially constructible for rstl containers.
 #define RSTL_KYOTO_OBJECT_TAG_TRIVIAL (!RSTL_PRIME1)
 // SObjectTag has a user-declared copy constructor.
