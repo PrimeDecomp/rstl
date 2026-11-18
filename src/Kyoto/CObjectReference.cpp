@@ -20,7 +20,7 @@ CObjectReference::CObjectReference(const rstl::auto_ptr< IObj >& obj)
 : mRefCount(0)
 , mLockCount(0)
 , mLoading(false)
-#if !RSTL_PRIME1
+#if !RSTL_PRIME1 && !RSTL_KYOTO_OBJECT_TAG_DEFAULT_INVALID
 , mObjTag(0xFFFFFFFF, kInvalidAssetId)
 #endif
 , mObjectStore(nullptr)

@@ -21,7 +21,11 @@ struct SObjectTag {
   FourCC type;
   CAssetId id;
 
-  SObjectTag() {}
+  SObjectTag()
+#if RSTL_KYOTO_OBJECT_TAG_DEFAULT_INVALID
+  : type(FourCC(-1)), id(kInvalidAssetId)
+#endif
+  {}
   SObjectTag(FourCC type, CAssetId id) : type(type), id(id) {}
 #if RSTL_KYOTO_OBJECT_TAG_COPY_CTOR
   SObjectTag(const SObjectTag& other) : type(other.type), id(other.id) {}
