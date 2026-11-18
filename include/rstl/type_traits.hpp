@@ -47,6 +47,17 @@ RSTL_FILL_ARGUMENT_BY_VALUE(float)
 RSTL_FILL_ARGUMENT_BY_VALUE(double)
 #undef RSTL_FILL_ARGUMENT_BY_VALUE
 
+// Guessed name.
+template < typename T >
+struct reserved_vector_fill_argument : fill_argument< T > {};
+
+#if RSTL_RESERVED_VECTOR_LONG_FILL_BY_REFERENCE
+template <>
+struct reserved_vector_fill_argument< long > {
+  typedef const long& type;
+};
+#endif
+
 // Guessed name. Keep argument passing independent of copy and destruction policies.
 template < typename T >
 struct type_traits {
@@ -58,7 +69,7 @@ struct type_traits {
 #else
   typedef const T& vector_insert_type;
 #endif
-  typedef typename fill_argument< T >::type reserved_vector_fill_type;
+  typedef typename reserved_vector_fill_argument< T >::type reserved_vector_fill_type;
 };
 #else
 // Guessed name. Keep argument passing independent of copy and destruction policies.

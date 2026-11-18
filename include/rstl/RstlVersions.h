@@ -165,6 +165,8 @@
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
 // Container fills, `resize` and `assign` take builtin values and pointers by value.
 #define RSTL_SCALAR_FILL_BY_VALUE (RSTL_VERSION >= RSTL_G2MEAB)
+// Fixed-capacity containers take signed long fill values by const reference.
+#define RSTL_RESERVED_VECTOR_LONG_FILL_BY_REFERENCE (RSTL_CORRUPTION)
 // Single-element vector insertion takes builtin values and pointers by value.
 #define RSTL_VECTOR_INSERT_SCALAR_BY_VALUE (RSTL_CORRUPTION)
 
