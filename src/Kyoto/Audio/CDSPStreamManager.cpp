@@ -769,15 +769,15 @@ CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
   CInterruptGuard interrupts;
   int idx = FindClaimedStreamIdx(handle);
   if (idx == -1) {
-    return kCDSPSM_Oneshot;
+    return kS_Oneshot;
   }
   switch (static_cast< int >(g_Streams[idx].mHeaderReadState)) {
   case 0:
-    return kCDSPSM_Oneshot;
+    return kS_Oneshot;
   case 2:
-    return g_Streams[idx].mHeader.mLoopFlag ? kCDSPSM_Looping : kCDSPSM_Oneshot;
+    return g_Streams[idx].mHeader.mLoopFlag ? kS_Looping : kS_Oneshot;
   default:
-    return kCDSPSM_Preparing;
+    return kS_Preparing;
   }
 }
 
@@ -863,7 +863,7 @@ void CDSPStreamManager::AllocateStream(int idx) {
 #endif
 
 #if !RSTL_PRIME1
-int CDSPStreamManager::GetStreamState(int handle) {
+CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
   if (handle < 0 && handle >= 2) {
     return kS_Oneshot;
   }

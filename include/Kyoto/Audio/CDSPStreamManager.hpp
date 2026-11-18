@@ -10,10 +10,7 @@
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
 #include "Kyoto/Audio/CDSPStream.hpp"
-#endif
 
 #include "rstl/string.hpp"
 
@@ -58,19 +55,11 @@ CHECK_SIZEOF(SDSPStreamVoice, 0x20)
 #endif
 
 class CDSPStreamManager {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  friend SStreamInfo MakeDSPStreamInfo(const CDSPStreamManager& stream);
-#else
 public:
-  enum EState { kS_Looping, kS_Oneshot };
-#endif
+  // Echoes never reports kS_Preparing.
+  enum EState { kS_Looping, kS_Oneshot, kS_Preparing };
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-public:
-  enum EState { kCDSPSM_Looping, kCDSPSM_Oneshot, kCDSPSM_Preparing };
-
   CDSPStreamManager(int unused = 0);
   CDSPStreamManager(const rstl::string& fileName, int handle, int volume, bool oneshot);
   CDSPStreamManager& operator=(const CDSPStreamManager& other);
@@ -86,64 +75,24 @@ public:
   static void UpdateVolume(int handle, int volume);
   static bool IsStreamAvailable(int handle);
   static bool CanStop(int handle);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   static EState GetStreamState(int handle);
-#else
-  static int GetStreamState(int handle);
-#endif
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
+  friend SStreamInfo MakeDSPStreamInfo(const CDSPStreamManager& stream);
+
+  enum EHeaderReadState { kHRS_Unread, kHRS_Reading, kHRS_Read };
+
   static int FindUnclaimedStreamIdx();
   static bool FindUnclaimedStereoPair(int& left, int& right);
   static int GetFreeHandleId();
   static int FindClaimedStreamIdx(int handle);
   static void AllocateStream(int idx);
   static void HeaderReadComplete(s32 result, DVDFileInfo* fileInfo);
-#else
-  enum EStreamState {
-    kSS_Idle,
-    kSS_ReadingHeader,
-    kSS_Priming,
-    kSS_Playing,
-    kSS_Stopping,
-    kSS_Finishing,
-  };
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   bool StartHeaderRead(DVDCallback callback);
   bool HasSupportedSampleRate();
   void WaitForReadCompletion();
-#else
-  static void DVDCallback(s32 result, DVDFileInfo* fileInfo);
-  static void ReadCompleted(s32 result, DVDFileInfo* fileInfo);
-  // Guessed name
-  static void IssueRead(DVDFileInfo* file, void* dest, int length, int offset,
-                        const SDSPStreamVoice& voice, const CDSPStreamManager& stream);
-  static u32 UpdateStream(void* buf1, u32 len1, void* buf2, u32 len2, u32 user);
-  static u32 UpdateSecondaryStream(void* buf1, u32 len1, void* buf2, u32 len2, u32 user);
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-private:
-  enum EHeaderReadState { kHRS_Unread, kHRS_Reading, kHRS_Read };
-#else
-  int AllocateVoice(int volume, uchar pan, SND_ADPCMSTREAM_INFO* info, bool primary);
-  int ActivateVoices();
-  void UpdateARAM();
-  void ReadData(uchar* left, uchar* right, uint length, int dataOffset, uint fileCur);
-  void BufferStream();
-  void StopStream();
-  void Deallocate();
-#endif
-
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   char CompanionRight() { return mCompanionRight; }
 
   ATTRIBUTE_ALIGN_DECL(32, dspadpcm_header mHeader);
@@ -153,28 +102,48 @@ private:
   uchar mHeaderReadState : 2;
   char mCompanionRight;
   char mCompanionLeft;
-#else
-  ATTRIBUTE_ALIGN_DECL(32, SRSFHeader mHeader);
-  DVDFileInfo mFiles[10];
-  int mDataOffset;
-  int mFileCur;
-  int mReadsPending;
-#endif
-
   char mVolume;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   char mOneshot;
   int mHandleId;
   uint mStreamId;
   DVDFileInfo mDvdFile;
 #else
+  enum EStreamState {
+    kSS_Idle,
+    kSS_ReadingHeader,
+    kSS_Priming,
+    kSS_Playing,
+    kSS_Stopping,
+    kSS_Finishing,
+  };
+
+  static void DVDCallback(s32 result, DVDFileInfo* fileInfo);
+  static void ReadCompleted(s32 result, DVDFileInfo* fileInfo);
+  // Guessed name
+  static void IssueRead(DVDFileInfo* file, void* dest, int length, int offset,
+                        const SDSPStreamVoice& voice, const CDSPStreamManager& stream);
+  static u32 UpdateStream(void* buf1, u32 len1, void* buf2, u32 len2, u32 user);
+  static u32 UpdateSecondaryStream(void* buf1, u32 len1, void* buf2, u32 len2, u32 user);
+
+  int AllocateVoice(int volume, uchar pan, SND_ADPCMSTREAM_INFO* info, bool primary);
+  int ActivateVoices();
+  void UpdateARAM();
+  void ReadData(uchar* left, uchar* right, uint length, int dataOffset, uint fileCur);
+  void BufferStream();
+  void StopStream();
+  void Deallocate();
+
+  ATTRIBUTE_ALIGN_DECL(32, SRSFHeader mHeader);
+  DVDFileInfo mFiles[10];
+  int mDataOffset;
+  int mFileCur;
+  int mReadsPending;
+  char mVolume;
   int mType;
   int mState;
   rstl::reserved_vector< int, 2 > mVoices;
   rstl::optional_object< CStreamPreloadedToken > mPreload;
 #endif
-
 };
 CHECK_SIZEOF(CDSPStreamManager, RSTL_PRIME1 ? 0xC0 : 0x300)
 
