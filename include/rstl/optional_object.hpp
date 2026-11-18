@@ -32,7 +32,11 @@ public:
     RSTL_PRECONDITION(m_data != nullptr);
 #endif
     if (other.valid()) {
-      construct< T >(m_data, other.data());
+      if (optional_object_value_policy< T >::use_for_copy) {
+        optional_object_value_policy< T >::construct_element(m_data, other.data());
+      } else {
+        construct< T >(m_data, other.data());
+      }
     }
   }
   ~optional_object() {

@@ -91,17 +91,13 @@ struct construction_policy< pair< L, R >, false > {
 };
 #endif
 
-#if RSTL_PAIR_INT_FLOAT_POLICY
-// These legacy element policies retain the native construction null checks and
-// destruction loops even though the individual members have trivial lifetimes.
+#if RSTL_OPTIONAL_PAIR_INT_FLOAT_PLACEMENT_COPY
 template <>
-struct is_trivially_destructible< pair< int, float > > {
-  enum { value = false };
-};
-
-template <>
-struct use_assignment_for_construction< pair< int, float > > {
-  enum { value = false };
+struct optional_object_value_policy< pair< int, float > > {
+  enum { value = true, use_for_copy = true };
+  static void construct_element(void* dest, const pair< int, float >& src) {
+    construction_policy< pair< int, float >, false >::construct(dest, src);
+  }
 };
 #endif
 
