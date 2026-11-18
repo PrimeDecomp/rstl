@@ -176,8 +176,8 @@
 
 // Pairs (except of auto_ptr or rc_ptr) are copied without the policy's precondition statement.
 #define RSTL_PAIR_CONSTRUCTION_POLICY (RSTL_CONSTRUCTION_POLICY && !RSTL_CONSTRUCT_MUTABLE_OVERLOAD)
-// `pair< int, float >` is explicitly kept non-trivial for the construction policies.
-#define RSTL_PAIR_INT_FLOAT_POLICY (RSTL_CORRUPTION)
+// Copy an optional `pair< int, float >` with placement construction.
+#define RSTL_OPTIONAL_PAIR_INT_FLOAT_PLACEMENT_COPY RSTL_CORRUPTION
 // `pair` also accepts a mutable second argument by reference.
 #define RSTL_PAIR_MUTABLE_SECOND (RSTL_CORRUPTION)
 // The `auto_ptr` pointer constructor defaults to null.

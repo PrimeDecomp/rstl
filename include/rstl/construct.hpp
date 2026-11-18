@@ -430,14 +430,14 @@ struct reserved_vector_push_policy {
 // Guessed policy name. Constructing a value does not establish whole-container copy policy.
 template < typename T >
 struct optional_object_value_policy {
-  enum { value = false };
+  enum { value = false, use_for_copy = false };
   static void construct_element(void* dest, const T& src) { construct(dest, src); }
 };
 
 #define RSTL_DECLARE_OPTIONAL_VALUE_CONSTRUCTION(T)                                                \
   template <>                                                                                      \
   struct optional_object_value_policy< T > {                                                       \
-    enum { value = true };                                                                         \
+    enum { value = true, use_for_copy = false };                                                 \
     static void construct_element(void* dest, const T& src) {                                      \
       construction_policy< T, true >::construct(dest, src);                                        \
     }                                                                                              \
