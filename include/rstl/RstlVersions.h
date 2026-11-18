@@ -664,6 +664,8 @@
 // Kyoto/Audio
 // ============================================================================================
 
+// The MusyX audio system gates the console DMA callback while it is being replaced.
+#define RSTL_AI_CALLBACK_USES_AUDIO_SYS (!RSTL_CORRUPTION)
 // Wii Echoes zeroes the audio effect with CBasics and defines the name methods out of line.
 #define RSTL_AUDIO_EFFECT_WII (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // Wii Echoes passes the input mix through while RSF decoding is muted.
