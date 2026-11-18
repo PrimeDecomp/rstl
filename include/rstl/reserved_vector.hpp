@@ -179,17 +179,21 @@ public:
 #endif
   reserved_vector(const reserved_vector& other) : mCount(other.mCount) {
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
-    // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
-    // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
-    RSTL_PRECONDITION(other.mCount >= 0);
-    RSTL_PRECONDITION(other.mCount <= N);
-    RSTL_PRECONDITION(mCount == other.mCount);
-    RSTL_PRECONDITION(other.data() != nullptr);
-    RSTL_PRECONDITION(data() != nullptr);
-    const T* it = other.begin();
-    T* cur = data();
-    for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
-      construction_policy< T, is_scalar_type< T >::value >::construct(cur, *it);
+    if (is_scalar_type< T >::value || use_assignment_for_construction< T >::value) {
+      // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
+      // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
+      RSTL_PRECONDITION(other.mCount >= 0);
+      RSTL_PRECONDITION(other.mCount <= N);
+      RSTL_PRECONDITION(mCount == other.mCount);
+      RSTL_PRECONDITION(other.data() != nullptr);
+      RSTL_PRECONDITION(data() != nullptr);
+      const T* it = other.begin();
+      T* cur = data();
+      for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
+        construction_policy< T, is_scalar_type< T >::value >::construct(cur, *it);
+      }
+    } else {
+      uninitialized_copy_n(other.begin(), mCount, data());
     }
   }
 #else
