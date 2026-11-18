@@ -528,6 +528,12 @@ string string_l(const char* data) {
   string::literal_t literal;
   return string(literal, data);
 }
+
+string operator+(const string& lhs, const string& rhs) {
+  string result(lhs);
+  result.append(rhs);
+  return result;
+}
 #else
 template <>
 basic_string< char, case_insensitive_char_traits< char > >::basic_string(
