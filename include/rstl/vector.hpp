@@ -130,9 +130,9 @@ public:
   mCount(count)
   , mCapacity(count) {
 #if RSTL_ALLOCATOR_INSTANCE
-    GetAllocator().allocate(mItems, mCount);
+    GetAllocator().allocate(mItems, size());
 #else
-    Alloc::allocate(mItems, mCount);
+    Alloc::allocate(mItems, size());
 #endif
 #if RSTL_VECTOR_FILL_CTOR_PRECONDITION
     RSTL_PRECONDITION(mItems != nullptr);
