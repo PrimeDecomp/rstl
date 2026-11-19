@@ -263,6 +263,11 @@ RSTL_CONSTRUCT_INLINE void construct(void* dest, const T& src) {
 }
 
 #if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+#if RSTL_CONSTRUCT_EXTERN_DECL
+template < typename T >
+void construct(void* dest, T& src);
+#endif
+
 template < typename T >
 RSTL_CONSTRUCT_INLINE void construct(void* dest, T& src) {
 #if RSTL_CONSTRUCTION_POLICY

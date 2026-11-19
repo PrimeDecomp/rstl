@@ -103,10 +103,26 @@ struct case_insensitive_char_traits {
 
 template < typename It >
 class reverse_iterator {
+#if RSTL_STRING_REVERSE_ITERATOR_REF
+  typedef const It& IteratorArgument;
+#else
+  typedef It IteratorArgument;
+#endif
+
 public:
   typedef typename iterator_traits< It >::value_type value_type;
 
-  explicit reverse_iterator(It it) : mIt(it - 1) {}
+  explicit reverse_iterator(IteratorArgument it)
+#if RSTL_STRING_REVERSE_ITERATOR_REF
+  : mIt(it)
+#else
+  : mIt(it - 1)
+#endif
+  {
+#if RSTL_STRING_REVERSE_ITERATOR_REF
+    mIt -= 1;
+#endif
+  }
 
   const value_type& operator*() const { return *mIt; }
   reverse_iterator& operator++() {
@@ -448,9 +464,12 @@ void basic_string< char, case_insensitive_char_traits< char > >::internal_derefe
 
 template < typename _CharTp, typename Traits, typename Alloc >
 template < typename It, typename OtherIt >
-inline int basic_string< _CharTp, Traits, Alloc >::internal_search_of(It first, It last,
-                                                                      OtherIt otherFirst,
-                                                                      OtherIt otherLast) {
+#if !RSTL_STRING_SEARCH_OF_OUT_OF_LINE
+inline
+#endif
+int basic_string< _CharTp, Traits, Alloc >::internal_search_of(It first, It last,
+                                                               OtherIt otherFirst,
+                                                               OtherIt otherLast) {
   int index = 0;
   for (It it = first; it != last; ++it, ++index) {
     for (OtherIt other = otherFirst; other != otherLast; ++other) {
@@ -481,8 +500,8 @@ int basic_string< _CharTp, Traits, Alloc >::find_first_of(const _CharTp* other, 
   int length = 0;
   const _CharTp* end = other;
   while ((count == -1 || length < count) && *end != Traits::eos()) {
-    ++length;
     ++end;
+    ++length;
   }
   const int found = internal_search_of(begin() + pos, this->end(), other, end);
   int result = found + pos;
