@@ -12,7 +12,6 @@ extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* sourc
                                       const char* kind, const char* condition, const char* message);
 extern "C" void rs_debugger_printf(const char* format, ...);
 extern "C" void rs_halt_cpu();
-extern "C" const char kUnknownType[];
 
 // Guessed name. 0x80796BF0: initialized to rs_debugger_printf.
 extern void (*gpfnWarningPrintf)(const char* format, ...);
@@ -56,7 +55,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 // Same, for sources whose original file name differs from ours (Main.cpp, TOneStatic.h).
 #define RS_VERIFY_FAILURE_IN(file, line, conditionText, exceptionText, message)                    \
   {                                                                                                \
-    CCallStack stack(0, RS_SOURCE_POSITION(file, line), kUnknownType);                             \
+    CCallStack stack(0, RS_SOURCE_POSITION(file, line), gkUnknownType);                            \
     rs_log_assert_failure(&stack, file, line, "Verify", conditionText, message);                   \
     rs_debugger_printf("Would have thrown exception: %s\n", exceptionText);                        \
     rs_halt_cpu();                                                                                 \

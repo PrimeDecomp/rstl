@@ -29,7 +29,7 @@ CInputStream::SBufferAndSize CBBAInStream::LoadFileBuffer(const char* path) {
                          CBasics::Stringize("Could not get size of BBA file - '%s'\n", path));
   rstl::auto_ptr< uchar > data(static_cast< uchar* >(
       CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
-                     CCallStack(-1, "CBBAInStream.cpp(39) : ", kUnknownType))));
+                     CCallStack(-1, "CBBAInStream.cpp(39) : ", gkUnknownType))));
   error = CBBASupport::BBARead(file.mHandle, data.get(), size);
   RS_VERIFY_THROW_DIRECT(42, error == kFE_OK, false,
                          CBasics::Stringize("Could not read BBA file - '%s'\n", path));

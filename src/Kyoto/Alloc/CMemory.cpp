@@ -112,7 +112,7 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
   return ret;
 }
 
-void CMemory::Free(const void* ptr) {
+void CMemory::Free(RSTL_CMEMORY_FREE_CONST void* ptr) {
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   CRestorableInterruptGuard interrupts;
 #else

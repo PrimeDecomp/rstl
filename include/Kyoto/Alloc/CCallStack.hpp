@@ -4,11 +4,11 @@
 #include "rstl/types.h"
 #include "rstl/RstlVersions.h"
 
-class CCallStack {
-  static const char kUnknownType[];
+extern "C" const char gkUnknownType[];
 
+class CCallStack {
 public:
-  CCallStack(uint lineNum, const char* lineStr, const char* type = kUnknownType);
+  CCallStack(uint lineNum, const char* lineStr, const char* type = gkUnknownType);
 #if RSTL_KYOTO_CALLSTACK_SIGNED_CTOR
   // Prototype assertions retain the signed-depth constructor ABI.
   CCallStack(int depth, const char* source, const char* type);

@@ -633,7 +633,14 @@
 // Plain `new` / `new[]` are inline wrappers passing "??(??)" to the source-position operator new.
 #define RSTL_KYOTO_INLINE_GLOBAL_NEW (!RSTL_PRIME1)
 // CCallStack also declares the prototype's (int, const char*, const char*) constructor.
-#define RSTL_KYOTO_CALLSTACK_SIGNED_CTOR (RSTL_CORRUPTION)
+#define RSTL_KYOTO_CALLSTACK_SIGNED_CTOR (RSTL_VERSION == RSTL_G2MEAB)
+// Corruption's Wii modules import Free(void*); Echoes' Wii modules import Free(const void*).
+#if (RSTL_VERSION >= RSTL_RM3E && RSTL_VERSION <= RSTL_RM3J) ||                                       \
+    (defined(PRIME3) && RSTL_VERSION >= RSTL_R3ME_00)
+#define RSTL_KYOTO_CMEMORY_MUTABLE_FREE 1
+#else
+#define RSTL_KYOTO_CMEMORY_MUTABLE_FREE 0
+#endif
 // CCircularBuffer.cpp defines `GetAllocatedAmount`.
 #define RSTL_KYOTO_CIRCULAR_BUFFER_ALLOCATED_AMOUNT (RSTL_PRIME1 || RSTL_CORRUPTION)
 

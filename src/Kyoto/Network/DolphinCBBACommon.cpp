@@ -94,7 +94,7 @@ void* BBA_NetworkAllocateCallback(uint name, int size) {
     OSLockMutex(&sNetworkMutex);
     void* memory = CMemory::Alloc(
         size, IAllocator::kHI_None, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
-        CCallStack(-1, "DolphinCBBACommon.cpp(44) : ", kUnknownType));
+        CCallStack(-1, "DolphinCBBACommon.cpp(44) : ", gkUnknownType));
     OSUnlockMutex(&sNetworkMutex);
     return memory;
   }

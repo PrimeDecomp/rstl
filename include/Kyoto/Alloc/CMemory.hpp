@@ -7,7 +7,11 @@
 
 #include "rstl/RstlVersions.h"
 
-extern "C" const char kUnknownType[];
+#if RSTL_KYOTO_CMEMORY_MUTABLE_FREE
+#define RSTL_CMEMORY_FREE_CONST
+#else
+#define RSTL_CMEMORY_FREE_CONST const
+#endif
 
 class COsContext;
 class CMemory {
@@ -23,7 +27,7 @@ public:
                      IAllocator::EScope scope = IAllocator::kSC_Unk1,
                      IAllocator::EType type = IAllocator::kTP_Heap,
                      const CCallStack& callstack = CCallStack(-1, "\?\?(\?\?)"));
-  static void Free(const void* ptr);
+  static void Free(RSTL_CMEMORY_FREE_CONST void* ptr);
   static void SetOutOfMemoryCallback(IAllocator::FOutOfMemoryCb callback, const void* context);
   static IAllocator::SMetrics GetMetrics(bool resetPeriodicPeak, bool resetPeak);
   static IAllocator::SAllocatorMetrics GetMetrics();
@@ -94,7 +98,7 @@ void operator delete[](void* ptr) { CMemory::Free(ptr); }
 // so the original line numbers survive; the _in forms name an original file other than ours, such
 // as "rc_ptr.h"). Other builds allocate exactly as rs_new and rs_aligned_new do.
 #if RSTL_KYOTO_DEBUG_BUILD && defined(__MWERKS__)
-#define rs_callstack_line_in(file, line) CCallStack(-1, RS_SOURCE_POSITION(file, line), kUnknownType)
+#define rs_callstack_line_in(file, line) CCallStack(-1, RS_SOURCE_POSITION(file, line), gkUnknownType)
 #define rs_new_line_in(file, line) new (RS_SOURCE_POSITION(file, line), nullptr)
 #define rs_aligned_new_line_in(file, line, size)                                                   \
   CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,     \

@@ -33,7 +33,7 @@ static CInputStream::SBufferAndSize ReadFileToOwnedBuffer(const char* path) {
 
   rstl::auto_ptr< uchar > buffer(static_cast< uchar* >(
       CMemory::Alloc(size, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
-                     CCallStack(-1, "CFIOInStream.cpp(40) : ", kUnknownType))));
+                     CCallStack(-1, "CFIOInStream.cpp(40) : ", gkUnknownType))));
   unsigned int read = static_cast< unsigned int >(-1);
   error = CFIOFileSupport::Read(file.mHandle, buffer.get(), size, &read);
   RS_VERIFY_THROW_DIRECT(44, error == kFE_OK, false,
