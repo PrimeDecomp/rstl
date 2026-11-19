@@ -485,8 +485,6 @@
 #define RSTL_STRING_INLINE_SEARCH_DECL (RSTL_STRING_OUT_OF_CLASS && !RSTL_CORRUPTION)
 // `internal_search` walks `match` and `search` iterators in step (supports `rfind`).
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_CORRUPTION)
-// Calls `internal_search_of` as a retained helper.
-#define RSTL_STRING_SEARCH_OF_OUT_OF_LINE RSTL_CORRUPTION
 // Reverse iterators copy from a const reference and decrement the stored iterator.
 #define RSTL_STRING_REVERSE_ITERATOR_REF RSTL_CORRUPTION
 // Typedefs, specializations and `operator+` overloads come in the prototype's order.

@@ -464,16 +464,14 @@ void basic_string< char, case_insensitive_char_traits< char > >::internal_derefe
 
 template < typename _CharTp, typename Traits, typename Alloc >
 template < typename It, typename OtherIt >
-#if !RSTL_STRING_SEARCH_OF_OUT_OF_LINE
-inline
-#endif
-int basic_string< _CharTp, Traits, Alloc >::internal_search_of(It first, It last,
-                                                               OtherIt otherFirst,
-                                                               OtherIt otherLast) {
+inline int basic_string< _CharTp, Traits, Alloc >::internal_search_of(It first, It last,
+                                                                      OtherIt otherFirst,
+                                                                      OtherIt otherLast) {
   int index = 0;
   for (It it = first; it != last; ++it, ++index) {
     for (OtherIt other = otherFirst; other != otherLast; ++other) {
-      if (Traits::eq(*it, *other)) {
+      const bool matches = Traits::eq(*it, *other);
+      if (matches) {
         return index;
       }
     }
