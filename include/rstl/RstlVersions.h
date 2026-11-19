@@ -56,6 +56,11 @@
 // The Corruption prototype and retail. Retail (no build) provisionally takes the prototype forms;
 // record a retail difference by excluding RSTL_RM3E/P/J from the macro concerned.
 #define RSTL_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J)
+#if defined(PRIME3) && RSTL_VERSION != RSTL_G2MEAB
+#define RSTL_CORRUPTION_WII 1
+#else
+#define RSTL_CORRUPTION_WII 0
+#endif
 // Trilogy as built for Echoes, whose fill and `reserved_vector` details are Echoes-era.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 
@@ -631,7 +636,7 @@
 // Plain `new` / `new[]` are inline wrappers passing "??(??)" to the source-position operator new.
 #define RSTL_KYOTO_INLINE_GLOBAL_NEW (!RSTL_PRIME1)
 // CCallStack also declares the prototype's (int, const char*, const char*) constructor.
-#define RSTL_KYOTO_CALLSTACK_SIGNED_CTOR (RSTL_CORRUPTION)
+#define RSTL_KYOTO_CALLSTACK_SIGNED_CTOR (RSTL_VERSION == RSTL_G2MEAB)
 // CCircularBuffer.cpp defines `GetAllocatedAmount`.
 #define RSTL_KYOTO_CIRCULAR_BUFFER_ALLOCATED_AMOUNT (RSTL_PRIME1 || RSTL_CORRUPTION)
 

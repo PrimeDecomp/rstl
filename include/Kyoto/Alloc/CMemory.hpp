@@ -7,7 +7,13 @@
 
 #include "rstl/RstlVersions.h"
 
+#if RSTL_CORRUPTION_WII
+// Corruption exports this string as gkUnknownType in both Wii releases.
+extern "C" const char gkUnknownType[];
+#define kUnknownType gkUnknownType
+#else
 extern "C" const char kUnknownType[];
+#endif
 
 class COsContext;
 class CMemory {
@@ -23,7 +29,12 @@ public:
                      IAllocator::EScope scope = IAllocator::kSC_Unk1,
                      IAllocator::EType type = IAllocator::kTP_Heap,
                      const CCallStack& callstack = CCallStack(-1, "\?\?(\?\?)"));
-  static void Free(const void* ptr);
+#if RSTL_CORRUPTION_WII
+  typedef void* FreePointer;
+#else
+  typedef const void* FreePointer;
+#endif
+  static void Free(FreePointer ptr);
   static void SetOutOfMemoryCallback(IAllocator::FOutOfMemoryCb callback, const void* context);
   static IAllocator::SMetrics GetMetrics(bool resetPeriodicPeak, bool resetPeak);
   static IAllocator::SAllocatorMetrics GetMetrics();
