@@ -334,12 +334,10 @@ void* CModel::SetupSkinMatrices() const {
     normal[i][2] = invXpose[i][2];
   }
   DCFlushRange(matrices, 0x54);
-  CGX::SetArray(GX_POS_MTX_ARRAY, &matrices->mModelView,
-                sizeof(SSkinMatrices) //
-                IF_TARGET_PC(sizeof(SSkinMatrices), true));
-  CGX::SetArray(GX_NRM_MTX_ARRAY, normal,
-                sizeof(SSkinMatrices) //
-                IF_TARGET_PC(sizeof(SSkinMatrices) - offsetof(SSkinMatrices, mNormal), true));
+  CGX_SET_ARRAY(GX_POS_MTX_ARRAY, &matrices->mModelView, sizeof(SSkinMatrices),
+                sizeof(SSkinMatrices), true);
+  CGX_SET_ARRAY(GX_NRM_MTX_ARRAY, normal, sizeof(SSkinMatrices),
+                sizeof(SSkinMatrices) - offsetof(SSkinMatrices, mNormal), true);
   for (int i = 1; i < 10; ++i) {
     GXLoadPosMtxIndx(0, i * 3);
     CGX::LoadNrmMtxIndx3x3(0, i * 3);

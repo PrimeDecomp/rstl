@@ -225,8 +225,8 @@ void CSkinnedModel::DolphinDrawInternal(const SSkinningWorkspace& workspace, uin
     BuildSkinningMatrices(workspace.mTransforms, matrices, workspace.mUniformScale);
   }
 
-  CGX::SetArray(GX_POS_MTX_ARRAY, matrices, sizeof(SSkinningMatrices) IF_TARGET_PC(, mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices), true));
-  CGX::SetArray(GX_NRM_MTX_ARRAY, matrices->mNormal, sizeof(SSkinningMatrices) IF_TARGET_PC(, mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices) - offsetof(SSkinningMatrices, mNormal), true));
+  CGX_SET_ARRAY(GX_POS_MTX_ARRAY, matrices, sizeof(SSkinningMatrices), mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices), true);
+  CGX_SET_ARRAY(GX_NRM_MTX_ARRAY, matrices->mNormal, sizeof(SSkinningMatrices), mSkinRules->GetNumVirtualBones() * sizeof(SSkinningMatrices) - offsetof(SSkinningMatrices, mNormal), true);
 
   for (int i = 0; i < sizeof(surfaces) / sizeof(surfaces[0]); ++i) {
     if (!(drawFlags & kDF_Unsorted) && i == 0) {

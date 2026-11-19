@@ -39,9 +39,9 @@ public:
 #if defined(__MWERKS__) || defined(CLANGD)
 void* operator new(size_t sz, const char*, const char*);
 void* operator new[](size_t sz, const char*, const char*);
+
 #if RSTL_KYOTO_INLINE_GLOBAL_NEW
 // TODO remove
-
 inline void* operator new(size_t sz) { return operator new(sz, "??(??)", nullptr); }
 inline void* operator new[](size_t sz) { return operator new[](sz, "??(??)", nullptr); }
 #endif
@@ -71,18 +71,6 @@ inline
 void operator delete[](void* ptr) {
   CMemory::Free(ptr);
 }
-#else
-#if RSTL_KYOTO_INLINE_GLOBAL_NEW
-#ifdef __MWERKS__
-__attribute__((weak))
-#endif
-void operator delete(void* ptr) { CMemory::Free(ptr); }
-
-#ifdef __MWERKS__
-__attribute__((weak))
-#endif
-void operator delete[](void* ptr) { CMemory::Free(ptr); }
-#endif
 #endif
 
 // Allocations without a source position ("??(??)", escaped so it is not read as trigraphs).
@@ -91,6 +79,7 @@ void operator delete[](void* ptr) { CMemory::Free(ptr); }
 #else
 #define rs_new new
 #endif
+
 // Raw block rounded up to the allocator's alignment, for buffers that are read into directly.
 #define rs_aligned_new(size) CMemory::Alloc(size, IAllocator::kHI_RoundUpLen)
 
@@ -108,6 +97,7 @@ void operator delete[](void* ptr) { CMemory::Free(ptr); }
 #define rs_new_line_in(file, line) rs_new
 #define rs_aligned_new_line_in(file, line, size) rs_aligned_new(size)
 #endif
+
 // The call stack an explicit CMemory::Alloc records at a source position.
 #define rs_callstack_line(line) rs_callstack_line_in(__FILE__, line)
 #define rs_new_line(line) rs_new_line_in(__FILE__, line)
