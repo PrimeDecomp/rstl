@@ -16,12 +16,11 @@
 #define RSTL_PRECONDITION(cond) ((void)0)
 
 #if RSTL_EXTERN_CONSTRUCT_FUNCTIONS
-#define RSTL_CONSTRUCT_INLINE inline
 #define RSTL_CONSTRUCT_DECL
 #else
-#define RSTL_CONSTRUCT_INLINE static inline
 #define RSTL_CONSTRUCT_DECL static
 #endif
+#define RSTL_CONSTRUCT_INLINE RSTL_CONSTRUCT_DECL inline
 
 // The pointer parameter of `destroy(T*)` is `const` only where the target declares it so; it
 // changes how MWCC inlines the callers.
@@ -251,6 +250,10 @@ RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(unsigned long long)
 #if RSTL_CONSTRUCT_EXTERN_DECL
 template < typename T >
 void construct(void* dest, const T& src);
+#if RSTL_CONSTRUCT_MUTABLE_OVERLOAD
+template < typename T >
+void construct(void* dest, T& src);
+#endif
 #endif
 
 template < typename T >

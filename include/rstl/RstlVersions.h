@@ -105,7 +105,7 @@
 // `construct` also takes a mutable `T&`, and the placement-new policy has no null precondition.
 #define RSTL_CONSTRUCT_MUTABLE_OVERLOAD                                                            \
   (RSTL_CORRUPTION || (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J))
-// A non-inline declaration before the const `construct` gives its instantiations weak linkage.
+// A non-inline declaration before `construct` gives its instantiations weak linkage.
 #define RSTL_CONSTRUCT_EXTERN_DECL (RSTL_CORRUPTION)
 // Bitwise construction copies a trailing word inline; the Echoes demo discs `memcpy` instead.
 #define RSTL_BITWISE_CONSTRUCTION_TAIL_WORD (!RSTL_ECHOES_DEMO)
@@ -151,8 +151,8 @@
 #define RSTL_COUNTED_COPY_N_LOOP (RSTL_ECHOES || RSTL_VERSION >= RSTL_R32J)
 // `uninitialized_copy_n` starts with the `n >= 0` precondition.
 #define RSTL_COPY_N_PRECONDITION (RSTL_CORRUPTION)
-// Counted copies read through a const source (needs mutable overloads with the extern declaration).
-#define RSTL_COPY_N_CONST_SOURCE (!RSTL_CONSTRUCT_EXTERN_DECL)
+// Counted copies cast to a const source before dispatching to `construct`.
+#define RSTL_COPY_N_CONST_SOURCE (!RSTL_CORRUPTION)
 // `uninitialized_fill_n` fills through `construct` instead of a placement new.
 #define RSTL_FILL_USES_CONSTRUCT RSTL_ECHOES
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
@@ -485,6 +485,8 @@
 #define RSTL_STRING_INLINE_SEARCH_DECL (RSTL_STRING_OUT_OF_CLASS && !RSTL_CORRUPTION)
 // `internal_search` walks `match` and `search` iterators in step (supports `rfind`).
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_CORRUPTION)
+// Reverse iterators copy from a const reference and decrement the stored iterator.
+#define RSTL_STRING_REVERSE_ITERATOR_REF RSTL_CORRUPTION
 // Typedefs, specializations and `operator+` overloads come in the prototype's order.
 #define RSTL_STRING_PROTO_TAIL (RSTL_CORRUPTION)
 // rstl_strings.cpp's definitions come in the prototype's order.
