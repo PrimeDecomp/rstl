@@ -151,8 +151,8 @@
 #define RSTL_COUNTED_COPY_N_LOOP (RSTL_ECHOES || RSTL_VERSION >= RSTL_R32J)
 // `uninitialized_copy_n` starts with the `n >= 0` precondition.
 #define RSTL_COPY_N_PRECONDITION (RSTL_CORRUPTION)
-// Counted copies read through a const source (needs mutable overloads with the extern declaration).
-#define RSTL_COPY_N_CONST_SOURCE (!RSTL_CONSTRUCT_EXTERN_DECL)
+// Counted copies cast to a const source before dispatching to `construct`.
+#define RSTL_COPY_N_CONST_SOURCE (!RSTL_CORRUPTION)
 // `uninitialized_fill_n` fills through `construct` instead of a placement new.
 #define RSTL_FILL_USES_CONSTRUCT RSTL_ECHOES
 // `uninitialized_fill_n` has a pointer overload that assigns the elements.
