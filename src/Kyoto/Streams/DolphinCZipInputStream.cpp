@@ -7,7 +7,7 @@ static const CInputStream::SBufferAndSize
 get_buffer_and_size(CInputStream& in, unsigned int compressedLen, unsigned int decompressedLen) {
   rstl::auto_ptr< uchar > buffer(static_cast< uchar* >(CMemory::Alloc(
       decompressedLen, IAllocator::kHI_RoundUpLen, IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
-      CCallStack(-1, "DolphinCZipInputStream.cpp(11) : ", kUnknownType))));
+      CCallStack(-1, "DolphinCZipInputStream.cpp(11) : ", gkUnknownType))));
   CZipSupport::Decompress(in.Get(compressedLen), compressedLen, buffer.get(), decompressedLen);
   return CInputStream::SBufferAndSize(buffer.release(), decompressedLen);
 }

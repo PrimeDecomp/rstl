@@ -1,6 +1,6 @@
 #include "Kyoto/Alloc/CCallStack.hpp"
 
-const char CCallStack::kUnknownType[] = "UnknownType\0";
+extern "C" const char gkUnknownType[] = "UnknownType\0";
 
 CCallStack::CCallStack(uint lineNum, const char* fileAndLine, const char* type)
 : mLine(fileAndLine), mType(type) {}
