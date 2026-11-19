@@ -1,18 +1,15 @@
 #ifndef _CHIERARCHYPOSEBUILDER
 #define _CHIERARCHYPOSEBUILDER
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
-#include "rstl/types.h"
 
 #include "Kyoto/Animation/CLayoutDescription.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
-
 #include "Kyoto/Animation/TSegIdMap.hpp"
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
-
 #include "rstl/construction_deferred.hpp"
+#include "rstl/static_assert.hpp"
 
 class CCharLayoutInfo;
 class CPoseAsTransforms;
@@ -20,38 +17,29 @@ class CTransform4f;
 
 class CHierarchyPoseBuilder {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  CHierarchyPoseBuilder(const CLayoutDescription& layout);
-  ~CHierarchyPoseBuilder() {}
-#else
   typedef TSegIdMap< CVector3f > ScaleMap;
-#endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+  // Prime 1
+  CHierarchyPoseBuilder(const CLayoutDescription& layout);
+
+  // Prime 2
+  CHierarchyPoseBuilder(const CLayoutDescription& layout, bool animatedScale);
+
+  // Prime 1 only
   void BuildNoScale(CPoseAsTransforms& pose);
   void BuildTransform(const CSegId& seg, CTransform4f& transform) const;
-#else
-  CHierarchyPoseBuilder(const CLayoutDescription& layout, bool animatedScale);
-#endif
 
   class CTreeNode {
   public:
     CTreeNode(const CSegId& sibling, const CSegId& child, const CVector3f& offset)
-    : mChild(child)
-    , mSibling(sibling)
-    , mRotation(CQuaternion::NoRotation())
-    , mOffset(offset) {}
+    : mChild(child), mSibling(sibling), mRotation(CQuaternion::NoRotation()), mOffset(offset) {}
 
-    const CQuaternion& GetRotation() const { return mRotation; }
-    const CVector3f& GetOffset() const { return mOffset; }
-#if RSTL_PRIME1
     CSegId GetFirstChildSegment() const { return mChild; }
     CSegId GetNextSiblingSegment() const { return mSibling; }
-#endif
+    const CQuaternion& GetRotation() const { return mRotation; }
+    const CVector3f& GetOffset() const { return mOffset; }
 
-    void SetRotation(const CQuaternion& rot) { mRotation = rot; }
+    void SetRotation(const CQuaternion& rot) { mRotation = CQuaternion(rot); }
     void SetOffset(const CVector3f& offset) { mOffset = offset; }
 
     CTreeNode NodeForNextChildInserted(const CSegId& child, const CSegId& nullId,
@@ -68,10 +56,12 @@ public:
     CVector3f mOffset;
   };
 
-  void Insert(const CSegId& id, const CQuaternion& rot);
-  void Insert(const CSegId& id, const CVector3f& offset);
-  CQuaternion GetSegRotation(const CSegId& id) const;
-
+  void Insert(const CSegId& id, const CQuaternion& rot) { 
+    // FIXME: this function needs it's inline weight increased by at +28 to cause it to be outlined
+    mTreeMap[id].SetRotation(rot); 
+  }
+  void Insert(const CSegId& id, const CVector3f& offset) { mTreeMap[id].SetOffset(offset); }
+  CQuaternion GetSegRotation(const CSegId& id) const { return mTreeMap[id].GetRotation(); }
   const TLockedToken< CCharLayoutInfo >& CharLayoutInfo() const {
     return mLayoutDesc.ScaledLayout();
   }
@@ -93,25 +83,6 @@ private:
 #endif
 };
 CHECK_SIZEOF(CHierarchyPoseBuilder, RSTL_PRIME1 ? 0x110 : 0x118)
-
-#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
-inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CQuaternion& rot) {
-  mTreeMap[id].SetRotation(rot);
-}
-#endif
-
-#if !RSTL_PRIME1 || RSTL_VERSION < RSTL_GM8P_00
-inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CVector3f& offset) {
-  mTreeMap[id].SetOffset(offset);
-}
-#endif
-
-#if RSTL_PRIME1
-inline CQuaternion CHierarchyPoseBuilder::GetSegRotation(const CSegId& id) const {
-  return mTreeMap[id].GetRotation();
-}
-#endif
-
 NESTED_CHECK_SIZEOF(CHierarchyPoseBuilder, CTreeNode, 0x20)
 
 #endif // _CHIERARCHYPOSEBUILDER

@@ -6,12 +6,10 @@
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "rstl/reserved_vector.hpp"
 
-CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-                                             , bool animatedScale
-#endif
-                                             )
+
+
+
+CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout IF_NOT_RSTL_PRIME1(, bool animatedScale))
 : mLayoutDesc(layout)
 , mTreeMap(layout.GetNumSegments())
 // TODO: verify that this Prime/Echoes difference is real
@@ -36,17 +34,9 @@ CHierarchyPoseBuilder::CHierarchyPoseBuilder(const CLayoutDescription& layout
 
 void CHierarchyPoseBuilder::BuildIntoHeirarchy(const CCharLayoutInfo& layout, const CSegId& seg,
                                                const CSegId& root) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  const CSegId id = seg;
-#endif
-  if (!mTreeMap.ContainsDataFor(
-#if RSTL_PRIME1
-          id
-#else
-          seg
-#endif
-          )) {
+  IF_RSTL_PRIME1(const CSegId id = seg;)
+  
+  if (!mTreeMap.ContainsDataFor(IF_RSTL_PRIME1_ELSE(id, seg))) {
     CSegId parent = layout.GetOriginalParent(seg);
     if (parent == root) {
       mRootId.build(seg);
@@ -139,4 +129,3 @@ void CHierarchyPoseBuilder::BuildTransform(const CSegId& seg, CTransform4f& tran
 uchar CLayoutDescription::GetNumSegments() const {
   return mLayoutToken->GetBodyPartSegIds().size();
 }
-

@@ -13,6 +13,15 @@
 template < typename T >
 class TSegIdMap {
 public:
+  #if RSTL_PRIME1
+  typedef char IndirectionType;
+  #define INDIRECTION_TYPE_INVALID -1
+  #else
+  typedef CSegId IndirectionType;
+  #define INDIRECTION_TYPE_INVALID CSegId::Null()
+  #endif
+
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
   inline
@@ -32,78 +41,47 @@ public:
   }
 
   const T& operator[](const CSegId& id) const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     uint rawId = id.val();
+#if RSTL_PRIME1
     return AccessElement(static_cast< uchar >(mIndirectionMap[rawId].second));
 #else
-    return mNodes[mIndirectionMap[id.val()].second.val()];
+    return AccessElement(mIndirectionMap[rawId].second.val());
 #endif
   }
 
   bool ContainsDataFor(const CSegId& id) const {
-#if RSTL_PRIME1
-    return mIndirectionMap[id.val()] != rstl::pair< char, char >(-1, -1);
-#else
-    return mIndirectionMap[id.val()] !=
-           rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null());
-#endif
+    return mIndirectionMap[id.val()] != rstl::pair< IndirectionType, IndirectionType >(INDIRECTION_TYPE_INVALID, INDIRECTION_TYPE_INVALID);
   }
-#if !RSTL_PRIME1
   int GetNumNodes() const { return mBoneCount; }
-#endif
 
-#if RSTL_PRIME1
   T& AccessElement(int index) {
-    T* ptr = mNodes + index;
-    return *ptr;
+    RSTL_PRECONDITION(0 <= index && index < mBoneCount);
+    return mNodes[index];
   }
-#endif
 
-  const T& AccessElement(int index) const { return mNodes[index]; }
+  const T& AccessElement(int index) const {
+    RSTL_PRECONDITION(0 <= index && index < mBoneCount);
+    return mNodes[index];
+  }
 
   void insert(const CSegId& id, const T& value);
 
 private:
   char mBoneCount;
   char mCapacity;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  rstl::reserved_vector< rstl::pair< char, char >, 100 > mIndirectionMap;
-#else
-  rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mIndirectionMap;
-#endif
+  rstl::reserved_vector< rstl::pair< IndirectionType, IndirectionType >, 100 > mIndirectionMap;
 
   T* mNodes;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  char mCurPrevBone;
-#else
-  CSegId mCurPrevBone;
-#endif
+  IndirectionType mCurPrevBone;
 };
-#if !RSTL_PRIME1
-typedef TSegIdMap< uchar > TSegIdMapSizeCheck;
-CHECK_SIZEOF(TSegIdMapSizeCheck, 0xd8)
-#endif
 
 template < typename T >
 TSegIdMap< T >::TSegIdMap(CInputStream& in)
 : mBoneCount(0)
 , mCapacity(in.Get< uint >())
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mIndirectionMap(100, rstl::pair< char, char >(-1, -1))
-#else
-, mIndirectionMap(100, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
-#endif
+, mIndirectionMap(100, rstl::pair< IndirectionType, IndirectionType >(INDIRECTION_TYPE_INVALID, INDIRECTION_TYPE_INVALID))
 , mNodes(reinterpret_cast< T* >(rs_new char[mCapacity * sizeof(T)]))
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mCurPrevBone(0)
-#else
-, mCurPrevBone(CSegId::Null())
-#endif
+, mCurPrevBone(IF_RSTL_PRIME1_ELSE(0, CSegId::Null()))
 {
   for (int i = 0; i < mCapacity; ++i) {
     CSegId seg(in);
@@ -119,19 +97,9 @@ template < typename T >
 TSegIdMap< T >::TSegIdMap(uchar count)
 : mBoneCount(0)
 , mCapacity(count)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mIndirectionMap(100, rstl::pair< char, char >(-1, -1))
-#else
-, mIndirectionMap(100, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
-#endif
+, mIndirectionMap(100, rstl::pair< IndirectionType, IndirectionType >(INDIRECTION_TYPE_INVALID, INDIRECTION_TYPE_INVALID))
 , mNodes(nullptr)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-, mCurPrevBone(0)
-#else
-, mCurPrevBone(CSegId::Null())
-#endif
+, mCurPrevBone(IF_RSTL_PRIME1_ELSE(0, CSegId::Null()))
 {
   mNodes = reinterpret_cast< T* >(rs_new uchar[count * sizeof(T)]);
 #if !RSTL_PRIME1
@@ -142,7 +110,7 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 template < typename T >
 TSegIdMap< T >::~TSegIdMap() {
 #if RSTL_PRIME1
-  const rstl::pair< char, char >* const links = mIndirectionMap.data();
+  const rstl::pair< IndirectionType, IndirectionType >* const links = mIndirectionMap.data();
 #endif
   CSegId id(mCurPrevBone);
   while (id != CSegId::Null()) {
@@ -150,7 +118,6 @@ TSegIdMap< T >::~TSegIdMap() {
     const int index = id.val();
 #endif
     (*this)[id].~T();
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = CSegId(links[static_cast< int >(id.val())].first);
 #else
@@ -168,21 +135,12 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   T* node = &mNodes[mBoneCount];
   uchar rawId = id.val();
   new (node) T(value);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  mIndirectionMap[rawId] = rstl::pair< char, char >(mCurPrevBone, mBoneCount);
-  mCurPrevBone = rawId;
-#else
-  mIndirectionMap[rawId] = rstl::pair< CSegId, CSegId >(mCurPrevBone, CSegId(mBoneCount));
-  mCurPrevBone = id;
-#endif
-
+  mIndirectionMap[rawId] = rstl::pair< IndirectionType, IndirectionType >(mCurPrevBone, IF_RSTL_PRIME1_ELSE(mBoneCount, CSegId(mBoneCount)));
+  mCurPrevBone = IF_RSTL_PRIME1_ELSE(rawId, id);
   ++mBoneCount;
 }
 
-#if RSTL_PRIME1
-typedef TSegIdMap< uchar > unk_TSegIdMap;
-CHECK_SIZEOF(unk_TSegIdMap, 0xd8)
-#endif
+typedef TSegIdMap< uchar > TSegIdMapSizeCheck;
+CHECK_SIZEOF(TSegIdMapSizeCheck, 0xd8)
 
 #endif // MP1_TSEGIDMAP_HPP
