@@ -23,13 +23,10 @@
 #include "Kyoto/Math/CSphere.hpp"
 #include "Kyoto/Math/CVector3d.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-
 #include "rstl/reserved_vector.hpp"
-#if !RSTL_PRIME1
 
 class CCollisionCache;
 class CCollisionCacheWriter;
-#endif
 
 class CAABoxAreaCache {
 public:
