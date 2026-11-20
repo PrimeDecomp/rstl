@@ -16,8 +16,8 @@ void rs_reallyfatal_printf(const char* format, ...);
 static CGameAllocator gGameAllocator;
 IAllocator* CMemory::mpAllocator = &gGameAllocator;
 bool CMemory::mInitialized;
-uint gLeakCount = 0;
-uint gLeakBytes = 0;
+int gLeakCount = 0;
+unsigned long gLeakBytes = 0;
 
 CMemorySys::CMemorySys(COsContext& ctx, IAllocator& allocator) {
   CMemory::Startup(ctx);
@@ -41,14 +41,16 @@ void CMemory::SetAllocator(COsContext& ctx, IAllocator& allocator) {
 }
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
-static bool cmemory_enum_alloc_cb(int, const IAllocator::SAllocInfo& info, const void*)
+static const bool cmemory_enum_alloc_cb(int, const IAllocator::SAllocInfo& info, const void*)
 #else
-static bool cmemory_enum_alloc_cb(const IAllocator::SAllocInfo& info, const void* ptr)
+static const bool cmemory_enum_alloc_cb(const IAllocator::SAllocInfo& info, const void* ptr)
 #endif
 {
   if (info.mIsAllocated && info.x9_ == 0) {
     ++gLeakCount;
     gLeakBytes += info.mLen;
+    RS_DEBUGGER_PRINT("%s: Type : %s: CMemory Leak : %d bytes at 0x%08lx\n", info.mFileAndLine,
+                      info.mType, info.mLen, reinterpret_cast< unsigned long >(info.mInfoPtr));
   }
   return true;
 }
@@ -66,13 +68,22 @@ void CMemory::Shutdown() {
 #else
   const uint liveAllocations = mpAllocator->GetMetrics().x8_;
 #endif
+  RS_DEBUGGER_PRINT("CMemory: Shutting down...  %d allocations\n", liveAllocations);
   if (liveAllocations != 0) {
     gLeakCount = 0;
     gLeakBytes = 0;
-    mpAllocator->EnumAllocations((IAllocator::FEnumAllocationsCb)cmemory_enum_alloc_cb, nullptr,
-                                 false);
+    mpAllocator->EnumAllocations(cmemory_enum_alloc_cb, nullptr, false);
+#if RSTL_KYOTO_DEBUG_BUILD
+    if (gLeakCount > 0) {
+      rs_debugger_printf("\n*** CMemory *** Memory Leak Detected : %d entries, %lu total bytes\n",
+                         gLeakCount, gLeakBytes);
+    } else {
+      rs_debugger_printf("Memory shutdown: No leaks detected\n");
+    }
+#endif
   }
   mpAllocator->Shutdown();
+  RS_DEBUGGER_PRINT("CMemory: .. allocator has shut down");
 }
 
 void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scope,
@@ -129,6 +140,12 @@ void CMemory::Free(RSTL_CMEMORY_FREE_CONST void* ptr) {
 void CMemory::SetOutOfMemoryCallback(IAllocator::FOutOfMemoryCb cb, const void* context) {
   mpAllocator->SetOutOfMemoryCallback(cb, context);
 }
+
+#if RSTL_KYOTO_DEBUG_BUILD
+int CMemory::EnumAllocations(IAllocator::FEnumAllocationsCb callback, const void* context, bool b) {
+  return mpAllocator->EnumAllocations(callback, context, b);
+}
+#endif
 
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 IAllocator::SAllocatorMetrics CMemory::GetMetrics() { return mpAllocator->GetMetrics(); }

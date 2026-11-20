@@ -155,11 +155,11 @@ COsContext::~COsContext() {}
 
 bool COsContext::Update() { return true; }
 
-#if !RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 COsKeyState COsContext::GetOsKeyState(int key) const {
   return COsKeyState(key, false, false, false, false);
 }
 
+#if !RSTL_KYOTO_OS_CONTEXT_ARENA_BLOCK
 int COsContext::OpenWindow(const char* title, int x, int y, int w, int h, bool fullscreen) {
   VIInit();
   GXRenderModeObj* rModeObj;

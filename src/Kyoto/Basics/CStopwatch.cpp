@@ -1,5 +1,6 @@
 #include "Kyoto/Basics/CStopwatch.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
 #include "rstl/RstlVersions.h"
 
 #include <math.h>
@@ -8,6 +9,7 @@ CStopwatch::CSWData CStopwatch::mData;
 CStopwatch CStopwatch::mGlobalTimer;
 
 bool CStopwatch::InitGlobalTimer() {
+  RS_DEBUGGER_PRINT("InitGlobalTimer\n");
   mGlobalTimer.Reset();
   return true;
 }
