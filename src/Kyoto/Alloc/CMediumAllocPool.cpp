@@ -1,4 +1,6 @@
 #include "Kyoto/Alloc/CMediumAllocPool.hpp"
+
+#include "Kyoto/Alloc/Assert.hpp"
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 #include "Kyoto/Basics/CBasics.hpp"
 #endif
@@ -23,9 +25,11 @@ void CMediumAllocPool::ClearPuddles() {
 #if !RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   mLastNodePrev = mList.end();
 #endif
-  for (rstl::list< SMediumAllocPuddle >::iterator it = mList.begin(); it != mList.end(); ++it) {
-    // The debug build checks each puddle here before releasing the pool.
+  RS_DEBUGGER_PRINT("CMediumAllocPool: Clearing %d puddles...\n", mList.size());
+  for (Puddles::iterator it = mList.begin(); it != mList.end(); ++it) {
+    RS_DEBUGGER_PRINT("  Puddle num allocs: %d\n", it->GetNumAllocs());
   }
+
   mList.clear();
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
   mLastPuddle.clear();
@@ -206,7 +210,8 @@ SMediumAllocPuddle::SMediumAllocPuddle(uint numBlocks, void* data, bool canErase
 , mCanErase(canErase)
 , mIsMem2(heapIndex == 1) {}
 #else
-SMediumAllocPuddle::SMediumAllocPuddle(const uint numBlocks, void* data, const bool canErase)
+SMediumAllocPuddle::SMediumAllocPuddle(const uint numBlocks, void* data,
+                                      RSTL_KYOTO_SCALAR_PARAM_CONST bool canErase)
 : mMainData(static_cast< uchar* >(data))
 , mBookKeeping(static_cast< uchar* >(data) + numBlocks * 32)
 , mCachedBookKeepingAddr(nullptr)
