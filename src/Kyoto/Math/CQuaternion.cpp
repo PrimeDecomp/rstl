@@ -300,11 +300,16 @@ CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVecto
     toUnit.Normalize();
   }
   const CVector3f cross = CVector3f::Cross(fromUnit, toUnit);
-  if (cross.MagSquared() < 0.001f) {
+  if (cross.MagSquared() < (RSTL_KYOTO_VECTOR3F_CORRUPTION ? 0.000001f : 0.001f)) {
     if (CVector3f::Dot(fromUnit, toUnit) > 0.f) {
       return NoRotation();
     }
-    if (cross.CanBeNormalized()) {
+#if RSTL_KYOTO_VECTOR3F_CORRUPTION
+    const bool normalizable = cross.IsNormalizable();
+#else
+    const bool normalizable = cross.CanBeNormalized();
+#endif
+    if (normalizable) {
       return CQuaternion(0.f, cross.AsNormalized());
     }
     return NoRotation();
@@ -387,6 +392,20 @@ CQuaternion CQuaternion::LookAt(const CUnitVector3f& source, const CUnitVector3f
   return pitch * yaw;
 }
 
+#if RSTL_KYOTO_QUATERNION_VALID_DOUBLE
+bool CQuaternion::IsValidQuaternion(float epsilon) const {
+  if (!CMath::IsFinite(GetScalar()) || !CMath::IsFinite(AxisX()) || !CMath::IsFinite(AxisY()) ||
+      !CMath::IsFinite(AxisZ())) {
+    return false;
+  }
+  const double scalarSquared = double(GetScalar()) * GetScalar();
+  const double xSquared = double(AxisX()) * AxisX();
+  const double ySquared = double(AxisY()) * AxisY();
+  const double zSquared = double(AxisZ()) * AxisZ();
+  return CMath::IsEpsilon(scalarSquared + (xSquared + ySquared + zSquared), 1.f, epsilon);
+}
+#endif
+
 CQuaternion CQuaternion::SlerpLocal(const CQuaternion& from, const CQuaternion& to, float t) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -451,22 +470,10 @@ CQuaternion CQuaternion::AxisAngle(const CUnitVector3f& axis, const CRelAngle& a
 #endif
 }
 
-#if RSTL_PRIME1 || RSTL_KYOTO_QUATERNION_VALID_DOUBLE
+#if RSTL_PRIME1
 bool CQuaternion::IsValidQuaternion(float epsilon) const {
-#if RSTL_KYOTO_QUATERNION_VALID_DOUBLE
-  if (!CMath::IsFinite(GetScalar()) || !CMath::IsFinite(AxisX()) || !CMath::IsFinite(AxisY()) ||
-      !CMath::IsFinite(AxisZ())) {
-    return false;
-  }
-  const double scalarSquared = double(GetScalar()) * GetScalar();
-  const double xSquared = double(AxisX()) * AxisX();
-  const double ySquared = double(AxisY()) * AxisY();
-  const double zSquared = double(AxisZ()) * AxisZ();
-  return CMath::IsEpsilon(scalarSquared + (xSquared + ySquared + zSquared), 1.f, epsilon);
-#else
   const float error = GetVector().MagSquared() + GetScalar() * GetScalar() - 1.f;
   return (error >= 0.f ? error : -error) < epsilon;
-#endif
 }
 #endif
 
