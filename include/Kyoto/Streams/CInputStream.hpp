@@ -265,13 +265,7 @@ inline u64 CInputStream::ReadLongLong() { CINPUTSTREAM_READ_U64; }
 inline ushort CInputStream::ReadUint16() { CINPUTSTREAM_READ_U16; }
 inline ushort CInputStream::ReadShort() { CINPUTSTREAM_READ_U16; }
 inline short CInputStream::ReadInt16() { return static_cast< short >(ReadUint16()); }
-inline bool CInputStream::ReadBool() {
-#if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
-  return ReadUint8() != 0;
-#else
-  return *mpBufferAt.p8++ != 0;
-#endif
-}
+inline bool CInputStream::ReadBool() { return *mpBufferAt.p8++ != 0; }
 inline uint CInputStream::GetReadPosition() const { return mpBufferAt.p8 - mpBufferStart; }
 
 #undef CINPUTSTREAM_READ_U32
