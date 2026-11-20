@@ -4,6 +4,28 @@
 #include "Kyoto/Input/CFinalInputInfo.hpp"
 #endif
 
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA || RSTL_FINAL_INPUT_PAD_SNAPSHOT
+// The half of a stick axis that a direction reads: its positive part (right/up) or its negative
+// part (left/down) as a magnitude, and whether the signed axis passes a threshold.
+static inline float PositivePart(const CControllerAxis& axis) {
+  const float value = axis.GetAbsoluteValue();
+  return value > 0.f ? value : 0.f;
+}
+
+static inline float NegativePart(const CControllerAxis& axis) {
+  const float value = axis.GetAbsoluteValue();
+  return value < 0.f ? -value : 0.f;
+}
+
+static inline bool PositivePartAbove(const CControllerAxis& axis, float threshold) {
+  return axis.GetAbsoluteValue() > threshold;
+}
+
+static inline bool NegativePartAbove(const CControllerAxis& axis, float threshold) {
+  return -axis.GetAbsoluteValue() > threshold;
+}
+#endif
+
 #if RSTL_FINAL_INPUT_CONTROLLER_DATA
 
 const float CFinalInput::kAnalogAxisDigitalThreshold = 0.7f;
@@ -74,86 +96,50 @@ float CFinalInput::GetAnalog(int control) const {
   case kPC_NunchukZ:
   case kPC_NunchukC:
     return mControllerData.GetButton(control).GetIsPressed() ? 1.f : 0.f;
-  case kPC_StickLeft: {
-    const float value = mControllerData.GetAxis(0).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_StickRight: {
-    const float value = mControllerData.GetAxis(0).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_StickDown: {
-    const float value = mControllerData.GetAxis(1).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_StickDiagonal3Negative: {
-    const float value = mControllerData.GetAxis(3).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
+  case kPC_StickLeft:
+    return NegativePart(mControllerData.GetAxis(0));
+  case kPC_StickRight:
+    return PositivePart(mControllerData.GetAxis(0));
+  case kPC_StickDown:
+    return NegativePart(mControllerData.GetAxis(1));
+  case kPC_StickDiagonal3Negative:
+    return NegativePart(mControllerData.GetAxis(3));
   case kPC_StickDiagonal2Positive: {
     const float value = mControllerData.GetAxis(2).GetAbsoluteValue();
     return value > 0.f ? -value : 0.f;
   }
-  case kPC_StickUp: {
-    const float value = mControllerData.GetAxis(1).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
+  case kPC_StickUp:
+    return PositivePart(mControllerData.GetAxis(1));
   case kPC_StickDiagonal2Negative: {
     const float value = mControllerData.GetAxis(2).GetAbsoluteValue();
     return value < 0.f ? value : 0.f;
   }
-  case kPC_StickDiagonal3Positive: {
-    const float value = mControllerData.GetAxis(3).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_NunchukRollNegative: {
-    const float value = mControllerData.GetAxis(4).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_NunchukRollPositive: {
-    const float value = mControllerData.GetAxis(4).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_NunchukPitchNegative: {
-    const float value = mControllerData.GetAxis(5).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_NunchukPitchPositive: {
-    const float value = mControllerData.GetAxis(5).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerLeft: {
-    const float value = mControllerData.GetAxis(6).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_PointerRight: {
-    const float value = mControllerData.GetAxis(6).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerDown: {
-    const float value = mControllerData.GetAxis(7).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerUp: {
-    const float value = mControllerData.GetAxis(7).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimoteRollNegative: {
-    const float value = mControllerData.GetAxis(8).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimoteRollPositive: {
-    const float value = mControllerData.GetAxis(8).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_WiimotePitchNegative: {
-    const float value = mControllerData.GetAxis(9).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimotePitchPositive: {
-    const float value = mControllerData.GetAxis(9).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
+  case kPC_StickDiagonal3Positive:
+    return PositivePart(mControllerData.GetAxis(3));
+  case kPC_NunchukRollNegative:
+    return NegativePart(mControllerData.GetAxis(4));
+  case kPC_NunchukRollPositive:
+    return PositivePart(mControllerData.GetAxis(4));
+  case kPC_NunchukPitchNegative:
+    return NegativePart(mControllerData.GetAxis(5));
+  case kPC_NunchukPitchPositive:
+    return PositivePart(mControllerData.GetAxis(5));
+  case kPC_PointerLeft:
+    return NegativePart(mControllerData.GetAxis(6));
+  case kPC_PointerRight:
+    return PositivePart(mControllerData.GetAxis(6));
+  case kPC_PointerDown:
+    return PositivePart(mControllerData.GetAxis(7));
+  case kPC_PointerUp:
+    return NegativePart(mControllerData.GetAxis(7));
+  case kPC_WiimoteRollNegative:
+    return NegativePart(mControllerData.GetAxis(8));
+  case kPC_WiimoteRollPositive:
+    return PositivePart(mControllerData.GetAxis(8));
+  case kPC_WiimotePitchNegative:
+    return NegativePart(mControllerData.GetAxis(9));
+  case kPC_WiimotePitchPositive:
+    return PositivePart(mControllerData.GetAxis(9));
   default:
     return 0.f;
   }
@@ -294,6 +280,37 @@ CVector2f CFinalInput::GetPointerPosition() const {
 
 #include "Kyoto/Input/CControllerGamepadData.hpp"
 
+// The plain buttons: those that are neither a trigger nor a stick direction.
+#define FINAL_INPUT_PAD_BUTTON_CASES \
+  case 1: \
+  case 2: \
+  case 3: \
+  case 4: \
+  case 5: \
+  case 6: \
+  case 7: \
+  case 8: \
+  case 9: \
+  case 10: \
+  case 11: \
+  case 16: \
+  case 17: \
+  case 22: \
+  case 23: \
+  case 24: \
+  case 25: \
+  case 26: \
+  case 27: \
+  case 28: \
+  case 29: \
+  case 30: \
+  case 31: \
+  case 32: \
+  case 33: \
+  case 48: \
+  case 49: \
+  case 50:
+
 const float CFinalInput::kInput_AnalogOnThreshhold = 0.7f;
 const float CFinalInput::kInput_AnalogTriggerOnThreshhold = 0.05f;
 
@@ -306,119 +323,52 @@ float CFinalInput::GetAnalogValue(int input) const {
   switch (input) {
   case kBU_None:
     return 0.f;
-  case 1:
-  case 2:
-  case 3:
-  case 4:
-  case 5:
-  case 6:
-  case 7:
-  case 8:
-  case 9:
-  case 10:
-  case 11:
-  case 16:
-  case 17:
-  case 22:
-  case 23:
-  case 24:
-  case 25:
-  case 26:
-  case 27:
-  case 28:
-  case 29:
-  case 30:
-  case 31:
-  case 32:
-  case 33:
-  case 48:
-  case 49:
-  case 50:
+  FINAL_INPUT_PAD_BUTTON_CASES
     return mPad.GetButton(static_cast< EButton >(input)).GetIsPressed() ? 1.f : 0.f;
   case kBU_LTrigger:
     return mPad.GetAnalogButton(kBA_Left).GetAbsoluteValue();
   case kBU_RTrigger:
     return mPad.GetAnalogButton(kBA_Right).GetAbsoluteValue();
-  case kBU_LeftStickLeft: {
-    float value = mPad.GetAxis(kJA_LeftX).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_LeftStickRight: {
-    float value = mPad.GetAxis(kJA_LeftX).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_LeftStickDown: {
-    float value = mPad.GetAxis(kJA_LeftY).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_LeftStickUp: {
-    float value = mPad.GetAxis(kJA_LeftY).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_RightStickLeft: {
-    float value = mPad.GetAxis(kJA_RightX).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_RightStickRight: {
-    float value = mPad.GetAxis(kJA_RightX).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_RightStickDown: {
-    float value = mPad.GetAxis(kJA_RightY).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_RightStickUp: {
-    float value = mPad.GetAxis(kJA_RightY).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_GcLeftStickLeft: {
-    float value = mPad.GetAxis(kJA_GcLeftX).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_GcLeftStickRight: {
-    float value = mPad.GetAxis(kJA_GcLeftX).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_GcLeftStickUp: {
-    float value = mPad.GetAxis(kJA_GcLeftY).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_GcLeftStickDown: {
-    float value = mPad.GetAxis(kJA_GcLeftY).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_GcRightStickLeft: {
-    float value = mPad.GetAxis(kJA_GcRightX).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_GcRightStickRight: {
-    float value = mPad.GetAxis(kJA_GcRightX).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_GcRightStickDown: {
-    float value = mPad.GetAxis(kJA_GcRightY).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_GcRightStickUp: {
-    float value = mPad.GetAxis(kJA_GcRightY).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_Axis4Left: {
-    float value = mPad.GetAxis(kJA_Axis4).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kBU_Axis4Right: {
-    float value = mPad.GetAxis(kJA_Axis4).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_Axis5Down: {
-    float value = mPad.GetAxis(kJA_Axis5).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kBU_Axis5Up: {
-    float value = mPad.GetAxis(kJA_Axis5).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
+  case kBU_LeftStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_LeftX));
+  case kBU_LeftStickRight:
+    return PositivePart(mPad.GetAxis(kJA_LeftX));
+  case kBU_LeftStickDown:
+    return NegativePart(mPad.GetAxis(kJA_LeftY));
+  case kBU_LeftStickUp:
+    return PositivePart(mPad.GetAxis(kJA_LeftY));
+  case kBU_RightStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_RightX));
+  case kBU_RightStickRight:
+    return PositivePart(mPad.GetAxis(kJA_RightX));
+  case kBU_RightStickDown:
+    return PositivePart(mPad.GetAxis(kJA_RightY));
+  case kBU_RightStickUp:
+    return NegativePart(mPad.GetAxis(kJA_RightY));
+  case kBU_GcLeftStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_GcLeftX));
+  case kBU_GcLeftStickRight:
+    return PositivePart(mPad.GetAxis(kJA_GcLeftX));
+  case kBU_GcLeftStickUp:
+    return NegativePart(mPad.GetAxis(kJA_GcLeftY));
+  case kBU_GcLeftStickDown:
+    return PositivePart(mPad.GetAxis(kJA_GcLeftY));
+  case kBU_GcRightStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_GcRightX));
+  case kBU_GcRightStickRight:
+    return PositivePart(mPad.GetAxis(kJA_GcRightX));
+  case kBU_GcRightStickDown:
+    return PositivePart(mPad.GetAxis(kJA_GcRightY));
+  case kBU_GcRightStickUp:
+    return NegativePart(mPad.GetAxis(kJA_GcRightY));
+  case kBU_Axis4Left:
+    return NegativePart(mPad.GetAxis(kJA_Axis4));
+  case kBU_Axis4Right:
+    return PositivePart(mPad.GetAxis(kJA_Axis4));
+  case kBU_Axis5Down:
+    return PositivePart(mPad.GetAxis(kJA_Axis5));
+  case kBU_Axis5Up:
+    return NegativePart(mPad.GetAxis(kJA_Axis5));
   }
   return 0.f;
 }
@@ -427,34 +377,7 @@ bool CFinalInput::GetDigitalValue(int input) const {
   switch (input) {
   case kBU_None:
     return false;
-  case 1:
-  case 2:
-  case 3:
-  case 4:
-  case 5:
-  case 6:
-  case 7:
-  case 8:
-  case 9:
-  case 10:
-  case 11:
-  case 16:
-  case 17:
-  case 22:
-  case 23:
-  case 24:
-  case 25:
-  case 26:
-  case 27:
-  case 28:
-  case 29:
-  case 30:
-  case 31:
-  case 32:
-  case 33:
-  case 48:
-  case 49:
-  case 50:
+  FINAL_INPUT_PAD_BUTTON_CASES
     return mPad.GetButton(static_cast< EButton >(input)).GetIsPressed();
   case kBU_LTrigger:
     if (mPad.GetAnalogButton(kBA_Left).GetAbsoluteValue() > kInput_AnalogTriggerOnThreshhold) {
@@ -467,42 +390,42 @@ bool CFinalInput::GetDigitalValue(int input) const {
     }
     break;
   case kBU_LeftStickLeft:
-    if (-mPad.GetAxis(kJA_LeftX).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_LeftX), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_LeftStickRight:
-    if (mPad.GetAxis(kJA_LeftX).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_LeftX), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_LeftStickDown:
-    if (-mPad.GetAxis(kJA_LeftY).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_LeftY), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_LeftStickUp:
-    if (mPad.GetAxis(kJA_LeftY).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_LeftY), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_RightStickLeft:
-    if (-mPad.GetAxis(kJA_RightX).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_RightX), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_RightStickRight:
-    if (mPad.GetAxis(kJA_RightX).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_RightX), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_RightStickDown:
-    if (-mPad.GetAxis(kJA_RightY).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_RightY), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_RightStickUp:
-    if (mPad.GetAxis(kJA_RightY).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_RightY), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
@@ -547,22 +470,22 @@ bool CFinalInput::GetDigitalValue(int input) const {
     }
     break;
   case kBU_Axis4Left:
-    if (-mPad.GetAxis(kJA_Axis4).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_Axis4), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_Axis4Right:
-    if (mPad.GetAxis(kJA_Axis4).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_Axis4), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_Axis5Down:
-    if (-mPad.GetAxis(kJA_Axis5).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (NegativePartAbove(mPad.GetAxis(kJA_Axis5), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
   case kBU_Axis5Up:
-    if (mPad.GetAxis(kJA_Axis5).GetAbsoluteValue() > kInput_AnalogOnThreshhold) {
+    if (PositivePartAbove(mPad.GetAxis(kJA_Axis5), kInput_AnalogOnThreshhold)) {
       return true;
     }
     break;
