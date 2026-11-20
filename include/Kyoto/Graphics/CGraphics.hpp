@@ -339,6 +339,10 @@ public:
 
   // Guessed name
   struct SDrawSyncState {
+#if RSTL_KYOTO_GRAPHICS_PROTOTYPE_STARTUP
+    SDrawSyncState() : mBase(0), mIssued(1), mGotten(0), mWrapped(false) {}
+#endif
+
     bool IsTokenComplete(u64 token);
     u64 IssueToken();
     void Poll();

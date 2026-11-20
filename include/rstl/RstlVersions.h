@@ -747,6 +747,14 @@
 // Corruption's CGraphics: lighting modes, draw-sync tokens, alpha contexts, a uchar light mask
 // and a blue clear color.
 #define RSTL_KYOTO_GRAPHICS_CORRUPTION (RSTL_CORRUPTION)
+// The GameCube prototype's graphics initialization, GX token callback and retrace recovery.
+#define RSTL_KYOTO_GRAPHICS_PROTOTYPE_STARTUP (RSTL_VERSION == RSTL_G2MEAB)
+// Retraces with an unchanged FIFO overflow count before aborting a stalled frame.
+#if RSTL_KYOTO_GRAPHICS_PROTOTYPE_STARTUP
+#define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 60
+#else
+#define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 10
+#endif
 // CGraphics allocates its video buffers from the OS arena block (PAL Prime and all non-Prime).
 #define RSTL_KYOTO_GRAPHICS_ARENA (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
 // PAL builds switch between 50 Hz PAL and EURGB60 instead of progressive scan.
