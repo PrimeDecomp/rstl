@@ -14,7 +14,7 @@
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"
 
-#include <alloca.h>
+#include <rstl/alloca.hpp>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -936,4 +936,3 @@ SFilenameResult CBBASupport::GetFilenameForAssetId(CAssetId id) {
   RemoveReceivedMessage(replyIterator);
   return SFilenameResult(rstl::string(filename), size, type);
 }
-

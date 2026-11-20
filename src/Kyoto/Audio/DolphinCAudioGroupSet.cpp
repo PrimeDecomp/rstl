@@ -138,6 +138,14 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
     mSampleDir = rs_new uchar[sampleDirSize];
     in.ReadBytes(mSampleDir.get(), sampleDirSize);
 
+#if defined(TARGET_PC)
+    // FIXME: this is likely incomplete, verify
+    uchar* samples = data.get() + in.GetReadPosition();
+    (void)sampleSize;
+    if (sndPushGroup(mProject.get(), groupId, samples, mSampleDir.get(), mPool.get())) {
+      mStackId = 0;
+    }
+#else
     uchar* samples = data.get() + in.GetReadPosition();
     const int alignedSize = (sampleSize + 31) & ~31;
     mAramAlloc = CARAMManager::Alloc(alignedSize, 1);
@@ -182,6 +190,7 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
         rs_debugger_printf("Multi sound %s in single", str);
       }
     }
+#endif
   }
 }
 #endif
@@ -209,7 +218,7 @@ CAudioGrpSetLoc::~CAudioGrpSetLoc() {
     sndStackSetCurrent(-2);
   }
   if (mAramAlloc != CARAMManager::GetInvalidAlloc()) {
-    CARAMManager::Free(mAramAlloc, 1);
+    IF_NOT_TARGET_PC(CARAMManager::Free(mAramAlloc, 1));
   }
 }
 #endif

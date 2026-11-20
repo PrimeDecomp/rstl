@@ -1,5 +1,6 @@
 #ifndef _CTRANSITIONMANAGER
 #define _CTRANSITIONMANAGER
+
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
@@ -11,8 +12,8 @@ class IMetaTrans;
 class CTransitionManager {
 public:
   CTransitionManager(const CAnimSysContext& context);
+  
 #if !RSTL_PRIME1
-  ~CTransitionManager() {}
   // Guessed name, corresponding to CTreeUtils::GetMetaTrans.
   rstl::rc_ptr< IMetaTrans > GetMetaTrans(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                           const rstl::ncrc_ptr< CAnimTreeNode >& b) const;
@@ -24,9 +25,11 @@ public:
 private:
   CAnimSysContext mContext;
 };
+CHECK_SIZEOF(CTransitionManager, RSTL_PRIME1 ? 0x10 : 0x18)
 
-#if RSTL_PRIME1
-CHECK_SIZEOF(CTransitionManager, 0x10)
+#if !RSTL_PRIME1
+// FIXME: Combined with CAnimationManager, it's not being inlined correctly in Prime 1
+inline CTransitionManager::CTransitionManager(const CAnimSysContext& context) : mContext(context) {}
 #endif
 
 #endif // _CTRANSITIONMANAGER

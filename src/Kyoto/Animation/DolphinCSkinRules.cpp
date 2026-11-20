@@ -5,6 +5,7 @@
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
+#include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
 
@@ -47,38 +48,30 @@ CSkinRules::CSkinRules(CInputStream& in)
 , mVertexToBone(nullptr)
 #endif
 {
-#if RSTL_PRIME1
-  CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
-#else
+#if !RSTL_PRIME1
   if (mVertexCount > 0) {
     mVertexToBone = rs_new uchar[mVertexCount];
     in.Get(mVertexToBone.get(), mVertexCount);
   }
-  CModel::AddToTotal(sizeof(CSkinRules) + mVirtualBones.size() * sizeof(CVirtualBone));
 #endif
+  CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
 }
 
 CSkinRules::~CSkinRules() {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CModel::RemoveFromTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
-#else
-  CModel::RemoveFromTotal(sizeof(CSkinRules) + mVirtualBones.size() * sizeof(CVirtualBone));
-#endif
 }
 
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms& pose,
-                                            const CCharLayoutInfo& layoutInfo) const {
+                                            const CCharLayoutInfo& layoutInfo) const 
 #else
 void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose,
                                             const CCharLayoutInfo& layoutInfo,
-                                            CTransform4f* out) const {
+                                            CTransform4f* out) const
 #endif
+{
   float pointStorage[100][3];
   CVector3f* points = reinterpret_cast< CVector3f* >(pointStorage);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CSegId id = pose.GetTransforms().GetFirstElementPresent();
   while (id != CSegId::Null()) {
@@ -302,11 +295,7 @@ void CSkinRules::LoadMatrixBank(int bank) const {
     if (index != -1) {
       const int slot = (i - start) * 3;
       GXLoadPosMtxIndx(index, slot);
-#ifdef TARGET_PC
       CGX::LoadNrmMtxIndx3x3(index, slot);
-#else
-      GXLoadNrmMtxIndx3x3(index, slot);
-#endif
     }
   }
 }

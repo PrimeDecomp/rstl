@@ -50,9 +50,11 @@ public:
 #endif
   IF_RSTL_PRIME1(~CMetroidModelInstance() {})
 
+  TModelData GetMaterialData() const { return mMaterialData; }
   const void* GetMaterialPointer() const { return GetModelDataPointer(mMaterialData); }
 #if defined(TARGET_PC)
   const std::vector< TModelData >& GetSurfaces() const { return mSurfaces; }
+  CCubeSurface GetSurface(int index) const { return CCubeSurface(&mSurfaceHeaders[index]); }
   const SModelArrays& GetArrays() const { return mArrays; }
   const void* GetVertexPointer() const { return mArrays.positions.data(); }
   const void* GetNormalPointer() const { return mArrays.normals.data(); }
@@ -61,6 +63,7 @@ public:
   const void* GetPackedTCPointer() const { return mArrays.packedTexCoords.data(); }
 #else
   const rstl::vector< TSurface >& GetSurfaces() const { return mSurfaces; }
+  CCubeSurface GetSurface(int index) const { return CCubeSurface(mSurfaces[index]); }
   const void* GetVertexPointer() const { return mPositions; }
   const void* GetNormalPointer() const { return mNormals; }
   const void* GetColorPointer() const { return mColors; }
@@ -131,6 +134,7 @@ private:
   TModelData mMaterialData;
 #if defined(TARGET_PC)
   std::vector< TModelData > mSurfaces;
+  std::vector< CCubeSurface::SSurfaceData > mSurfaceHeaders;
   SModelArrays mArrays;
 #else
   rstl::vector< TSurface > mSurfaces;

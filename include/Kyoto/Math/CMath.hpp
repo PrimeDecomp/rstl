@@ -15,7 +15,14 @@
 #endif
 
 inline double __frsqrte(double value) { return frsqrte(value); }
+
 inline int __abs(int value) { return ::abs(value); }
+
+// Load halfword byte-reversed: the two bytes at base + offset read as little-endian.
+inline unsigned short __lhbrx(const void* base, int offset) {
+  const unsigned char* bytes = static_cast< const unsigned char* >(base) + offset;
+  return static_cast< unsigned short >(bytes[0] | (bytes[1] << 8));
+}
 #endif
 
 #ifndef M_PI
