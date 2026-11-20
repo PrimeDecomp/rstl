@@ -7,6 +7,14 @@
 class CControllerButton {
 public:
   CControllerButton();
+
+  // Guessed name
+  void Update(const bool pressed) {
+    mPressEvent = pressed & (pressed ^ mPressed);
+    mReleaseEvent = mPressed & (pressed ^ mPressed);
+    mPressed = pressed;
+  }
+
   void SetIsPressed(const bool pressed) { mPressed = pressed; }
   const bool GetIsPressed() const { return mPressed; }
   void SetPressEvent(const bool press) { mPressEvent = press; }
