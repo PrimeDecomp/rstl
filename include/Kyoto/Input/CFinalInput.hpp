@@ -133,16 +133,13 @@ public:
   };
 
   CFinalInput();
-#if RSTL_FINAL_INPUT_PAD_SNAPSHOT
-  CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data);
-#else
   CFinalInput(const CFinalInputInfo& info, float leftDiv, float rightDiv);
   // Guessed Wii snapshot type name and input-type meaning.
   CFinalInput(int channel, float dt, const CControllerData& data, uint inputType);
   CFinalInput(int channel, float dt, const CControllerGamepadData& data, float leftDiv,
               float rightDiv);
   CFinalInput(int channel, float dt, const COsContext& context);
-#endif
+  CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data);
 #if RSTL_FINAL_INPUT_ANALOG_THRESHOLDS && !RSTL_FINAL_INPUT_PAD_SNAPSHOT
   CFinalInput(const CFinalInput& other)
   : mDt(other.mDt)
