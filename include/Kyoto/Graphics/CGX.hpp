@@ -293,17 +293,6 @@ inline void CGX::SetVtxAttrFmt(GXVtxFmt fmt, GXAttr attr, GXCompCnt count,
 }
 #endif
 
-#if RSTL_KYOTO_CGX_CORRUPTION
-inline void CGX::apply_fog() {
-  static const GXColor black = {0, 0, 0, 0};
-  GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
-           CGX_STATE.mFogParams.mFogEndZ, CGX_STATE.mFogParams.mFogNearZ,
-           CGX_STATE.mFogParams.mFogFarZ,
-           (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
-                                                                 : CGX_STATE.mFogParams.mFogColor);
-}
-#endif
-
 #if !RSTL_KYOTO_CGX_CORRUPTION
 inline void CGX::LoadNrmMtxImm(const float mtx[][4], unsigned long id) {
   GXLoadNrmMtxImm(const_cast< MtxPtr >(mtx), id);

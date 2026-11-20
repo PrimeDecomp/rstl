@@ -424,8 +424,8 @@ CGX_INLINE void CGX::Begin(GXPrimitive prim, GXVtxFmt fmt, ushort numVtx) {
 }
 
 CGX_INLINE void CGX::End() { GXEnd(); }
+#endif
 
-// The prototype defines apply_fog in CGX.hpp.
 inline void CGX::apply_fog() {
   static const GXColor black = {0, 0, 0, 0};
   GXSetFog(static_cast< GXFogType >(CGX_STATE.mFogType), CGX_STATE.mFogParams.mFogStartZ,
@@ -434,7 +434,6 @@ inline void CGX::apply_fog() {
            (CGX_STATE.mBlendMode & (7 << 5)) == (GX_BL_ONE << 5) ? black
                                                                  : CGX_STATE.mFogParams.mFogColor);
 }
-#endif
 
 #if CGX_IMPL_PRIME
 CGX_INLINE void CGX::SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,
