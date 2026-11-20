@@ -1610,8 +1610,8 @@ CMetroidAreaCollider::CMovingAABoxComponents::CMovingAABoxComponents(const CAABo
   if (!initialized) {
     initialized = true;
     for (int i = 0; i < 12; ++i) {
-      edgeIndices.push_back(CAABox::GetEdge(CAABox::EBoxEdgeId(i)));
-      rstl::pair< int, int > indices = CAABox::GetEdge(CAABox::EBoxEdgeId(i));
+      edgeIndices.push_back(CAABox::GetEdgeIndices(CAABox::EBoxEdgeId(i)));
+      rstl::pair< int, int > indices = CAABox::GetEdgeIndices(CAABox::EBoxEdgeId(i));
       edgeAxes[i] = indices.first - indices.second;
       edges.push_back(SBoxEdge());
     }

@@ -56,6 +56,11 @@
 // The Corruption prototype and retail. Retail (no build) provisionally takes the prototype forms;
 // record a retail difference by excluding RSTL_RM3E/P/J from the macro concerned.
 #define RSTL_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J)
+// CAABox::GetEdge returning a CLineSeg: Prime, and retail Corruption and Trilogy, where the
+// corner index form (!RSTL_PRIME1) is also present (R3ME01 and RM3E01 symbols list both).
+#define RSTL_CAABOX_LINESEG_EDGE                                                                   \
+  (RSTL_PRIME1 || (RSTL_VERSION >= RSTL_RM3E && RSTL_VERSION <= RSTL_RM3J) ||                      \
+   RSTL_VERSION >= RSTL_R3ME_00)
 // Trilogy as built for Echoes, whose fill and `reserved_vector` details are Echoes-era.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 
