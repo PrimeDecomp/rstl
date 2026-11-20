@@ -3,7 +3,15 @@
 
 #include "rstl/types.h"
 
-struct SBBASettings;
+// Guessed name
+struct SBBASettings {
+  uchar mMacAddress[6];
+  s64 mLeaseExpiry;
+  uint mHostAddress;
+  uint mServerAddress;
+  uint mNetmask;
+  uint mGateway;
+};
 
 // Guessed names
 
