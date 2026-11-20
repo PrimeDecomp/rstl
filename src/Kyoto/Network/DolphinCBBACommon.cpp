@@ -1,4 +1,3 @@
-#include "rstl/static_assert.hpp"
 #include "Kyoto/Network/DolphinCBBACommon.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
@@ -6,88 +5,86 @@
 #include "Kyoto/CDvdFile.hpp"
 
 #include "rstl/optional_object.hpp"
+#include "rstl/static_assert.hpp"
 
-#include "dolphin/card.h"
 #include "dolphin/exi.h"
+#include "dolphin/ip/IPEther.h"
+#include "dolphin/ip/IPRoute.h"
 #include "dolphin/os.h"
 
 #include <string.h>
 
-extern "C" {
-// Guessed names
-void fn_8041724C(int chan);
-void fn_80412F90(int chan, uchar* mac);
-void fn_80413000(int chan, uint* netmask);
-void fn_804130E0(int chan, uint* gateway);
-void fn_80413150(int chan, uint* dns);
-void fn_804131A8(int chan, int* linkState);
-int fn_804149E8(int chan);
-int fn_80421038(void* config);
-void fn_80421534();
-uint fn_804232AC();
-int fn_8041FE84(void* leaseInfo);
-}
-
 // Guessed name
 struct SBBALeaseInfo {
-  uchar mUnknown[0x11c];
-  uint mLeaseSeconds;
+  uchar mHostAddress[4];
+  uchar mNetmask[4];
+  uchar mGateway[4];
+  uchar mDns1[4];
+  uchar mDns2[4];
+  uchar mDomain[256];
+  ushort mMtu;
+  uchar mBroadcastAddress[4];
+  u32 mLeaseSeconds;
+  uchar mServerAddress[4];
+  u32 mRenewalSeconds;
+  u32 mRebindingSeconds;
 };
 
 // Guessed name
-struct SBBASettings {
-  uchar mMacAddress[6];
-  OSTime mLeaseExpiry;
-  uint mHostAddress;
-  uint mServerAddress;
-  uint mNetmask;
-  uint mGateway;
-};
-
-// Guessed name
-struct SBBASettingsFile {
-  uint mVersion;
-  SBBASettings mSettings;
+struct SBBAIPv4Address {
+  uint mAddress;
 };
 
 // Guessed name
 struct SBBANetworkConfig {
-  uint mVendor;
+  ushort mVendor;
+  ushort mVersion;
   void* (*mAllocate)(uint name, int size);
   void (*mFree)(uint name, void* memory, int size);
   uint mUseDhcp;
-  uint mHostAddress;
-  uint mNetmask;
-  uint mGateway;
-  uint mDns;
-  uint mUnknown20;
-  uint mUnknown24;
-  uint mUnknown28;
-  uint mUnknown2C[7];
+  SBBAIPv4Address mHostAddress;
+  SBBAIPv4Address mNetmask;
+  SBBAIPv4Address mGateway;
+  SBBAIPv4Address mDns1;
+  SBBAIPv4Address mDns2;
+  s32 mTimeWaitBuffer;
+  s32 mReassemblyBuffer;
+  s32 mMtu;
+  s32 mReceiveWindow;
+  OSTime mRetransmitTimeout;
+  const char* mPeerId;
+  const char* mPassword;
 };
 
-CHECK_SIZEOF(SBBALeaseInfo, 0x120)
+extern "C" {
+int SOStartup(const SBBANetworkConfig* config);
+int SOCleanup();
+s32 SOGetHostID();
+int DHCPGetStatus(SBBALeaseInfo* info);
+}
+
+CHECK_OFFSETOF(SBBALeaseInfo, mLeaseSeconds, 0x11c)
+CHECK_SIZEOF(SBBALeaseInfo, 0x12c)
+CHECK_SIZEOF(SBBANetworkConfig, 0x48)
 CHECK_SIZEOF(SBBASettings, 0x20)
-CHECK_SIZEOF(SBBASettingsFile, 0x28)
 
 static const uint kBBATypeId = 0x04020200;
-static const uint kSettingsVersion = 1;
 
 // Guessed names
-static SBBANetworkConfig sNetworkConfig = {0x100, BBA_NetworkAllocateCallback,
-                                           BBA_NetworkFreeCallback,
-                                           1,     0,
-                                           0,     0,
-                                           0,     0,
-                                           0x1000, 0x1000,
-                                           {0, 0, 0, 0, 0, 0, 0}};
+static SBBANetworkConfig sNetworkConfig = {
+    0,
+    0x100,
+    BBA_NetworkAllocateCallback,
+    BBA_NetworkFreeCallback,
+    1,
+    {0}, {0}, {0}, {0}, {0},
+    0x1000, 0x1000,
+};
 // Guessed name
-static uint sNoAddress;
+static SBBAIPv4Address sNoAddress = {0};
 static bool sFullAsync;
 static SBBASettings sSettings;
 static OSMutex sNetworkMutex;
-static uchar sCardFile[0x2000] ATTRIBUTE_ALIGN(32);
-static uchar sCardWork[CARD_WORKAREA_SIZE] ATTRIBUTE_ALIGN(32);
 
 void* BBA_NetworkAllocateCallback(uint name, int size) {
   if (size > 0) {
@@ -112,7 +109,7 @@ void BBA_NetworkFreeCallback(uint name, void* memory, int size) {
 bool BBA_InitializeNetworkWithSettings(SBBASettings* settings) {
   uint netmask;
   uint gateway;
-  uint dns;
+  s32 mtu;
   int linkState;
   u32 adapterType;
   uchar mac[6];
@@ -128,37 +125,37 @@ bool BBA_InitializeNetworkWithSettings(SBBASettings* settings) {
     return false;
   }
 
-  fn_8041724C(0);
-  fn_80412F90(0, mac);
+  IFInit(0);
+  IPGetMacAddr(0, mac);
   if (memcmp(mac, settings->mMacAddress, sizeof(mac)) == 0) {
     sNetworkConfig.mUseDhcp = 0;
-    sNetworkConfig.mHostAddress = settings->mHostAddress;
-    sNetworkConfig.mNetmask = settings->mNetmask;
-    sNetworkConfig.mGateway = settings->mGateway;
+    sNetworkConfig.mHostAddress.mAddress = settings->mHostAddress;
+    sNetworkConfig.mNetmask.mAddress = settings->mNetmask;
+    sNetworkConfig.mGateway.mAddress = settings->mGateway;
   } else {
     sNetworkConfig.mUseDhcp = 1;
     usedDhcp = 1;
-    sNetworkConfig.mHostAddress = 0;
-    sNetworkConfig.mNetmask = 0;
-    sNetworkConfig.mGateway = 0;
+    sNetworkConfig.mHostAddress.mAddress = 0;
+    sNetworkConfig.mNetmask.mAddress = 0;
+    sNetworkConfig.mGateway.mAddress = 0;
   }
 
-  if (fn_80421038(&sNetworkConfig) >= 0) {
+  if (SOStartup(&sNetworkConfig) >= 0) {
     started = 1;
   } else {
     started = 0;
   }
 
   while (attempts != 2) {
-    hostAddress = fn_804232AC();
+    hostAddress = SOGetHostID();
     if (hostAddress != 0) {
       ++attempts;
     }
-    fn_80413000(0, &netmask);
-    fn_804130E0(0, &gateway);
-    fn_80412F90(0, mac);
-    fn_80413150(0, &dns);
-    result = fn_804149E8(0);
+    IPGetNetmask(0, reinterpret_cast< uchar* >(&netmask));
+    IPGetGateway(0, reinterpret_cast< uchar* >(&gateway));
+    IPGetMacAddr(0, mac);
+    IPGetMtu(0, &mtu);
+    result = IPGetConfigError(0);
     if (result >= 0) {
       continue;
     }
@@ -216,19 +213,19 @@ bool BBA_InitializeNetworkWithSettings(SBBASettings* settings) {
     if (adapterType != kBBATypeId) {
       rs_debugger_printf("Broadband adapter is not attached.\n");
     } else {
-      fn_804131A8(0, &linkState);
+      IPGetLinkState(0, &linkState);
       if (linkState == 0) {
         rs_debugger_printf("Check the LAN cable.\n");
       }
     }
 
     if (started) {
-      fn_80421534();
+      SOCleanup();
     }
     ++attempts;
   }
 
-  if (usedDhcp && fn_8041FE84(&lease)) {
+  if (usedDhcp && DHCPGetStatus(&lease)) {
     OSTime now = OSGetTime();
     OSTime leaseTicks = OSSecondsToTicks(static_cast< OSTime >(lease.mLeaseSeconds));
     memcpy(settings->mMacAddress, mac, sizeof(mac));
@@ -258,14 +255,15 @@ uint BBA_GetServerIPv4Address() { return sSettings.mServerAddress; }
 bool BBA_InitializeHardwareFromSettings() {
   bool resetLease = false;
   OSTime now = OSGetTime();
-  char serverFile[13] = "bbaSvrIp.dat";
   rstl::optional_object< uint > serverAddress;
+  char serverFile[13] = "bbaSvrIp.dat";
 
   if (CDvdFile::FileExists(serverFile)) {
     CDvdFile file(serverFile);
     uchar raw[0x40];
     uchar* buffer = reinterpret_cast< uchar* >((reinterpret_cast< uint >(raw) + 0x1f) & ~0x1f);
-    serverAddress = sNoAddress;
+    const uint defaultAddress = sNoAddress.mAddress;
+    serverAddress = defaultAddress;
     file.BlockingRead(buffer, 0x20);
     uchar* address = reinterpret_cast< uchar* >(&serverAddress.data());
     address[0] = buffer[0];
@@ -325,191 +323,6 @@ bool BBA_InitializeHardwareFromSettings() {
 }
 
 void BBA_ShutdownHardware() {
-  fn_80421534();
+  SOCleanup();
   OSReport("BBA Hardware shutdown.\n");
 }
-
-// Guessed name
-static inline int FindCard(int chan) {
-  int result;
-  do {
-    result = CARDProbeEx(chan, 0, 0);
-  } while (result == CARD_RESULT_BUSY);
-  if (result == CARD_RESULT_READY) {
-    return true;
-  }
-  OSReport("Can't find card in cardSlot %c.\n", "AB"[chan]);
-  return false;
-}
-
-bool BBA_SaveDHCPSettingsToMemoryCard(int chan, const char* fileName, const void* settings) {
-  CARDFileInfo fileInfo;
-  CARDStat stat;
-  u32 sectorSize;
-
-  CARDInit();
-  if (!FindCard(chan)) {
-    return false;
-  }
-
-  int result = CARDMount(chan, sCardWork, 0);
-  if (result < 0) {
-    OSReport("CARDMount failed. (%d)\n", result);
-    return false;
-  }
-  switch (result) {
-  case CARD_RESULT_READY:
-  case CARD_RESULT_BROKEN:
-    result = CARDCheck(chan);
-    if (result < 0) {
-      CARDUnmount(chan);
-      OSReport("CARDCheck failed. (%d)\n", result);
-      return false;
-    }
-    break;
-  }
-  switch (result) {
-  case CARD_RESULT_READY:
-    break;
-  case CARD_RESULT_BROKEN:
-  case CARD_RESULT_ENCODING:
-    CARDUnmount(chan);
-    OSReport("CARDMount failed. (%d)\n", result);
-    return false;
-  default:
-    OSReport("CARDMount failed. (%d)\n", result);
-    return false;
-  }
-
-  result = CARDGetSectorSize(chan, &sectorSize);
-  if (result < 0) {
-    OSReport("CARDGetSectorSize() failed. (%d)\n", result);
-    return false;
-  }
-  if (sectorSize != sizeof(sCardFile)) {
-    OSReport("Sector size %d bytes.\n", sectorSize);
-    OSReport("Only memory card sector sizes of %d are supported.\n", (int)sizeof(sCardFile));
-    CARDUnmount(chan);
-    return false;
-  }
-
-  memset(sCardFile, 0, sizeof(sCardFile));
-  SBBASettingsFile* file = reinterpret_cast< SBBASettingsFile* >(sCardFile);
-  file->mVersion = kSettingsVersion;
-  memcpy(&file->mSettings, settings, sizeof(SBBASettings));
-
-  CARDDelete(chan, fileName);
-  result = CARDCreate(chan, fileName, sectorSize, &fileInfo);
-  if (result < 0) {
-    OSReport("CARDCreate failed. (%d)\n", result);
-    return false;
-  }
-  result = CARDWrite(&fileInfo, sCardFile, sizeof(sCardFile), 0);
-  if (result < 0) {
-    OSReport("CARDWrite failed. (%d)\n", result);
-    return false;
-  }
-  result = CARDGetStatus(chan, fileInfo.fileNo, &stat);
-  if (result < 0) {
-    OSReport("CARDGetStatus failed. (%d)\n", result);
-    return false;
-  }
-  CARDClose(&fileInfo);
-  CARDUnmount(chan);
-  return true;
-}
-
-int BBA_LoadDHCPSettingsFromMemoryCard(int chan, const char* fileName, void* outSettings) {
-  int versionMismatch = 0;
-  CARDFileInfo fileInfo;
-  CARDStat stat;
-  u32 sectorSize;
-
-  CARDInit();
-  if (!FindCard(chan)) {
-    return false;
-  }
-
-  int result = CARDMount(chan, sCardWork, 0);
-  if (result < 0) {
-    OSReport("CARDMount failed. (%d)\n", result);
-    return false;
-  }
-  switch (result) {
-  case CARD_RESULT_READY:
-  case CARD_RESULT_BROKEN:
-    result = CARDCheck(chan);
-    if (result < 0) {
-      CARDUnmount(chan);
-      OSReport("CARDCheck failed. (%d)\n", result);
-      return false;
-    }
-    break;
-  }
-  switch (result) {
-  case CARD_RESULT_READY:
-    break;
-  case CARD_RESULT_BROKEN:
-  case CARD_RESULT_ENCODING:
-    CARDUnmount(chan);
-    OSReport("CARDCheck failed. (%d)\n", result);
-    return false;
-  default:
-    OSReport("CARDCheck failed. (%d)\n", result);
-    return false;
-  }
-
-  result = CARDGetSectorSize(chan, &sectorSize);
-  if (result < 0) {
-    OSReport("CARDGetSectorSize() failed. (%d)\n", result);
-    return false;
-  }
-  if (sectorSize != sizeof(sCardFile)) {
-    OSReport("Sector size %d bytes.\n", sectorSize);
-    OSReport("Only memory card sector sizes of %d are supported.\n", (int)sizeof(sCardFile));
-    CARDUnmount(chan);
-    return false;
-  }
-
-  result = CARDOpen(chan, fileName, &fileInfo);
-  if (result < 0) {
-    OSReport("CARDOpen failed. (%d)\n", result);
-    CARDUnmount(chan);
-    return false;
-  }
-
-  memset(sCardFile, 0, sizeof(sCardFile));
-  result = CARDRead(&fileInfo, sCardFile, sizeof(sCardFile), 0);
-  if (result < 0) {
-    OSReport("CARDRead failed. (%d)\n", result);
-    return false;
-  }
-
-  const SBBASettingsFile* file = reinterpret_cast< const SBBASettingsFile* >(sCardFile);
-  if (file->mVersion != kSettingsVersion) {
-    OSReport("Version numbers for memcard DHCP info don't match. Deleting old version.");
-    versionMismatch = 1;
-  } else {
-    memcpy(outSettings, &file->mSettings, sizeof(SBBASettings));
-  }
-
-  result = CARDGetStatus(chan, fileInfo.fileNo, &stat);
-  if (result < 0) {
-    OSReport("CARDGetStatus failed. (%d)\n", result);
-    return false;
-  }
-  CARDClose(&fileInfo);
-
-  if (versionMismatch) {
-    result = CARDDelete(chan, fileName);
-    if (result < 0) {
-      OSReport("CARDDelete failed. (%d)\n", result);
-      return false;
-    }
-  }
-
-  CARDUnmount(chan);
-  OSReport("Successfully loaded DHCP info from memcard.\n");
-  return versionMismatch ? 0 : 1;
-}
-
