@@ -1,10 +1,10 @@
-#include "Kyoto/Text/CStringTokenizer.hpp"
+#include "Kyoto/Text/CTextTokenizer.hpp"
 
 #include <string.h>
 
-CStringTokenizer::CStringTokenizer(const char* input) : mInput(input) {}
+CTextTokenizer::CTextTokenizer(const char* input) : mInput(input) {}
 
-bool CStringTokenizer::IsExhausted() const {
+bool CTextTokenizer::IsAtEnd() const {
   if (mInput == 0) {
     return true;
   }
@@ -17,12 +17,12 @@ bool CStringTokenizer::IsExhausted() const {
   return true;
 }
 
-rstl::string CStringTokenizer::ReadToken(int* quoted, char quote) {
+rstl::string CTextTokenizer::GetNextToken(ETokenType* tokenType, char quote) {
   static const char* whitespace = "\r\n\t ";
   static char quotedStops[] = " \r\n\t";
   quotedStops[0] = quote;
-  if (quoted != 0) {
-    *quoted = 0;
+  if (tokenType != 0) {
+    *tokenType = kTT_Unquoted;
   }
   if (mInput == 0) {
     return rstl::string_l("");
@@ -39,8 +39,8 @@ rstl::string CStringTokenizer::ReadToken(int* quoted, char quote) {
   if (*mInput == quote) {
     ++mInput;
     isQuoted = true;
-    if (quoted != 0) {
-      *quoted = 1;
+    if (tokenType != 0) {
+      *tokenType = kTT_Quoted;
     }
   }
   const char* start = mInput;
@@ -59,5 +59,5 @@ rstl::string CStringTokenizer::ReadToken(int* quoted, char quote) {
   return rstl::string(start, mInput);
 }
 
-const char* CStringTokenizer::GetRemainingText() const { return mInput; }
+const char* CTextTokenizer::GetRemainingText() const { return mInput; }
 

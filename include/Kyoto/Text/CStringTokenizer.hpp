@@ -1,19 +1,25 @@
-#ifndef _CSTRINGTOKENIZER
-#define _CSTRINGTOKENIZER
+#ifndef KYOTO_TEXT_CSTRINGTOKENIZER_HPP
+#define KYOTO_TEXT_CSTRINGTOKENIZER_HPP
 
-#include "rstl/string.hpp"
+#include "Kyoto/Text/CTextTokenizer.hpp"
 
-// Guessed names
-class CStringTokenizer {
+// Compatibility for callers that still use the prototype's earlier names.
+class CStringTokenizer : public CTextTokenizer {
 public:
-  CStringTokenizer(const char* input);
+  CStringTokenizer(const char* input) : CTextTokenizer(input) {}
 
-  rstl::string ReadToken(int* quoted, char quote);
-  bool IsExhausted() const;
-  const char* GetRemainingText() const;
+  rstl::string ReadToken(int* quoted, char quote) {
+    if (quoted == 0) {
+      return GetNextToken(0, quote);
+    }
 
-private:
-  const char* mInput;
+    ETokenType tokenType;
+    rstl::string token = GetNextToken(&tokenType, quote);
+    *quoted = tokenType;
+    return token;
+  }
+
+  bool IsExhausted() const { return IsAtEnd(); }
 };
 
-#endif // _CSTRINGTOKENIZER
+#endif
