@@ -1802,7 +1802,7 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
 
   Mtx mtx;
   MTXIdentity(mtx);
-  GXLoadPosMtxImm(mtx, GX_PNMTX0);
+  CGX::LoadPosMtxImm(mtx, GX_PNMTX0);
 
   float x2, y2, x1, y1;
   x1 = x - mViewport.mWidth / 2;
@@ -1834,16 +1834,17 @@ void CGraphics::Render2D(const CTexture* tex, int x, int y, int w, int h, const 
 
   // Draw
   CGX::Begin(GX_TRIANGLESTRIP, GX_VTXFMT0, 4);
-  GXPosition3f32(x1, y1, 1.f);
+  float depth = 1.f;
+  GXPosition3f32(x1, y1, depth);
   GXColor1u32(c);
   GXTexCoord2f32(0.f, 0.f);
-  GXPosition3f32(x2, y1, 1.f);
+  GXPosition3f32(x2, y1, depth);
   GXColor1u32(c);
   GXTexCoord2f32(1.f, 0.f);
-  GXPosition3f32(x1, y2, 1.f);
+  GXPosition3f32(x1, y2, depth);
   GXColor1u32(c);
   GXTexCoord2f32(0.f, 1.f);
-  GXPosition3f32(x2, y2, 1.f);
+  GXPosition3f32(x2, y2, depth);
   GXColor1u32(c);
   GXTexCoord2f32(1.f, 1.f);
   CGX::End();

@@ -41,6 +41,10 @@
 #include "math.h"
 #include "string.h"
 
+#if RSTL_KYOTO_MOVIE_OWNS_VOLUME_TABLE
+#include "../Audio/CAudioVolumeTable.inc"
+#endif
+
 static const uint skTHPVersion = 0x11000;
 static int sNumReferences = 0;
 static CMoviePlayer* sAudioPlayer;
@@ -78,6 +82,9 @@ static void MyTHPGXRestore() {
   CGX::SetNumTevStages(1);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
   CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+#if RSTL_KYOTO_MOVIE_RESTORE_ALPHA_UPDATE
+  CGX::SetAlphaUpdate(true);
+#endif
 }
 
 static void MyTHPGXYuv2RgbSetup(bool field, bool deinterlace) {
@@ -122,8 +129,8 @@ static void MyTHPGXYuv2RgbSetup(bool field, bool deinterlace) {
   GXSetColorUpdate(TRUE);
   GXSetAlphaUpdate(FALSE);
   GXInvalidateTexAll();
-  GXSetVtxAttrFmt(GX_VTXFMT7, GX_VA_POS, GX_CLR_RGBA, GX_F32, 0);
-  GXSetVtxAttrFmt(GX_VTXFMT7, GX_VA_TEX0, GX_CLR_RGBA, GX_RGBX8, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT7, GX_VA_POS, GX_CLR_RGBA, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT7, GX_VA_TEX0, GX_CLR_RGBA, GX_RGBX8, 0);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR_NULL);
   CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_C0);
   CGX::SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, false, GX_TEVPREV);

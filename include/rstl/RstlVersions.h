@@ -801,6 +801,10 @@
 #define RSTL_KYOTO_MOVIE_TEXTURE_PUSH_UNSAFE (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // CMoviePlayer::DecodeFromRead warns separately about oversized 60fps and other frames.
 #define RSTL_KYOTO_MOVIE_FRAME_SIZE_WARNINGS (RSTL_CORRUPTION)
+// The THP movie unit owns CAudioSys's volume scale table.
+#define RSTL_KYOTO_MOVIE_OWNS_VOLUME_TABLE (RSTL_CORRUPTION)
+// THP rendering restores alpha updates after drawing a frame.
+#define RSTL_KYOTO_MOVIE_RESTORE_ALPHA_UPDATE (RSTL_CORRUPTION)
 
 // ============================================================================================
 // Kyoto/Input
