@@ -90,10 +90,7 @@ struct use_assignment_for_construction< T* > {
 };
 #endif
 
-// Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
-// long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
-// assignment, but inside that class's own out-of-line copy constructor, which its users call. With
-// u32 listed our compiler inlines that copy into those users instead.
+// Builtin value types that use assignment construction.
 template < typename T >
 struct is_scalar_type {
   enum { value = false };
@@ -289,6 +286,7 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(int, const int&)
 
 #if RSTL_SCALAR_TRAITS
 RSTL_DEFINE_DIRECT_CONSTRUCT(uint, const uint&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(unsigned long, const unsigned long&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, const ushort&)
 
 template < typename T >
@@ -303,6 +301,7 @@ RSTL_DEFINE_DIRECT_CONSTRUCT(float, const float&)
 // Mutable range inputs use the same scalar stores without converting to const references.
 RSTL_DEFINE_DIRECT_CONSTRUCT(int, int&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(uint, uint&)
+RSTL_DEFINE_DIRECT_CONSTRUCT(unsigned long, unsigned long&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(ushort, ushort&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(bool, bool&)
 RSTL_DEFINE_DIRECT_CONSTRUCT(float, float&)

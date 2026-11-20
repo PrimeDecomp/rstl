@@ -33,15 +33,7 @@ public:
 
 private:
   ETextDirection mDirection;
-  rstl::reserved_vector<
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00
-      uint,
-#else
-      u32,
-#endif
-      16 >
-      mColors;
+  rstl::reserved_vector< u32, 16 > mColors;
 #if RSTL_VERSION >= RSTL_GM8P_00
   int mExtraCharacterSpacing;
 #endif
