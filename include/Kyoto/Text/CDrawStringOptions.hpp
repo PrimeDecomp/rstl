@@ -34,8 +34,7 @@ public:
 private:
   ETextDirection mDirection;
   rstl::reserved_vector<
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00
+#if RSTL_KYOTO_UINT_TEXT_PALETTE
       uint,
 #else
       u32,

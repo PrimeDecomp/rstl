@@ -90,10 +90,7 @@ struct use_assignment_for_construction< T* > {
 };
 #endif
 
-// Builtin value types, unlike class types that opt in to assignment construction. u32 (unsigned
-// long) is left out on purpose: the target copies CDrawStringOptions' reserved_vector<u32,16> by
-// assignment, but inside that class's own out-of-line copy constructor, which its users call. With
-// u32 listed our compiler inlines that copy into those users instead.
+// Builtin value types that use assignment construction.
 template < typename T >
 struct is_scalar_type {
   enum { value = false };

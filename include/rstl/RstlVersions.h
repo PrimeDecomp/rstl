@@ -907,6 +907,9 @@
 // Kyoto/Text
 // ============================================================================================
 
+// CDrawStringOptions stores the palette as unsigned int in these builds.
+#define RSTL_KYOTO_UINT_TEXT_PALETTE                                                                \
+  ((RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00) || RSTL_VERSION == RSTL_G2MEAB)
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 
