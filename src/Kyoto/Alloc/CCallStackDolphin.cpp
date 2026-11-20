@@ -1,6 +1,8 @@
 #include "Kyoto/Alloc/CCallStack.hpp"
 
+#if !RSTL_KYOTO_DEBUG_BUILD
 extern "C" const char gkUnknownType[] = "UnknownType";
+#endif
 
 CCallStack::CCallStack(uint lineNum, const char* fileAndLine, const char* type)
 : mLine(fileAndLine), mType(type) {}
