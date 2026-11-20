@@ -747,10 +747,8 @@
 // Corruption's CGraphics: lighting modes, draw-sync tokens, alpha contexts, a uchar light mask
 // and a blue clear color.
 #define RSTL_KYOTO_GRAPHICS_CORRUPTION (RSTL_CORRUPTION)
-// The GameCube prototype's graphics initialization, GX token callback and retrace recovery.
-#define RSTL_KYOTO_GRAPHICS_PROTOTYPE_STARTUP (RSTL_VERSION == RSTL_G2MEAB)
 // Retraces with an unchanged FIFO overflow count before aborting a stalled frame.
-#if RSTL_KYOTO_GRAPHICS_PROTOTYPE_STARTUP
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
 #define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 60
 #else
 #define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 10
