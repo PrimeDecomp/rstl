@@ -319,6 +319,10 @@ CFinalInput::CFinalInput() : mDt(0.f), mControllerIdx(0) {}
 CFinalInput::CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data)
 : mDt(dt), mControllerIdx(controllerIdx), mPad(data) {}
 
+CControllerAxis::CControllerAxis() : mRelative(0.f), mAbsolute(0.f) {}
+
+CControllerButton::CControllerButton() : mPressed(false), mPressEvent(false), mReleaseEvent(false) {}
+
 float CFinalInput::GetAnalog(int input) const {
   switch (input) {
   case kBU_None:
