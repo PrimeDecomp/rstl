@@ -232,7 +232,6 @@ inline const uint CInputStream::GetReadPosition() const { return mReadPosition; 
   uint* result = mpBufferAt.p32++;                                                                 \
   return BE_SWAP(*result)
 #define CINPUTSTREAM_READ_U16 return BE_SWAP(*mpBufferAt.p16++)
-#define CINPUTSTREAM_READ_I8 return *mpBufferAt.p8++
 #define CINPUTSTREAM_READ_U64                                                                      \
   u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);                                           \
   mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);                                          \
@@ -246,15 +245,14 @@ inline const uint CInputStream::GetReadPosition() const { return mReadPosition; 
   ushort* result = reinterpret_cast< ushort* >(mpBufferAt.p8);                                     \
   mpBufferAt.p8 = reinterpret_cast< uchar* >(result + 1);                                          \
   return BE_SWAP(*result)
-#define CINPUTSTREAM_READ_I8 return static_cast< char >(ReadUint8())
 #define CINPUTSTREAM_READ_U64                                                                      \
   u64* result = reinterpret_cast< u64* >(mpBufferAt.p8);                                           \
   mpBufferAt.p8 += sizeof(u64);                                                                    \
   return BE_SWAP(*result)
 #endif
 
-inline char CInputStream::ReadInt8() { CINPUTSTREAM_READ_I8; }
-inline char CInputStream::ReadChar() { CINPUTSTREAM_READ_I8; }
+inline char CInputStream::ReadInt8() { return static_cast< char >(ReadUint8()); }
+inline char CInputStream::ReadChar() { return static_cast< char >(ReadUint8()); }
 inline int CInputStream::ReadInt32() {
   int* result = reinterpret_cast< int* >(mpBufferAt.p8);
   mpBufferAt.p8 += sizeof(int);
@@ -278,7 +276,6 @@ inline uint CInputStream::GetReadPosition() const { return mpBufferAt.p8 - mpBuf
 
 #undef CINPUTSTREAM_READ_U32
 #undef CINPUTSTREAM_READ_U16
-#undef CINPUTSTREAM_READ_I8
 #undef CINPUTSTREAM_READ_U64
 
 template < typename T >
