@@ -19,133 +19,117 @@ CAABox::CAABox(CInputStream& in) : min(in), max(in) {}
 
 CAABox::CAABox(const CVector3f& min, const CVector3f& max) : min(min), max(max) {}
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-CLineSeg CAABox::GetEdge(EBoxEdgeId id) const
-#else
-// Guessed name: Echoes returns the endpoint indices rather than a line segment.
-rstl::pair< int, int > CAABox::GetEdge(EBoxEdgeId id)
-#endif
-{
+CLineSeg CAABox::GetEdge(EBoxEdgeId id) const {
   switch (id) {
   case kE_Z0:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), min.GetY(), max.GetZ()),
                     CVector3f(min.GetX(), min.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(4, 0);
-#endif
 
   case kE_Y0:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), min.GetY(), max.GetZ()),
                     CVector3f(min.GetX(), max.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(4, 6);
-#endif
 
   case kE_X0:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), min.GetY(), min.GetZ()),
                     CVector3f(max.GetX(), min.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(0, 1);
-#endif
 
   case kE_Y1:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), min.GetY(), min.GetZ()),
                     CVector3f(min.GetX(), max.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(0, 2);
-#endif
 
   case kE_Z1:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), min.GetY(), min.GetZ()),
                     CVector3f(max.GetX(), min.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(1, 5);
-#endif
 
   case kE_Y2:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), min.GetY(), min.GetZ()),
                     CVector3f(max.GetX(), max.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(1, 3);
-#endif
 
   case kE_X1:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), min.GetY(), max.GetZ()),
                     CVector3f(min.GetX(), min.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(5, 4);
-#endif
 
   case kE_Y3:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), min.GetY(), max.GetZ()),
                     CVector3f(max.GetX(), max.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(5, 7);
-#endif
 
   case kE_Z2:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), max.GetY(), max.GetZ()),
                     CVector3f(max.GetX(), max.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(7, 3);
-#endif
 
   case kE_X2:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(max.GetX(), max.GetY(), min.GetZ()),
                     CVector3f(min.GetX(), max.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(3, 2);
-#endif
 
   case kE_Z3:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), max.GetY(), min.GetZ()),
                     CVector3f(min.GetX(), max.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(2, 6);
-#endif
 
   case kE_X3:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), max.GetY(), max.GetZ()),
                     CVector3f(max.GetX(), max.GetY(), max.GetZ()));
-#else
-    return rstl::pair< int, int >(6, 7);
-#endif
 
   default:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     return CLineSeg(CVector3f(min.GetX(), min.GetY(), max.GetZ()),
                     CVector3f(min.GetX(), min.GetY(), min.GetZ()));
-#else
-    return rstl::pair< int, int >(4, 0);
-#endif
   }
 }
+
+// Guessed name: the form that returns the endpoint indices.
+#if RSTL_CAABOX_EDGE_TABLE
+const rstl::pair< int, int >& CAABox::GetEdgeIndices(EBoxEdgeId id) {
+  static rstl::pair< int, int > edges[12] = {
+      rstl::pair< int, int >(4, 0), rstl::pair< int, int >(0, 1), rstl::pair< int, int >(1, 5),
+      rstl::pair< int, int >(5, 4), rstl::pair< int, int >(7, 3), rstl::pair< int, int >(3, 2),
+      rstl::pair< int, int >(2, 6), rstl::pair< int, int >(6, 7), rstl::pair< int, int >(4, 6),
+      rstl::pair< int, int >(0, 2), rstl::pair< int, int >(1, 3), rstl::pair< int, int >(5, 7),
+  };
+  return edges[id];
+}
+#else
+rstl::pair< int, int > CAABox::GetEdgeIndices(EBoxEdgeId id) {
+  switch (id) {
+  case kE_Z0:
+    return rstl::pair< int, int >(4, 0);
+
+  case kE_Y0:
+    return rstl::pair< int, int >(4, 6);
+
+  case kE_X0:
+    return rstl::pair< int, int >(0, 1);
+
+  case kE_Y1:
+    return rstl::pair< int, int >(0, 2);
+
+  case kE_Z1:
+    return rstl::pair< int, int >(1, 5);
+
+  case kE_Y2:
+    return rstl::pair< int, int >(1, 3);
+
+  case kE_X1:
+    return rstl::pair< int, int >(5, 4);
+
+  case kE_Y3:
+    return rstl::pair< int, int >(5, 7);
+
+  case kE_Z2:
+    return rstl::pair< int, int >(7, 3);
+
+  case kE_X2:
+    return rstl::pair< int, int >(3, 2);
+
+  case kE_Z3:
+    return rstl::pair< int, int >(2, 6);
+
+  case kE_X3:
+    return rstl::pair< int, int >(6, 7);
+
+  default:
+    return rstl::pair< int, int >(4, 0);
+  }
+}
+#endif
 
 CTri CAABox::GetTri(EBoxFaceId face, int windOffset) const {
   CVector3f verts[4] = {

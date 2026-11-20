@@ -59,12 +59,12 @@ public:
   //   return *this;
   // }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CLineSeg GetEdge(EBoxEdgeId edge) const;
-#else
   // Guessed name; the G2ME01 target returns two corner indices.
-  static rstl::pair< int, int > GetEdge(EBoxEdgeId edge);
+#if RSTL_CAABOX_EDGE_TABLE
+  static const rstl::pair< int, int >& GetEdgeIndices(EBoxEdgeId edge);
+#else
+  static rstl::pair< int, int > GetEdgeIndices(EBoxEdgeId edge);
 #endif
 
   CTri GetTri(EBoxFaceId face, int windOffset) const;

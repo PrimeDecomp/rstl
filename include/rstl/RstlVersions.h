@@ -56,6 +56,10 @@
 // The Corruption prototype and retail. Retail (no build) provisionally takes the prototype forms;
 // record a retail difference by excluding RSTL_RM3E/P/J from the macro concerned.
 #define RSTL_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J)
+// CAABox::GetEdgeIndices looks its corners up in a static table and returns a reference (retail
+// Corruption and Trilogy); the other builds return the pair from a switch.
+#define RSTL_CAABOX_EDGE_TABLE                                                                     \
+  ((RSTL_VERSION >= RSTL_RM3E && RSTL_VERSION <= RSTL_RM3J) || RSTL_VERSION >= RSTL_R3ME_00)
 // Trilogy as built for Echoes, whose fill and `reserved_vector` details are Echoes-era.
 #define RSTL_TRILOGY_ECHOES (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1)
 
