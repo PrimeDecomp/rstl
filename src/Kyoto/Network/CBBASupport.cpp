@@ -10,6 +10,7 @@
 #include "Kyoto/Streams/COutputStream.hpp"
 #include "Kyoto/Streams/COutputStreamVector.hpp"
 #include "Kyoto/Text/CTextTokenizer.hpp"
+#include "dolphin/ip/IPSocket.h"
 #include "dolphin/os.h"
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"
@@ -19,19 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern "C" {
-// Guessed names
-int fn_8042257C(int socket, void* buffer, int length, int flags);
-int fn_804227D8(int socket, const void* buffer, int length, int flags);
-void fn_80422394(int socket);
-int fn_80422554(int socket, int* value, int flags);
-int fn_80421864(int family, int type, int protocol);
-int fn_804223C8(int socket, const void* address);
-int fn_80423134(int socket, int level, int option, const void* value, int length);
-int fn_80423168(int socket, int command, ...);
-rstl::string fn_80505588(const rstl::string& text);
-}
 
 // Guessed names
 static const uint kMessageHeaderMagic = 'MHDR';
@@ -50,14 +38,6 @@ struct SPacketHeader {
   uint mIndex;
   uint mCrc;
   uint mLength;
-};
-
-// Guessed names
-struct SBBASocketAddress {
-  uchar mLength;
-  uchar mFamily;
-  ushort mPort;
-  uint mAddress;
 };
 
 // Guessed name
@@ -113,7 +93,7 @@ uint CBBASupport::CalculatePacketCRC(const void* data, uint length) {
 int CBBASupport::PollSocketAndSendHeartbeat() {
   static CStopwatch heartbeatTimer;
   int value;
-  const int result = fn_80422554(sSocket, &value, 0);
+  const int result = SORead(sSocket, &value, 0);
   if (heartbeatTimer.GetElapsedTime() > 0.25f) {
     heartbeatTimer.Reset();
     SendStringMessage(rstl::string("game_ping_connection"), kSC_HostCommand, nullptr);
@@ -133,7 +113,7 @@ bool CBBASupport::IsBBAFullyConnected() {
     OSReport("************************************************************************\n");
     OSReport("Couldn't connect socket in CBBASupport::IsBBAFullyConnected. Error(%d).\n", status);
     OSReport("************************************************************************\n");
-    fn_80422394(sSocket);
+    SOClose(sSocket);
     sConnectionActive = false;
     sAsyncConnectionPending = false;
   }
@@ -150,36 +130,36 @@ int CBBASupport::InitializeBBA(int mode) {
   if (!sConnectionActive) {
     sLocalGuid = CGuid::Generate();
     CStopwatch timer;
-    sSocket = fn_80421864(2, 1, 0);
+    sSocket = SOSocket(2, 1, 0);
     if (sSocket < 0) {
       return kFE_CantInitializeBBA;
     }
     if (mode != 1) {
-      const int flags = fn_80423168(sSocket, 3, 0);
-      fn_80423168(sSocket, 4, flags | 4);
+      const int flags = SOFcntl(sSocket, 3, 0);
+      SOFcntl(sSocket, 4, flags | 4);
       sAsyncConnectionPending = true;
     }
-    SBBASocketAddress address;
+    SOSockAddrIn address;
     memset(&address, 0, sizeof(address));
-    address.mLength = sizeof(address);
-    address.mFamily = 2;
-    address.mPort = BBA_GetServerPort();
-    address.mAddress = BBA_GetServerIPv4Address();
+    address.len = sizeof(address);
+    address.family = 2;
+    address.port = BBA_GetServerPort();
+    address.addr.addr = BBA_GetServerIPv4Address();
     const int excess = reinterpret_cast< uint >(&address) -
                        reinterpret_cast< uint >(OSGetCurrentThread()->stackEnd) - 0x4000;
     alloca(excess < 0 ? 0 : excess);
-    const int result = fn_804223C8(sSocket, &address);
+    const int result = SOConnect(sSocket, &address);
     if (result != 0 && result != -26) {
       OSReport("*****************************************************************\n");
       OSReport("Couldn't connect socket in CBBASupport::InitializeBBA. Error(%d).\n", result);
       OSReport("*****************************************************************\n");
-      fn_80422394(sSocket);
+      SOClose(sSocket);
       return kFE_CantInitializeBBA;
     }
-    const int flags = fn_80423168(sSocket, 3, 0);
-    fn_80423168(sSocket, 4, flags & ~4);
+    const int flags = SOFcntl(sSocket, 3, 0);
+    SOFcntl(sSocket, 4, flags & ~4);
     int enabled = 1;
-    fn_80423134(sSocket, 0xffff, 4, &enabled, sizeof(enabled));
+    SOSetSockOpt(sSocket, 0xffff, 4, &enabled, sizeof(enabled));
     OSReport(CBasics::Stringize("BBA connection time: %.1fs\n", timer.GetElapsedTime()));
     sStringCallbacks[kSC_ConnectionStatus] =
         TStaticCallback2< int, const rstl::string& >::Make(HandleAsyncConnectionCompletion);
@@ -307,14 +287,14 @@ int CBBASupport::PollMessages() {
 
 bool CBBASupport::HasPendingSocketBytes() {
   char peek[8];
-  return fn_8042257C(sSocket, peek, sizeof(peek), 6) > 0;
+  return SORecv(sSocket, peek, sizeof(peek), 6) > 0;
 }
 
 int CBBASupport::ReceiveSocketBytes(void* data, const int length) {
   uchar* cursor = static_cast< uchar* >(data);
   int remaining = length;
   while (remaining > 0) {
-    const int received = fn_8042257C(sSocket, cursor, remaining, 0);
+    const int received = SORecv(sSocket, cursor, remaining, 0);
     if (received < -1) {
       rs_debugger_printf("error %d during receive...\n", received);
       return -1;
@@ -326,7 +306,7 @@ int CBBASupport::ReceiveSocketBytes(void* data, const int length) {
 }
 
 int CBBASupport::SendSocketBytes(const void* data, int length) {
-  const int sent = fn_804227D8(sSocket, data, length, 0);
+  const int sent = SOSend(sSocket, const_cast< void* >(data), length, 0);
   if (static_cast< uint >(sent) == static_cast< uint >(length)) {
     return length;
   }
@@ -455,7 +435,7 @@ rstl::string CBBASupport::GetRemoteEnvironmentVariable(const rstl::string& name)
     return empty;
   }
   text = text.substr(prefix.length());
-  return fn_80505588(text);
+  return CStringExtras::TrimString(text);
 }
 
 const rstl::vector< CBBASupport::SNetworkAsset >& CBBASupport::GetNetworkAssets() {
