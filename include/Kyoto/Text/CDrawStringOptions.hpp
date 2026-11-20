@@ -33,14 +33,7 @@ public:
 
 private:
   ETextDirection mDirection;
-  rstl::reserved_vector<
-#if RSTL_KYOTO_UINT_TEXT_PALETTE
-      uint,
-#else
-      u32,
-#endif
-      16 >
-      mColors;
+  rstl::reserved_vector< u32, 16 > mColors;
 #if RSTL_VERSION >= RSTL_GM8P_00
   int mExtraCharacterSpacing;
 #endif

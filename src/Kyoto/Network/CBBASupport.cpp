@@ -9,12 +9,12 @@
 #include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
 #include "Kyoto/Streams/COutputStreamVector.hpp"
-#include "Kyoto/Text/CStringTokenizer.hpp"
+#include "Kyoto/Text/CTextTokenizer.hpp"
 #include "dolphin/os.h"
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"
 
-#include <alloca.h>
+#include <rstl/alloca.hpp>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -356,12 +356,12 @@ CAssetId CBBASupport::GetAutoStartWorld() {
     return world;
   }
   rstl::string text = DecodeStringMessage((**reply).GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
-  rstl::string prefix = tokenizer.ReadToken(0, '"');
+  CTextTokenizer tokenizer(text.c_str());
+  rstl::string prefix = tokenizer.GetNextToken(0, '"');
   if (prefix != rstl::string_l("autostartworld")) {
     return world;
   }
-  rstl::string id = tokenizer.ReadToken(0, '"');
+  rstl::string id = tokenizer.GetNextToken(0, '"');
   world = CAssetId(id.c_str());
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
@@ -385,13 +385,13 @@ SNetworkWorld CBBASupport::GetNetworkWorld() {
     return world;
   }
   rstl::string text = DecodeStringMessage((**reply).GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
-  rstl::string prefix = tokenizer.ReadToken(0, '"');
+  CTextTokenizer tokenizer(text.c_str());
+  rstl::string prefix = tokenizer.GetNextToken(0, '"');
   if (prefix != rstl::string_l("networkworld")) {
     return world;
   }
-  world.mName = tokenizer.ReadToken(0, '"');
-  rstl::string id = tokenizer.ReadToken(0, '"');
+  world.mName = tokenizer.GetNextToken(0, '"');
+  rstl::string id = tokenizer.GetNextToken(0, '"');
   world.mId = CAssetId(id.c_str());
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
@@ -420,12 +420,12 @@ CBBASupport::ExecuteRemoteSystemCommand(const rstl::string& command, float timeo
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
   rstl::string text = DecodeStringMessage(message.GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
+  CTextTokenizer tokenizer(text.c_str());
   rstl::string prefix("systemresult");
-  if (CStringExtras::CompareCaseInsensitive(tokenizer.ReadToken(0, '"'), prefix) != 0) {
+  if (CStringExtras::CompareCaseInsensitive(tokenizer.GetNextToken(0, '"'), prefix) != 0) {
     return failure;
   }
-  const int status = atoi(tokenizer.ReadToken(0, '"').c_str());
+  const int status = atoi(tokenizer.GetNextToken(0, '"').c_str());
   return SRemoteCommandResult(rstl::string(tokenizer.GetRemainingText()), status);
 }
 
@@ -475,19 +475,19 @@ const CBBASupport::SNetworkAsset& CBBASupport::FindNetworkAsset(CAssetId id) {
 
 rstl::vector< CBBASupport::SNetworkAsset >
 CBBASupport::ParseNetworkAssets(const rstl::string& text) {
-  CStringTokenizer tokenizer(text.c_str());
+  CTextTokenizer tokenizer(text.c_str());
   rstl::vector< SNetworkAsset > assets;
-  rstl::string filename = tokenizer.ReadToken(0, '"');
-  CAssetId id(tokenizer.ReadToken(0, '"').c_str());
-  FourCC type = atoi(tokenizer.ReadToken(0, '"').c_str());
+  rstl::string filename = tokenizer.GetNextToken(0, '"');
+  CAssetId id(tokenizer.GetNextToken(0, '"').c_str());
+  FourCC type = atoi(tokenizer.GetNextToken(0, '"').c_str());
   while (filename.length() != 0) {
     if (assets.capacity() <= assets.size()) {
       assets.reserve(assets.capacity() + 2);
     }
     assets.push_back(SNetworkAsset(filename, id, type));
-    filename = tokenizer.ReadToken(0, '"');
-    id = CAssetId(tokenizer.ReadToken(0, '"').c_str());
-    type = atoi(tokenizer.ReadToken(0, '"').c_str());
+    filename = tokenizer.GetNextToken(0, '"');
+    id = CAssetId(tokenizer.GetNextToken(0, '"').c_str());
+    type = atoi(tokenizer.GetNextToken(0, '"').c_str());
   }
   rstl::sort(assets.begin(), assets.end());
   return assets;
@@ -562,12 +562,12 @@ int CBBASupport::BBAOpen(const char* path, EBBAOpenMode mode, int* handle) {
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
   rstl::string text = DecodeStringMessage(message.GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
-  rstl::string status = tokenizer.ReadToken(0, '"');
+  CTextTokenizer tokenizer(text.c_str());
+  rstl::string status = tokenizer.GetNextToken(0, '"');
   if (status != rstl::string_l("filesize")) {
     return kFE_CantOpen;
   }
-  const int size = atoi(tokenizer.ReadToken(0, '"').c_str());
+  const int size = atoi(tokenizer.GetNextToken(0, '"').c_str());
   if (size < 0) {
     return kFE_CantOpen;
   }
@@ -708,8 +708,8 @@ int CBBASupport::DeleteFile(const char* name) {
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
   rstl::string text = DecodeStringMessage(message.GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
-  rstl::string status = tokenizer.ReadToken(0, '"');
+  CTextTokenizer tokenizer(text.c_str());
+  rstl::string status = tokenizer.GetNextToken(0, '"');
   if (status != rstl::string_l("DeleteSuccessful")) {
     return kFE_CantOpen;
   }
@@ -924,16 +924,15 @@ SFilenameResult CBBASupport::GetFilenameForAssetId(CAssetId id) {
     return ConstructInvalidFilenameResult();
   }
   rstl::string text = DecodeStringMessage((**reply).GetPtr());
-  CStringTokenizer tokenizer(text.c_str());
-  rstl::string status = tokenizer.ReadToken(0, '"');
+  CTextTokenizer tokenizer(text.c_str());
+  rstl::string status = tokenizer.GetNextToken(0, '"');
   if (status != rstl::string_l("assetid_filename")) {
     return ConstructInvalidFilenameResult();
   }
-  rstl::string filename = tokenizer.ReadToken(0, '"');
-  const int size = atoi(tokenizer.ReadToken(0, '"').c_str());
-  const FourCC type = SObjectTag::Text2Type(tokenizer.ReadToken(0, '"').c_str());
+  rstl::string filename = tokenizer.GetNextToken(0, '"');
+  const int size = atoi(tokenizer.GetNextToken(0, '"').c_str());
+  const FourCC type = SObjectTag::Text2Type(tokenizer.GetNextToken(0, '"').c_str());
   const SReceivedMessageList::iterator replyIterator = *reply;
   RemoveReceivedMessage(replyIterator);
   return SFilenameResult(rstl::string(filename), size, type);
 }
-

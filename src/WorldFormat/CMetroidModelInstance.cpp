@@ -73,6 +73,11 @@ CMetroidModelInstance::CMetroidModelInstance(
 , mSurfaceGroups(PrepareUShortTable(section2).data())
 #endif
 {
+  const uint materialCount = ValidateModelMaterials(materialData);
+  mSurfaceHeaders.reserve(surfaces.size());
+  for (const TModelData surface : surfaces) {
+    mSurfaceHeaders.push_back(CCubeSurface::ReadData(surface, nullptr, materialCount));
+  }
 }
 #else
 CMetroidModelInstance::CMetroidModelInstance(

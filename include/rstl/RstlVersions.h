@@ -312,7 +312,7 @@
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (!RSTL_CORRUPTION)
 // The copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_P2ME)
-// The copy constructor placement-constructs each element through `construction_policy`.
+// Copies use the fixed-storage element construction policy.
 #define RSTL_RESERVED_VECTOR_POLICY_COPY (RSTL_CORRUPTION)
 // `resize` also shrinks.
 #define RSTL_RESERVED_VECTOR_SHRINKING_RESIZE (RSTL_VERSION >= RSTL_P2ME)
@@ -747,6 +747,12 @@
 // Corruption's CGraphics: lighting modes, draw-sync tokens, alpha contexts, a uchar light mask
 // and a blue clear color.
 #define RSTL_KYOTO_GRAPHICS_CORRUPTION (RSTL_CORRUPTION)
+// Retraces with an unchanged FIFO overflow count before aborting a stalled frame.
+#if RSTL_KYOTO_GRAPHICS_CORRUPTION
+#define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 60
+#else
+#define RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT 10
+#endif
 // CGraphics allocates its video buffers from the OS arena block (PAL Prime and all non-Prime).
 #define RSTL_KYOTO_GRAPHICS_ARENA (!RSTL_PRIME1 || RSTL_VERSION == RSTL_GM8P_00)
 // PAL builds switch between 50 Hz PAL and EURGB60 instead of progressive scan.
@@ -907,9 +913,6 @@
 // Kyoto/Text
 // ============================================================================================
 
-// CDrawStringOptions stores the palette as unsigned int in these builds.
-#define RSTL_KYOTO_UINT_TEXT_PALETTE                                                                \
-  ((RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3ME_00) || RSTL_VERSION == RSTL_G2MEAB)
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 

@@ -57,7 +57,16 @@ public:
     }
   }
 #if !RSTL_PRIME1
-  CVector3f GetCombinedNormalLeft() const;
+  CVector3f GetCombinedNormalLeft() const {
+    CVector3f normal(0.f, 0.f, 0.f);
+    for (const CCollisionInfo* collision = Begin(); collision != End(); ++collision) {
+      normal += collision->GetNormalLeft();
+    }
+    if (normal.IsNonZero()) {
+      return normal.AsNormalized();
+    }
+    return normal;
+  }
 #endif
 
   iterator End() { return mList.end(); }

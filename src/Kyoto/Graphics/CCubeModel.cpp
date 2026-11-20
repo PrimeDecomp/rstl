@@ -142,8 +142,8 @@ void CCubeModel::MakeTexturesFromMats(TModelData data,
 }
 
 void CCubeModel::SetStaticArraysCurrent() const {
-  CGX::SetArray(GX_VA_CLR0, mInstance.GetColorPointer(),
-                sizeof(CColor) IF_TARGET_PC(, mInstance.GetArrays().colors.size(), false));
+  CGX_SET_ARRAY(GX_VA_CLR0, mInstance.GetColorPointer(),
+                sizeof(CColor), mInstance.GetArrays().colors.size(), false);
   const void* packed = mInstance.GetPackedTCPointer();
   const void* unpacked = mInstance.GetTCPointer();
   if (!packed) {
@@ -154,21 +154,18 @@ void CCubeModel::SetStaticArraysCurrent() const {
   }
 
   if (sUsingPackedLightmaps) {
-    CGX::SetArray(
+    CGX_SET_ARRAY(
         GX_VA_TEX0, packed,
-        sizeof(ushort) * 2 //
-            IF_TARGET_PC(, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN));
+        sizeof(ushort) * 2, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN);
   } else {
-    CGX::SetArray(GX_VA_TEX0, unpacked,
-                  sizeof(CVector2f) //
-                  IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
+    CGX_SET_ARRAY(GX_VA_TEX0, unpacked,
+                  sizeof(CVector2f), mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN);
   }
 
   if (unpacked) {
     for (int i = 1; i <= GX_VA_TEX7 - GX_VA_TEX0; ++i) {
-      CGX::SetArray(static_cast< GXAttr >(i + GX_VA_TEX0), unpacked,
-                    sizeof(CVector2f) //
-                    IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
+      CGX_SET_ARRAY(static_cast< GXAttr >(i + GX_VA_TEX0), unpacked,
+                    sizeof(CVector2f), mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN);
     }
   }
 
@@ -176,13 +173,11 @@ void CCubeModel::SetStaticArraysCurrent() const {
 }
 
 void CCubeModel::SetArraysCurrent() const {
-  CGX::SetArray(GX_VA_POS, mInstance.GetVertexPointer(),
-                sizeof(CVector3f) //
-                IF_TARGET_PC(, mInstance.GetArrays().positions.size(), TARGET_LITTLE_ENDIAN));
+  CGX_SET_ARRAY(GX_VA_POS, mInstance.GetVertexPointer(),
+                sizeof(CVector3f), mInstance.GetArrays().positions.size(), TARGET_LITTLE_ENDIAN);
   const int stride = (mVisorFlags & 1) ? sizeof(short) * 3 : sizeof(CVector3f);
-  CGX::SetArray(GX_VA_NRM, mInstance.GetNormalPointer(),
-                stride //
-                    IF_TARGET_PC(, mInstance.GetArrays().normals.size(), TARGET_LITTLE_ENDIAN));
+  CGX_SET_ARRAY(GX_VA_NRM, mInstance.GetNormalPointer(),
+                stride, mInstance.GetArrays().normals.size(), TARGET_LITTLE_ENDIAN);
   SetStaticArraysCurrent();
 }
 
@@ -190,18 +185,18 @@ void CCubeModel::SetSkinningArraysCurrent(TModelPositions positions, TModelNorma
 #if defined(TARGET_PC)
   const auto& arrays = mInstance.GetArrays();
   if (positions.empty()) {
-    CGX::SetArray(GX_VA_POS, arrays.positions.data(), sizeof(CVector3f), arrays.positions.size(),
+    CGX_SET_ARRAY(GX_VA_POS, arrays.positions.data(), sizeof(CVector3f), arrays.positions.size(),
                   TARGET_LITTLE_ENDIAN);
   } else {
-    CGX::SetArray(GX_VA_POS, positions.data(), sizeof(CVector3f), positions.size_bytes(),
+    CGX_SET_ARRAY(GX_VA_POS, positions.data(), sizeof(CVector3f), positions.size_bytes(),
                   TARGET_LITTLE_ENDIAN);
   }
   if (normals.empty()) {
     const int stride = (mVisorFlags & 1) ? sizeof(short) * 3 : sizeof(CVector3f);
-    CGX::SetArray(GX_VA_NRM, arrays.normals.data(), stride, arrays.normals.size(),
+    CGX_SET_ARRAY(GX_VA_NRM, arrays.normals.data(), stride, arrays.normals.size(),
                   TARGET_LITTLE_ENDIAN);
   } else {
-    CGX::SetArray(GX_VA_NRM, normals.data(), sizeof(CVector3f), normals.size_bytes(),
+    CGX_SET_ARRAY(GX_VA_NRM, normals.data(), sizeof(CVector3f), normals.size_bytes(),
                   TARGET_LITTLE_ENDIAN);
   }
 #else
@@ -214,14 +209,12 @@ void CCubeModel::SetSkinningArraysCurrent(TModelPositions positions, TModelNorma
 void CCubeModel::SetUsingPackedLightmaps(const bool use) const {
   sUsingPackedLightmaps = use;
   if (sUsingPackedLightmaps) {
-    CGX::SetArray(
+    CGX_SET_ARRAY(
         GX_VA_TEX0, mInstance.GetPackedTCPointer(),
-        sizeof(ushort) * 2 //
-            IF_TARGET_PC(, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN));
+        sizeof(ushort) * 2, mInstance.GetArrays().packedTexCoords.size(), TARGET_LITTLE_ENDIAN);
   } else {
-    CGX::SetArray(GX_VA_TEX0, mInstance.GetTCPointer(),
-                  sizeof(CVector2f) //
-                  IF_TARGET_PC(, mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN));
+    CGX_SET_ARRAY(GX_VA_TEX0, mInstance.GetTCPointer(),
+                  sizeof(CVector2f), mInstance.GetArrays().texCoords.size(), TARGET_LITTLE_ENDIAN);
   }
 }
 

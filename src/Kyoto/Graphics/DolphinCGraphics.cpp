@@ -400,7 +400,8 @@ bool CGraphics::sIsPAL; // Guessed name; PAL TV format.
 const GXTexMapID CGraphics::kSpareBufferTexMapID = GX_TEXMAP7;
 
 #if RSTL_KYOTO_GRAPHICS_CORRUPTION
-static void DispatchDrawDoneCallbacks() { sDrawDoneSignal.Emit(); }
+// Guessed name
+static void DispatchDrawSyncCallbacks(u16) { sDrawDoneSignal.Emit(); }
 #endif
 
 #if RSTL_VERSION >= RSTL_GM8J_00
@@ -477,15 +478,11 @@ bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
 
   mSpareBufferTexCacheSize = 0x10000;
 #if RSTL_KYOTO_GRAPHICS_CORRUPTION
-  CGraphics::SDrawSyncState syncState;
-  syncState.mBase = 0;
-  syncState.mIssued = 1;
-  syncState.mGotten = 0;
-  syncState.mWrapped = false;
+  const SDrawSyncState syncState;
   GXDrawDone();
   GXSetDrawSync(1);
   sDrawSyncState = syncState;
-  GXSetDrawDoneCallback(DispatchDrawDoneCallbacks);
+  GXSetDrawSyncCallback(DispatchDrawSyncCallbacks);
 #endif
   return true;
 }
@@ -569,7 +566,9 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     break;
   }
   GXAdjustForOverscan(mode, &mRenderModeObj, 0, 16);
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
   mPixelAspectRatio = 1.f;
+#endif
   sIs50Hz = false;
   mRenderModeObj.viWidth += 20;
   mRenderModeObj.viXOrigin -= 10;
@@ -758,7 +757,9 @@ void CGraphics::InitGraphicsVariables() {
   mLightActive = 0;
   SetDepthWriteMode(false, mDepthFunc, false);
   SetCullMode(kCM_None);
+#if !RSTL_KYOTO_GRAPHICS_CORRUPTION
   SetAmbientColor(CColor(0.2f, 0.2f, 0.2f, 1.f));
+#endif
   mIsGXModelMatrixIdentity = false;
   SetIdentityViewPointMatrix();
   SetIdentityModelMatrix();
@@ -775,7 +776,7 @@ void CGraphics::InitGraphicsVariables() {
 void CGraphics::Shutdown() {
   GXSetTexRegionCallback(mGXDefaultTexRegionCallback);
 #if RSTL_KYOTO_GRAPHICS_CORRUPTION
-  GXSetDrawDoneCallback(nullptr);
+  GXSetDrawSyncCallback(nullptr);
 #endif
 #if RSTL_KYOTO_GRAPHICS_ARENA
   CFrameDelayedKiller::StallAndFlushAllAllocations();
@@ -1507,7 +1508,7 @@ void CGraphics::VideoPreCallback(u32 retraceCount) {
   GXGetGPStatus(&overHighWaterMark, &ignored, &ignored, &ignored, &ignored);
   const u32 overflowCount = GXGetOverflowCount();
   if (overHighWaterMark && lastOverflowCount == overflowCount) {
-    if (++stalledRetraces >= 10) {
+    if (++stalledRetraces >= RSTL_KYOTO_GRAPHICS_STALLED_RETRACE_LIMIT) {
       GXAbortFrame();
       OSResumeThread(GXGetCurrentGXThread());
       GXFifoObj fifo;
@@ -1516,6 +1517,9 @@ void CGraphics::VideoPreCallback(u32 retraceCount) {
       GXSetGPFifo(&fifo);
       GXSetCPUFifo(mpFifoObj);
       GXSetGPFifo(mpFifoObj);
+#if RSTL_KYOTO_DEBUG_BUILD
+      rs_debugger_printf("** GFX HANG ** Aborted frame in retrace interrupt\n");
+#endif
       sGXAborted = true;
       stalledRetraces = 0;
     }

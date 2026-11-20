@@ -886,6 +886,10 @@ typedef basic_string< char, case_insensitive_char_traits< char > > istring;
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
+inline bool operator==(const char* lhs, const rstl::string& rhs) {
+  return rhs.compare(lhs, -1) == 0;
+}
+
 inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
 
 bool operator==(const char* lhs, const string& rhs);

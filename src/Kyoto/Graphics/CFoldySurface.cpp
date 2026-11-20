@@ -164,7 +164,7 @@ void CFoldySurface::SetMaterialCurrent(const CModelFlags& flags) const {
   cubeModel.GetMaterial(surface).SetCurrent(flags, surface, cubeModel);
   cubeModel.SetArraysCurrent();
   if (mVertexCount != 0) {
-    CGX::SetArray(GX_VA_POS, mPositions.get(), sizeof(CVector3f) IF_TARGET_PC(, mVertexCount * sizeof(CVector3f), true));
+    CGX_SET_ARRAY(GX_VA_POS, mPositions.get(), sizeof(CVector3f), mVertexCount * sizeof(CVector3f), true);
   }
   CGX::SetVtxDesc(GX_VA_PNMTXIDX, GX_DIRECT);
 }

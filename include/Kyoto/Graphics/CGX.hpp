@@ -190,12 +190,14 @@ public:
   static void SetTexCoordGen(GXTexCoordID dstCoord, GXTexGenType fn, GXTexGenSrc src, GXTexMtx mtx,
                              GXBool normalize, GXPTTexMtx postMtx);
   static void SetTexCoordGen_Compressed(GXTexCoordID dstCoord, uint flags);
-  static void SetArray(
-    GXAttr attr, const void* data, uchar stride
+
 #if defined(TARGET_PC)
-    , size_t size, bool le
-#endif // defined(TARGET_PC)
-  );
+#define CGX_SET_ARRAY(attr, data, stride, size, le) CGX::SetArray(attr, data, stride, size, le)
+  static void SetArray(GXAttr attr, const void* data, uchar stride, size_t size, bool le);
+#else
+#define CGX_SET_ARRAY(attr, data, stride, size, le) CGX::SetArray(attr, data, stride)
+  static void SetArray(GXAttr attr, const void* data, uchar stride);
+#endif
   static void LoadNrmMtxIndx3x3(ushort index, uint slot);
 
   static void SetFog(GXFogType type, float startZ, float endZ, float nearZ, float farZ,

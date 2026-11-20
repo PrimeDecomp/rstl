@@ -17,14 +17,7 @@ class CAnimTreeContext;
 class IMetaAnim;
 class CAnimationManager {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CAnimationManager(const TToken< CAnimationDatabase >& animDB, const CAnimSysContext& sysCtx);
-#else
-  CAnimationManager(TToken< CAnimationDatabase > animDB, const CAnimSysContext& sysCtx)
-  : mAnimDB(animDB), mSysCtx(sysCtx) {}
-  ~CAnimationManager() {}
-#endif
 
   rstl::ncrc_ptr< CAnimTreeNode > GetAnimationTree(uint animIdx,
                                                    const CMetaAnimTreeBuildOrders& orders) const;
@@ -39,5 +32,12 @@ private:
   CAnimSysContext mSysCtx;
 };
 CHECK_SIZEOF(CAnimationManager, RSTL_PRIME1 ? 0x18 : 0x20)
+
+#if !RSTL_PRIME1
+// FIXME: it's not being inlined correctly in Prime 1
+inline CAnimationManager::CAnimationManager(const TToken< CAnimationDatabase >& animDB,
+                                            const CAnimSysContext& sysCtx)
+: mAnimDB(animDB), mSysCtx(sysCtx) {}
+#endif
 
 #endif // _CANIMATIONMANAGER

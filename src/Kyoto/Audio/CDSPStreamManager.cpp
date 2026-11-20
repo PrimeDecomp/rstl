@@ -139,11 +139,16 @@ void CDSPStreamManager::Initialize() {
 
 void CDSPStreamManager::Shutdown() {
 #if defined(TARGET_PC)
+  #if RSTL_PRIME1
+  
   {
     metaforce::AudioLockGuard lock;
     for (auto& stream : g_Streams) stream.mHeaderReadCancelled = true;
   }
   for (auto& stream : g_Streams) stream.WaitForReadCompletion();
+  #else
+  // FIXME: what's the Echoes version?
+  #endif
 #endif
 
 #if RSTL_PRIME1

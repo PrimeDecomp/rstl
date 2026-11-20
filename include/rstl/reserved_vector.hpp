@@ -123,6 +123,16 @@ struct reserved_vector_traits< float > {
 };
 #endif
 
+#if RSTL_RESERVED_VECTOR_POLICY_COPY
+template < typename T >
+struct reserved_vector_scalar_type : is_scalar_type< T > {};
+
+template <>
+struct reserved_vector_scalar_type< unsigned long > {
+  enum { value = true };
+};
+#endif
+
 template < typename T, int N >
 class reserved_vector {
   int mCount;
@@ -179,7 +189,7 @@ public:
 #endif
   reserved_vector(const reserved_vector& other) : mCount(other.mCount) {
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
-    if (is_scalar_type< T >::value || use_assignment_for_construction< T >::value) {
+    if (reserved_vector_scalar_type< T >::value || use_assignment_for_construction< T >::value) {
       // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
       // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
       RSTL_PRECONDITION(other.mCount >= 0);
@@ -190,7 +200,7 @@ public:
       const T* it = other.begin();
       T* cur = data();
       for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
-        construction_policy< T, is_scalar_type< T >::value >::construct(cur, *it);
+        construction_policy< T, reserved_vector_scalar_type< T >::value >::construct(cur, *it);
       }
     } else {
       uninitialized_copy_n(other.begin(), mCount, data());
@@ -413,6 +423,26 @@ private:
   }
 };
 
+#if RSTL_RESERVED_VECTOR_POLICY_COPY
+template < typename T >
+void construct_reserved_vector_element(void* dest, const T& src); // Guessed name
+
+template < typename T >
+inline void construct_reserved_vector_element(void* dest, const T& src) {
+  construction_policy< T, false >::construct(dest, src);
+}
+
+template < typename T >
+static inline T* copy_reserved_vector_elements(const T* first, const T* last, T* out) {
+  T* dest = out;
+  const T* cur = first;
+  for (; cur != last; ++cur, ++dest) {
+    construct_reserved_vector_element(dest, *cur);
+  }
+  return dest;
+}
+#endif
+
 template < typename T, int N >
 #if RSTL_RESERVED_VECTOR_DONT_INLINE_OPTION
 #ifndef RSTL_DONT_INLINE_RESERVED_VECTOR
@@ -424,7 +454,16 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
 #endif
   if (this != &other) {
     destroy_elements();
+#if RSTL_RESERVED_VECTOR_POLICY_COPY
+    if (use_assignment_for_construction< T >::value &&
+        !reserved_vector_scalar_type< T >::value) {
+      copy_reserved_vector_elements(other.begin(), other.end(), begin());
+    } else {
+      uninitialized_copy(other.data(), other.data() + other.size(), data());
+    }
+#else
     uninitialized_copy(other.data(), other.data() + other.size(), data());
+#endif
     mCount = other.mCount;
   }
   return *this;
