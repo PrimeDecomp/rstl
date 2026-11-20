@@ -319,7 +319,7 @@ CFinalInput::CFinalInput() : mDt(0.f), mControllerIdx(0) {}
 CFinalInput::CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data)
 : mDt(dt), mControllerIdx(controllerIdx), mPad(data) {}
 
-float CFinalInput::GetAnalogValue(int input) const {
+float CFinalInput::GetAnalog(int input) const {
   switch (input) {
   case kBU_None:
     return 0.f;
@@ -373,7 +373,7 @@ float CFinalInput::GetAnalogValue(int input) const {
   return 0.f;
 }
 
-bool CFinalInput::GetDigitalValue(int input) const {
+bool CFinalInput::GetDigital(int input) const {
   switch (input) {
   case kBU_None:
     return false;
@@ -430,42 +430,42 @@ bool CFinalInput::GetDigitalValue(int input) const {
     }
     break;
   case kBU_GcLeftStickLeft:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcLeftStickRight:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcLeftStickDown:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcLeftStickUp:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcRightStickLeft:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcRightStickRight:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcRightStickDown:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
   case kBU_GcRightStickUp:
-    if (GetAnalogValue(input) > kInput_AnalogOnThreshhold) {
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
       return true;
     }
     break;
@@ -493,7 +493,7 @@ bool CFinalInput::GetDigitalValue(int input) const {
   return false;
 }
 
-bool CFinalInput::GetButtonStateByte1(int input) const {
+bool CFinalInput::GetPressed(int input) const {
   return mPad.GetButton(static_cast< EButton >(input)).GetPressEvent();
 }
 

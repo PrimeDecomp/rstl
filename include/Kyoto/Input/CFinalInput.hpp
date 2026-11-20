@@ -43,9 +43,6 @@ public:
   static const float kPitchDigitalThreshold;
   static const float kPointerDigitalThreshold;
 
-  // GetAnalog, GetDigital and GetPressed are confirmed by the Echoes Trilogy selfile.sel only. The
-  // prototype's three queries below carry the names its symbols.txt gives them, which are not
-  // evidence; their relation to these is unverified.
   bool GetKnownDeviceIsPresent() const;
   bool CheckValidControl(int control) const;
   float GetAnalog(int control) const;
@@ -138,14 +135,6 @@ public:
   CFinalInput();
 #if RSTL_FINAL_INPUT_PAD_SNAPSHOT
   CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data);
-
-  // Guessed name. True while the button is held.
-  bool GetDigitalValue(int input) const;
-  // Guessed name. True on the frame the button was pressed.
-  bool GetButtonStateByte1(int input) const;
-  // Guessed name. The input's analog strength: the held button as 0 or 1, the positive or
-  // negative part of a stick axis for its direction buttons, the trigger value for the triggers.
-  float GetAnalogValue(int input) const;
 #else
   CFinalInput(const CFinalInputInfo& info, float leftDiv, float rightDiv);
   // Guessed Wii snapshot type name and input-type meaning.
