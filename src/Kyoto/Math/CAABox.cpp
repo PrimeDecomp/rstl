@@ -19,8 +19,6 @@ CAABox::CAABox(CInputStream& in) : min(in), max(in) {}
 
 CAABox::CAABox(const CVector3f& min, const CVector3f& max) : min(min), max(max) {}
 
-// Prime has the line segment form; Corruption has it too, beside the corner index form.
-#if RSTL_CAABOX_LINESEG_EDGE
 CLineSeg CAABox::GetEdge(EBoxEdgeId id) const {
   switch (id) {
   case kE_Z0:
@@ -76,11 +74,9 @@ CLineSeg CAABox::GetEdge(EBoxEdgeId id) const {
                     CVector3f(min.GetX(), min.GetY(), min.GetZ()));
   }
 }
-#endif
 
-#if !RSTL_PRIME1
-// Guessed name: Echoes and Corruption also have a form that returns the endpoint indices.
-#if RSTL_CAABOX_LINESEG_EDGE
+// Guessed name: the form that returns the endpoint indices.
+#if RSTL_CAABOX_EDGE_TABLE
 const rstl::pair< int, int >& CAABox::GetEdgeIndices(EBoxEdgeId id) {
   static rstl::pair< int, int > edges[12] = {
       rstl::pair< int, int >(4, 0), rstl::pair< int, int >(0, 1), rstl::pair< int, int >(1, 5),
@@ -133,7 +129,6 @@ rstl::pair< int, int > CAABox::GetEdgeIndices(EBoxEdgeId id) {
     return rstl::pair< int, int >(4, 0);
   }
 }
-#endif
 #endif
 
 CTri CAABox::GetTri(EBoxFaceId face, int windOffset) const {

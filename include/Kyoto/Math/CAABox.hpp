@@ -59,16 +59,12 @@ public:
   //   return *this;
   // }
 
-#if !RSTL_PRIME1
+  CLineSeg GetEdge(EBoxEdgeId edge) const;
   // Guessed name; the G2ME01 target returns two corner indices.
-#if RSTL_CAABOX_LINESEG_EDGE
+#if RSTL_CAABOX_EDGE_TABLE
   static const rstl::pair< int, int >& GetEdgeIndices(EBoxEdgeId edge);
 #else
   static rstl::pair< int, int > GetEdgeIndices(EBoxEdgeId edge);
-#endif
-#endif
-#if RSTL_CAABOX_LINESEG_EDGE
-  CLineSeg GetEdge(EBoxEdgeId edge) const;
 #endif
 
   CTri GetTri(EBoxFaceId face, int windOffset) const;
