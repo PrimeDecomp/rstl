@@ -1,6 +1,7 @@
 #ifndef _CCONTROLLERGAMEPADDATA
 #define _CCONTROLLERGAMEPADDATA
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Input/CControllerAxis.hpp"
 #include "Kyoto/Input/CControllerButton.hpp"
@@ -35,9 +36,13 @@ private:
   bool mJustDisconnected;
 #endif
 
-  CControllerAxis mAxes[4];
-  CControllerAxis mTriggers[2];
-  CControllerButton mButtons[12];
+  CControllerAxis mAxes[kJA_MAX];
+  CControllerAxis mTriggers[kBA_MAX];
+  CControllerButton mButtons[kBU_MAX];
 };
+
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CControllerGamepadData, 0x100);
+#endif
 
 #endif // _CCONTROLLERGAMEPADDATA

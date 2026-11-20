@@ -816,8 +816,18 @@
 #else
 #define RSTL_CONTROLLER_CHANNEL_LIMIT 0
 #endif
-// CFinalInput holds the controller snapshot and queries its buttons and axes.
+// CFinalInput, in version order.
+// GameCube Echoes (10-15) packs the four analog press flags into the first button bitfield (0x2c
+// bytes); GameCube Prime (0-7) keeps them as separate bools ahead of the bitfields (0x30).
+#define RSTL_FINAL_INPUT_PACKED_FLAGS RSTL_ECHOES_GC
+// The Corruption prototype (20) snapshots the whole pad (CControllerGamepadData, 0x108 bytes).
+#define RSTL_FINAL_INPUT_PAD_SNAPSHOT (RSTL_VERSION == RSTL_G2MEAB)
+// Corruption retail (21-23, provisional) and the Wii builds (30-41) hold a CControllerData.
 #define RSTL_FINAL_INPUT_CONTROLLER_DATA (RSTL_VERSION >= RSTL_RM3E)
+// The analog thresholds and copy constructor of the GameCube class stay in the
+// Wii builds except Prime's (30, and Trilogy Prime). Prime Trilogy and Echoes Trilogy each differ
+// in objects if this is flipped; the other Wii builds were not compared object by object.
+#define RSTL_FINAL_INPUT_ANALOG_THRESHOLDS (!RSTL_PRIME1 || !RSTL_FINAL_INPUT_CONTROLLER_DATA)
 
 // ============================================================================================
 // Kyoto/Math

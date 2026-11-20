@@ -4,6 +4,28 @@
 #include "Kyoto/Input/CFinalInputInfo.hpp"
 #endif
 
+#if RSTL_FINAL_INPUT_CONTROLLER_DATA || RSTL_FINAL_INPUT_PAD_SNAPSHOT
+// The half of a stick axis that a direction reads: its positive part (right/up) or its negative
+// part (left/down) as a magnitude, and whether the signed axis passes a threshold.
+static inline float PositivePart(const CControllerAxis& axis) {
+  const float value = axis.GetAbsoluteValue();
+  return value > 0.f ? value : 0.f;
+}
+
+static inline float NegativePart(const CControllerAxis& axis) {
+  const float value = axis.GetAbsoluteValue();
+  return value < 0.f ? -value : 0.f;
+}
+
+static inline bool PositivePartAbove(const CControllerAxis& axis, float threshold) {
+  return axis.GetAbsoluteValue() > threshold;
+}
+
+static inline bool NegativePartAbove(const CControllerAxis& axis, float threshold) {
+  return -axis.GetAbsoluteValue() > threshold;
+}
+#endif
+
 #if RSTL_FINAL_INPUT_CONTROLLER_DATA
 
 const float CFinalInput::kAnalogAxisDigitalThreshold = 0.7f;
@@ -74,86 +96,50 @@ float CFinalInput::GetAnalog(int control) const {
   case kPC_NunchukZ:
   case kPC_NunchukC:
     return mControllerData.GetButton(control).GetIsPressed() ? 1.f : 0.f;
-  case kPC_StickLeft: {
-    const float value = mControllerData.GetAxis(0).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_StickRight: {
-    const float value = mControllerData.GetAxis(0).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_StickDown: {
-    const float value = mControllerData.GetAxis(1).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_StickDiagonal3Negative: {
-    const float value = mControllerData.GetAxis(3).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
+  case kPC_StickLeft:
+    return NegativePart(mControllerData.GetAxis(0));
+  case kPC_StickRight:
+    return PositivePart(mControllerData.GetAxis(0));
+  case kPC_StickDown:
+    return NegativePart(mControllerData.GetAxis(1));
+  case kPC_StickDiagonal3Negative:
+    return NegativePart(mControllerData.GetAxis(3));
   case kPC_StickDiagonal2Positive: {
     const float value = mControllerData.GetAxis(2).GetAbsoluteValue();
     return value > 0.f ? -value : 0.f;
   }
-  case kPC_StickUp: {
-    const float value = mControllerData.GetAxis(1).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
+  case kPC_StickUp:
+    return PositivePart(mControllerData.GetAxis(1));
   case kPC_StickDiagonal2Negative: {
     const float value = mControllerData.GetAxis(2).GetAbsoluteValue();
     return value < 0.f ? value : 0.f;
   }
-  case kPC_StickDiagonal3Positive: {
-    const float value = mControllerData.GetAxis(3).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_NunchukRollNegative: {
-    const float value = mControllerData.GetAxis(4).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_NunchukRollPositive: {
-    const float value = mControllerData.GetAxis(4).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_NunchukPitchNegative: {
-    const float value = mControllerData.GetAxis(5).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_NunchukPitchPositive: {
-    const float value = mControllerData.GetAxis(5).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerLeft: {
-    const float value = mControllerData.GetAxis(6).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_PointerRight: {
-    const float value = mControllerData.GetAxis(6).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerDown: {
-    const float value = mControllerData.GetAxis(7).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_PointerUp: {
-    const float value = mControllerData.GetAxis(7).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimoteRollNegative: {
-    const float value = mControllerData.GetAxis(8).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimoteRollPositive: {
-    const float value = mControllerData.GetAxis(8).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
-  case kPC_WiimotePitchNegative: {
-    const float value = mControllerData.GetAxis(9).GetAbsoluteValue();
-    return value < 0.f ? -value : 0.f;
-  }
-  case kPC_WiimotePitchPositive: {
-    const float value = mControllerData.GetAxis(9).GetAbsoluteValue();
-    return value > 0.f ? value : 0.f;
-  }
+  case kPC_StickDiagonal3Positive:
+    return PositivePart(mControllerData.GetAxis(3));
+  case kPC_NunchukRollNegative:
+    return NegativePart(mControllerData.GetAxis(4));
+  case kPC_NunchukRollPositive:
+    return PositivePart(mControllerData.GetAxis(4));
+  case kPC_NunchukPitchNegative:
+    return NegativePart(mControllerData.GetAxis(5));
+  case kPC_NunchukPitchPositive:
+    return PositivePart(mControllerData.GetAxis(5));
+  case kPC_PointerLeft:
+    return NegativePart(mControllerData.GetAxis(6));
+  case kPC_PointerRight:
+    return PositivePart(mControllerData.GetAxis(6));
+  case kPC_PointerDown:
+    return PositivePart(mControllerData.GetAxis(7));
+  case kPC_PointerUp:
+    return NegativePart(mControllerData.GetAxis(7));
+  case kPC_WiimoteRollNegative:
+    return NegativePart(mControllerData.GetAxis(8));
+  case kPC_WiimoteRollPositive:
+    return PositivePart(mControllerData.GetAxis(8));
+  case kPC_WiimotePitchNegative:
+    return NegativePart(mControllerData.GetAxis(9));
+  case kPC_WiimotePitchPositive:
+    return PositivePart(mControllerData.GetAxis(9));
   default:
     return 0.f;
   }
@@ -290,11 +276,232 @@ CVector2f CFinalInput::GetPointerPosition() const {
                    mControllerData.GetAxis(7).GetAbsoluteValue());
 }
 
-#elif RSTL_PRIME1
+#elif RSTL_FINAL_INPUT_PAD_SNAPSHOT
 
-#include "Kyoto/Basics/COsContext.hpp"
+#include "Kyoto/Input/CControllerGamepadData.hpp"
+
+// The plain buttons: those that are neither a trigger nor a stick direction.
+#define FINAL_INPUT_PAD_BUTTON_CASES \
+  case 1: \
+  case 2: \
+  case 3: \
+  case 4: \
+  case 5: \
+  case 6: \
+  case 7: \
+  case 8: \
+  case 9: \
+  case 10: \
+  case 11: \
+  case 16: \
+  case 17: \
+  case 22: \
+  case 23: \
+  case 24: \
+  case 25: \
+  case 26: \
+  case 27: \
+  case 28: \
+  case 29: \
+  case 30: \
+  case 31: \
+  case 32: \
+  case 33: \
+  case 48: \
+  case 49: \
+  case 50:
+
+const float CFinalInput::kInput_AnalogOnThreshhold = 0.7f;
+const float CFinalInput::kInput_AnalogTriggerOnThreshhold = 0.05f;
+
+CFinalInput::CFinalInput() : mDt(0.f), mControllerIdx(0) {}
+
+CFinalInput::CFinalInput(int controllerIdx, float dt, const CControllerGamepadData& data)
+: mDt(dt), mControllerIdx(controllerIdx), mPad(data) {}
+
+float CFinalInput::GetAnalog(int input) const {
+  switch (input) {
+  case kBU_None:
+    return 0.f;
+  FINAL_INPUT_PAD_BUTTON_CASES
+    return mPad.GetButton(static_cast< EButton >(input)).GetIsPressed() ? 1.f : 0.f;
+  case kBU_LTrigger:
+    return mPad.GetAnalogButton(kBA_Left).GetAbsoluteValue();
+  case kBU_RTrigger:
+    return mPad.GetAnalogButton(kBA_Right).GetAbsoluteValue();
+  case kBU_LeftStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_LeftX));
+  case kBU_LeftStickRight:
+    return PositivePart(mPad.GetAxis(kJA_LeftX));
+  case kBU_LeftStickDown:
+    return NegativePart(mPad.GetAxis(kJA_LeftY));
+  case kBU_LeftStickUp:
+    return PositivePart(mPad.GetAxis(kJA_LeftY));
+  case kBU_RightStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_RightX));
+  case kBU_RightStickRight:
+    return PositivePart(mPad.GetAxis(kJA_RightX));
+  case kBU_RightStickDown:
+    return PositivePart(mPad.GetAxis(kJA_RightY));
+  case kBU_RightStickUp:
+    return NegativePart(mPad.GetAxis(kJA_RightY));
+  case kBU_GcLeftStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_GcLeftX));
+  case kBU_GcLeftStickRight:
+    return PositivePart(mPad.GetAxis(kJA_GcLeftX));
+  case kBU_GcLeftStickUp:
+    return NegativePart(mPad.GetAxis(kJA_GcLeftY));
+  case kBU_GcLeftStickDown:
+    return PositivePart(mPad.GetAxis(kJA_GcLeftY));
+  case kBU_GcRightStickLeft:
+    return NegativePart(mPad.GetAxis(kJA_GcRightX));
+  case kBU_GcRightStickRight:
+    return PositivePart(mPad.GetAxis(kJA_GcRightX));
+  case kBU_GcRightStickDown:
+    return PositivePart(mPad.GetAxis(kJA_GcRightY));
+  case kBU_GcRightStickUp:
+    return NegativePart(mPad.GetAxis(kJA_GcRightY));
+  case kBU_Axis4Left:
+    return NegativePart(mPad.GetAxis(kJA_Axis4));
+  case kBU_Axis4Right:
+    return PositivePart(mPad.GetAxis(kJA_Axis4));
+  case kBU_Axis5Down:
+    return PositivePart(mPad.GetAxis(kJA_Axis5));
+  case kBU_Axis5Up:
+    return NegativePart(mPad.GetAxis(kJA_Axis5));
+  }
+  return 0.f;
+}
+
+bool CFinalInput::GetDigital(int input) const {
+  switch (input) {
+  case kBU_None:
+    return false;
+  FINAL_INPUT_PAD_BUTTON_CASES
+    return mPad.GetButton(static_cast< EButton >(input)).GetIsPressed();
+  case kBU_LTrigger:
+    if (mPad.GetAnalogButton(kBA_Left).GetAbsoluteValue() > kInput_AnalogTriggerOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_RTrigger:
+    if (mPad.GetAnalogButton(kBA_Right).GetAbsoluteValue() > kInput_AnalogTriggerOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_LeftStickLeft:
+    if (NegativePartAbove(mPad.GetAxis(kJA_LeftX), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_LeftStickRight:
+    if (PositivePartAbove(mPad.GetAxis(kJA_LeftX), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_LeftStickDown:
+    if (NegativePartAbove(mPad.GetAxis(kJA_LeftY), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_LeftStickUp:
+    if (PositivePartAbove(mPad.GetAxis(kJA_LeftY), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_RightStickLeft:
+    if (NegativePartAbove(mPad.GetAxis(kJA_RightX), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_RightStickRight:
+    if (PositivePartAbove(mPad.GetAxis(kJA_RightX), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_RightStickDown:
+    if (NegativePartAbove(mPad.GetAxis(kJA_RightY), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_RightStickUp:
+    if (PositivePartAbove(mPad.GetAxis(kJA_RightY), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_GcLeftStickLeft:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcLeftStickRight:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcLeftStickDown:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcLeftStickUp:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcRightStickLeft:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcRightStickRight:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcRightStickDown:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_GcRightStickUp:
+    if (GetAnalog(input) > kInput_AnalogOnThreshhold) {
+      return true;
+    }
+    break;
+  case kBU_Axis4Left:
+    if (NegativePartAbove(mPad.GetAxis(kJA_Axis4), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_Axis4Right:
+    if (PositivePartAbove(mPad.GetAxis(kJA_Axis4), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_Axis5Down:
+    if (NegativePartAbove(mPad.GetAxis(kJA_Axis5), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  case kBU_Axis5Up:
+    if (PositivePartAbove(mPad.GetAxis(kJA_Axis5), kInput_AnalogOnThreshhold)) {
+      return true;
+    }
+    break;
+  }
+  return false;
+}
+
+bool CFinalInput::GetPressed(int input) const {
+  return mPad.GetButton(static_cast< EButton >(input)).GetPressEvent();
+}
+
+#else
+
 #include "Kyoto/Input/CControllerGamepadData.hpp"
 #include "Kyoto/Math/CMath.hpp"
+#include "Kyoto/Basics/COsContext.hpp"
 
 const float CFinalInput::kInput_AnalogOnThreshhold = 0.7f;
 const float CFinalInput::kInput_AnalogTriggerOnThreshhold = 0.05f;
@@ -314,30 +521,30 @@ CFinalInput::CFinalInput()
 , mEnableAnaRightYP(false)
 , mAnaLeftTriggerP(0.f)
 , mAnaRightTriggerP(0.f)
-, mB24_A(false)
-, mB25_B(false)
-, mB26_X(false)
-, mB27_Y(false)
-, mB28_Z(false)
-, mB29_L(false)
-, mB30_R(false)
-, mB31_DPUp(false)
-, mB24_DPRight(false)
-, mB25_DPDown(false)
-, mB26_DPLeft(false)
-, mB27_Start(false)
-, mB28_PA(false)
-, mB29_PB(false)
-, mB30_PX(false)
-, mB31_PY(false)
-, mB24_PZ(false)
-, mB25_PL(false)
-, mB26_PR(false)
-, mB27_PDPUp(false)
-, mB28_PDPRight(false)
-, mB29_PDPDown(false)
-, mB30_PDPLeft(false)
-, mB31_PStart(false) {}
+, mA(false)
+, mB(false)
+, mX(false)
+, mY(false)
+, mZ(false)
+, mL(false)
+, mR(false)
+, mDPUp(false)
+, mDPRight(false)
+, mDPDown(false)
+, mDPLeft(false)
+, mStart(false)
+, mPA(false)
+, mPB(false)
+, mPX(false)
+, mPY(false)
+, mPZ(false)
+, mPL(false)
+, mPR(false)
+, mPDPUp(false)
+, mPDPRight(false)
+, mPDPDown(false)
+, mPDPLeft(false)
+, mPStart(false) {}
 
 CFinalInput::CFinalInput(int channel, float dt, const CControllerGamepadData& data, float leftDiv,
                          float rightDiv)
@@ -355,30 +562,30 @@ CFinalInput::CFinalInput(int channel, float dt, const CControllerGamepadData& da
 , mEnableAnaLeftYP(false)
 , mEnableAnaRightXP(false)
 , mEnableAnaRightYP(false)
-, mB24_A(data.GetButton(kBU_A).GetIsPressed())
-, mB25_B(data.GetButton(kBU_B).GetIsPressed())
-, mB26_X(data.GetButton(kBU_X).GetIsPressed())
-, mB27_Y(data.GetButton(kBU_Y).GetIsPressed())
-, mB28_Z(data.GetButton(kBU_Z).GetIsPressed())
-, mB29_L(data.GetButton(kBU_L).GetIsPressed())
-, mB30_R(data.GetButton(kBU_R).GetIsPressed())
-, mB31_DPUp(data.GetButton(kBU_Up).GetIsPressed())
-, mB24_DPRight(data.GetButton(kBU_Right).GetIsPressed())
-, mB25_DPDown(data.GetButton(kBU_Down).GetIsPressed())
-, mB26_DPLeft(data.GetButton(kBU_Left).GetIsPressed())
-, mB27_Start(data.GetButton(kBU_Start).GetIsPressed())
-, mB28_PA(data.GetButton(kBU_A).GetPressEvent())
-, mB29_PB(data.GetButton(kBU_B).GetPressEvent())
-, mB30_PX(data.GetButton(kBU_X).GetPressEvent())
-, mB31_PY(data.GetButton(kBU_Y).GetPressEvent())
-, mB24_PZ(data.GetButton(kBU_Z).GetPressEvent())
-, mB25_PL(data.GetButton(kBU_L).GetPressEvent())
-, mB26_PR(data.GetButton(kBU_R).GetPressEvent())
-, mB27_PDPUp(data.GetButton(kBU_Up).GetPressEvent())
-, mB28_PDPRight(data.GetButton(kBU_Right).GetPressEvent())
-, mB29_PDPDown(data.GetButton(kBU_Down).GetPressEvent())
-, mB30_PDPLeft(data.GetButton(kBU_Left).GetPressEvent())
-, mB31_PStart(data.GetButton(kBU_Start).GetPressEvent()) {
+, mA(data.GetButton(kBU_A).GetIsPressed())
+, mB(data.GetButton(kBU_B).GetIsPressed())
+, mX(data.GetButton(kBU_X).GetIsPressed())
+, mY(data.GetButton(kBU_Y).GetIsPressed())
+, mZ(data.GetButton(kBU_Z).GetIsPressed())
+, mL(data.GetButton(kBU_L).GetIsPressed())
+, mR(data.GetButton(kBU_R).GetIsPressed())
+, mDPUp(data.GetButton(kBU_Up).GetIsPressed())
+, mDPRight(data.GetButton(kBU_Right).GetIsPressed())
+, mDPDown(data.GetButton(kBU_Down).GetIsPressed())
+, mDPLeft(data.GetButton(kBU_Left).GetIsPressed())
+, mStart(data.GetButton(kBU_Start).GetIsPressed())
+, mPA(data.GetButton(kBU_A).GetPressEvent())
+, mPB(data.GetButton(kBU_B).GetPressEvent())
+, mPX(data.GetButton(kBU_X).GetPressEvent())
+, mPY(data.GetButton(kBU_Y).GetPressEvent())
+, mPZ(data.GetButton(kBU_Z).GetPressEvent())
+, mPL(data.GetButton(kBU_L).GetPressEvent())
+, mPR(data.GetButton(kBU_R).GetPressEvent())
+, mPDPUp(data.GetButton(kBU_Up).GetPressEvent())
+, mPDPRight(data.GetButton(kBU_Right).GetPressEvent())
+, mPDPDown(data.GetButton(kBU_Down).GetPressEvent())
+, mPDPLeft(data.GetButton(kBU_Left).GetPressEvent())
+, mPStart(data.GetButton(kBU_Start).GetPressEvent()) {
   InitializeAnalog(leftDiv, rightDiv);
 }
 
@@ -451,6 +658,18 @@ void CFinalInput::InitializeAnalog(float leftDiv, float rightDiv) {
   }
 }
 
+// Echoes defines the COsContext constructor after ScaleAnalogueSticks, Prime before it.
+#if !RSTL_PRIME1
+CFinalInput CFinalInput::ScaleAnalogueSticks(float leftDiv, float rightDiv) const {
+  CFinalInput ret = *this;
+  ret.mAnaLeftX = CMath::Clamp(-1.f, mAnaLeftX / leftDiv, 1.f);
+  ret.mAnaLeftY = CMath::Clamp(-1.f, mAnaLeftY / leftDiv, 1.f);
+  ret.mAnaRightX = CMath::Clamp(-1.f, mAnaRightX / rightDiv, 1.f);
+  ret.mAnaRightY = CMath::Clamp(-1.f, mAnaRightY / rightDiv, 1.f);
+  return ret;
+}
+
+#endif
 CFinalInput::CFinalInput(int channel, float dt, const COsContext& ctx)
 : mDt(dt)
 , mControllerIdx(channel)
@@ -460,7 +679,7 @@ CFinalInput::CFinalInput(int channel, float dt, const COsContext& ctx)
 , mAnaRightY(0.f)
 , mAnaLeftTrigger(0.f)
 , mAnaRightTrigger(0.f)
-#if NONMATCHING
+#if RSTL_FINAL_INPUT_PACKED_FLAGS || NONMATCHING
 , mEnableAnaLeftXP(false)
 , mEnableAnaLeftYP(false)
 #endif
@@ -468,32 +687,33 @@ CFinalInput::CFinalInput(int channel, float dt, const COsContext& ctx)
 , mEnableAnaRightYP(false)
 , mAnaLeftTriggerP(0.f)
 , mAnaRightTriggerP(0.f)
-, mB24_A(ctx.GetOsKeyState(0x6d).IsPressed())
-, mB25_B(ctx.GetOsKeyState(0x6e).IsPressed())
-, mB26_X(ctx.GetOsKeyState(0x84).IsPressed())
-, mB27_Y(ctx.GetOsKeyState(0x85).IsPressed())
-, mB28_Z(ctx.GetOsKeyState(0x16).IsPressed())
-, mB29_L(ctx.GetOsKeyState(0x78).IsPressed())
-, mB30_R(ctx.GetOsKeyState(0x7e).IsPressed())
-, mB31_DPUp(ctx.GetOsKeyState(0x1c).IsPressed())
-, mB24_DPRight(ctx.GetOsKeyState(0x1d).IsPressed())
-, mB25_DPDown(ctx.GetOsKeyState(0x1e).IsPressed())
-, mB26_DPLeft(ctx.GetOsKeyState(0x1b).IsPressed())
-, mB27_Start(ctx.GetOsKeyState(5).IsPressed())
-, mB28_PA(ctx.GetOsKeyState(0x6d).JustPressed())
-, mB29_PB(ctx.GetOsKeyState(0x6e).JustPressed())
-, mB30_PX(ctx.GetOsKeyState(0x84).JustPressed())
-, mB31_PY(ctx.GetOsKeyState(0x85).JustPressed())
-, mB24_PZ(ctx.GetOsKeyState(0x16).JustPressed())
-, mB25_PL(ctx.GetOsKeyState(0x78).JustPressed())
-, mB26_PR(ctx.GetOsKeyState(0x7e).JustPressed())
-, mB27_PDPUp(ctx.GetOsKeyState(0x1c).JustPressed())
-, mB28_PDPRight(ctx.GetOsKeyState(0x1d).JustPressed())
-, mB29_PDPDown(ctx.GetOsKeyState(0x1e).JustPressed())
-, mB30_PDPLeft(ctx.GetOsKeyState(0x1b).JustPressed())
-, mB31_PStart(ctx.GetOsKeyState(5).JustPressed()) {
+, mA(ctx.GetOsKeyState(0x6d).IsPressed())
+, mB(ctx.GetOsKeyState(0x6e).IsPressed())
+, mX(ctx.GetOsKeyState(0x84).IsPressed())
+, mY(ctx.GetOsKeyState(0x85).IsPressed())
+, mZ(ctx.GetOsKeyState(0x16).IsPressed())
+, mL(ctx.GetOsKeyState(0x78).IsPressed())
+, mR(ctx.GetOsKeyState(0x7e).IsPressed())
+, mDPUp(ctx.GetOsKeyState(0x1c).IsPressed())
+, mDPRight(ctx.GetOsKeyState(0x1d).IsPressed())
+, mDPDown(ctx.GetOsKeyState(0x1e).IsPressed())
+, mDPLeft(ctx.GetOsKeyState(0x1b).IsPressed())
+, mStart(ctx.GetOsKeyState(5).IsPressed())
+, mPA(ctx.GetOsKeyState(0x6d).JustPressed())
+, mPB(ctx.GetOsKeyState(0x6e).JustPressed())
+, mPX(ctx.GetOsKeyState(0x84).JustPressed())
+, mPY(ctx.GetOsKeyState(0x85).JustPressed())
+, mPZ(ctx.GetOsKeyState(0x16).JustPressed())
+, mPL(ctx.GetOsKeyState(0x78).JustPressed())
+, mPR(ctx.GetOsKeyState(0x7e).JustPressed())
+, mPDPUp(ctx.GetOsKeyState(0x1c).JustPressed())
+, mPDPRight(ctx.GetOsKeyState(0x1d).JustPressed())
+, mPDPDown(ctx.GetOsKeyState(0x1e).JustPressed())
+, mPDPLeft(ctx.GetOsKeyState(0x1b).JustPressed())
+, mPStart(ctx.GetOsKeyState(5).JustPressed()) {
 }
 
+#if RSTL_PRIME1
 CFinalInput CFinalInput::ScaleAnalogueSticks(float leftDiv, float rightDiv) const {
   CFinalInput ret = *this;
   ret.mAnaLeftX = CMath::Clamp(-1.f, mAnaLeftX / leftDiv, 1.f);
@@ -517,30 +737,30 @@ CFinalInputInfo::CFinalInputInfo(const CFinalInput& input)
   mButtons[1] = input.mEnableAnaLeftYP;
   mButtons[2] = input.mEnableAnaRightXP;
   mButtons[3] = input.mEnableAnaRightYP;
-  mButtons[4] = input.mB24_A;
-  mButtons[5] = input.mB25_B;
-  mButtons[6] = input.mB26_X;
-  mButtons[7] = input.mB27_Y;
-  mButtons[8] = input.mB28_Z;
-  mButtons[9] = input.mB29_L;
-  mButtons[10] = input.mB30_R;
-  mButtons[11] = input.mB31_DPUp;
-  mButtons[12] = input.mB24_DPRight;
-  mButtons[13] = input.mB25_DPDown;
-  mButtons[14] = input.mB26_DPLeft;
-  mButtons[15] = input.mB27_Start;
-  mButtons[16] = input.mB28_PA;
-  mButtons[17] = input.mB29_PB;
-  mButtons[18] = input.mB30_PX;
-  mButtons[19] = input.mB31_PY;
-  mButtons[20] = input.mB24_PZ;
-  mButtons[21] = input.mB25_PL;
-  mButtons[22] = input.mB26_PR;
-  mButtons[23] = input.mB27_PDPUp;
-  mButtons[24] = input.mB28_PDPRight;
-  mButtons[25] = input.mB29_PDPDown;
-  mButtons[26] = input.mB30_PDPLeft;
-  mButtons[27] = input.mB31_PStart;
+  mButtons[4] = input.mA;
+  mButtons[5] = input.mB;
+  mButtons[6] = input.mX;
+  mButtons[7] = input.mY;
+  mButtons[8] = input.mZ;
+  mButtons[9] = input.mL;
+  mButtons[10] = input.mR;
+  mButtons[11] = input.mDPUp;
+  mButtons[12] = input.mDPRight;
+  mButtons[13] = input.mDPDown;
+  mButtons[14] = input.mDPLeft;
+  mButtons[15] = input.mStart;
+  mButtons[16] = input.mPA;
+  mButtons[17] = input.mPB;
+  mButtons[18] = input.mPX;
+  mButtons[19] = input.mPY;
+  mButtons[20] = input.mPZ;
+  mButtons[21] = input.mPL;
+  mButtons[22] = input.mPR;
+  mButtons[23] = input.mPDPUp;
+  mButtons[24] = input.mPDPRight;
+  mButtons[25] = input.mPDPDown;
+  mButtons[26] = input.mPDPLeft;
+  mButtons[27] = input.mPStart;
 }
 
 CFinalInput::CFinalInput(const CFinalInputInfo& info, float leftDiv, float rightDiv)
@@ -558,243 +778,35 @@ CFinalInput::CFinalInput(const CFinalInputInfo& info, float leftDiv, float right
 , mEnableAnaLeftYP(info.mButtons[1])
 , mEnableAnaRightXP(info.mButtons[2])
 , mEnableAnaRightYP(info.mButtons[3])
-, mB24_A(info.mButtons[4])
-, mB25_B(info.mButtons[5])
-, mB26_X(info.mButtons[6])
-, mB27_Y(info.mButtons[7])
-, mB28_Z(info.mButtons[8])
-, mB29_L(info.mButtons[9])
-, mB30_R(info.mButtons[10])
-, mB31_DPUp(info.mButtons[11])
-, mB24_DPRight(info.mButtons[12])
-, mB25_DPDown(info.mButtons[13])
-, mB26_DPLeft(info.mButtons[14])
-, mB27_Start(info.mButtons[15])
-, mB28_PA(info.mButtons[16])
-, mB29_PB(info.mButtons[17])
-, mB30_PX(info.mButtons[18])
-, mB31_PY(info.mButtons[19])
-, mB24_PZ(info.mButtons[20])
-, mB25_PL(info.mButtons[21])
-, mB26_PR(info.mButtons[22])
-, mB27_PDPUp(info.mButtons[23])
-, mB28_PDPRight(info.mButtons[24])
-, mB29_PDPDown(info.mButtons[25])
-, mB30_PDPLeft(info.mButtons[26])
-, mB31_PStart(info.mButtons[27])
+, mA(info.mButtons[4])
+, mB(info.mButtons[5])
+, mX(info.mButtons[6])
+, mY(info.mButtons[7])
+, mZ(info.mButtons[8])
+, mL(info.mButtons[9])
+, mR(info.mButtons[10])
+, mDPUp(info.mButtons[11])
+, mDPRight(info.mButtons[12])
+, mDPDown(info.mButtons[13])
+, mDPLeft(info.mButtons[14])
+, mStart(info.mButtons[15])
+, mPA(info.mButtons[16])
+, mPB(info.mButtons[17])
+, mPX(info.mButtons[18])
+, mPY(info.mButtons[19])
+, mPZ(info.mButtons[20])
+, mPL(info.mButtons[21])
+, mPR(info.mButtons[22])
+, mPDPUp(info.mButtons[23])
+, mPDPRight(info.mButtons[24])
+, mPDPDown(info.mButtons[25])
+, mPDPLeft(info.mButtons[26])
+, mPStart(info.mButtons[27])
 {
   // The recorded values already include the controller dead zones. Preserve the
   // recorded press edges, independently of the live controller's analog history.
   *this = ScaleAnalogueSticks(leftDiv, rightDiv);
 }
-
-#else
-#include "Kyoto/Input/CControllerGamepadData.hpp"
-#include "Kyoto/Math/CMath.hpp"
-#include "Kyoto/Basics/COsContext.hpp"
-
-const float CFinalInput::kInput_AnalogOnThreshhold = 0.7f;
-const float CFinalInput::kInput_AnalogTriggerOnThreshhold = 0.05f;
-
-CFinalInput::CFinalInput()
-: mDt(0.f)
-, mControllerIdx(0)
-, mAnaLeftX(0.f)
-, mAnaLeftY(0.f)
-, mAnaRightX(0.f)
-, mAnaRightY(0.f)
-, mAnaLeftTrigger(0.f)
-, mAnaRightTrigger(0.f)
-, mB24_enableAnaLeftXP(false)
-, mB25_enableAnaLeftYP(false)
-, mB26_enableAnaRightXP(false)
-, mB27_enableAnaRightYP(false)
-, mAnaLeftTriggerP(0.f)
-, mAnaRightTriggerP(0.f)
-, mB28_A(false)
-, mB29_B(false)
-, mB30_X(false)
-, mB31_Y(false)
-, mB24_Z(false)
-, mB25_L(false)
-, mB26_R(false)
-, mB27_DPUp(false)
-, mB28_DPRight(false)
-, mB29_DPDown(false)
-, mB30_DPLeft(false)
-, mB31_Start(false)
-, mB24_PA(false)
-, mB25_PB(false)
-, mB26_PX(false)
-, mB27_PY(false)
-, mB28_PZ(false)
-, mB29_PL(false)
-, mB30_PR(false)
-, mB31_PDPUp(false)
-, mB24_PDPRight(false)
-, mB25_PDPDown(false)
-, mB26_PDPLeft(false)
-, mB27_PStart(false) {}
-
-CFinalInput::CFinalInput(int channel, float dt, const CControllerGamepadData& data, float leftDiv,
-                         float rightDiv)
-: mDt(dt)
-, mControllerIdx(channel)
-, mAnaLeftX(data.GetAxis(kJA_LeftX).GetAbsoluteValue())
-, mAnaLeftY(data.GetAxis(kJA_LeftY).GetAbsoluteValue())
-, mAnaRightX(data.GetAxis(kJA_RightX).GetAbsoluteValue())
-, mAnaRightY(data.GetAxis(kJA_RightY).GetAbsoluteValue())
-, mAnaLeftTrigger(data.GetAnalogButton(kBA_Left).GetAbsoluteValue())
-, mAnaRightTrigger(data.GetAnalogButton(kBA_Right).GetAbsoluteValue())
-, mAnaLeftTriggerP(data.GetAnalogButton(kBA_Left).GetRelativeValue())
-, mAnaRightTriggerP(data.GetAnalogButton(kBA_Right).GetRelativeValue())
-, mB24_enableAnaLeftXP(false)
-, mB25_enableAnaLeftYP(false)
-, mB26_enableAnaRightXP(false)
-, mB27_enableAnaRightYP(false)
-, mB28_A(data.GetButton(kBU_A).GetIsPressed())
-, mB29_B(data.GetButton(kBU_B).GetIsPressed())
-, mB30_X(data.GetButton(kBU_X).GetIsPressed())
-, mB31_Y(data.GetButton(kBU_Y).GetIsPressed())
-, mB24_Z(data.GetButton(kBU_Z).GetIsPressed())
-, mB25_L(data.GetButton(kBU_L).GetIsPressed())
-, mB26_R(data.GetButton(kBU_R).GetIsPressed())
-, mB27_DPUp(data.GetButton(kBU_Up).GetIsPressed())
-, mB28_DPRight(data.GetButton(kBU_Right).GetIsPressed())
-, mB29_DPDown(data.GetButton(kBU_Down).GetIsPressed())
-, mB30_DPLeft(data.GetButton(kBU_Left).GetIsPressed())
-, mB31_Start(data.GetButton(kBU_Start).GetIsPressed())
-, mB24_PA(data.GetButton(kBU_A).GetPressEvent())
-, mB25_PB(data.GetButton(kBU_B).GetPressEvent())
-, mB26_PX(data.GetButton(kBU_X).GetPressEvent())
-, mB27_PY(data.GetButton(kBU_Y).GetPressEvent())
-, mB28_PZ(data.GetButton(kBU_Z).GetPressEvent())
-, mB29_PL(data.GetButton(kBU_L).GetPressEvent())
-, mB30_PR(data.GetButton(kBU_R).GetPressEvent())
-, mB31_PDPUp(data.GetButton(kBU_Up).GetPressEvent())
-, mB24_PDPRight(data.GetButton(kBU_Right).GetPressEvent())
-, mB25_PDPDown(data.GetButton(kBU_Down).GetPressEvent())
-, mB26_PDPLeft(data.GetButton(kBU_Left).GetPressEvent())
-, mB27_PStart(data.GetButton(kBU_Start).GetPressEvent()) {
-  InitializeAnalog(leftDiv, rightDiv);
-}
-
-static bool sIsAnalogPressed[4][4] = {};
-
-void CFinalInput::InitializeAnalog(float leftDiv, float rightDiv) {
-  mAnaLeftX = CMath::Clamp(-1.f, mAnaLeftX / leftDiv, 1.f);
-  mAnaLeftY = CMath::Clamp(-1.f, mAnaLeftY / leftDiv, 1.f);
-  mAnaRightX = CMath::Clamp(-1.f, mAnaRightX / rightDiv, 1.f);
-  mAnaRightY = CMath::Clamp(-1.f, mAnaRightY / rightDiv, 1.f);
-
-  if (mAnaLeftY > 0.7f && !sIsAnalogPressed[mControllerIdx][0]) {
-    sIsAnalogPressed[mControllerIdx][0] = true;
-    mB25_enableAnaLeftYP = true;
-  } else if (mAnaLeftY > 0.7f && sIsAnalogPressed[mControllerIdx][0]) {
-    mB25_enableAnaLeftYP = false;
-  } else if (mAnaLeftY < -0.7f && !sIsAnalogPressed[mControllerIdx][0]) {
-    mB25_enableAnaLeftYP = true;
-    sIsAnalogPressed[mControllerIdx][0] = true;
-  } else if (mAnaLeftY < -0.7f && sIsAnalogPressed[mControllerIdx][0]) {
-    mB25_enableAnaLeftYP = false;
-  } else if (fabsf(mAnaLeftY) < 0.7f) {
-    mB25_enableAnaLeftYP = false;
-    sIsAnalogPressed[mControllerIdx][0] = false;
-  }
-
-  if (mAnaLeftX > 0.7f && !sIsAnalogPressed[mControllerIdx][1]) {
-    mB24_enableAnaLeftXP = true;
-    sIsAnalogPressed[mControllerIdx][1] = true;
-  } else if (mAnaLeftX > 0.7f && sIsAnalogPressed[mControllerIdx][1]) {
-    mB24_enableAnaLeftXP = false;
-  } else if (mAnaLeftX < -0.7f && !sIsAnalogPressed[mControllerIdx][1]) {
-    sIsAnalogPressed[mControllerIdx][1] = true;
-    mB24_enableAnaLeftXP = true;
-  } else if (mAnaLeftX < -0.7f && sIsAnalogPressed[mControllerIdx][1]) {
-    mB24_enableAnaLeftXP = false;
-  } else if (fabsf(mAnaLeftX) < 0.7f) {
-    mB24_enableAnaLeftXP = false;
-    sIsAnalogPressed[mControllerIdx][1] = false;
-  }
-
-  if (mAnaRightY > 0.7f && !sIsAnalogPressed[mControllerIdx][2]) {
-    sIsAnalogPressed[mControllerIdx][2] = true;
-    mB27_enableAnaRightYP = true;
-  } else if (mAnaRightY > 0.7f && sIsAnalogPressed[mControllerIdx][2]) {
-    mB27_enableAnaRightYP = false;
-  } else if (mAnaRightY < -0.7f && !sIsAnalogPressed[mControllerIdx][2]) {
-    mB27_enableAnaRightYP = true;
-    sIsAnalogPressed[mControllerIdx][2] = true;
-  } else if (mAnaRightY < -0.7f && sIsAnalogPressed[mControllerIdx][2]) {
-    mB27_enableAnaRightYP = false;
-  } else if (fabsf(mAnaRightY) < 0.7f) {
-    mB27_enableAnaRightYP = false;
-    sIsAnalogPressed[mControllerIdx][2] = false;
-  }
-
-  if (mAnaRightX > 0.7f && !sIsAnalogPressed[mControllerIdx][3]) {
-    mB26_enableAnaRightXP = true;
-    sIsAnalogPressed[mControllerIdx][3] = true;
-  } else if (mAnaRightX > 0.7f && sIsAnalogPressed[mControllerIdx][3]) {
-    mB26_enableAnaRightXP = false;
-  } else if (mAnaRightX < -0.7f && !sIsAnalogPressed[mControllerIdx][3]) {
-    sIsAnalogPressed[mControllerIdx][3] = true;
-    mB26_enableAnaRightXP = true;
-  } else if (mAnaRightX < -0.7f && sIsAnalogPressed[mControllerIdx][3]) {
-    mB26_enableAnaRightXP = false;
-  } else if (fabsf(mAnaRightX) < 0.7f) {
-    mB26_enableAnaRightXP = false;
-    sIsAnalogPressed[mControllerIdx][3] = false;
-  }
-}
-
-CFinalInput CFinalInput::ScaleAnalogueSticks(float leftDiv, float rightDiv) const {
-  CFinalInput ret = *this;
-  ret.mAnaLeftX = CMath::Clamp(-1.f, mAnaLeftX / leftDiv, 1.f);
-  ret.mAnaLeftY = CMath::Clamp(-1.f, mAnaLeftY / leftDiv, 1.f);
-  ret.mAnaRightX = CMath::Clamp(-1.f, mAnaRightX / rightDiv, 1.f);
-  ret.mAnaRightY = CMath::Clamp(-1.f, mAnaRightY / rightDiv, 1.f);
-  return ret;
-}
-
-CFinalInput::CFinalInput(int channel, float dt, const COsContext& ctx)
-: mDt(dt)
-, mControllerIdx(channel)
-, mAnaLeftX(0.f)
-, mAnaLeftY(0.f)
-, mAnaRightX(0.f)
-, mAnaRightY(0.f)
-, mAnaLeftTrigger(0.f)
-, mAnaRightTrigger(0.f)
-, mB24_enableAnaLeftXP(false)
-, mB25_enableAnaLeftYP(false)
-, mB26_enableAnaRightXP(false)
-, mB27_enableAnaRightYP(false)
-, mAnaLeftTriggerP(0.f)
-, mAnaRightTriggerP(0.f)
-, mB28_A(ctx.GetOsKeyState(0x6d).IsPressed())
-, mB29_B(ctx.GetOsKeyState(0x6e).IsPressed())
-, mB30_X(ctx.GetOsKeyState(0x84).IsPressed())
-, mB31_Y(ctx.GetOsKeyState(0x85).IsPressed())
-, mB24_Z(ctx.GetOsKeyState(0x16).IsPressed())
-, mB25_L(ctx.GetOsKeyState(0x78).IsPressed())
-, mB26_R(ctx.GetOsKeyState(0x7e).IsPressed())
-, mB27_DPUp(ctx.GetOsKeyState(0x1c).IsPressed())
-, mB28_DPRight(ctx.GetOsKeyState(0x1d).IsPressed())
-, mB29_DPDown(ctx.GetOsKeyState(0x1e).IsPressed())
-, mB30_DPLeft(ctx.GetOsKeyState(0x1b).IsPressed())
-, mB31_Start(ctx.GetOsKeyState(5).IsPressed())
-, mB24_PA(ctx.GetOsKeyState(0x6d).JustPressed())
-, mB25_PB(ctx.GetOsKeyState(0x6e).JustPressed())
-, mB26_PX(ctx.GetOsKeyState(0x84).JustPressed())
-, mB27_PY(ctx.GetOsKeyState(0x85).JustPressed())
-, mB28_PZ(ctx.GetOsKeyState(0x16).JustPressed())
-, mB29_PL(ctx.GetOsKeyState(0x78).JustPressed())
-, mB30_PR(ctx.GetOsKeyState(0x7e).JustPressed())
-, mB31_PDPUp(ctx.GetOsKeyState(0x1c).JustPressed())
-, mB24_PDPRight(ctx.GetOsKeyState(0x1d).JustPressed())
-, mB25_PDPDown(ctx.GetOsKeyState(0x1e).JustPressed())
-, mB26_PDPLeft(ctx.GetOsKeyState(0x1b).JustPressed())
-, mB27_PStart(ctx.GetOsKeyState(5).JustPressed()) {}
+#endif
 
 #endif
