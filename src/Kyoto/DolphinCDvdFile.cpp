@@ -220,13 +220,15 @@ void CDvdFile::PushARAMFileLoad() {
     sFirstARAM = this;
     StartARAMFileLoad();
   } else {
-    for (CDvdFile* p = file; p != nullptr; p = p->mARAMFile->mInfo.mNextfile) {
-      CDvdFileARAM* aram = p->mARAMFile.get();
+    for (CDvdFile* p = file; p != nullptr;) {
+      CDvdFileARAM* const aram = p->mARAMFile.get();
       RS_VERIFY_THROW(306, aram != NULL, false, "ARAM DVDFile list is broken in push!");
-      if (aram->mInfo.mNextfile == nullptr) {
+      CDvdFile* next = aram->mInfo.mNextfile;
+      if (next == nullptr) {
         aram->mInfo.mNextfile = this;
         break;
       }
+      p = next;
     }
   }
   if (!sPollingMode) {
@@ -318,20 +320,19 @@ CDvdFile::CDvdFile(const char* filename)
 , mSize(0)
 , mFilename(filename, -1) {
   const char* decodedName = DecodeARAMFile(filename);
+  DVDFileInfo fileInfo IF_TARGET_PC({});
+  BOOL openOk = FALSE;
   mFileEntry = DVDConvertPathToEntrynum(const_cast< char* >(decodedName));
+  if (mFileEntry != -1) {
+    openOk = DVDFastOpen(mFileEntry, &fileInfo);
+  }
 #if defined(TARGET_PC)
-  DVDFileInfo fileInfo{};
-  if (mFileEntry != -1 && DVDFastOpen(mFileEntry, &fileInfo)) {
+  if (openOk) {
     mSize = fileInfo.length;
     DVDClose(&fileInfo);
     mARAMAllocated = filename != decodedName;
   }
 #else
-  DVDFileInfo fileInfo;
-  BOOL openOk = FALSE;
-  if (mFileEntry != -1) {
-    openOk = DVDFastOpen(mFileEntry, &fileInfo);
-  }
   RS_VERIFY_THROW(453, openOk == TRUE, kDvdIoException_CantOpenFile,
                   CBasics::Stringize("CDvdHalFile() can not find file : %s", decodedName));
 
