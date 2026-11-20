@@ -312,7 +312,7 @@
 #define RSTL_RESERVED_VECTOR_ALIGNED_DATA (!RSTL_CORRUPTION)
 // The copy constructor copies through raw pointers.
 #define RSTL_RESERVED_VECTOR_RAW_COPY (RSTL_VERSION >= RSTL_P2ME)
-// The copy constructor placement-constructs each element through `construction_policy`.
+// Copies use the fixed-storage element construction policy.
 #define RSTL_RESERVED_VECTOR_POLICY_COPY (RSTL_CORRUPTION)
 // `resize` also shrinks.
 #define RSTL_RESERVED_VECTOR_SHRINKING_RESIZE (RSTL_VERSION >= RSTL_P2ME)
