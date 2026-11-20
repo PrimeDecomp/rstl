@@ -402,6 +402,7 @@ void CModel::DrawSortedParts(const CModelFlags& flags) const {
   mModelInstance->DrawAlpha(flags);
 }
 
+#if RSTL_PRIME1
 void CModel::Draw(TModelPositions positions, TModelNormals normals,
                   const CModelFlags& flags) const {
   if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
@@ -410,6 +411,7 @@ void CModel::Draw(TModelPositions positions, TModelNormals normals,
   PreDrawModel(flags);
   mModelInstance->Draw(positions, normals, flags);
 }
+#endif
 
 #if !RSTL_PRIME1
 void CModel::DolphinDrawFlat(EDrawFlatFlags flags) const {

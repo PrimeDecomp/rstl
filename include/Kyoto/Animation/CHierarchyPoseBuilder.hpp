@@ -94,7 +94,7 @@ private:
 };
 CHECK_SIZEOF(CHierarchyPoseBuilder, RSTL_PRIME1 ? 0x110 : 0x118)
 
-#if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
+#if (RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00) || NONMATCHING
 inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CQuaternion& rot) {
   mTreeMap[id].SetRotation(rot);
 }
@@ -106,7 +106,7 @@ inline void CHierarchyPoseBuilder::Insert(const CSegId& id, const CVector3f& off
 }
 #endif
 
-#if RSTL_PRIME1
+#if RSTL_PRIME1 || NONMATCHING
 inline CQuaternion CHierarchyPoseBuilder::GetSegRotation(const CSegId& id) const {
   return mTreeMap[id].GetRotation();
 }

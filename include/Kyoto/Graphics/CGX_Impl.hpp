@@ -105,7 +105,7 @@ CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const GXColor& color) {
   }
 }
 
-inline void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
+CGX_INLINE void CGX::SetTevKColor(GXTevKColorID id, const CColor& color) {
   if (!(*reinterpret_cast< const CColor* >(&CGX_STATE.mKColors[id]) == color)) {
     CopyGXColor(CGX_STATE.mKColors[id], color.GetGXColor());
     GXSetTevKColor(id, color.GetGXColor());
