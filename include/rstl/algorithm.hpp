@@ -128,12 +128,8 @@ void __insertion_sort(const It first, It last, Cmp cmp) {
     --t1;
 #endif
     It t2 = next;
-#if RSTL_SORT_LESS_LOCAL
     bool less;
     while (first < t2 && (less = cmp(value, *t1))) {
-#else
-    while (first < t2 && cmp(value, *t1)) {
-#endif
       *t2 = *t1;
       --t2;
       --t1;
@@ -161,25 +157,14 @@ void sort(It first, It last, Cmp cmp) {
   It it = first + 1;
   --end;
 
-#if RSTL_SORT_LESS_LOCAL
   bool less;
-#endif
   for (;;) {
-#if RSTL_SORT_LESS_LOCAL
     while ((less = cmp(*it, pivot))) {
       ++it;
     }
     while ((less = cmp(pivot, *end))) {
       --end;
     }
-#else
-    while (cmp(*it, pivot)) {
-      ++it;
-    }
-    while (cmp(pivot, *end)) {
-      --end;
-    }
-#endif
     if (it >= end) {
       break;
     }
