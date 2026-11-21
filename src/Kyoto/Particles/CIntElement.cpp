@@ -329,24 +329,14 @@ bool CIELifetimePercent::GetValue(int frame, int& valOut) const {
 }
 
 CIEKeyframeEmitter::CIEKeyframeEmitter(CInputStream& in)
-#if RSTL_CORRUPTION
-: mPercent(in.ReadInt32())
-, mUnk1(in.ReadInt32())
-#else
 : mPercent(in.ReadLong())
 , mUnk1(in.ReadLong())
 
-#endif
 , mLoop(in.ReadBool())
 , mUnk2(in.ReadBool())
-#if RSTL_CORRUPTION
-, mLoopEnd(in.ReadInt32())
-, mLoopStart(in.ReadInt32())
-#else
 , mLoopEnd(in.ReadLong())
 , mLoopStart(in.ReadLong())
 
-#endif
 , mKeys(in) {}
 
 CIEKeyframeEmitter::~CIEKeyframeEmitter() {}

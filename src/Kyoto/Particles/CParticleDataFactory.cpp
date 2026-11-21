@@ -707,13 +707,9 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
   return true;
 }
 
-#if RSTL_CORRUPTION
-FourCC CParticleDataFactory::GetClassID(CInputStream& in) { return in.ReadInt32(); }
-#else
 FourCC CParticleDataFactory::GetClassID(CInputStream& in) {
   return in.ReadLong();
 }
-#endif
 
 bool CParticleDataFactory::GetBool(CInputStream& in) {
   GetClassID(in);

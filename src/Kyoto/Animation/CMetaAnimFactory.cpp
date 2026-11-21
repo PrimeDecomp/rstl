@@ -12,11 +12,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 rstl::rc_ptr< IMetaAnim > CMetaAnimFactory::CreateMetaAnim(CInputStream& in) {
-#if RSTL_CORRUPTION
-  EMetaAnimType type = static_cast< EMetaAnimType >(in.ReadInt32());
-#else
   EMetaAnimType type = static_cast< EMetaAnimType >(in.ReadLong());
-#endif
   switch (type) {
   case kMAT_Play:
     return rs_new_line(21) CMetaAnimPlay(in);

@@ -12,11 +12,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 rstl::rc_ptr< IMetaTrans > CMetaTransFactory::CreateMetaTrans(CInputStream& in) {
-#if RSTL_CORRUPTION
-  EMetaTransType type = static_cast< EMetaTransType >(in.ReadInt32());
-#else
   EMetaTransType type = static_cast< EMetaTransType >(in.ReadLong());
-#endif
   switch (type) {
   case kMTT_MetaAnim:
 #if RSTL_CORRUPTION
