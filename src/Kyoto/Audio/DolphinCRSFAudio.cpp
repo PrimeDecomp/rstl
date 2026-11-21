@@ -119,6 +119,9 @@ const bool CRSFAudio::IsFullyLoaded() const {
 }
 
 void CRSFAudio::Play() {
+#if IS_TARGET_PC
+  const metaforce::AudioLockGuard lock;
+#endif
   RS_VERIFY_THROW(156, IsFullyLoaded(), false,
                   "Trying to play RSF Audio before it's fully loaded!");
   RS_VERIFY_THROW(157, !sPlayingAudio || sPlayingAudio == this, false,
@@ -154,7 +157,9 @@ void CRSFAudio::Stop() {
   }
 }
 
-void CRSFAudio::MixCallback() { sPlayingAudio->DoMix(); }
+void CRSFAudio::MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
+  sPlayingAudio->DoMix(IF_TARGET_PC(output, frames, rate, channels));
+}
 
 void CRSFAudio::DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
 #if IS_TARGET_PC

@@ -1106,7 +1106,7 @@ CMemoryCardSys::CMemoryCardSys(IF_TARGET_PC(const char* game, const char* maker)
   mIsCardSysExists = true;
 }
 
-void CMemoryCardSys::Initialize() {
+void CMemoryCardSys::Initialize(IF_TARGET_PC(const char* game, const char* maker)) {
   if (!mIsInitialized) {
 #if TARGET_PC
     CARDSetLoadType(CARD_RAWIMAGE);

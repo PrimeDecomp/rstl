@@ -42,7 +42,6 @@ struct SAdvancementResults {
 #if RSTL_CORRUPTION
 class CSegIdMaskMap;
 
-typedef CAdvancementDeltas CAdvancementDeltas;
 
 struct SAdvancementResults {
   CCharAnimTime mRemTime;

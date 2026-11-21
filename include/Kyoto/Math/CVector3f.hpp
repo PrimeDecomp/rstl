@@ -20,7 +20,6 @@ enum EDimX { kDX = 0 };
 enum EDimY { kDY = 1 };
 enum EDimZ { kDZ = 2 };
 
-// The normalizability test of the game being built: the prototype's IsNormalizable, CanBeNormalized elsewhere.
 #if RSTL_CORRUPTION
 #define rs_can_normalize(vec) ((vec).IsNormalizable())
 #else
