@@ -36,14 +36,14 @@ public:
     uint x8_;
     uint xc_;
     uint x10_;
-    uint mHeapSize2; // Remaining heap size?
+    uint mHeapSize2;
     uint x18_;
     uint x1c_;
     uint x20_;
     uint x24_;
     uint x28_;
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    uint x2c_; // Echoes addition: periodically reset peak allocated heap bytes.
+    uint x2c_;
 #endif
     uint mSmallNumAllocs;
     uint mSmallAllocatedSize;
@@ -62,22 +62,56 @@ public:
 #endif
     uint mMediumTotalAllocated;
     uint mFakeStatics;
+    SMetrics(uint heapSize, uint totalHeapAllocations, uint currentHeapAllocations,
+             uint requestedHeapBytes, uint allocatedHeapBytes, uint freeHeapBytes,
+             uint peakHeapAllocations, uint peakAllocatedHeapBytes,
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    SMetrics(uint heapSize, uint unk1, uint unk2, uint unk3, uint unk4, uint heapSize2, uint unk5,
-             uint unk6, uint unk7, uint unk8, uint unk9, uint unk10, uint smallAllocNumAllocs,
-             uint smallAllocAllocatedSize, uint smallAllocRemainingSize, uint mediumAllocNumAllocs,
-             uint mediumAllocAllocatedSize, uint mediumAllocBlocksAvailable, uint unk11, uint unk12,
-             uint unk13, uint mediumAllocTotalAllocated, uint fakeStatics);
-#else
-    SMetrics(uint heapSize, uint unk1, uint unk2, uint unk3, uint unk4, uint heapSize2, uint unk5,
-             uint unk6, uint unk7, uint unk8, uint unk9, uint smallAllocNumAllocs,
-             uint smallAllocAllocatedSize, uint smallAllocRemainingSize, uint mediumAllocNumAllocs,
-             uint mediumAllocAllocatedSize, uint mediumAllocBlocksAvailable, uint unk10, uint unk11,
-             uint unk12, uint mediumAllocTotalAllocated, uint fakeStatics);
+             uint periodicPeakAllocatedHeapBytes,
 #endif
+             uint minAllocationSize, uint maxAllocationSize, uint averageAllocationSize,
+             uint smallNumAllocs, uint smallAllocatedBlocks, uint smallAvailableBlocks,
+             uint mediumNumAllocs, uint mediumAllocatedBlocks, uint mediumAvailableBlocks,
+             uint allocationsSinceLastSnapshot, uint heapPhysicalAddress, uint smallPoolReservedBytes,
+             uint mediumPoolDataBytes, uint fakeStatics);
 #if RSTL_KYOTO_METRICS_COPY_CTOR
     SMetrics(const SMetrics& other);
 #endif
+
+    // Guessed names
+    uint GetCurrentHeapAllocations() const { return x8_; }
+    uint GetAllocatedHeapBytes() const { return x10_; }
+    uint GetFreeHeapBytes() const { return mHeapSize2; }
+    uint GetPeakAllocatedHeapBytes() const { return x1c_; }
+#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+    uint GetPeriodicPeakAllocatedHeapBytes() const { return x20_; }
+#endif
+    uint GetSmallAllocatedBlocks() const { return mSmallAllocatedSize; }
+    uint GetSmallAvailableBlocks() const { return mSmallRemainingSize; }
+    uint GetMediumAllocatedBlocks() const { return mMediumAllocatedSize; }
+
+    uint GetAllocationsSinceLastSnapshot() const {
+#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+      return x48_;
+#else
+      return x44_;
+#endif
+    }
+
+    uint GetHeapPhysicalAddress() const {
+#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+      return x4c_;
+#else
+      return x48_;
+#endif
+    }
+
+    uint GetSmallPoolReservedBytes() const {
+#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
+      return x50_;
+#else
+      return x4c_;
+#endif
+    }
   };
 
   struct SAllocatorMetrics { // Guessed name
@@ -169,7 +203,7 @@ public:
   virtual SHeapMetrics GetHeapMetrics(int index, uint flags) const = 0;
   virtual const char* GetHeapName(int index) const = 0;
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-  virtual SMetrics GetMetrics(bool unk1, bool unk2) const = 0;
+  virtual SMetrics GetMetrics(bool resetPeriodicPeak, bool resetPeak) const = 0;
 #else
   virtual SMetrics GetMetrics() const = 0;
 #endif
