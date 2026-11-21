@@ -6,6 +6,7 @@
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 
+class CColor;
 class CQuaternion;
 
 class CMotionSpline {
@@ -33,6 +34,8 @@ public:
   CVector3f GetPositionByLength(float distance) const; // Guessed name.
   CVector3f GetTangentByTime(float time) const;        // Guessed name.
   CVector3f GetTangentByLength(float distance) const;  // Guessed name.
+  // Guessed name
+  void Render(int segments, const CColor& color, int level) const;
   void CalculateLength();
   void Reset(uint count);
   void ResetKnots(uint count);

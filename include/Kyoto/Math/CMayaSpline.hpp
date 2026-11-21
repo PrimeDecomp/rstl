@@ -12,6 +12,8 @@
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 
+class COutputStream;
+
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
@@ -131,6 +133,7 @@ public:
   CMayaSplineKnot(float time, float amplitude, int flagA, int flagB,
                   const CAbsAngle& inAngle = CAbsAngle::FromRadians(0.f),
                   const CAbsAngle& outAngle = CAbsAngle::FromRadians(0.f));
+  void PutTo(COutputStream& out) const; // Guessed name
   bool operator<(const CMayaSplineKnot& other) const { return mTime < other.mTime; }
 
   float GetTime() const { return mTime; }
@@ -202,6 +205,8 @@ public:
                           rstl::reserved_vector< rstl::pair< float, float >, 2 >& extrema) const;
   void FindSegmentIntersections(float amplitude, int knotIndex,
                                 rstl::reserved_vector< float, 3 >& intersections) const;
+
+  void WriteToStream(COutputStream& out) const;
 
   float EvaluateAt(float time) const;
   float EvaluateAtUnclamped(float time) const;
