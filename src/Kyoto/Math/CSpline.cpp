@@ -3,6 +3,7 @@
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 
 CSpline::CSpline(float duration, uint flags, const CMayaSpline& positionTimeSpline,
                  const CMayaSpline& lookAtTimeSpline, CMotionSpline::ESplineType positionType,
@@ -28,6 +29,10 @@ void CSpline::Initialise(const rstl::vector< CVector3f >& positions,
                          const rstl::vector< CVector3f >& lookAtPoints) {
   mPositionSpline.Initialise(positions);
   mLookAtSpline.Initialise(lookAtPoints);
+  if (positions.size() != orientations.size())
+    RS_VERIFY_FAILURE(69, "false", "false",
+                      "Number of motion knots != number of orientations in "
+                      "CSpline::Initialise()");
   mOrientations.clear();
   mOrientations.reserve(orientations.size());
   for (int i = 0; i < orientations.size(); ++i) {

@@ -2,7 +2,16 @@
 
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CQuaternion.hpp"
+#include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
+
+#if RSTL_CORRUPTION
+#define CMOTIONSPLINE_CONST_PARAM
+#define CMOTIONSPLINE_NORMALIZABLE(v) (v).IsNormalizable()
+#else
+#define CMOTIONSPLINE_CONST_PARAM const
+#define CMOTIONSPLINE_NORMALIZABLE(v) (v).CanBeNormalized()
+#endif
 
 CMotionSpline::CMotionSpline(bool closedLoop, float duration, ESplineType type)
 : mLength(0.f), mDuration(duration), mClosedLoop(closedLoop), mType(type) {}
@@ -183,9 +192,9 @@ void CMotionSpline::SetKnotAndControlPoint(uint index, const CVector3f& point,
 
 void CMotionSpline::GetSurroundingPoints(int index,
                                          rstl::reserved_vector< CVector3f, 4 >& points) const {
-  int first = index - 1;
+  int idx = index - 1;
   if (mType == kST_Bezier) {
-    first = index;
+    idx = index;
   }
   const int count = mControlPoints.size();
   if (count == 0) {
@@ -204,8 +213,7 @@ void CMotionSpline::GetSurroundingPoints(int index,
     points.push_back(mControlPoints[1]);
     return;
   }
-  int idx = first;
-  for (int i = 0; i < 4; ++i, ++idx) {
+  for (int i = 0; i <= 3; ++i, ++idx) {
     if (idx >= 0) {
       if (idx >= count) {
         if (mClosedLoop) {
@@ -214,11 +222,38 @@ void CMotionSpline::GetSurroundingPoints(int index,
           } else {
             points.push_back(mControlPoints[idx - count]);
           }
+#if RSTL_CORRUPTION
+        } else {
+          switch (mType) {
+          case kST_Bezier:
+            points.push_back(mControlPoints[count - 1]);
+            break;
+          case kST_CatmullRom:
+            points.push_back(0.5f * (5.f * mControlPoints[count - 1] -
+                                     4.f * mControlPoints[count - 2] + mControlPoints[count - 3]));
+            break;
+          case kST_RoundedCatmullRom: {
+            CVector3f first = mControlPoints[count - 2] - mControlPoints[count - 1];
+            first = first.IsNormalizable() ? first.AsNormalized()
+                    : static_cast< const CVector3f& >(CVector3f::Forward());
+            CVector3f second = mControlPoints[count - 3] - mControlPoints[count - 2];
+            second = second.IsNormalizable() ? second.AsNormalized()
+                     : static_cast< const CVector3f& >(CVector3f::Forward());
+            points.push_back(mControlPoints[count - 1] - 1.5f * first + 0.5f * second);
+            break;
+          }
+          default:
+            points.push_back(mControlPoints[count - 1] -
+                             (mControlPoints[count - 2] - mControlPoints[count - 1]));
+            break;
+          }
+#else
         } else if (mType == kST_Bezier) {
           points.push_back(mControlPoints[count - 1]);
         } else {
           points.push_back(mControlPoints[count - 1] -
                            (mControlPoints[count - 2] - mControlPoints[count - 1]));
+#endif
         }
       } else {
         points.push_back(mControlPoints[idx]);
@@ -228,7 +263,29 @@ void CMotionSpline::GetSurroundingPoints(int index,
     } else if (mClosedLoop) {
       points.push_back(mControlPoints[count + idx]);
     } else {
+#if RSTL_CORRUPTION
+      switch (mType) {
+      case kST_CatmullRom:
+        points.push_back(0.5f *
+                         (5.f * mControlPoints[0] - 4.f * mControlPoints[1] + mControlPoints[2]));
+        break;
+      case kST_RoundedCatmullRom: {
+        CVector3f first = mControlPoints[1] - mControlPoints[0];
+        first = first.IsNormalizable() ? first.AsNormalized()
+                : static_cast< const CVector3f& >(CVector3f::Forward());
+        CVector3f second = mControlPoints[2] - mControlPoints[1];
+        second = second.IsNormalizable() ? second.AsNormalized()
+                 : static_cast< const CVector3f& >(CVector3f::Forward());
+        points.push_back(mControlPoints[0] - 1.5f * first + 0.5f * second);
+        break;
+      }
+      default:
+        points.push_back(mControlPoints[0] - (mControlPoints[1] - mControlPoints[0]));
+        break;
+      }
+#else
       points.push_back(mControlPoints[0] - (mControlPoints[1] - mControlPoints[0]));
+#endif
     }
   }
 }
@@ -261,27 +318,27 @@ float CMotionSpline::CalculateRoundedCatmullRomLength(int index) const {
   rstl::reserved_vector< CVector3f, 4 > points;
   GetSurroundingPoints(index, points);
   const CVector3f span = points[2] - points[1];
-  if (!span.CanBeNormalized()) {
+  if (!CMOTIONSPLINE_NORMALIZABLE(span)) {
     return 0.f;
   }
 
   CVector3f previous = points[0] - points[1];
-  if (!previous.CanBeNormalized()) {
+  if (!CMOTIONSPLINE_NORMALIZABLE(previous)) {
     previous = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f firstTangent = span.AsNormalized() - previous.AsNormalized();
-  if (firstTangent.CanBeNormalized()) {
+  if (CMOTIONSPLINE_NORMALIZABLE(firstTangent)) {
     firstTangent.Normalize();
   } else {
     firstTangent = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f next = points[3] - points[2];
-  if (!next.CanBeNormalized()) {
+  if (!CMOTIONSPLINE_NORMALIZABLE(next)) {
     next = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f reverseSpan = -span;
   CVector3f secondTangent = next.AsNormalized() - reverseSpan.AsNormalized();
-  if (secondTangent.CanBeNormalized()) {
+  if (CMOTIONSPLINE_NORMALIZABLE(secondTangent)) {
     secondTangent.Normalize();
   } else {
     secondTangent = CVector3f(0.f, 1.f, 0.f);
@@ -394,7 +451,11 @@ void CMotionSpline::CalculateLength() {
         }
         break;
       case kST_Bezier: {
+#if RSTL_CORRUPTION
+        const uint segments = (count - 1) / 3;
+#else
         const uint segments = count / 4;
+#endif
         if (count >= 4) {
           for (uint i = 0; i < segments; ++i) {
             mKnotDistances.push_back_unsafe(length);
@@ -404,7 +465,11 @@ void CMotionSpline::CalculateLength() {
           }
           mKnotDistances.push_back_unsafe(length);
         }
+#if RSTL_CORRUPTION
+        const uint remainder = mControlPoints.size() - (segments * 3 + 1);
+#else
         const uint remainder = mControlPoints.size() - segments * 4;
+#endif
         if (remainder != 0) {
           for (uint i = 0; i < remainder - 1; ++i) {
             mKnotDistances.push_back_unsafe(length);
@@ -427,12 +492,16 @@ void CMotionSpline::CalculateLength() {
       }
     }
   } else if (count == 1) {
+#if RSTL_CORRUPTION
+    mKnotDistances.push_back_unsafe(length);
+#else
     mKnotDistances.push_back_unsafe(0.f);
+#endif
   }
   mLength = length;
 }
 
-float CMotionSpline::ValidateLength(const float distance) const {
+float CMotionSpline::ValidateLength(CMOTIONSPLINE_CONST_PARAM float distance) const {
   if (close_enough(distance, 0.f, 0.001f)) {
     return 0.f;
   }
@@ -479,7 +548,11 @@ CVector3f CMotionSpline::GetPositionInSegment(uint index, float t) const {
       return a + t * (b - a);
     }
     if (mType == kST_Bezier) {
+#if RSTL_CORRUPTION
+      segment = ((segment - 1) / 3) * 3;
+#else
       segment = (segment / 3) * 3;
+#endif
     }
     rstl::reserved_vector< CVector3f, 4 > points;
     GetSurroundingPoints(segment, points);
@@ -584,10 +657,14 @@ float CMotionSpline::GetSegmentParameter(float distance, uint index) const {
   return result;
 }
 
-CVector3f CMotionSpline::GetPositionByLength(const float inputDistance) const {
+CVector3f CMotionSpline::GetPositionByLength(CMOTIONSPLINE_CONST_PARAM float inputDistance) const {
   const int count = mKnots.size();
   float distance = inputDistance;
+#if RSTL_CORRUPTION
+  if (close_enough(inputDistance, 0.f, 0.001f)) {
+#else
   if (close_enough(distance, 0.f, 0.001f)) {
+#endif
     distance = 0.f;
   }
   if (close_enough(distance, mLength, 0.001f)) {
@@ -619,7 +696,11 @@ CVector3f CMotionSpline::GetPositionByLength(const float inputDistance) const {
       return first + t * (second - first);
     }
     if (mType == kST_Bezier) {
+#if RSTL_CORRUPTION
+      index = ((index - 1) / 3) * 3;
+#else
       index = (index / 3) * 3;
+#endif
     }
     rstl::reserved_vector< CVector3f, 4 > points;
     GetSurroundingPoints(index, points);
@@ -815,7 +896,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       forwardDirection = (first - previous) + (second - first);
     }
-    if (forwardDirection.CanBeNormalized()) {
+    if (CMOTIONSPLINE_NORMALIZABLE(forwardDirection)) {
       forwardDirection.Normalize();
     }
     if (i < knots.size() - 2) {
@@ -834,7 +915,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       backwardDirection = (second - next) + (first - second);
     }
-    if (backwardDirection.CanBeNormalized()) {
+    if (CMOTIONSPLINE_NORMALIZABLE(backwardDirection)) {
       backwardDirection.Normalize();
     }
     const float firstProjection = CVector3f::Dot(position - first, forwardDirection);
@@ -927,14 +1008,18 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
   CVector3f tangent = CVector3f::Forward();
   int index = GetKnotIndexByLength(distance);
   if (mType == kST_Bezier) {
+#if RSTL_CORRUPTION
+    index = ((index - 1) / 3) * 3;
+#else
     index = (index / 3) * 3;
+#endif
   }
   if (mControlPoints.size() == 2) {
     tangent = mControlPoints[1] - mControlPoints[0];
     if (mClosedLoop && distance > 0.5f * mLength) {
       tangent = mControlPoints[0] - mControlPoints[1];
     }
-    if (tangent.CanBeNormalized()) {
+    if (CMOTIONSPLINE_NORMALIZABLE(tangent)) {
       tangent.Normalize();
     } else {
       tangent = CVector3f::Forward();
@@ -969,7 +1054,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     }
     }
   }
-  if (tangent.CanBeNormalized()) {
+  if (CMOTIONSPLINE_NORMALIZABLE(tangent)) {
     tangent.Normalize();
   } else {
     tangent = CVector3f::Forward();

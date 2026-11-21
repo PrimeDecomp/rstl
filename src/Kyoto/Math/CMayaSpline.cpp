@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
+#define RSTL_INLINE_SWAP
+#endif
 #include "Kyoto/Math/CMayaSpline.hpp"
 
 #include "Kyoto/Math/CMath.hpp"
@@ -722,6 +725,32 @@ void CMayaSplineKnot::CalculateTangents(const CMayaSplineKnot* prev,
   ValidateTangent(mCachedTangentB);
 }
 
+#if RSTL_CORRUPTION
+void CMayaSplineKnot::PutTo(COutputStream& out) const {
+  out.Put(mTime);
+  out.Put(mAmplitude);
+  out.WriteInt8(mFlagA);
+  out.WriteInt8(mFlagB);
+  if (mFlagA == 5) {
+    out.Put(mCachedTangentA.GetX());
+    out.Put(mCachedTangentA.GetY());
+  }
+  if (mFlagB == 5) {
+    out.Put(mCachedTangentB.GetX());
+    out.Put(mCachedTangentB.GetY());
+  }
+}
+
+void CMayaSpline::WriteToStream(COutputStream& out) const {
+  out.WriteInt8(mPreInfinity);
+  out.WriteInt8(mPostInfinity);
+  out.Put(mKnots);
+  out.WriteInt8(mClampMode);
+  out.Put(mMinAmplitude);
+  out.Put(mMaxAmplitude);
+}
+#endif
+
 CMayaSpline::CMayaSpline(CInputStream& in)
 : mPreInfinity(in.ReadInt8())
 , mPostInfinity(in.ReadInt8())
@@ -891,7 +920,11 @@ float CMayaSpline::EvaluateAt(float time) const {
       }
       if (amplitude < mMinAmplitude - FLT_EPSILON) {
         return amplitude +
+#if RSTL_CORRUPTION
+               range * ((abs)(static_cast< int >((amplitude - mMinAmplitude) / range)) + 1);
+#else
                range * (abs(static_cast< int >((amplitude - mMinAmplitude) / range)) + 1);
+#endif
       }
       return amplitude;
     }
@@ -1028,11 +1061,25 @@ void CMayaSpline::FindControlPoints(int knotIndex,
 
   CVector2f tangentA(0.f, 0.f);
   CVector2f tangentB(0.f, 0.f);
+#if RSTL_CORRUPTION
+  const CMayaSplineKnot* next = knotIndex + 1 < mKnots.size() ? &mKnots[knotIndex + 1] : nullptr;
+  const CMayaSplineKnot* prev = knotIndex - 1 >= 0 ? &mKnots[knotIndex - 1] : nullptr;
+  knot->GetTangents(prev, next, tangentA, tangentB);
+#else
   knot->GetTangents(knotIndex - 1 >= 0 ? &mKnots[knotIndex - 1] : nullptr,
                     knotIndex + 1 < mKnots.size() ? &mKnots[knotIndex + 1] : nullptr, tangentA,
                     tangentB);
+#endif
   controlPoints.push_back(controlPoints[0] + tangentB * (1.f / 3.f));
 
+#if RSTL_CORRUPTION
+  knot = &mKnots[knotIndex + 1];
+  CVector2f nextTangentA(0.f, 0.f);
+  CVector2f nextTangentB(0.f, 0.f);
+  next = knotIndex + 2 < mKnots.size() ? &mKnots[knotIndex + 2] : nullptr;
+  prev = knotIndex >= 0 ? &mKnots[knotIndex] : nullptr;
+  knot->GetTangents(prev, next, nextTangentA, nextTangentB);
+#else
   const int nextKnotIndex = knotIndex + 1;
   knot = &mKnots[nextKnotIndex];
   CVector2f nextTangentA(0.f, 0.f);
@@ -1040,6 +1087,7 @@ void CMayaSpline::FindControlPoints(int knotIndex,
   knot->GetTangents(nextKnotIndex - 1 >= 0 ? &mKnots[nextKnotIndex - 1] : nullptr,
                     nextKnotIndex + 1 < mKnots.size() ? &mKnots[nextKnotIndex + 1] : nullptr,
                     nextTangentA, nextTangentB);
+#endif
   CVector2f knotPoint(knot->GetTime(), knot->GetAmplitude());
   controlPoints.push_back(knotPoint - nextTangentA * (1.f / 3.f));
   controlPoints.push_back(knotPoint);
@@ -1272,6 +1320,25 @@ void CMayaSpline::FindSegmentExtrema(
     FindControlPoints(knotIndex, points);
     float coefs[4];
     CalculateHermiteCoefficients(points, coefs);
+#if RSTL_CORRUPTION
+    float roots[4];
+    uint count = CMath::SolveQuadratic(3.f * coefs[0], 2.f * coefs[1], coefs[2], roots);
+    const float start = mKnots[knotIndex].GetTime();
+    const float end = mKnots[knotIndex + 1].GetTime();
+    for (uint i = 0; i < count; ++i) {
+      float time = roots[i];
+      time += start;
+      if (CMath::IsEpsilon(time, start, 0.002f)) {
+        time = start;
+      }
+      if (CMath::IsEpsilon(time, end, 0.002f)) {
+        time = end;
+      }
+      if (time >= start && time <= end) {
+        extrema.push_back(Point(time, EvaluateAt(time)));
+      }
+    }
+#else
     float rootA = 0.f;
     float rootB = 0.f;
     bool found = CMath::SolveQuadratic(3.f * coefs[0], 2.f * coefs[1], coefs[2], rootA, rootB);
@@ -1299,6 +1366,7 @@ void CMayaSpline::FindSegmentExtrema(
         extrema.push_back(Point(rootB, EvaluateAt(rootB)));
       }
     }
+#endif
     rstl::sort(extrema.begin(), extrema.end());
   }
 }
