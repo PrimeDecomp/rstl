@@ -5,29 +5,19 @@
 #include "Kyoto/Input/CRumbleVoice.hpp"
 #include "rstl/math.hpp"
 
-#if !RSTL_CORRUPTION
 CRumbleVoice::CRumbleVoice()
 : mDatas(4, SAdsrData()
-#endif
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
          , rstl::rmemory_allocator()
 #endif
          )
 , mDeltas(4, SAdsrDelta::Stopped()
-#endif
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-CRumbleVoice::CRumbleVoice()
-: mDatas(4, SAdsrData())
-, mDeltas(4, SAdsrDelta::Stopped())
-#else
 #if RSTL_PRIME1
           , rstl::rmemory_allocator()
 #endif
           )
-#endif
 , mHandleIds(4, 0)
 , mUsedChannels(0)
 , mLastId(0) {}

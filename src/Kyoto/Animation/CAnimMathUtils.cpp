@@ -43,13 +43,11 @@ rstl::vector< CQuaternion > LoadQuaternions(CInputStream& in) {
 #endif
 
 CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& end, float t) {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   if (t <= 0.00001f)
     return start;
   if (t >= 0.99999f)
     return end;
-#endif
 #endif
   const float dot = CQuaternion::Dot(start, end);
 #if RSTL_CORRUPTION

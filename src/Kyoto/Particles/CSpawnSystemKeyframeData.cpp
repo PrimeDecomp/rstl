@@ -7,7 +7,6 @@
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 inline CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeInfo(
     CInputStream& in)
@@ -16,7 +15,6 @@ inline CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeI
 , x8_(in.Get< uint >())
 , xc_(in.Get< uint >())
 , mToken() {}
-#endif
 #endif
 
 CSpawnSystemKeyframeData::CSpawnSystemKeyframeData(CInputStream& in)

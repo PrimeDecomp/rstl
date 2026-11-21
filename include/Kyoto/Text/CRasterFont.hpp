@@ -25,11 +25,7 @@ class IObjectStore;
 
 class CFontInfo {
 public:
-#if RSTL_CORRUPTION
-  CFontInfo(bool a, bool b, int c, int fontSize, const char* name)
-#else
   CFontInfo(bool a, bool b, int c, int fontSize, const char* RSTL_PRIME1_CONST name)
-#endif
   : x0_(a), x1_(b), x4_(c), mFontSize(fontSize) {
     strcpy(mName, name);
   }
@@ -51,7 +47,6 @@ public:
     mFirst = first;
   }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   CKernPair(const CKernPair& other)
   : mFirst(other.mFirst)
@@ -59,7 +54,6 @@ public:
   , mHowMuch(other.mHowMuch) {}
 #endif
 
-#endif
   wchar_t GetFirst() const { return mFirst; }
   wchar_t GetSecond() const { return mSecond; }
   int GetHowMuch() const { return mHowMuch; }
@@ -167,12 +161,10 @@ enum EFontMode {
 
 class CRasterFont {
 public:
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   friend class CFontInstruction;
 #endif
 
-#endif
   CRasterFont(CInputStream& in, IObjectStore* store);
 
   EFontMode GetMode() const;
@@ -219,10 +211,8 @@ public:
                             CTextRenderBuffer* buffer, const wchar_t* str, int length) const;
 
   void SetupRenderState();
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   int GetLineMargin();
-#endif
 #endif
 
 private:

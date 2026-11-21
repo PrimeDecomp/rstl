@@ -198,17 +198,10 @@ SAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time)
     return SAdvancementResults(time - res.first, res.second);
 
   }
-#if !RSTL_CORRUPTION
-  CCharAnimTime transTimeRem = mTransDur - mTimeInTrans;
-  rstl::pair< CCharAnimTime, CAdvancementDeltas > res(
-      CCharAnimTime(0.f), CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
-#if RSTL_CORRUPTION
   CCharAnimTime transTimeRem = mTransDur - mTimeInTrans;
   rstl::pair< CCharAnimTime, CAdvancementDeltas > res(
       CCharAnimTime(0.f), CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
   if (transTimeRem.GreaterThanZero()) {
     res = AdvanceViewForTransitionalPeriod(transTimeRem);
     if (res.first != transTimeRem)
@@ -323,15 +316,8 @@ void CAnimTreeTransition::SetBlendingWeight(float weight) {
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeTransition::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > right = GetRightChild();
   rstl::rc_ptr< CAnimTreeNode > best = right->GetBestUnblendedChild();
-#if RSTL_CORRUPTION
   if (!best)
-#else
-  if (!best) {
-#endif
     return right;
-#if !RSTL_CORRUPTION
-  }
-#endif
   return best;
 }
 

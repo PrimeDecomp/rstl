@@ -197,12 +197,10 @@ private:
   CRandom16 mRandState;
   int mSSEG;
   int mSCNT;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   int x158_;
 #endif
 
-#endif
   float mGenRem;
 #if !RSTL_PRIME1
   float mGeneratorRate;

@@ -316,13 +316,11 @@ private:
   TLockedToken< CModel > mModel;
   TLockedToken< CSkinRules > mSkinRules;
   TLockedToken< CCharLayoutInfo > mLayoutInfo;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   mutable rstl::auto_ptr< float > mVertWorkspace;
   mutable rstl::auto_ptr< float > mNormalWorkspace;
   bool mOwned;
   bool mDisableWorkspaces;
-#endif
 #endif
 };
 

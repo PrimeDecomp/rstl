@@ -19,12 +19,10 @@ enum EDrawableType {
   kDT_Actor,
   kDT_SimpleShadow,
   kDT_Decal,
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   kDT_Invalid = 0xFFFF,
 #endif
 
-#endif
 };
 
 class CDrawable {
@@ -67,11 +65,9 @@ public:
 #endif
 
   const void* GetData() const { return mData; }
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   u16 GetExtraSort() const { return mExtraSort; }
-#endif
 #endif
   const CAABox& GetBounds() const { return mBounds; }
   float GetDistance() const { return mViewDistance; }

@@ -1108,11 +1108,7 @@ CMemoryCardSys::CMemoryCardSys(IF_TARGET_PC(const char* game, const char* maker)
   mIsCardSysExists = true;
 }
 
-#if RSTL_CORRUPTION
 void CMemoryCardSys::Initialize() {
-#else
-void CMemoryCardSys::Initialize(IF_TARGET_PC(const char* game, const char* maker)) {
-#endif
   if (!mIsInitialized) {
 #if TARGET_PC
     CARDSetLoadType(CARD_RAWIMAGE);
@@ -1402,9 +1398,7 @@ TCardWorkArea& CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
   case kCS_SlotB:
     return mWorkAreaB;
   default:
-#if RSTL_CORRUPTION
     RS_VERIFY_FAILURE(1306, "false", "false", "Invalid memory card port")
-#endif
     return mWorkAreaA;
   }
 }

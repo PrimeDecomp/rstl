@@ -95,16 +95,6 @@ public:
   int GetTextBoundingWidth() const { return mExtentX; }
   int GetTextBoundingHeight() const { return mExtentY; }
   CAssetId GetFontID() const { return mFontId; }
-#if !RSTL_CORRUPTION
-
-#if RSTL_GUI_TEXT_LINE_SPACING
-  void SetTextSpacing(float lineSpacing, int lineExtraSpace, int characterExtraSpace) {
-    mLineSpacing = lineSpacing;
-    mExtraLineSpacing = lineExtraSpace;
-    mExtraCharacterSpacing = characterExtraSpace;
-  }
-#endif
-#endif
 
   void SetExtentX(int extent) {
     mExtentX = extent;

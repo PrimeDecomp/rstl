@@ -199,12 +199,10 @@ CHECK_SIZEOF(CFBFullBodyAspectsForStream, 0x20)
 class CFBStreamedPairOfTotals {
 public:
   explicit CFBStreamedPairOfTotals(const TSubAnimTypeToken< CFBStreamedCompression >& source);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   ~CFBStreamedPairOfTotals() {}
 #endif
 
-#endif
   void SetTime(CMemoryInputToBitLevelLoader& input,
                CBitLevelLoader< CMemoryInputToBitLevelLoader >& loader, const CCharAnimTime& time);
   void DoIncrement(CBitLevelLoader< CMemoryInputToBitLevelLoader >& loader);
@@ -263,22 +261,16 @@ private:
 };
 
 template < typename T >
-#if RSTL_CORRUPTION
-uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
-#else
 RSTL_KYOTO_ANIMATION_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
-#endif
   uint remaining = bits;
   uint result = 0;
   uint shift = 0;
   while (remaining != 0) {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1 && NONMATCHING
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
     }
-#endif
 #endif
     uint count = rstl::min_val(32 - mBit, remaining);
     uint highShift = 32 - count;

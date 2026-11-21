@@ -567,7 +567,6 @@ static const uint skCosX8 = 0x37a93188;
 #endif
 
 static inline float fast_sine(float x) {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   float c1 = reinterpret_cast< const float& >(skSinX1);
   float c3 = reinterpret_cast< const float& >(skSinX2);
@@ -575,7 +574,6 @@ static inline float fast_sine(float x) {
   float c7 = reinterpret_cast< const float& >(skSinX4);
 #endif
 
-#endif
   const float x2 = x * x;
   float power = x;
 // TODO: verify that this Prime/Echoes difference is real
@@ -612,7 +610,6 @@ static inline float fast_sine(float x) {
   return result;
 }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 static const uint skCosX1 = 0x3f800000; // 1.f
 static const uint skCosX2 = 0xbefffd62; // -0.49998003f
@@ -621,9 +618,7 @@ static const uint skCosX4 = 0xbab2bb2b; // -0.0013636103f
 static const uint skCosX5 = 0x37a93188; // 0.000020169435f
 #endif
 
-#endif
 static inline float fast_cosine(float x) {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   float c0 = reinterpret_cast< const float& >(skCosX1);
   float c2 = reinterpret_cast< const float& >(skCosX2);
@@ -632,7 +627,6 @@ static inline float fast_cosine(float x) {
   float c8 = reinterpret_cast< const float& >(skCosX5);
 #endif
 
-#endif
   const float x2 = x * x;
   float power = x2;
 // TODO: verify that this Prime/Echoes difference is real
@@ -1579,9 +1573,7 @@ int CParticleSwoosh::GetEmitterTime() const { return mCurFrame; }
 #endif
 
 CLight CParticleSwoosh::GetLight() const {
-#if RSTL_CORRUPTION
   RS_VERIFY_THROW(2263, false, 0, "Swooshes do not contain a light");
-#endif
   return CLight::BuildLocalAmbient(CVector3f::Zero(), CColor::White());
 }
 
@@ -1609,11 +1601,9 @@ const CVector3f& CParticleSwoosh::GetGlobalScale() const { return mGlobalScale; 
 const CTransform4f& CParticleSwoosh::GetGlobalOrientation() const { return mGlobalOrientation; }
 const CVector3f& CParticleSwoosh::GetGlobalTranslation() const { return mGlobalTranslation; }
 const CVector3f& CParticleSwoosh::GetTranslation() const { return mTranslation; }
-#if !RSTL_CORRUPTION
 
 #if RSTL_PARTICLE_SWOOSH_GEN_CLEAR
 // Guessed name. Stands in for a function the retail link stripped; only its weak
 // `vector< CParticleGen* >::clear` copy is left.
 void ClearParticleGens(rstl::vector< CParticleGen* >& gens) { gens.clear(); }
-#endif
 #endif

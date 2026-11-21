@@ -28,11 +28,9 @@
 #include "dolphin/os.h"
 #include "stdint.h"
 
-#if !RSTL_CORRUPTION
 #if IS_TARGET_PC
 #include <algorithm>
 #include "Metaforce/Audio.hpp"
-#endif
 #endif
 
 #if !RSTL_CORRUPTION
@@ -63,11 +61,9 @@ CRSFAudio::CRSFAudio(const rstl::string& audioFile, const int loopStart, const i
 , mDmaBufferB(static_cast< uchar* >(CMemory::Alloc(640, IAllocator::kHI_RoundUpLen)))
 #endif
 , mVolume(32768) {
-#if RSTL_CORRUPTION
   // clang-format off
   RS_VERIFY_THROW(74, CDvdFile::FileExists( audioFile.c_str() ), false, CBasics::Stringize("RSFAudio: File %s does not exist!", audioFile.c_str()));
   // clang-format on
-#endif
   CDvdFile dvdFile(audioFile.data());
   mRsfRem = dvdFile.GetFileSize();
   mRsfLength = mRsfRem;
@@ -122,18 +118,11 @@ const bool CRSFAudio::IsFullyLoaded() const {
   return !mDvdRequests.empty() ? mDvdRequests.back()->IsComplete() : true;
 }
 
-#if RSTL_CORRUPTION
 void CRSFAudio::Play() {
   RS_VERIFY_THROW(156, IsFullyLoaded(), false,
                   "Trying to play RSF Audio before it's fully loaded!");
   RS_VERIFY_THROW(157, !sPlayingAudio || sPlayingAudio == this, false,
                   "Trying to play two RSF Audios in a row!");
-#else
-void CRSFAudio::Play() {
-#if IS_TARGET_PC
-  const metaforce::AudioLockGuard lock;
-#endif
-#endif
   if (sPlayingAudio == this) {
     return;
   }
@@ -146,12 +135,10 @@ void CRSFAudio::Play() {
   mCurSamp = 0;
   g72x_init_state(&mLeftState);
   g72x_init_state(&mRightState);
-#if !RSTL_CORRUPTION
 #if IS_TARGET_PC
   mAudioPhase = 0;
   mAudioPairRead = 2;
   mAudioPrimed = false;
-#endif
 #endif
   sPlayingAudio = this;
   CAIInterruptManager::RunDMACallback(MixCallback);
@@ -167,13 +154,7 @@ void CRSFAudio::Stop() {
   }
 }
 
-#if RSTL_CORRUPTION
 void CRSFAudio::MixCallback() { sPlayingAudio->DoMix(); }
-#else
-void CRSFAudio::MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
-  sPlayingAudio->DoMix(IF_TARGET_PC(output, frames, rate, channels));
-}
-#endif
 
 void CRSFAudio::DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
 #if IS_TARGET_PC
@@ -414,10 +395,8 @@ void CRSFAudio::DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, 
 }
 
 void CRSFAudio::SetVolume(uchar vol) {
-#if !RSTL_CORRUPTION
 #if IS_TARGET_PC
   const metaforce::AudioLockGuard lock;
-#endif
 #endif
   if (static_cast< uchar >(vol) > 127) {
     vol = 127;

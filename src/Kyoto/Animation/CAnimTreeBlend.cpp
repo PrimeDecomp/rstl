@@ -72,21 +72,17 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 
   IncAdvancementDepth();
   SAdvancementResults resA = mA->AdvanceView(time);
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasA = resA.GetAdvancementDeltas();
 #endif
 #endif
-#endif
   SAdvancementResults resB = mB->AdvanceView(time);
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasB = resB.GetAdvancementDeltas();
-#endif
 #endif
 #endif
   DecAdvancementDepth();

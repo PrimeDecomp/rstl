@@ -21,11 +21,9 @@
 #include "Kyoto/Math/CTransform4f.hpp"
 #endif
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 template < class T >
 static inline T& GetOutputNode(T* list, uint idx) { return list[idx]; }
-#endif
 #endif
 
 template < class T >

@@ -40,12 +40,10 @@ public:
 #endif
 
   const CQuaternion& Orientation() const { return mRotation; }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   CVector3f& Offset() { return mOffset; }
 #endif
 
-#endif
   const CVector3f& Offset() const { return mOffset; }
 #if !RSTL_PRIME1
   const CVector3f& Scale() const { return mScale; }

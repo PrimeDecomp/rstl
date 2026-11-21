@@ -16,10 +16,8 @@
 #include "rstl/rc_ptr.hpp"
 #include "rstl/set.hpp"
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "rstl/string.hpp"
-#endif
 #endif
 
 #if !RSTL_CORRUPTION

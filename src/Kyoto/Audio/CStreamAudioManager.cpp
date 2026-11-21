@@ -3,11 +3,9 @@
 #include "rstl/RstlVersions.h"
 #endif
 #include "Kyoto/Audio/CStreamAudioManager.hpp"
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #include "stdio.h"
-#endif
 #endif
 
 #if !RSTL_CORRUPTION
@@ -184,16 +182,10 @@ void CStreamAudioManager::FadeInSoftwareAudio(CStreamAudioManager::ESoftwareChan
   SDSPStreamCacheEntry& p = s_Players[chan];
   if (p.mPlayState == 2)
     return;
-#if RSTL_CORRUPTION
   if (p.mPlayState == 0) {
     RS_DEBUGGER_WARNING("Streamed Audio: Trying to fade in a stopped channel!\n");
-#else
-  if (p.mPlayState == 0)
-#endif
     return;
-#if RSTL_CORRUPTION
   }
-#endif
   p.mFadeIn = fadeTime;
   p.mPlayState = 1;
 }

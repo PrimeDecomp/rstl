@@ -89,14 +89,12 @@ private:
   void AddStringFragment(const wchar_t* str, int len);
   int WrapOneLTR(const wchar_t* str, int len);
   void MoveWordLTR();
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   bool ShouldWrapImage(const CFontImageDef& image) const;
 #endif
 #endif
 
-#endif
   void StartNewLine();
   void StartNewWord();
 // TODO: verify that this Prime/Echoes difference is real

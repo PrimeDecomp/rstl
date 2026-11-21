@@ -34,12 +34,10 @@ public:
   rstl::ncrc_ptr< CAnimTreeNode >
   VGetAnimationTree(const CAnimSysContext& animSys,
                     const CMetaAnimTreeBuildOrders& orders) const override;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   void WriteAnimData(COutputStream& out) const override;
 
   explicit CMetaAnimPlay(CInputStream& in) : mPrimitive(in), mStartTime(in) {}
-#endif
 #endif
 
 private:

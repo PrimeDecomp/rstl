@@ -165,7 +165,6 @@ private:
   mutable rstl::vector< SShader > mMatSets;
 #endif
   rstl::single_ptr< CCubeModel > mModelInstance;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   mutable short mCurrentMatxIdx;
   mutable short mLastMaterialFrame;
@@ -173,7 +172,6 @@ private:
   mutable CModel* mNext;
 #endif
 
-#endif
   mutable uint mLastFrame;
 #if !RSTL_PRIME1
   mutable uint mCurrentMatxIdx : 16;

@@ -103,12 +103,10 @@ static void SetupAlphaMaskVtxDesc(uint vtxDesc);
 
 static const float gkEpsilon32 = FLT_EPSILON;
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 static CVector3f sPlayerPosition(0.f, 0.f, 0.f);
 #endif
 
-#endif
 CVector3f CCubeMaterial::sViewingFrom(0.f, 0.f, 0.f);
 #if RSTL_CORRUPTION
 static CVector3f sPlayerPosition(CVector3f::Zero());
@@ -120,7 +118,6 @@ static CVector3f sPlayerPosition(CVector3f::Zero());
 static CTransform4f sTextureProjectionTransform(CTransform4f::Identity());
 #endif
 int sLastMaterialUnique = -1;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 static int sMaterialCachedState = 0;
 const CCubeModel* CCubeMaterial::sLastModelCached = nullptr;
@@ -130,7 +127,6 @@ static float sReflectionAlpha = 0.f;
 static float sLastTime = 0.f;
 #endif
 
-#endif
 static float sThrobX = 1.f;
 static float sThrobY = 1.f;
 static int sReflectionStage = -1;
@@ -2586,13 +2582,11 @@ uint CCubeMaterial::HandleReflection(const GXTexMapID indTexSlot, const int indM
   CGX::SetTevColorIn(finalTevCount, GX_CC_ZERO, colorArg, GX_CC_TEXC, GX_CC_CPREV);
   CGX::SetTevAlphaIn(finalTevCount, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
   CGX::SetStandardTevColorAlphaOp(finalTevCount);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   finalACFlags = 0;
   finalCCFlags = 0;
 #endif
 
-#endif
   CGX::SetTevOrder(finalTevCount, texCoord, texMap, GX_COLOR_NULL);
   return out + 1;
 }
@@ -2695,12 +2689,10 @@ void CCubeMaterial::SetCurrentBlack() const {
   CGX::SetNumChans(0);
   CGX::SetNumTexGens(1);
   CGX::SetNumIndStages(0);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   DEBUG_TOOLS_CALL(ApplyMaterialDebug(1));
 #endif
 
-#endif
 }
 
 static uint HandleColorChannels(uint chanCount, uint firstChan) {
@@ -3081,13 +3073,11 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 
 #endif
   if (reflection) {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
     sLastMaterialCached = materialDataCur.bytes;
     sRenderingModel = &model;
 #endif
 
-#endif
     EnsureViewDepStateCached((matFlags & kStateFlag_ReflectionSurfaceEye) != 0 ? &surface
                                                                                : nullptr);
 #if !RSTL_PRIME1
@@ -3096,12 +3086,10 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 #endif
 
   }
-#if !RSTL_CORRUPTION
 
 #if RSTL_PRIME1
   sRenderingModel = &model;
   sLastMaterialCached = GetData();
-#endif
 #endif
 
   if ((flags.GetOtherFlags() & CModelFlags::kF_NoTextureLock) == 0) {
@@ -3226,10 +3214,8 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 
 #endif
     SetupBlendMode(blendFactors, flags, (matFlags & kStateFlag_AlphaTest) != 0);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   }
-#endif
 #endif
 
 #if RSTL_CORRUPTION
@@ -3272,11 +3258,9 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
   materialDataCur.words += chanCount + 1;
 #endif
   const uint finalNumColorChans = HandleColorChannels(chanCount, firstChan);
-#if !RSTL_CORRUPTION
 
 #if RSTL_PRIME1
   uint matTevCount;
-#endif
 #endif
 
   uint firstTev = 0;
@@ -3440,12 +3424,10 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 #endif
 
       texCount += 1;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       finalTevCount += addedTevs;
 #endif
 
-#endif
       finalKColorCount += 1;
 #if RSTL_CORRUPTION
     } else if (finalTevCount != 0 &&

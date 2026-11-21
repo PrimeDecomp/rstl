@@ -50,7 +50,6 @@
 #include "dolphin/types.h"
 #endif
 
-#if !RSTL_CORRUPTION
 #if defined(TARGET_PC)
 #include "Metaforce/Game/CModelSectionReader.hpp"
 #include <borealis/log.hpp>
@@ -59,7 +58,6 @@
 namespace {
 constexpr borealis::Log Log{"CModel"};
 } // namespace
-#endif
 #endif
 
 static bool sIsTextureTimeoutEnabled = true;
@@ -189,13 +187,11 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
 : mData(data.release())
 , mDataLen(length)
 , mModelInstance(nullptr)
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 , mCurrentMatxIdx(0)
 , mLastMaterialFrame(0)
 , mPrev(nullptr)
 , mNext(sThisFrameList)
-#endif
 #endif
 , mLastFrame(CGraphics::GetFrameCounter() - 2)
 #if RSTL_CORRUPTION
@@ -396,10 +392,8 @@ CModel::CModel(const rstl::auto_ptr< uchar >& data, int length, IObjectStore& st
 }
 
 CModel::~CModel() {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   RemoveFromList();
-#endif
 #endif
   RemoveFromTotal(mDataLen);
   const int frame = CGraphics::GetFrameCounter();

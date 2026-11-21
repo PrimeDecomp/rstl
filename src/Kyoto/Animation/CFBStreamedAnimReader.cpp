@@ -555,12 +555,10 @@ CFBStreamedAnimReader::CFBStreamedAnimReader(
 , mBitLoader(mInput)
 , mSegIdToIndex(mTotals.Prior()) {
   PostConstruct(time);
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(sizeof(CFBStreamedAnimReader),
                                          CCharAnimMemoryMetrics::kASS_Two);
-#endif
 #endif
 }
 
@@ -743,11 +741,9 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
 void CFBStreamedAnimReader::VSetPhase(float phase) {
   mCurTime = CCharAnimTime(phase * mSteadyStateInfo.GetDuration().GetSeconds());
   SetReadTime(mCurTime);
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mSource->HasPOIData()) {
-#endif
 #endif
     UpdatePOIStates();
     if (!mCurTime.GreaterThanZero()) {
@@ -762,11 +758,9 @@ void CFBStreamedAnimReader::VSetPhase(float phase) {
     mPassedAssetCount = 0;
 #endif
     }
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   }
-#endif
 #endif
 }
 

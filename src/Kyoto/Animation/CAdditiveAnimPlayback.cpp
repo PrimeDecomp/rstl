@@ -77,7 +77,6 @@ void CAdditiveAnimPlayback::Update(float dt) {
     }
   }
 }
-#if !RSTL_CORRUPTION
 
 #if RSTL_PRIME1
 void CAdditiveAnimPlayback::AddToSegStatementSet(const CSegIdList& list,
@@ -94,5 +93,4 @@ void CAdditiveAnimPlayback::AddToSegStatementSet(const CSegIdList& list,
 
   set.Add(list, charInfo, stackSegSet, mCurWeight);
 }
-#endif
 #endif

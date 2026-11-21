@@ -17,11 +17,9 @@ public:
                  const rstl::ncrc_ptr< CAnimTreeNode >& b, float weight, const rstl::string& name)
   : CAnimTreeTweenBase(characterSpaceBlend, a, b, kBlendRoot_Offset | kBlendRoot_Rotation, name)
   , mBlendWeight(weight) {}
-#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 
   // IAnimReader
-#endif
 #endif
 
   ~CAnimTreeBlend() override {}

@@ -62,9 +62,7 @@ CAnimFormatUnion::~CAnimFormatUnion() {
 #endif
     break;
   default:
-#if RSTL_CORRUPTION
     RS_VERIFY_THROW(31, false, kException_UnknownType, "Unknown type");
-#endif
     break;
   }
 }
@@ -100,9 +98,7 @@ void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream&
     new (ptr) CFBStreamedCompression(in, store);
     break;
   default:
-#if RSTL_CORRUPTION
     RS_VERIFY_THROW(54, false, kException_UnknownType, "Unknown type");
-#endif
     break;
   }
 }

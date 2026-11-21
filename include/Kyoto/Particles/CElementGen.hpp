@@ -45,14 +45,12 @@ RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CMatrix3f)
 class CGenDescription;
 class CModVectorElement;
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #ifdef __MWERKS__
 #pragma cpp_extensions on
 #endif
 #endif
 
-#endif
 class CElementGen : public CParticleGen {
 public:
 #if RSTL_CORRUPTION
@@ -268,12 +266,10 @@ public:
   virtual CLight GetLight() const override;
   virtual void DestroyParticles() override;
   virtual uint Get4CharId() const override;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   void SetZTest(bool enabled) { mZTest = enabled; }
   rstl::vector< CParticle >& Particles() { return mParticles; }
   const rstl::vector< CParticle >& GetParticles() const { return mParticles; }
-#endif
 #endif
 
   void EndLifetime();
@@ -439,20 +435,16 @@ public:
 
   static void Initialize();
   static void ShutDown();
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   static int GetParticleAliveCount() { return mParticleAliveCount; }
-#endif
 #endif
 
   void SetGlobalOrientAndTrans(const CTransform4f& xf);
   void SetLeaveLightsEnabledForModelRender(bool b) { mModelsUseLights = b; }
 
   static void SetSubtractBlend(bool subtract) { sSubtractBlend = subtract; }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   static void SetMoveRedToAlphaBuffer(const bool move) { sMoveRedToAlphaBuffer = move; }
-#endif
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -468,12 +460,10 @@ public:
   CGenDescription* mLoadedGenDesc;
   EModelOrientationType mOrientType;
   rstl::vector< CParticle > mParticles;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   rstl::vector< CVector3f > x40;
 #endif
 
-#endif
   rstl::vector< CMatrix3f > mParentMatrices;
   rstl::vector< CAdvancedValues > mAdvValues;
   int mInternalStartFrame;
@@ -578,10 +568,8 @@ public:
   float mLSLA;
   CColor mModuColor;
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   static double kTickTime;
-#endif
 #endif
   static bool sSubtractBlend;
   // Guessed names, correlated with Prime's seed and live-system accounting.

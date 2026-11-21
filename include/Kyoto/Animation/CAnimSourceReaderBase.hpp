@@ -137,11 +137,9 @@ public:
 
   void PostConstruct(const CCharAnimTime& time);
   void UpdatePOIStates();
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   const IAnimSourceInfo& AnimSource() const { return *mSourceInfo; }
   const CCharAnimTime& GetCurTime() const { return mCurTime; }
-#endif
 #endif
 
 protected:

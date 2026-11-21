@@ -511,7 +511,6 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
           mQueuedFont = -1;
         }
       }
-#if !RSTL_CORRUPTION
 #if RSTL_VERSION < RSTL_GM8P_00
       if (mQueuedPalette != -1) {
         mPalettes[mQueuedPalette]->Load();
@@ -519,7 +518,6 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
       }
 #endif
 
-#endif
       short x = in.Get< short >();
       short y = in.Get< short >();
       short chr = in.Get< short >();
@@ -675,13 +673,11 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
 
         GXPosition3f32(x + width, 0.f, y);
         GXTexCoord2f32(0.5f + cropXHalf, 0.5f + cropYHalf);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
         GXPosition3f32(x, 0.f, y + height);
         GXTexCoord2f32(0.5f - cropXHalf, 0.5f - cropYHalf);
 #endif
 
-#endif
         GXPosition3f32(x + width, 0.f, y + height);
         GXTexCoord2f32(0.5f + cropXHalf, 0.5f - cropYHalf);
         CGX::End();

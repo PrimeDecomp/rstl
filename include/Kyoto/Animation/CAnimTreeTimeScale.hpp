@@ -18,11 +18,7 @@ public:
   CAnimTreeTimeScale(const rstl::ncrc_ptr< CAnimTreeNode >& node, float scale,
                      const rstl::string& name)
   : CAnimTreeSingleChild(node, name)
-#if RSTL_CORRUPTION
   , mTimeScale(rs_new_line_in("CAnimTreeTimeScale.h", 61) CConstantAnimationTimeScale(scale))
-#else
-  , mTimeScale(rs_new CConstantAnimationTimeScale(scale))
-#endif
   , mCurAccelTime(0.f)
   , mTargetAccelTime(CCharAnimTime::Infinity())
   , mInitialTime(CCharAnimTime::ZeroFlat()) {}

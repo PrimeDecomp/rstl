@@ -416,12 +416,10 @@ public:
   class const_iterator {
   public:
     const_iterator(const T* ptr, int count) : mPtr(ptr), mCount(count) {}
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
     const_iterator(const const_iterator& other) : mPtr(other.mPtr), mCount(other.mCount) {}
 #endif
 
-#endif
     const_iterator& operator++() {
       --mCount;
 // TODO: verify that this Prime/Echoes difference is real
@@ -537,11 +535,9 @@ public:
 #endif
     }
   }
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static uint LoadUint32(CInputStream& in) { return in.Get< uint >(); }
-#endif
 #endif
   static uint Uint32sForBitCount(uint bits) { return bits % 32 == 0 ? bits / 32 : bits / 32 + 1; }
 
@@ -674,10 +670,8 @@ private:
   float mAverageVelocity;
   CVector3f mRootOffset;
 };
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 CHECK_SIZEOF(CFBStreamedCompression, 0x20)
-#endif
 #endif
 
 #endif // _CFBSTREAMEDCOMPRESSION

@@ -38,7 +38,6 @@
 #include "rstl/optional_object.hpp"
 #endif
 
-#if !RSTL_CORRUPTION
 #if IS_TARGET_PC
 #define GET_POSITION_VIEW(ptr) GetPositionView(ptr)
 #define GET_NORMAL_VIEW(ptr) GetNormalView(ptr)
@@ -46,16 +45,13 @@
 #define GET_POSITION_VIEW(ptr) (ptr)
 #define GET_NORMAL_VIEW(ptr) (ptr)
 #endif
-#endif
 
-#if !RSTL_CORRUPTION
 #if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
 #define HAS_SKINNING_DATA_SIZE 1
 #define SKINNING_DATA_SIZE sStaticSkinningDataSize
 #else
 #define HAS_SKINNING_DATA_SIZE 0
 #define SKINNING_DATA_SIZE sizeof(sStaticSkinningData)
-#endif
 #endif
 
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;

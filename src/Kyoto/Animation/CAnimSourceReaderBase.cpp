@@ -635,10 +635,8 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
 #endif
       ++it;
     }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   }
-#endif
 #endif
   CCharAnimTime remaining = time;
   if (remaining.GreaterThanZero()) {

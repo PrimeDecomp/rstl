@@ -76,13 +76,8 @@ public:
 #endif
   static void Initialize();
   static void Shutdown();
-#if !RSTL_CORRUPTION
-  static int StartStreaming(const rstl::string& fileName, int volume, int type);
-#endif
 
-#if RSTL_CORRUPTION
   static int StartStreaming(const rstl::string& fileName, int volume, int type);
-#endif
   static void StopStreaming(int handle);
   static void UpdateVolume(int handle, int volume);
   static bool IsStreamAvailable(int handle);

@@ -38,7 +38,6 @@ protected:
   static const float kRelativeMaximum;
 
 public:
-#if !RSTL_CORRUPTION
 #if RSTL_CONTROLLER_WII
   enum EDeviceType {
     kDT_Wiimote,
@@ -56,16 +55,13 @@ public:
   };
 #endif
 
-#endif
   IController();
   virtual ~IController();
   virtual void Poll() = 0;
-#if !RSTL_CORRUPTION
 #if RSTL_CONTROLLER_WII
   virtual void Update(float dt) = 0;
 #endif
 
-#endif
   virtual uint GetDeviceCount() const = 0;
 #if RSTL_CORRUPTION
   virtual CControllerGamepadData& GetGamepadData(int controller) = 0;
@@ -105,10 +101,8 @@ public:
 
   static IController* Create(const COsContext& ctx);
 };
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 CHECK_SIZEOF(IController, 0x4)
-#endif
 #endif
 
 #if RSTL_CORRUPTION

@@ -399,9 +399,7 @@ void CTextExecuteBuffer::AddPopState() {
 #endif
 #endif
   Add(instruction);
-#if RSTL_CORRUPTION
   RS_VERIFY_THROW_DIRECT(302, !mStateStack.empty(), false, "popping a non-existant state!");
-#endif
   mState = mStateStack.front();
   mStateStack.pop_front();
   if (mCurLine->GetWidth() == 0) {
@@ -560,20 +558,13 @@ void CTextExecuteBuffer::MoveWordLTR() {
 #endif
   }
   mSpaceDistance = 0;
-#if RSTL_CORRUPTION
-  mCurLine->DecWords();
-  TerminateLineLTR(false);
-#else
   mCurLine->DecWords();
   TerminateLineLTR(
-#endif
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
       false
 #endif
   );
-#endif
   const rstl::ncrc_ptr< CInstruction > instruction =
 #if RSTL_CORRUPTION
       rs_new_line(434) CLineInstruction(1, mCurrentX, mCurrentY, mState.GetJustification(),

@@ -133,7 +133,6 @@ public:
   bool HasScale(const CSegId& seg) const;
   CVector3f GetOffset(const CSegId& seg, const CCharAnimTime& time) const;
   CQuaternion GetRotation(const CSegId& seg, const CCharAnimTime& time) const;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   bool HasPOIData() const { return !mEventData.null(); }
   const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const;
@@ -143,7 +142,6 @@ public:
   rstl::set< rstl::pair< rstl::string, int > > GetUniqueBoolPOIs() const;
 #endif
 
-#endif
   CVector3f GetOverallOffset(const CCharAnimTime& time) const {
 #if RSTL_CORRUPTION
     return GetOffset(GetPrimaryOffsetChannel(), time);
@@ -195,13 +193,11 @@ private:
   CCharAnimTime mDuration;
   CCharAnimTime mInterval;
   uint mFrameCount;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   uint x14_;
   uint x18_;
 #endif
 
-#endif
   CSegId mRoot;
 #if !RSTL_PRIME1
   rstl::vector< signed char > mSegmentChannels;

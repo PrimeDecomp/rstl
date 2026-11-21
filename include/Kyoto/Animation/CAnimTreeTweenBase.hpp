@@ -84,7 +84,6 @@ public:
   float GetBlendingWeight() const;
   bool CharacterSpaceBlend() const { return mCharacterSpaceBlend != 0; }
   int GetBlendRoot() const { return mFlags; }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   void VGetWeightedReaders(
       float w, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const override;
@@ -102,7 +101,6 @@ public:
   virtual float VGetBlendingWeight() const = 0;
 #endif
 
-#endif
   static bool ShouldCullTree();
   static void IncAdvancementDepth() { ++sAdvancementDepth; }
   static void DecAdvancementDepth() { --sAdvancementDepth; }

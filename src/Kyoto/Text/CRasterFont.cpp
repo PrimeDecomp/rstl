@@ -420,14 +420,12 @@ void CRasterFont::SetupRenderState() {
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
 }
 
-#if !RSTL_CORRUPTION
 #if RSTL_VERSION < RSTL_GM8P_00
 int CRasterFont::GetBaseLine() const { return mBaseline; }
 
 int CRasterFont::GetLineMargin() { return mLineMargin; }
 #endif
 
-#endif
 bool CRasterFont::IsFinishedLoading() { return mTexture && mTexture->IsLoaded(); }
 
 void CRasterFont::SetTexture(const TToken< CTexture >& texture) {

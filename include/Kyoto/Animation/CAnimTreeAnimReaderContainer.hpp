@@ -115,12 +115,10 @@ public:
 
 #endif
   rstl::ownership_transfer< IAnimReader > VClone() const override;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const override;
 #endif
 
-#endif
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VSimplified() override;
   void VSetPhase(float phase) override;
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,

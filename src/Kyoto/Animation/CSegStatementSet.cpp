@@ -128,7 +128,6 @@ CSegStatementSet::CSegStatementSet(void* storage)
   }
 }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
                            const CSegStatementSet& set, float weight) {
@@ -148,7 +147,6 @@ void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
 }
 #endif
 
-#endif
 CStackSegStatementSet::CStackSegStatementSet() : CSegStatementSet(AllocateSegment()) {}
 
 CStackSegStatementSet::~CStackSegStatementSet() { FreeSegment(mSegData); }

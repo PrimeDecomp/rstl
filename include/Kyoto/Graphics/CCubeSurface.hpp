@@ -13,10 +13,8 @@
 #include "Kyoto/Math/CAABox.hpp"
 #endif
 
-#if !RSTL_CORRUPTION
 #if defined(TARGET_PC)
 #include "Metaforce/Game/CModelSectionReader.hpp"
-#endif
 #endif
 
 class CCubeModel;
@@ -53,11 +51,9 @@ public:
 #endif
 #endif
     CAABox mBounds;
-#if !RSTL_CORRUPTION
 #if defined(TARGET_PC)
     const void* displayList;
     uint headerSize;
-#endif
 #endif
   };
 

@@ -147,11 +147,9 @@ public:
 
 #endif
   const int GetSwooshCount() const { return mSwooshes.size(); }
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetCurParticle() const { return mCurParticle; }
-#endif
 #endif
   const rstl::vector< SSwooshData >& GetSwooshes() const { return mSwooshes; }
 

@@ -64,10 +64,8 @@ private:
 #endif
 };
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 CHECK_SIZEOF(CVertexMorphEffect, 0x48)
-#endif
 #endif
 
 #endif // _CVERTEXMORPHEFFECT

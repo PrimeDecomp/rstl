@@ -24,12 +24,10 @@ SAdvancementResults IAnimReader::VGetAdvancementResults(const CCharAnimTime& tim
   return SAdvancementResults::RemainderOnly(time);
 }
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 ;
 #endif
 
-#endif
 uint IAnimReader::GetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
 #if RSTL_CORRUPTION
                                  uint iterator, const CSegIdMaskMap& mask) const {

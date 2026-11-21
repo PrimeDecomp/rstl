@@ -81,12 +81,10 @@ public:
 
   const CSegIdList& GetBodyPartSegIds() const { return mSegIdList; }
 // TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   const CVector3f& GetReferenceStanceOffset(const CSegId& id) const {
     return id != CSegId::Root() ? GetSegmentData(id).GetReferenceStanceOffset() : CVector3f::Zero();
   }
-#endif
 #endif
   CSegId GetOriginalParent(const CSegId& seg) const { return GetSegmentData(seg).GetParent(); }
 #if RSTL_CORRUPTION

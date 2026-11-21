@@ -11,14 +11,9 @@
 #endif
 #include "rstl/construct.hpp"
 
-#if !RSTL_CORRUPTION
-class CInputStream;
-#endif
 
-#if RSTL_CORRUPTION
 
 class CInputStream;
-#endif
 class CPASParmInfo {
 public:
   enum EWeightFunction {

@@ -16,14 +16,9 @@
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 
-#if !RSTL_CORRUPTION
-class CInputStream;
-#endif
 
-#if RSTL_CORRUPTION
 
 class CInputStream;
-#endif
 class CSimplePool;
 class CSpawnSystemKeyframeData {
 public:

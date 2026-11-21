@@ -4,20 +4,12 @@
 #endif
 #include "Kyoto/Animation/CAnimTreeAnimReaderContainer.hpp"
 
-#if !RSTL_CORRUPTION
 SAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTime& time) {
-#endif
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-
-SAdvancementResults CAnimTreeAnimReaderContainer::VAdvanceView(const CCharAnimTime& time) {
-  return mReader->VAdvanceView(time);
-#else
 #if RSTL_PRIME1
   return mReader->AdvanceView(time);
 #else
   return mReader->VAdvanceView(time);
-#endif
 #endif
 }
 

@@ -31,10 +31,8 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
       static_cast< CFBStreamedCompressionTimeHeader* >(cursor);
   new (timeHeader) CFBStreamedCompressionTimeHeader(in);
   cursor = const_cast< void* >(timeHeader->AfterEnd());
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   in.Get< uint >();
-#endif
 #endif
   CFBStreamedPerChannelHeaderList* channels =
       static_cast< CFBStreamedPerChannelHeaderList* >(cursor);

@@ -98,11 +98,7 @@ uint RotationAndOffsetStorage::DataSizeInBytes(uint rotationsPerFrame, uint offs
 }
 
 RotationAndOffsetStorage::RotationAndOffsetStorage(const CRotationAndOffsetVectors& vectors,
-#if RSTL_CORRUPTION
-                                                   uint numFrames)
-#else
                                                    RSTL_PRIME1_CONST uint numFrames)
-#endif
 : mStorage(GetRotationsAndOffsets(vectors.mRotations, vectors.mOffsets, numFrames))
 , mNumFrames(numFrames)
 , mRotationsPerFrame(vectors.mRotations.size() / numFrames)
@@ -155,11 +151,9 @@ uint RotationAndOffsetStorage::GetFrameSizeInBytes() const {
   return mRotationsPerFrame * sizeof(CQuaternion) + mOffsetsPerFrame * sizeof(CVector3f);
 }
 
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 inline
-#endif
 #endif
 RotationAndOffsetStorage::CRotationAndOffsetVectors::CRotationAndOffsetVectors(CInputStream& in)
 : mRotations(in), mOffsets(in) {}
@@ -312,10 +306,8 @@ CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTim
 #endif
 #endif
     channel = mOffsetChannels[channel];
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
     const uint nextFrame = frame == mFrameCount - 1 ? 0 : frame + 1;
-#endif
 #endif
     const CVector3f& a = mStorage.GetOffset(channel, frame);
     const CVector3f& b = mStorage.GetOffset(channel, nextFrame);

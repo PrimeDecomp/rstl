@@ -23,11 +23,9 @@
 #include "rstl/optional_object.hpp"
 #endif
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 const int CAnimTreeTweenBase::kBlendRoot_Offset = 1;
 const int CAnimTreeTweenBase::kBlendRoot_Rotation = 2;
-#endif
 #endif
 
 s32 CAnimTreeTweenBase::sAdvancementDepth = 0;
@@ -39,15 +37,8 @@ CAnimTreeTweenBase::CAnimTreeTweenBase(bool characterSpaceBlend,
 : CAnimTreeDoubleChild(a, b, name)
 , mFlags(flags)
 , mCharacterSpaceBlend(characterSpaceBlend)
-#if RSTL_CORRUPTION
-, mCullSelector(0) {}
-#else
 , mCullSelector(0) {
-#endif
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-CAnimTreeTweenBase::~CAnimTreeTweenBase() {}
-#else
 #if RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
@@ -59,7 +50,6 @@ CAnimTreeTweenBase::~CAnimTreeTweenBase() {
   CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
-#endif
 
 bool CAnimTreeTweenBase::VHasOffset(const CSegId& seg) const {
   return mA->VHasOffset(seg) && mB->VHasOffset(seg);

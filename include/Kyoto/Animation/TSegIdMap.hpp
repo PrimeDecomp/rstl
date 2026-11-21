@@ -19,11 +19,9 @@
 template < typename T >
 class TSegIdMap {
 public:
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
   inline
-#endif
 #endif
   TSegIdMap(uchar count);
 
@@ -200,10 +198,8 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 
 template < typename T >
 TSegIdMap< T >::~TSegIdMap() {
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   const rstl::pair< char, char >* const links = mIndirectionMap.data();
-#endif
 #endif
   CSegId id(mCurPrevBone);
   while (id != CSegId::Null()) {
@@ -247,11 +243,9 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   ++mBoneCount;
 }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 typedef TSegIdMap< uchar > unk_TSegIdMap;
 CHECK_SIZEOF(unk_TSegIdMap, 0xd8)
-#endif
 #endif
 
 #endif // MP1_TSEGIDMAP_HPP

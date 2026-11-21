@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_CORRUPTION
 #define RSTL_INLINE_SWAP
-#endif
 #include "Kyoto/Particles/CElementGen.hpp"
 #if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
@@ -72,7 +70,6 @@
 #endif
 #include "dolphin/gx.h"
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #ifdef __MWERKS__
 #define frsqrte(x) static_cast< float >(__frsqrte(x))
@@ -84,7 +81,6 @@ extern "C" float frsqrte(float);
 #define INVERSE_SQRT(x) frsqrte(x)
 #else // RSTL_PRIME1
 #define INVERSE_SQRT(x) CMath::FastInvSqrtF(x)
-#endif
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -1358,10 +1354,8 @@ void CElementGen::UpdateExistingParticles() {
                                &first.mLineLengthOrSize, &first.mLineWidthOrRota);
 #endif
       }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       ++it;
-#endif
 #endif
     }
   }
@@ -2135,11 +2129,9 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
 #endif
 #endif
       }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       sSeed = backupSeed + i;
       mActivePartChildren.push_back(ConstructChildParticleSystem(kssmToken));
-#endif
 #endif
     }
     sSeed = backupSeed;
@@ -3076,10 +3068,8 @@ void CElementGen::RenderParticles() {
 #endif
   } else {
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvPassthru);
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
     CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
-#endif
 #endif
   }
 
@@ -3231,10 +3221,8 @@ void CElementGen::RenderParticles() {
 #endif
 
   bool SORT = mLoadedGenDesc->mSORT;
-#if !RSTL_CORRUPTION
 #if !RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleListItem* sortItems = nullptr;
-#endif
 #endif
 
   if (SORT) {
@@ -3479,11 +3467,9 @@ void CElementGen::RenderParticles() {
 
 #endif
       float canBeNormEps = FLT_EPSILON;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       CVector3f dir = CVector3f::Zero();
       CVector3f right = CVector3f::Zero();
-#endif
 #endif
 
       for (int i = 0; i < particleCount; ++i) {
@@ -3501,12 +3487,10 @@ void CElementGen::RenderParticles() {
 
         CVector3f pos =
             (particle->mPos - particle->mPrevPos) * mTimeDeltaScale + particle->mPrevPos;
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
         uint color = particle->mColor.GetColor_u32();
 #endif
 
-#endif
         float rota = mLoadedGenDesc->mROTA == nullptr ? 1.f : particle->mLineWidthOrRota;
         float velMagSq = particle->mVel.MagSquared();
 
@@ -4081,13 +4065,11 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       if (particle.mEndFrame == -1) {
         continue;
       }
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       // ?
       sortItems[activeCount].mViewPoint = systemCameraCopy * particle.mPos;
 
       // TODO: this should be the constructor
-#endif
 #endif
       sortItems[activeCount].mViewPoint =
           systemCameraCopy * ((particle.mPos - particle.mPrevPos) * timeDelta + particle.mPrevPos);
@@ -6322,12 +6304,10 @@ rstl::optional_object< CAABox > CElementGen::GetBounds() const {
   return rstl::optional_object< CAABox >(mSystemBounds);
 }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 int CElementGen::GetEmitterTime() const { return mCurFrame; }
 #endif
 
-#endif
 bool CElementGen::SystemHasLight() const { return mLightType != kLT_None; }
 
 CLight CElementGen::GetLight() const {

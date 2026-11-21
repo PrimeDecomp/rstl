@@ -10,13 +10,10 @@
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 #endif
 #include "Kyoto/Streams/COutputStream.hpp"
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "string.h"
 #endif
-#endif
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 bool CPreAdvanceIndicator::IsTime() const { return mIsTime; }
 
@@ -25,7 +22,6 @@ const CCharAnimTime& CPreAdvanceIndicator::GetTime() const { return mTime; }
 bool CPreAdvanceIndicator::IsString() const { return !IsTime(); }
 
 const char* CPreAdvanceIndicator::GetString() const { return mString; }
-#endif
 #endif
 
 CMetaAnimTreeBuildOrders CMetaAnimTreeBuildOrders::NoSpecialOrders() {

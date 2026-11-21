@@ -111,11 +111,9 @@ inline TAverage< T >::TAverage(int capacity, const T& value) {
 }
 
 template < typename T >
-#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 inline
-#endif
 #endif
 void TAverage< T >::AddValue(const T& value) {
 #if RSTL_CORRUPTION

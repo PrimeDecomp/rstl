@@ -77,7 +77,6 @@ public:
 
   bool IsFirstWordOnLine() const { return mLineInitialized; }
   void SetFirstWordOnLine(bool v) { mLineInitialized = v; }
-#if !RSTL_CORRUPTION
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -87,7 +86,6 @@ public:
   void AddX(const int x) { mCurX += x; }
 
   void SubY(const int y) { mCurY -= y; }
-#endif
 #endif
 
   int GetSpacing(const int value) const {

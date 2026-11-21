@@ -103,13 +103,11 @@ bool CPASDatabase::HasState(int id) const {
 const CPASAnimState* CPASDatabase::GetAnimState(int id) const {
   return rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(id)).get_pointer();
 }
-#if !RSTL_CORRUPTION
 
 #if RSTL_PRIME1
 const CPASAnimState* CPASDatabase::GetAnimStateByIndex(int index) const {
   return &mStates[index];
 }
-#endif
 #endif
 
 void CPASDatabase::SetDefaultState(int state) { mDefaultState = state; }

@@ -11,7 +11,6 @@
 #endif
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "rstl/vector.hpp"
 
@@ -20,11 +19,9 @@ class CInt32POINode;
 class CParticlePOINode;
 class CSoundPOINode;
 #endif
-#endif
 
 class IAnimSourceInfo {
 public:
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   virtual bool HasPOIData() const = 0;
   virtual const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const = 0;
@@ -33,7 +30,6 @@ public:
   virtual const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const = 0;
 #endif
 
-#endif
   virtual CCharAnimTime GetAnimationDuration() const = 0;
 #if !RSTL_PRIME1
   // Guessed name: tests whether the source has scale keys.

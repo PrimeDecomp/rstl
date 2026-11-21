@@ -84,12 +84,10 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , mRandState(sSeed++)
 , mSSEG(8)
 , mSCNT(1)
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 , x158_(0)
 #endif
 
-#endif
 , mGenRem(0.f)
 #if !RSTL_PRIME1
 , mGeneratorRate(1.f)

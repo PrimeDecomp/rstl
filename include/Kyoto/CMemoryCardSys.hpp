@@ -25,9 +25,6 @@
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
 
-#if !RSTL_CORRUPTION
-#define RSTL_CARD_SAVE_BLOCKS (RSTL_VERSION >= RSTL_GM8P_00)
-#endif
 
 #if !RSTL_CORRUPTION
 #if !RSTL_CARD_SAVE_BLOCKS

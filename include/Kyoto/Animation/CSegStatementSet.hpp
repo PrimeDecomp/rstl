@@ -58,11 +58,9 @@ inline CSegStatementSet::~CSegStatementSet() {}
 class CStackSegStatementSet : public CSegStatementSet {
 public:
   CStackSegStatementSet();
-#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 
   // CSegStatementSet
-#endif
 #endif
 
   ~CStackSegStatementSet() override;

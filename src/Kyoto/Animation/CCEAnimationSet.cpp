@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_CORRUPTION
 #define RS_TTOKEN_FILE "TToken.H"
 
-#endif
 #include "Kyoto/Animation/CCEAnimationSet.hpp"
 
 #if RSTL_CORRUPTION

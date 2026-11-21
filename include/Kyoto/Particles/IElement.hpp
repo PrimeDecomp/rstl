@@ -25,12 +25,10 @@ public:
       return sCurrentChunk ? sCurrentChunk->GetAllocatedSize() : 0;
     }
 
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   private:
 #endif
 
-#endif
     static CElementAllocationChunk* sCurrentChunk;
     static CElementAllocationChunk* sFreeChunk;
   };

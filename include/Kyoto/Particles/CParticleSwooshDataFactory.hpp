@@ -8,29 +8,19 @@
 #endif
 #include "Kyoto/CFactoryMgr.hpp"
 
-#if !RSTL_CORRUPTION
-class CInputStream;
-#endif
 
-#if RSTL_CORRUPTION
 
 class CInputStream;
-#endif
 class CSimplePool;
 class CSwooshDescription;
 
 class CParticleSwooshDataFactory {
 public:
   static CSwooshDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool);
-#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 private:
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-private:
-#endif
   static CSwooshDescription* CreateGeneratorDescription(CInputStream& in, CSimplePool* pool);
   static bool CreateWPSM(CSwooshDescription* desc, CInputStream& in, CSimplePool* pool);
 };
