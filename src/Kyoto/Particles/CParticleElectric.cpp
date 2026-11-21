@@ -4,6 +4,7 @@
 #include "rstl/macros.hpp"
 #include "rstl/list.hpp" // IWYU pragma: keep
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
 
 #include "Kyoto/Basics/CStopwatch.hpp"

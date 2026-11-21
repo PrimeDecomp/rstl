@@ -3,6 +3,7 @@
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #endif
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CVirtualBone.hpp"
 #if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CGraphics.hpp"
@@ -10,7 +11,6 @@
 #endif
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 

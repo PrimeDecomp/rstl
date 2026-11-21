@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Graphics/CMoviePlayer.hpp"
 #include "rstl/macros.hpp"
 

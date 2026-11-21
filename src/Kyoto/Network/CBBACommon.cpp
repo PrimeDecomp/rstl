@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Network/CBBASupport.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"

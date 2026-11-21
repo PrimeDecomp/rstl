@@ -4,10 +4,11 @@
 #else
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #endif
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
 #if !RSTL_CORRUPTION

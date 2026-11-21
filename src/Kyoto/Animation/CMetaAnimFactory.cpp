@@ -2,6 +2,7 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CMetaAnimFactory.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/CMetaAnimBlend.hpp"

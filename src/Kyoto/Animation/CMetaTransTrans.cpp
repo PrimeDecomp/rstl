@@ -2,6 +2,7 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CMetaTransTrans.hpp"
 #include "Kyoto/Animation/CAnimTreeTransition.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"

@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CBurstFireDataFactory.hpp"
 
 #include "Kyoto/CRandom16.hpp"

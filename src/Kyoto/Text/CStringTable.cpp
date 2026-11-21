@@ -5,10 +5,10 @@
 #else
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CStringTable.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #else
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CResFactory.hpp"

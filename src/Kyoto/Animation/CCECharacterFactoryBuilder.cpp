@@ -1,5 +1,6 @@
 #define RS_TTOKEN_FILE "TToken.H"
 
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCECharacterFactoryBuilder.hpp"
 
 #include "Kyoto/Animation/CCEAnimationSet.hpp"

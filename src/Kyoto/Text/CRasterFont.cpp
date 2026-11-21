@@ -4,13 +4,14 @@
 #else
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
 #endif
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #else
 #include "Kyoto/CFactoryFnReturn.hpp"
 #endif

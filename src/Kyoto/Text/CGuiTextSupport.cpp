@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CGuiTextSupport.hpp"
 
 #if RSTL_CORRUPTION

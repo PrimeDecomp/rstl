@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Audio/CAudioSample.hpp"
 
 #include "Kyoto/Audio/CAudioManager.hpp"

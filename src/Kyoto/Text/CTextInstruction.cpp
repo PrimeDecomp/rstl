@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CTextInstruction.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CBlockInstruction.hpp"

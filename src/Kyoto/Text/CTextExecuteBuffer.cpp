@@ -3,6 +3,7 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 

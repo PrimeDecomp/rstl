@@ -2,14 +2,13 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CFont.hpp"
 #if !RSTL_CORRUPTION
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 #include "Kyoto/Graphics/CGraphics.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Graphics/CGX.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #include "dolphin/os.h"
 #else
 #include "Kyoto/Graphics/CTexture.hpp"

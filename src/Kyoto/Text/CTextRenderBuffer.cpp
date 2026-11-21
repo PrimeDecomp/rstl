@@ -2,6 +2,7 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CGX.hpp"

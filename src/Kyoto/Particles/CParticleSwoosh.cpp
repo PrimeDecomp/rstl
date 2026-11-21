@@ -2,10 +2,10 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #endif
 #include "Kyoto/Basics/CStopwatch.hpp"
 

@@ -1,8 +1,8 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Math/CSpline.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 
 

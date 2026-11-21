@@ -2,6 +2,8 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CAnimSource.hpp"
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
@@ -22,7 +24,6 @@
 #endif
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Basics/CBasics.hpp"

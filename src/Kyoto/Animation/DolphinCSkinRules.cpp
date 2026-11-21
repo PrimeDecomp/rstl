@@ -1,8 +1,9 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CSkinRules.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #else
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"

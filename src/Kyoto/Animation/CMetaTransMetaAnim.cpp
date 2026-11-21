@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CMetaTransMetaAnim.hpp"
 #include "Kyoto/Animation/CAnimTreeLoopIn.hpp"
 #include "Kyoto/Animation/CMetaAnimFactory.hpp"

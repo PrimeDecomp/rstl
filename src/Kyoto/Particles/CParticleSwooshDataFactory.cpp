@@ -2,6 +2,7 @@
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleSwooshDataFactory.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"

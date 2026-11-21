@@ -1,12 +1,13 @@
 #include "rstl/RstlVersions.h"
 #define RSTL_INLINE_SWAP
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
 #if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
 #endif
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #else
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"

@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleSortedSystemDataFactory.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"

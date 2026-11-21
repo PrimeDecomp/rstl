@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CDependencyGroup.hpp"
 
 #include "rstl/RstlVersions.h"
@@ -7,7 +8,6 @@
 #elif RSTL_CORRUPTION
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/IObjectStore.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/CDependencyGroupToken.hpp"
 #else
 #include "Kyoto/CDependencyGroupToken.hpp"

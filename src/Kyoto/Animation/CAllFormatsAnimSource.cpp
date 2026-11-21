@@ -5,6 +5,7 @@
 #else
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
 

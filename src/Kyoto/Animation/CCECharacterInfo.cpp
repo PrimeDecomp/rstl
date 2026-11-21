@@ -1,8 +1,8 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCECharacterInfo.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CVParamTransfer.hpp"

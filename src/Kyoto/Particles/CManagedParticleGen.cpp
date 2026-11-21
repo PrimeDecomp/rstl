@@ -1,9 +1,9 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CManagedParticleGen.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
@@ -15,7 +15,6 @@
 
 #else
 #include "Kyoto/Particles/CSortedParticleSystem.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 
 CManagedParticleGen::CManagedParticleGen(const CToken& effect, const CDependencyGroupToken& group)

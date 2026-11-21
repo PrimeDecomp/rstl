@@ -1,10 +1,10 @@
 #include "rstl/RstlVersions.h"
 #define RS_TTOKEN_FILE "TToken.H"
 
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCEAnimationSet.hpp"
 
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/CMemory.hpp"
 #endif
 #include "Kyoto/Animation/CMetaTransFactory.hpp"
 #if RSTL_CORRUPTION

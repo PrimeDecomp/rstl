@@ -1,4 +1,5 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 #if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
@@ -6,7 +7,6 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
 #else
 #include "Kyoto/Basics/CBasics.hpp"
 #endif
