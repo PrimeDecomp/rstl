@@ -137,6 +137,11 @@ inline bool CARAMManager::CancelDMA(uint) { return true; }
 inline void CARAMManager::AramManagerDMACallback(uintptr_t result) {}
 inline void CARAMManager::RefreshActiveDMAList() {}
 inline void CARAMManager::CollectGarbage() {}
+
+#if !RSTL_PRIME1
+inline RSTL_ECHOES_CONST void* CARAMManager::GetInvalidAlloc() { return reinterpret_cast< void* >(-1); }
+#endif
+
 #endif // TARGET_PC
 
 #endif // _CARAMMANAGER

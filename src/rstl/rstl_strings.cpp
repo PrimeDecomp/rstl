@@ -9,39 +9,28 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"
 
+
+#if RSTL_STRING_MUTABLE_NULL
+#define MUTABLE_NULL_PREFIX
+#else
+#define MUTABLE_NULL_PREFIX const
+#endif
+
+
 namespace rstl {
 
 #if !RSTL_STRING_INCLASS_NULL
 template <>
-#if RSTL_STRING_MUTABLE_NULL
-char basic_string< char >::mNull = char_traits< char >::eos();
-#else
-const char basic_string< char >::mNull = char_traits< char >::eos();
-#endif
+MUTABLE_NULL_PREFIX char basic_string< char >::mNull = char_traits< char >::eos();
 
 template <>
-#if RSTL_STRING_MUTABLE_NULL
-wchar_t basic_string< wchar_t >::mNull = char_traits< wchar_t >::eos();
-#else
-const wchar_t basic_string< wchar_t >::mNull = char_traits< wchar_t >::eos();
-#endif
+MUTABLE_NULL_PREFIX wchar_t basic_string< wchar_t >::mNull = char_traits< wchar_t >::eos();
 
 template <>
-#if RSTL_STRING_MUTABLE_NULL
-char basic_string< char, case_insensitive_char_traits< char > >::mNull =
-#else
-const char basic_string< char, case_insensitive_char_traits< char > >::mNull =
-#endif
-    case_insensitive_char_traits< char >::eos();
+MUTABLE_NULL_PREFIX char basic_string< char, case_insensitive_char_traits< char > >::mNull = case_insensitive_char_traits< char >::eos();
 
 template <>
-#if RSTL_STRING_MUTABLE_NULL
-// Guessed specialization: the fourth native null cell is a wchar, as in Prime.
-wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull =
-#else
-const wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull =
-#endif
-    case_insensitive_char_traits< wchar_t >::eos();
+MUTABLE_NULL_PREFIX wchar_t basic_string< wchar_t, case_insensitive_char_traits< wchar_t > >::mNull = case_insensitive_char_traits< wchar_t >::eos();
 #endif
 
 // Prime owns its literal helpers in game translation units; later games define them here.
@@ -60,8 +49,8 @@ istring istring_l(const char* data) {
   istring::literal_t literal;
   return istring(literal, data);
 }
-
 #endif
+
 #if RSTL_STRINGS_PROTO_LAYOUT
 template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference() {
@@ -102,10 +91,11 @@ basic_string< char, case_insensitive_char_traits< char > >::basic_string(
 template <>
 basic_string< char >::basic_string(CInputStream& in, const rmemory_allocator& alloc)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(alloc), mPtr(&mNull), mCow(nullptr), mSize(0) {
+: rmemory_allocator(alloc), mPtr(&mNull), mCow(nullptr), mSize(0)
 #else
-: mPtr(&mNull), mCow(nullptr), mSize(0), mAllocator(alloc) {
+: mPtr(&mNull), mCow(nullptr), mSize(0), mAllocator(alloc)
 #endif
+{
   char buffer[1025];
   int count = 0;
 #if RSTL_STRING_READ_INT8
@@ -135,10 +125,11 @@ basic_string< char >::basic_string(CInputStream& in, const rmemory_allocator& al
 template <>
 basic_string< char >::basic_string(const char* data, int count, const rmemory_allocator& alloc)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(alloc) {
+: rmemory_allocator(alloc)
 #else
-: mAllocator(alloc) {
+: mAllocator(alloc)
 #endif
+{
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
@@ -157,11 +148,11 @@ basic_string< char >::basic_string(const char* data, int count, const rmemory_al
 template <>
 basic_string< char >::basic_string(const basic_string& other)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(other)
-, mPtr(other.mPtr)
+: rmemory_allocator(other),
 #else
-: mPtr(other.mPtr)
+:
 #endif
+mPtr(other.mPtr)
 , mCow(other.mCow)
 , mSize(other.mSize)
 #if !RSTL_ALLOCATOR_BASE_CLASS
@@ -174,10 +165,11 @@ basic_string< char >::basic_string(const basic_string& other)
 template <>
 #if RSTL_STRING_CHAR_CTOR_ALLOCATOR
 basic_string< char >::basic_string(char value, const rmemory_allocator& alloc)
-: mAllocator(alloc) {
+: mAllocator(alloc)
 #else
-basic_string< char >::basic_string(char value) {
+basic_string< char >::basic_string(char value)
 #endif
+{
   internal_allocate(2);
   const_cast< char& >(mPtr[0]) = value;
   const_cast< char& >(mPtr[1]) = 0;
@@ -275,8 +267,8 @@ basic_string< char >::range_iterator(int pos, int count) const {
   const_iterator last = count != -1 && pos + count < length() ? first + count : end();
   return pair< const_iterator, const_iterator >(first, last);
 }
-
 #endif
+
 template <>
 basic_string< char >::const_iterator basic_string< char >::position_iterator(int pos) const {
   if (pos == -1 || pos >= length()) {
@@ -350,10 +342,11 @@ template <>
 basic_string< wchar_t >::basic_string(const wchar_t* data, int count,
                                       const rmemory_allocator& alloc)
 #if RSTL_ALLOCATOR_BASE_CLASS
-: rmemory_allocator(alloc) {
+: rmemory_allocator(alloc)
 #else
-: mAllocator(alloc) {
+: mAllocator(alloc)
 #endif
+{
   if (count <= 0 && !*data) {
     mPtr = &mNull;
     mSize = 0;
@@ -595,6 +588,37 @@ void basic_string< char, case_insensitive_char_traits< char > >::internal_derefe
 #endif
   }
 }
+
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_prepare_to_write(int len, bool preserve) {
+  const int required = len + 1;
+  if (mCow == nullptr || mCow->mRefCount != 1 || mCow->mCapacity < required) {
+    int capacity;
+    if (mCow) {
+      capacity = mCow->mCapacity < 4 ? 4 : mCow->mCapacity;
+      while (capacity < required) {
+        capacity *= 2;
+      }
+    } else {
+      capacity = required;
+    }
+
+    uchar* allocation;
+    rmemory_allocator::allocate(allocation, sizeof(control) + sizeof(char) * capacity);
+    control* newControl = reinterpret_cast< control* >(allocation);
+    newControl->mCapacity = capacity;
+    newControl->mRefCount = 1;
+    char* const newData = reinterpret_cast< char* >(newControl + 1);
+    if (preserve) {
+      case_insensitive_char_traits< char >::copy(newData, mPtr, length());
+      case_insensitive_char_traits< char >::assign(newData[length()], case_insensitive_char_traits< char >::eos());
+    }
+    internal_dereference();
+    mCow = newControl;
+    mPtr = newData;
+  }
+}
+
 #endif
 
 } // namespace rstl

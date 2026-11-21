@@ -449,7 +449,8 @@ static inline void SetGraphicsBuffer(void* buffer, int size) {
 #endif
 
 #if !RSTL_PRIME1
-bool CGraphics::Startup(const COsContext& osContext, bool progressive) {
+bool CGraphics::Startup(const COsContext& osContext IF_NOT_TARGET_PC(, bool progressive)) {
+  IF_TARGET_PC(bool progressive = true);
 #if RSTL_KYOTO_DEBUG_BUILD
   OSReport("Initializing Graphics System\n");
 #endif
@@ -545,6 +546,9 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
   mRenderModeObj.viXOrigin -= 10;
 #else
   GXRenderModeObj* mode = nullptr;
+#if IS_TARGET_PC
+  mode = metaforce::GetGXNtsc480IntDf();
+#else
   switch (VIGetTvFormat()) {
   case VI_MPAL:
     if (!progressive) {
@@ -565,6 +569,7 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     RSTL_KYOTO_FATAL_PRINTF_NAME("PAL TV Format not compatible with NTSC build");
     break;
   }
+#endif
   GXAdjustForOverscan(mode, &mRenderModeObj, 0, 16);
 #if !RSTL_KYOTO_GRAPHICS_CORRUPTION
   mPixelAspectRatio = 1.f;
@@ -2989,23 +2994,29 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
 #endif
 
+#if IS_TARGET_PC
 CGraphicsSys::CGraphicsSys(const COsContext& osContext) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext);
   }
 }
+#endif
 
+#if !RSTL_PRIME1 && !IS_TARGET_PC
 CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive){
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext, progressive);
   }
 }
+#endif
 
+#if RSTL_PRIME1 && !IS_TARGET_PC
 CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint fifoSize, void* fifoBase) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext, fifoSize, fifoBase);
   }
 }
+#endif
 
 CGraphicsSys::~CGraphicsSys() {
   if (mGraphicsInitialized == true) {

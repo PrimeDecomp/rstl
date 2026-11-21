@@ -459,6 +459,8 @@ template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_allocate(int size);
 template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference();
+template <>
+void basic_string< char, case_insensitive_char_traits< char > >::internal_prepare_to_write(int len, bool preserve);
 
 #endif
 

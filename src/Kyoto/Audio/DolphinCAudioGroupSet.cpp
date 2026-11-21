@@ -35,14 +35,18 @@ static void* UploadCallback(u32 offset, u32 bytes) {
   return sUploadBuffer;
 }
 
+#if RSTL_PRIME1
 CAudioGroupSet::CAudioGroupSet(const TLockedToken< CAudioGrpSetLoc >& group)
 : mBaseDir(group->GetBaseDirName()), mGroupSetName(group->GetGroupSetName()), mGroupSetTok(group) {}
+#endif
 
 CAudioGroupSet::~CAudioGroupSet() {}
 
 void CAudioGroupSet::Reload() {}
 
+#if RSTL_PRIME1
 void CAudioGroupSet::FreeSampleBuffer() { mGroupSetTok.data()->FreeSampleBuffer(); }
+#endif
 
 #if !RSTL_PRIME1
 RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag& tag,
