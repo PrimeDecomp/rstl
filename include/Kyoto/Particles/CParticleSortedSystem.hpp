@@ -8,10 +8,10 @@
 
 #include "rstl/reserved_vector.hpp"
 
-
-
 class CSortedParticleSystemDescription;
 
+// Guessed name; SRSC batches up to eight PART children for sorted rendering.
+// Its descriptor contains only SPWN, unlike CSpawnSystemDescription.
 class CParticleSortedSystem : public CParticleGen {
 public:
   static FourCC ResType() { return 'SRSC'; }
@@ -40,8 +40,10 @@ public:
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
   float GetGeneratorRate() const override;
+#if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
+#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;
@@ -54,12 +56,12 @@ public:
   static void SetGlobalSeed(ushort seed) { sSeed = seed; }
 
 private:
-  // Guessed names
+  // Guessed names, based on native keyframe spawning and child bounds aggregation.
   void UpdateChildParticleSystems(double dt);
   void BuildParticleSystemBounds();
 
-  static ushort sSeed; // Guessed name
-  // Guessed names
+  static ushort sSeed; // Guessed name; constructor and child creation share this seed.
+  // Guessed semantic names, supported by constructor and runtime consumers.
   TLockedToken< CSortedParticleSystemDescription > mDescription;
   rstl::reserved_vector< CParticleGen*, 8 > mChildren;
   CRandom16 mRandom;
@@ -68,7 +70,11 @@ private:
   float mGeneratorRate;
   int mParticleCount;
   int mPrevFrame;
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
   CElementGen::EOptionalSystemFlags mOptionalFlags;
+#else
+  bool mEnableOPTS : 1;
+#endif
   bool mModelsUseLights : 1;
   bool mParticleEmission : 1;
   CVector3f mGlobalTranslation;
@@ -76,7 +82,6 @@ private:
   CTransform4f mGlobalOrientation;
   CAABox mBounds;
 };
-CHECK_SIZEOF(CParticleSortedSystem, 0xd8)
-
+CHECK_SIZEOF(CParticleSortedSystem, RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS ? 0xd8 : 0xd0)
 
 #endif // _CPARTICLESORTEDSYSTEM

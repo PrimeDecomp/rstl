@@ -34,12 +34,7 @@
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Particles/CParticleSortedSystem.hpp"
-#else
-#include "Kyoto/Particles/CSortedParticleSystem.hpp"
-
-#endif
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
 #include "Kyoto/Particles/CWarp.hpp"
 #include "Kyoto/Particles/IElement.hpp"
@@ -1878,16 +1873,16 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     break;
   }
   case 'SRSC': {
-    const short backupSeed = CSortedParticleSystem::GetGlobalSeed();
+    const short backupSeed = CParticleSortedSystem::GetGlobalSeed();
     if (seed != 0) {
-      CSortedParticleSystem::SetGlobalSeed(seed);
+      CParticleSortedSystem::SetGlobalSeed(seed);
     }
 #if !RSTL_PARTICLE_BOUNDS_MODES
     const EOptionalSystemFlags flags = optsEnabled ? kOSF_Two : kOSF_One;
 #endif
     TToken< CSortedParticleSystemDescription > spawnDescription(description);
-    child = rs_new CSortedParticleSystem(spawnDescription, flags, modelsUseLights);
-    CSortedParticleSystem::SetGlobalSeed(backupSeed);
+    child = rs_new CParticleSortedSystem(spawnDescription, flags, modelsUseLights);
+    CParticleSortedSystem::SetGlobalSeed(backupSeed);
     break;
   }
   default:

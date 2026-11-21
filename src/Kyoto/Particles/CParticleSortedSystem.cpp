@@ -7,8 +7,6 @@
 #include "Kyoto/Particles/CSortedParticleSystemDescription.hpp"
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
 
-
-
 ushort CParticleSortedSystem::sSeed = 99;
 
 static const CVector3f skOne(1.f, 1.f, 1.f);
@@ -23,7 +21,11 @@ CParticleSortedSystem::CParticleSortedSystem(TToken< CSortedParticleSystemDescri
 , mGeneratorRate(1.f)
 , mParticleCount(0)
 , mPrevFrame(-1)
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
 , mOptionalFlags(flags)
+#else
+, mEnableOPTS(flags & CElementGen::kOSF_Two)
+#endif
 , mModelsUseLights(modelsUseLights)
 , mParticleEmission(true)
 , mGlobalTranslation(CVector3f::Zero())
@@ -229,17 +231,25 @@ void CParticleSortedSystem::UpdateChildParticleSystems(double dt) {
       ushort backupSeed = sSeed;
       for (int i = 0; i < spawns.size(); ++i) {
         CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo& info = spawns[i];
-        const ushort seed = (i + mCurFrame + 1) * 100 + mRandom.GetSeed();
+        ushort seed = (i + mCurFrame + 1) * 100 + mRandom.GetSeed();
         if (info.GetType() == 'PART') {
           if (mChildren.size() < mChildren.capacity()) {
             CParticleGen* child = CElementGen::ConstructChildParticleSystem(
-                *info.GetToken(), info.GetType(), seed, mOptionalFlags, mModelsUseLights,
-                mParticleEmission, CVector3f::Zero(), CTransform4f::Identity(), mGlobalTranslation,
-                mGlobalOrientation, mGlobalScale, CColor::White(), CVector3f::One());
+                *info.GetToken(), info.GetType(), seed,
+#if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
+                mOptionalFlags,
+#else
+                mEnableOPTS,
+#endif
+                mModelsUseLights, mParticleEmission, CVector3f::Zero(), CTransform4f::Identity(),
+                mGlobalTranslation, mGlobalOrientation, mGlobalScale, CColor::White(),
+                CVector3f::One());
             if (child) {
               mChildren.push_back(child);
             }
-          } else {
+          }
+#if RSTL_KYOTO_DEBUG_BUILD
+          else {
             const TToken< CSortedParticleSystemDescription >& description = mDescription;
             const char* message = CBasics::Stringize(
                 "BUG: Trying to create more than %d systems in Sorted Particle System (%x).  "
@@ -247,7 +257,10 @@ void CParticleSortedSystem::UpdateChildParticleSystems(double dt) {
                 mChildren.capacity(), description.GetTag().GetId());
             RS_WARNING_DEBUGGER_PRINT(message);
           }
-        } else {
+#endif
+        }
+#if RSTL_KYOTO_DEBUG_BUILD
+        else {
           const TToken< CSortedParticleSystemDescription >& description = mDescription;
           const char* message = CBasics::Stringize(
               "BUG: Sorted Particle System (%x) is attempting to create a non-generic particle "
@@ -255,6 +268,7 @@ void CParticleSortedSystem::UpdateChildParticleSystems(double dt) {
               description.GetTag().GetId());
           RS_WARNING_DEBUGGER_PRINT(message);
         }
+#endif
       }
       sSeed = backupSeed;
     }
@@ -281,3 +295,4 @@ int CParticleSortedSystem::GetEmitterTime() const { return mCurFrame; }
 int CParticleSortedSystem::GetParticleCount() const { return mParticleCount; }
 
 bool CParticleSortedSystem::GetParticleEmission() const { return mParticleEmission; }
+

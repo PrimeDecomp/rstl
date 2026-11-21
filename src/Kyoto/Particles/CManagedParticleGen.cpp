@@ -7,13 +7,7 @@
 #include "Kyoto/Particles/CParticleElectric.hpp"
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Particles/CParticleSortedSystem.hpp"
-
-
-#else
-#include "Kyoto/Particles/CSortedParticleSystem.hpp"
-#endif
 
 CManagedParticleGen::CManagedParticleGen(const CToken& effect, const CDependencyGroupToken& group)
 : mEffect(effect)
@@ -195,11 +189,7 @@ void CManagedParticleGen::CreateGenerator() {
   }
   case 'SRSC': {
     TToken< CSortedParticleSystemDescription > desc(mEffect);
-#if RSTL_CORRUPTION
     gen = rs_new_line(456) CParticleSortedSystem(desc, CElementGen::kOSF_One, false);
-#else
-    gen = rs_new CSortedParticleSystem(desc, CElementGen::kOSF_One, false);
-#endif
     break;
   }
   default:
