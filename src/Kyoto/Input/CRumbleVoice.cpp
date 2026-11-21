@@ -3,6 +3,10 @@
 #include "rstl/math.hpp"
 
 CRumbleVoice::CRumbleVoice()
+#if RSTL_CORRUPTION
+: mDatas(4, SAdsrData())
+, mDeltas(4, SAdsrDelta::Stopped())
+#else
 : mDatas(4, SAdsrData()
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -15,6 +19,7 @@ CRumbleVoice::CRumbleVoice()
           , rstl::rmemory_allocator()
 #endif
           )
+#endif
 , mHandleIds(4, 0)
 , mUsedChannels(0)
 , mLastId(0) {}
@@ -136,7 +141,11 @@ bool CRumbleVoice::Update(float dt) {
 ushort CRumbleVoice::GetFreeChannel() const {
   for (ushort i = 0; i < 4; ++i) {
     if ((mUsedChannels & (1 << i)) == 0) {
+#if RSTL_CORRUPTION
+      return i;
+#else
       return (ushort)i;
+#endif
     }
   }
   return 0;
@@ -182,6 +191,12 @@ short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
   ++mLastId;
   if (mLastId == 0)
     mLastId = 1;
+#if RSTL_CORRUPTION
+  ushort& handle = mHandleIds[idx];
+  handle = mLastId;
+  return ((mLastId << 8) | idx) & 0xFFFF;
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ushort* h = &mHandleIds[idx];
@@ -198,3 +213,4 @@ short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
 #endif
 }
 
+#endif
