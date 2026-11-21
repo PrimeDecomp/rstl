@@ -570,8 +570,8 @@ public:
   // Guessed names, correlated with Prime's seed and live-system accounting.
   static ushort sSeed;
 #if RSTL_CORRUPTION
-  static int sParticleAliveCount;
-  static int sParticleSystemAliveCount;
+  static int mParticleAliveCount;
+  static int mParticleSystemAliveCount;
 
 public:
   static void SetGlobalSeed(const ushort seed) { sSeed = seed; }

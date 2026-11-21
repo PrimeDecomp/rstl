@@ -104,15 +104,6 @@ private:
 
   InstList mInstructions;
   CSaveableState mState;
-#if RSTL_CORRUPTION
-  CBlockInstruction* mCurBlock;
-  CLineInstruction* mCurLine;
-  InstList::iterator mCurWordIt;
-  int mCurrentY;
-  int mCurrentX;
-  int mCurWordX;
-  int mCurWordY;
-#else
   CBlockInstruction* mCurBlock;
   CLineInstruction* mCurLine;
   InstList::iterator mCurWordIt;
@@ -121,7 +112,6 @@ private:
   int mCurWordX;
   int mCurWordY;
 
-#endif
   int mSpaceDistance;
   bool mImageBaseline;
   rstl::list< CSaveableState > mStateStack;

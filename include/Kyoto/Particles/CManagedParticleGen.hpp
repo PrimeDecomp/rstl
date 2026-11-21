@@ -52,11 +52,7 @@ private:
 
 #endif
   CToken mEffect;
-#if RSTL_CORRUPTION
   SObjectTag mAssetTag;
-#else
-  SObjectTag mTag;
-#endif
   rstl::optional_object< CDependencyGroupToken > mDependencies;
   rstl::single_ptr< CParticleGen > mGenerator;
   float mMaxIdleTime; // Guessed name

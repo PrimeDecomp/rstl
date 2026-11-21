@@ -448,8 +448,8 @@ void CTextExecuteBuffer::StartNewWord() {
 #if RSTL_CORRUPTION
   rstl::ncrc_ptr< CInstruction > instruction(rs_new_line(381) CWordInstruction());
   mCurWordIt = Add(instruction);
-  mCurrentX = 0;
-  mCurrentY = 0;
+  mCurX = 0;
+  mCurY = 0;
   mCurWordX = mCurLine->GetWidth();
   mCurWordY = mCurLine->GetY();
   mCurLine->IncWords();
@@ -541,15 +541,9 @@ CLineInstruction::CLineInstruction(int words, int width, int height, EJustificat
 #endif
 
 void CTextExecuteBuffer::MoveWordLTR() {
-#if RSTL_CORRUPTION
-  mCurLine->SubWidth(mCurrentX + mSpaceDistance);
-  if (mCurLine->GetY() > mCurWordY) {
-    mCurLine->SetHeight(mCurWordY);
-#else
   mCurLine->SubWidth(mCurX + mSpaceDistance);
   if (mCurLine->GetY() > mCurWordY) {
     mCurLine->SetHeight(mCurWordY);
-#endif
   }
   mSpaceDistance = 0;
   mCurLine->DecWords();
@@ -561,7 +555,7 @@ void CTextExecuteBuffer::MoveWordLTR() {
   );
   const rstl::ncrc_ptr< CInstruction > instruction =
 #if RSTL_CORRUPTION
-      rs_new_line(434) CLineInstruction(1, mCurrentX, mCurrentY, mState.GetJustification(),
+      rs_new_line(434) CLineInstruction(1, mCurX, mCurY, mState.GetJustification(),
                                         mState.GetVerticalJustification(), mImageBaseline);
   mCurLine = static_cast< CLineInstruction* >(instruction.GetPtr());
   mInstructions.insert(mCurWordIt, instruction);
@@ -597,13 +591,8 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
 #endif
 
     if (mState.IsWordWrapping()) {
-#if RSTL_CORRUPTION
-      if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() &&
-          mCurLine->GetWordCount() > 1 && mCurrentX + width < mCurBlock->GetOutputWidth()) {
-#else
       if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() &&
           mCurLine->GetWordCount() > 1 && mCurX + width < mCurBlock->GetOutputWidth()) {
-#endif
         MoveWordLTR();
       }
 #if RSTL_CORRUPTION
@@ -648,8 +637,8 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
       }
     }
 #if RSTL_CORRUPTION
-    if (mState.GetFont()->GetCarriageAdvance() > mCurrentY) {
-      mCurrentY = mState.GetFont()->GetCarriageAdvance();
+    if (mState.GetFont()->GetCarriageAdvance() > mCurY) {
+      mCurY = mState.GetFont()->GetCarriageAdvance();
     }
     mCurLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
                               mState.GetFont()->GetCarriageAdvance(),
@@ -679,12 +668,8 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
       mCurBlock->SetWidth(mCurLine->GetWidth());
 #endif
     }
-#if RSTL_CORRUPTION
-    mCurrentX += width;
-#else
     mCurX += width;
 
-#endif
     const rstl::ncrc_ptr< CInstruction > instruction = CTextInstruction::Create(str, rem);
     Add(instruction);
     if (rem != len) {
