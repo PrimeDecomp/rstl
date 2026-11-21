@@ -567,14 +567,9 @@ void CElementGen::Initialize() {
   if (sStaticListInitialized) {
     return;
   }
-#if RSTL_CORRUPTION
   RS_DEBUGGER_PRINT("Initialize - Static Particle List - ");
   mParticleAliveCount = 0;
   mParticleSystemAliveCount = 0;
-#else
-  mParticleAliveCount = 0;
-  mParticleSystemAliveCount = 0;
-#endif
   sStaticListInitialized = true;
 }
 
