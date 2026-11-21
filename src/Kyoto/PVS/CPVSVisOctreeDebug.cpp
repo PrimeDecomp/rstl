@@ -63,7 +63,7 @@ void TraversePVSNode(const CPVSVisOctree& tree, const uchar* node, const CAABox&
 }
 } // namespace
 
-void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* context) const {
+void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* context) CPVSVISOCTREE_TRAVERSE_CONST {
   if (callback == nullptr || mOctreeData.get() == nullptr)
     return;
   int ordinal = 0;

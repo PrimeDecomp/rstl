@@ -1,11 +1,18 @@
 #ifndef _CPVSVISOCTREE
 #define _CPVSVISOCTREE
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/PVS/CPVSVisSet.hpp"
 #include "rstl/auto_ptr.hpp"
+
+#if RSTL_CORRUPTION
+#define CPVSVISOCTREE_TRAVERSE_CONST
+#else
+#define CPVSVISOCTREE_TRAVERSE_CONST const
+#endif
 
 class CPVSVisOctree {
 public:
@@ -25,23 +32,25 @@ public:
 
   CPVSVisSet GetVisSet(const CVector3f& point) const;
 
-#if RSTL_PRIME1
-#ifdef ENABLE_DEBUG_TOOLS
-  // Backported traversal interface; callback receives the leaf depth and ordinal.
   typedef void (*TLeafCallback)(const CPVSVisOctree&, const CAABox&, const CPVSVisSet&, int, int,
-                               void*);
-  void TraverseLeaves(TLeafCallback callback, void* context) const;
-#endif
-#endif
+                                void*);
+  void TraverseLeaves(TLeafCallback callback, void* userData) CPVSVISOCTREE_TRAVERSE_CONST;
 
 private:
+  void TraverseLeavesRecursive(TLeafCallback callback, int depth, int child,
+                               void* userData); // Guessed name
+
   CAABox mBounds;
   uint mNumObjects;
   uint mNumLights;
   rstl::auto_ptr< const char > mOctreeData;
-  uint _28;
+  uint mCurrentNodeOffset; // Guessed name
   mutable CVector3f mMin;
   mutable CVector3f mMax;
 };
+CHECK_SIZEOF(CPVSVisOctree, 0x44)
+
+extern "C" CAABox CPVSVisOctree_GetChildBounds(uchar octant, int child,
+                                                CAABox bounds); // Guessed name
 
 #endif // _CPVSVISOCTREE
