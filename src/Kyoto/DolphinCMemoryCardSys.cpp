@@ -1396,7 +1396,7 @@ TCardWorkArea& CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
   case kCS_SlotB:
     return mWorkAreaB;
   default:
-    RS_VERIFY_FAILURE(1306, "false", "false", "Invalid memory card port")
+    RS_VERIFY_FAILURE(1306, "false", "false", "Invalid memory card port");
     return mWorkAreaA;
   }
 }
