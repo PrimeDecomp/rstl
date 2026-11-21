@@ -41,7 +41,7 @@ CMemoryCardSys::CCardFileInfo::Icon::Icon(CAssetId id, int speed, CSimplePool& p
     const CGraphicsPalette* pPalette = pTexture->GetPalette();
     RS_VERIFY_THROW_DIRECT(178, pPalette->GetFormat() == kPaletteFormat_RGB5A3, false,
                            CBasics::Stringize("Invalid palette format for icon texture (%d).",
-                                              pPalette->GetFormat()))
+                                              pPalette->GetFormat()));
 #else
 ECardResult SMemoryCardFileInfo::FileRead() {
   rstl::vector< uchar >& saveData = mSaveData;
@@ -274,7 +274,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::TryCompleteRead() {
   return result;
   } else {
     RS_VERIFY_THROW_DIRECT(476, mState == kState_ReadingData1, false,
-                           CBasics::Stringize("Unexpected state %d", mState))
+                           CBasics::Stringize("Unexpected state %d", mState));
     return ExtractUserData();
   }
 }
@@ -390,7 +390,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::TryCompleteWrite() {
     return result;
   } else {
     RS_VERIFY_THROW_DIRECT(689, mState == kState_WritingStatus, false,
-                           CBasics::Stringize("Unexpected state %d", mState))
+                           CBasics::Stringize("Unexpected state %d", mState));
     mState = kS_Standby;
   return kCR_READY;
 }
@@ -697,7 +697,7 @@ void CMemoryCardSys::CCardFileInfo::LockBannerToken(CAssetId bannerTxtr, CSimple
     const CGraphicsPalette* pPalette = pTexture->GetPalette();
     RS_VERIFY_THROW_DIRECT(757, pPalette->GetFormat() == kPaletteFormat_RGB5A3, false,
                            CBasics::Stringize("Invalid palette format for banner texture (%d).",
-                                              pPalette->GetFormat()))
+                                              pPalette->GetFormat()));
   }
 }
 
@@ -880,7 +880,7 @@ void CMemoryCardSys::CCardFileInfo::BuildWriteBuffers() {
   slot.mData.assign(mAlignedUserDataSize, 0);
   uint* data = reinterpret_cast< uint* >(slot.mData.data());
   RS_VERIFY_THROW_DIRECT(899, mUserDataWrite.size() <= ( mAlignedUserDataSize - kHeaderSize ), false,
-                         "User data too big for allocated mem card space!")
+                         "User data too big for allocated mem card space!");
 
   (memcpy)(data + 2, mUserDataWrite.data(), mUserDataWrite.size());
   data[1] = mGeneration;
