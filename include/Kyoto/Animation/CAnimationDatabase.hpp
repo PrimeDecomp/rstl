@@ -9,11 +9,8 @@
 #include "rstl/RstlVersions.h"
 #endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/TToken.hpp"
-
 #include "rstl/optional_object.hpp"
-#endif
 #include "rstl/rc_ptr.hpp"
 #include "rstl/set.hpp"
 #include "rstl/string.hpp"

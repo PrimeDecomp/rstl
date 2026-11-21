@@ -1,12 +1,10 @@
 #ifndef _CALLFORMATSANIMSOURCE
 #define _CALLFORMATSANIMSOURCE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 #include "rstl/macros.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -31,9 +29,7 @@
 #endif
 #endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 
 class CInputStream;
 

@@ -1,13 +1,9 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Text/CTextParser.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/IObjectStore.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "Kyoto/Alloc/Assert.hpp"
@@ -15,10 +11,7 @@
 #endif
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Text/TextCommon.hpp"
-
-#endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/algorithm.hpp"
 #if !RSTL_CORRUPTION

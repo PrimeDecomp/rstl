@@ -1,12 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimationManager.hpp"
-#if !RSTL_CORRUPTION
-
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
-#endif
 
 #include "Kyoto/Animation/IMetaAnim.hpp"
 

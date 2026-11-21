@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
-#endif
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #if RSTL_CORRUPTION
@@ -15,20 +13,16 @@
 #include "Kyoto/CVParamTransfer.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CCubeSurface.hpp"
-#endif
 #include "Kyoto/Graphics/CGX.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #endif
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
 #include "Kyoto/IObjectStore.hpp"
-#endif
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #if RSTL_CORRUPTION
@@ -41,14 +35,10 @@
 #endif
 
 #include "dolphin/gx.h"
-#if !RSTL_CORRUPTION
 #include "dolphin/gx/GXGeometry.h"
-#endif
 #include "dolphin/os.h"
-#if !RSTL_CORRUPTION
 #include "dolphin/os/OSCache.h"
 #include "dolphin/types.h"
-#endif
 
 #if defined(TARGET_PC)
 #include "Metaforce/Game/CModelSectionReader.hpp"

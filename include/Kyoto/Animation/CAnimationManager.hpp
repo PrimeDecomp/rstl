@@ -1,10 +1,8 @@
 #ifndef _CANIMATIONMANAGER
 #define _CANIMATIONMANAGER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -12,9 +10,7 @@
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/TToken.hpp"
-#endif
 
 #if !RSTL_CORRUPTION
 class CAnimationDatabase;

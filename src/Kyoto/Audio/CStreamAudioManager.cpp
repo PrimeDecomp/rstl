@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Audio/CStreamAudioManager.hpp"
 #if RSTL_PRIME1
@@ -9,9 +7,7 @@
 #include "stdio.h"
 #endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Audio/CAudioSys.hpp"
-#endif
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "rstl/StringExtras.hpp"

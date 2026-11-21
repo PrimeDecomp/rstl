@@ -1,10 +1,8 @@
 #ifndef _CMEMORYCARDSYS
 #define _CMEMORYCARDSYS
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -15,9 +13,7 @@
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Streams/CMemoryStreamOut.hpp"
 #include "Kyoto/TToken.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Platform.h"
-#endif
 
 #include "dolphin/card.h"
 #include "rstl/optional_object.hpp"

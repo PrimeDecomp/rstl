@@ -1,13 +1,10 @@
 #ifndef _CPARTICLEDATAFACTORY
 #define _CPARTICLEDATAFACTORY
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
-#endif
 
 #include "Kyoto/Particles/IElement.hpp"
 #if RSTL_CORRUPTION
@@ -15,9 +12,7 @@
 #endif
 #include "Kyoto/TToken.hpp"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "rstl/optional_object.hpp"
 #include "rstl/vector.hpp"
 

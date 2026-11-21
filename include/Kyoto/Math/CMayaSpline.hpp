@@ -1,11 +1,9 @@
 #ifndef _CMAYASPLINE
 #define _CMAYASPLINE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"

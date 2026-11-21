@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CMetaAnimPlay.hpp"
@@ -11,9 +9,7 @@
 #endif
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeAnimReaderContainer.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/IObjectStore.hpp"
-#endif
 #include "Kyoto/CSimplePool.hpp"
 
 #include "Kyoto/Streams/COutputStream.hpp"

@@ -1,26 +1,18 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CCubeModel.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
-#endif
 #include "Kyoto/Basics/CBasics.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "Kyoto/Graphics/CCubeSurface.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CGX.hpp"
-#endif
 #include "Kyoto/Graphics/CGX_Impl.hpp" // IWYU pragma: keep
 
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Platform.h"
 #include "Kyoto/ByteOrder.hpp"
-#endif
 #include "dolphin/gx/GXVert.h"
 
 #include "string.h"

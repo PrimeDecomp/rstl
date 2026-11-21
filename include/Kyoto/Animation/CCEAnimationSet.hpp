@@ -12,9 +12,7 @@
 #endif
 #include "Kyoto/Animation/CHalfTransition.hpp"
 #include "Kyoto/Animation/CTransition.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/IMetaAnim.hpp"
-#endif
 #include "Kyoto/Animation/IMetaTrans.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/CAssetId.hpp"

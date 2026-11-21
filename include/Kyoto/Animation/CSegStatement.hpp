@@ -1,19 +1,15 @@
 #ifndef _CSEGSTATEMENT
 #define _CSEGSTATEMENT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/types.h"
-#endif
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1

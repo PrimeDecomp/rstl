@@ -1,10 +1,8 @@
 #ifndef _CMETAANIMPHASEBLEND
 #define _CMETAANIMPHASEBLEND
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"

@@ -9,9 +9,7 @@
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1

@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
@@ -12,14 +10,9 @@
 
 #endif
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/IObjectStore.hpp"
-
-#endif
 #include "Kyoto/Math/CloseEnough.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 
 rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words,
                                                                       CInputStream& in) {

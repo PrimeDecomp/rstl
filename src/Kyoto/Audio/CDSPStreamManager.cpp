@@ -1,19 +1,15 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "dolphin/dvd.h"
 #include "dolphin/os.h"
 #include "dolphin/os/OSThread.h"
-#endif
 
 #if RSTL_CORRUPTION
 void CDSPStreamManager::Initialize() {}

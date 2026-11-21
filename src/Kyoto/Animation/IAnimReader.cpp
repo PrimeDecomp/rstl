@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/IAnimReader.hpp"
 #if RSTL_CORRUPTION

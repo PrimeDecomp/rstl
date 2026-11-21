@@ -1,18 +1,13 @@
 #ifndef _ICONTROLLER
 #define _ICONTROLLER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "rstl/types.h"
 
 #include "Kyoto/Input/CControllerGamepadData.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Input/CControllerData.hpp"
-
-#endif
 #include "Kyoto/Input/InputTypes.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Math/CVector2f.hpp"

@@ -1,10 +1,8 @@
 #ifndef _CANIMSYSCONTEXT
 #define _CANIMSYSCONTEXT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -20,9 +18,7 @@
 #include "Kyoto/Animation/CTransitionDatabase.hpp"
 #endif
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "rstl/rc_ptr.hpp"
 

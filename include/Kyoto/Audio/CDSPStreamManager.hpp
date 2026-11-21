@@ -1,19 +1,15 @@
 #ifndef _CDSPSTREAMMANAGER
 #define _CDSPSTREAMMANAGER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-
 #include "rstl/types.h"
 #include "rstl/macros.hpp"
-
 #include "Kyoto/Streams/CStreamPreloadedToken.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
 #include "Kyoto/Audio/CDSPStream.hpp"
-#endif
 
 #include "rstl/string.hpp"
 

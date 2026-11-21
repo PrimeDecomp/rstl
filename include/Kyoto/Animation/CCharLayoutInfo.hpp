@@ -2,9 +2,7 @@
 #define _CCHARLAYOUTINFO
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "rstl/types.h"
 
 #include "Kyoto/Animation/CSegId.hpp"
@@ -20,10 +18,7 @@
 #include "rstl/map.hpp"
 
 #include "rstl/object_owner.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/auto_ptr.hpp"
-
-#endif
 #include "rstl/string.hpp"
 #include "rstl/vector.hpp"
 

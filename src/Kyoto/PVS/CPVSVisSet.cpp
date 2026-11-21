@@ -1,12 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/PVS/CPVSVisSet.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/PVS/CPVSVisOctree.hpp"
-
-#endif
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #if RSTL_CORRUPTION

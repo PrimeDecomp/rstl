@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CHalfTransition.hpp"
 
 #include "Kyoto/Animation/CMetaTransFactory.hpp"

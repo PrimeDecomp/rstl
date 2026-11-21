@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
@@ -19,10 +17,7 @@
 
 #include "Kyoto/Text/CColorInstruction.hpp"
 #include "Kyoto/Text/CColorOverrideInstruction.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CFontImageDef.hpp"
-
-#endif
 #include "Kyoto/Text/CFontInstruction.hpp"
 #include "Kyoto/Text/CFontRenderState.hpp"
 #include "Kyoto/Text/CImageInstruction.hpp"
@@ -34,9 +29,7 @@
 #include "Kyoto/Text/CRemoveColorOverrideInstruction.hpp"
 #include "Kyoto/Text/CTextInstruction.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CWordBreakTables.hpp"
-#endif
 #include "Kyoto/Text/CWordInstruction.hpp"
 
 #include "rstl/math.hpp"

@@ -1,8 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
-#endif
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
 
 #if RSTL_CORRUPTION

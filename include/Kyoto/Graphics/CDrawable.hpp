@@ -9,9 +9,7 @@
 #endif
 #include "rstl/types.h"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CAABox.hpp"
-#endif
 
 enum EDrawableType {
   kDT_WorldSurface,

@@ -1,18 +1,13 @@
 #ifndef _CVERTEXMORPHEFFECT
 #define _CVERTEXMORPHEFFECT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-
 #include "Kyoto/CRandom16.hpp"
-#endif
 
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/TToken.hpp"
-#endif
 
 #include "rstl/vector.hpp"
 

@@ -1,13 +1,9 @@
 #ifndef _CHARACTERCOMMON
 #define _CHARACTERCOMMON
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "rstl/types.h"
-#endif
 
 namespace pas {
 enum ELocomotionType {

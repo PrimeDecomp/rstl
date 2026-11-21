@@ -1,18 +1,14 @@
 #ifndef _CSKINRULES
 #define _CSKINRULES
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "Kyoto/Animation/CVirtualBone.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 #include "rstl/single_ptr.hpp"
 #include "rstl/vector.hpp"
 

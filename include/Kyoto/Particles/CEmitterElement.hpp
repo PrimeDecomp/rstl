@@ -1,10 +1,8 @@
 #ifndef _CEMITTERELEMENT
 #define _CEMITTERELEMENT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "Kyoto/Math/CTransform4f.hpp"
 

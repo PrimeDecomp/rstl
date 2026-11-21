@@ -2,9 +2,7 @@
 #define _CTEXTCOLOR
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
-#endif
 #include "rstl/types.h"
 
 #ifdef __MWERKS__

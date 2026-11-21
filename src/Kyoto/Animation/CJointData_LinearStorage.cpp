@@ -1,10 +1,8 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
 #if RSTL_CORRUPTION

@@ -11,9 +11,7 @@
 #include "Kyoto/Streams/CInputStream.hpp"
 
 #include "rstl/algorithm.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/functional.hpp"
-#endif
 
 #include "float.h"
 #include "math.h"

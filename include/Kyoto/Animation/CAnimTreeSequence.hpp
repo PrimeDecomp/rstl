@@ -1,10 +1,8 @@
 #ifndef _CANIMTREESEQUENCE
 #define _CANIMTREESEQUENCE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -12,9 +10,7 @@
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeSingleChild.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSequenceHelper.hpp"
-#endif
 #include "Kyoto/Animation/CSequenceFundamentals.hpp"
 
 #include "rstl/rc_ptr.hpp"

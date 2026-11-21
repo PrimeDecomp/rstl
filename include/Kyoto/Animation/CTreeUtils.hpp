@@ -2,9 +2,7 @@
 #define _CTREEUTILS
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "rstl/rc_ptr.hpp"
 
 class CAnimTreeNode;

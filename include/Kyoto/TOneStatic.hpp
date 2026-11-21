@@ -1,10 +1,8 @@
 #ifndef _TONESTATIC
 #define _TONESTATIC
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "stdio.h"
 #include "rstl/types.h"

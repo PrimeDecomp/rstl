@@ -1,9 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
 #include "rstl/list.hpp" // IWYU pragma: keep
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
 
@@ -26,9 +24,7 @@
 #include "Kyoto/Particles/IElement.hpp"
 
 #include "dolphin/gx/GXVert.h"
-#if !RSTL_CORRUPTION
 #include "float.h"
-#endif
 #include "math.h"
 #include "rstl/math.hpp"
 

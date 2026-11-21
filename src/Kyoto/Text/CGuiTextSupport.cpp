@@ -11,9 +11,7 @@
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextParser.hpp"
 #include "Kyoto/Text/ScreenText.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 #include "rstl/StringExtras.hpp"
 #include "rstl/math.hpp"
 #include "math.h"

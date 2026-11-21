@@ -1,20 +1,14 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinnedModel.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #include "Kyoto/Animation/CSkinRules.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CVertexMorphEffect.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
-#endif
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
@@ -23,20 +17,14 @@
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Platform.h"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "dolphin/base/PPCArch.h"
-#endif
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
-#endif
 
 #if IS_TARGET_PC
 #define GET_POSITION_VIEW(ptr) GetPositionView(ptr)

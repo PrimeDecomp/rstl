@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimTreeDoubleChild.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Animation/CAssetPOINode.hpp"
@@ -11,19 +9,12 @@
 
 #endif
 #include "Kyoto/Animation/CBoolPOINode.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CPOINode.hpp"
-
-#endif
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/IAnimReader.hpp"
-
-#endif
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "stdlib.h"
 

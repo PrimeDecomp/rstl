@@ -1,18 +1,14 @@
 #ifndef _CINT32POINODE
 #define _CINT32POINODE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "Kyoto/Animation/CPOINode.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/string.hpp"
-#endif
 
 class CInt32POINode : public CPOINode {
 public:

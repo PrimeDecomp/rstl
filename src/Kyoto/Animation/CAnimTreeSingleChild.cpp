@@ -1,11 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimTreeSingleChild.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CQuaternion.hpp"
-#endif
 
 SAdvancementResults CAnimTreeSingleChild::VAdvanceView(const CCharAnimTime& time) {
   return mChild->VAdvanceView(time);

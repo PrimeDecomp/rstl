@@ -1,17 +1,13 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/CMemoryCardSys.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CCrc32.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/MemoryCopy.hpp"
-#endif
 
 #include "dolphin/os/OSCache.h"
 

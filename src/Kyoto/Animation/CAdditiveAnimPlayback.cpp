@@ -1,15 +1,10 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAdditiveAnimPlayback.hpp"
 
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatementSet.hpp"
-
-#endif
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "rstl/math.hpp"
 

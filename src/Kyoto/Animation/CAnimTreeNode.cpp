@@ -1,12 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/rc_ptr.hpp"
-
-#endif
 #include "rstl/auto_ptr.hpp"
 
 CAnimTreeNode::CAnimTreeNode(const rstl::string& name) : mName(name) {}

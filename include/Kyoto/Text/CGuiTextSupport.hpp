@@ -3,10 +3,7 @@
 #include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-
-#endif
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CVector2i.hpp"
 #if RSTL_CORRUPTION
@@ -14,9 +11,7 @@
 #endif
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"

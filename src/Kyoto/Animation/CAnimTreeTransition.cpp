@@ -1,13 +1,8 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CAnimTreeTransition.hpp"
-#if !RSTL_CORRUPTION
-
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 
 #include "Kyoto/Math/CloseEnough.hpp"
 

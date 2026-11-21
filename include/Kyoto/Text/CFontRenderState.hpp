@@ -1,10 +1,8 @@
 #ifndef _CFONTRENDERSTATE
 #define _CFONTRENDERSTATE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -14,10 +12,7 @@
 #endif
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CRasterFont.hpp"
-
-#endif
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
 #if RSTL_CORRUPTION

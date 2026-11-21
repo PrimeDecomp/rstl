@@ -2,9 +2,7 @@
 #include "Kyoto/Graphics/CDisplayListReader.hpp"
 
 #include "Kyoto/Basics/CBasics.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "string.h"
 

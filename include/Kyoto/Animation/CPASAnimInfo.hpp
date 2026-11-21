@@ -5,10 +5,8 @@
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CPASAnimParm.hpp"
 
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/vector.hpp"
-#endif
 #include "rstl/reserved_vector.hpp"
 
 class CPASAnimInfo {

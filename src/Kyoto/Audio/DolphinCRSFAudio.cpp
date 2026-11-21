@@ -4,15 +4,10 @@
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Audio/DolphinCRSFAudio.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Audio/CAIInterruptManager.hpp"
-#if !RSTL_CORRUPTION
-
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 #include "Kyoto/Audio/CAudioSys.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"

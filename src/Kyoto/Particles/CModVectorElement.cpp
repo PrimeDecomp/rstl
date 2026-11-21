@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Particles/CModVectorElement.hpp"
 
 #include "Kyoto/CRandom16.hpp"

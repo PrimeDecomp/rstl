@@ -1,9 +1,7 @@
 #ifndef _CPARTICLEGLOBALS
 #define _CPARTICLEGLOBALS
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "rstl/types.h"
 

@@ -1,20 +1,16 @@
 #ifndef _CCUBEMODEL
 #define _CCUBEMODEL
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "rstl/types.h"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/ModelTypes.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 
@@ -27,9 +23,7 @@ class CSimplePool;
 #endif
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/TToken.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/vector.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/vector.hpp"

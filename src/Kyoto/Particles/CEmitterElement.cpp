@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Particles/CEmitterElement.hpp"
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"

@@ -1,14 +1,9 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/IMetaAnim.hpp"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-
 #include "Kyoto/Animation/CBoolPOINode.hpp"
-#endif
 #include "Kyoto/Streams/COutputStream.hpp"
 #if RSTL_PRIME1
 #include "string.h"

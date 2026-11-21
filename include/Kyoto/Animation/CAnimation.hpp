@@ -1,11 +1,9 @@
 #ifndef _CANIMATION
 #define _CANIMATION
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IMetaAnim.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"

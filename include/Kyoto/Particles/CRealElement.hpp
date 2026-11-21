@@ -1,9 +1,7 @@
 #ifndef _CREALELEMENT
 #define _CREALELEMENT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "rstl/types.h"
 

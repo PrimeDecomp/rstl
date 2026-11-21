@@ -35,10 +35,8 @@
 #endif
 #endif
 
-#if !RSTL_CORRUPTION
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
-#endif
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
 // TODO: verify that this Prime/Echoes difference is real

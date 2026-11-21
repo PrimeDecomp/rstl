@@ -1,13 +1,9 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatement.hpp"
-#endif
 
 #include "dolphin/os/OSCache.h"
 

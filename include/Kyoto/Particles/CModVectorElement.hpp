@@ -1,10 +1,8 @@
 #ifndef _CMODVECTORELEMENT
 #define _CMODVECTORELEMENT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "rstl/types.h"
 

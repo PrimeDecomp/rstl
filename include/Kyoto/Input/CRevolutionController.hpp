@@ -1,10 +1,8 @@
 #ifndef _CREVOLUTIONCONTROLLER
 #define _CREVOLUTIONCONTROLLER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -15,9 +13,7 @@
 #endif
 
 #include "rstl/reserved_vector.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/single_ptr.hpp"
-#endif
 
 #include "revolution/kpad.h"
 

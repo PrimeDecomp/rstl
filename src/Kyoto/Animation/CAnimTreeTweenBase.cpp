@@ -1,11 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimTreeTweenBase.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 // TODO: verify that this Prime/Echoes difference is real
@@ -15,13 +11,11 @@
 
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatementSet.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CQuaternion.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"
-#endif
 
 #if RSTL_PRIME1
 const int CAnimTreeTweenBase::kBlendRoot_Offset = 1;

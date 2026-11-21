@@ -3,9 +3,7 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #else
@@ -16,27 +14,19 @@
 #include "rstl/RstlVersions.h"
 #endif
 #include "Kyoto/Basics/CStopwatch.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/CRandom16.hpp"
-#endif
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CLight.hpp"
-#endif
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
-#endif
 #include "Kyoto/Math/CRelAngle.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#endif
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
@@ -51,12 +41,9 @@
 
 #endif
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Particles/CWarp.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
-
-#endif
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
 #include "rstl/single_ptr.hpp"

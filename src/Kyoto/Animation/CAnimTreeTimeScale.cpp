@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CAnimTreeTimeScale.hpp"
 
@@ -10,9 +8,7 @@
 #include "Kyoto/Animation/CAssetSoundPOINode.hpp"
 #endif
 #include "Kyoto/Animation/CBoolPOINode.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CInt32POINode.hpp"
-#endif
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
 

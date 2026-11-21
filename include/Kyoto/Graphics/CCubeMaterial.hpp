@@ -1,9 +1,7 @@
 #ifndef _CCUBEMATERIAL
 #define _CCUBEMATERIAL
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "rstl/types.h"
 
 #include "Kyoto/Basics/CBasics.hpp"

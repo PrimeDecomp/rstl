@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
@@ -13,10 +11,7 @@
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextColor.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
-
-#endif
 #include "rstl/math.hpp"
 #include "dolphin/gx/GXVert.h"
 #include "limits.h"

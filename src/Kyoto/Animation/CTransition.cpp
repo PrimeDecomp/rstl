@@ -1,9 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Streams/CInputStream.hpp"
-
-#endif
 #include "Kyoto/Animation/CTransition.hpp"
 
 #include "Kyoto/Animation/CMetaTransFactory.hpp"

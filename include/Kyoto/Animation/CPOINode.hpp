@@ -1,10 +1,8 @@
 #ifndef _CPOINODE
 #define _CPOINODE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -16,9 +14,7 @@
 #include "Kyoto/Animation/CSegId.hpp"
 #endif
 #include "rstl/string.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/vector.hpp"
-#endif
 
 #if !RSTL_CORRUPTION
 class CInputStream;

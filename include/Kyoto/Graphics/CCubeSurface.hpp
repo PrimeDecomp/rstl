@@ -2,12 +2,10 @@
 #define _CCUBESURFACE
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/construct.hpp"
-#endif
 #include "rstl/static_assert.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Math/CAABox.hpp"

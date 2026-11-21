@@ -1,10 +1,7 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-
-#endif
 #include "Kyoto/Text/CFontInstruction.hpp"
 #include "Kyoto/Text/CFontRenderState.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"

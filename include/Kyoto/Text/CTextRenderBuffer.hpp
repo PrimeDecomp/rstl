@@ -1,10 +1,8 @@
 #ifndef _CTEXTRENDERBUFFER
 #define _CTEXTRENDERBUFFER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -16,9 +14,7 @@
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CTextColor.hpp"
-#endif
 #include "rstl/auto_ptr.hpp"
 
 #include "rstl/pair.hpp"

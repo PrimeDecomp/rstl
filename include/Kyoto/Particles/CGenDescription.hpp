@@ -2,23 +2,16 @@
 #define _CGENDESCRIPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "rstl/types.h"
 
 #include "Kyoto/CToken.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-
-#endif
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 
 #include "rstl/optional_object.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/single_ptr.hpp"
-#endif
 
 class CElectricDescription;
 class CModel;

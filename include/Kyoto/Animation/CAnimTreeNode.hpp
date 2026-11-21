@@ -1,10 +1,8 @@
 #ifndef _CANIMTREENODE
 #define _CANIMTREENODE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -17,9 +15,7 @@
 #include "rstl/rc_ptr.hpp"
 
 #include "rstl/reserved_vector.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/string.hpp"
-#endif
 
 class CAnimTreeNode : public IAnimReader {
 public:

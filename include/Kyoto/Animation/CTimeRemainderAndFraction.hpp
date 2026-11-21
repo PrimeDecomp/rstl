@@ -5,9 +5,7 @@
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Basics/CCast.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "rstl/math.hpp"
 
 class CIntegerTimeAndRemainder {

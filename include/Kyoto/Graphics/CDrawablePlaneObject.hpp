@@ -1,20 +1,15 @@
 #ifndef _CDRAWABLEPLANEOBJECT
 #define _CDRAWABLEPLANEOBJECT
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "Kyoto/Graphics/CDrawable.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CAABox.hpp"
-
-#endif
 #include "Kyoto/Math/CPlane.hpp"
 
 class CDrawablePlaneObject : public CDrawable {

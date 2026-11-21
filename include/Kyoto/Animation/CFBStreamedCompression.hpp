@@ -1,10 +1,8 @@
 #ifndef _CFBSTREAMEDCOMPRESSION
 #define _CFBSTREAMEDCOMPRESSION
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -25,15 +23,9 @@
 #endif
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Animation/IAnimReader.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CVector3f.hpp"
-
-#endif
 #include "Kyoto/Streams/CInputStream.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/TToken.hpp"
-
-#endif
 #include "rstl/auto_ptr.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/single_ptr.hpp"

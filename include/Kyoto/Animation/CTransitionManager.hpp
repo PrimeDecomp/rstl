@@ -3,14 +3,9 @@
 #include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-
-#endif
 #include "Kyoto/Animation/CAnimSysContext.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
-#endif
 
 #if !RSTL_CORRUPTION
 class IMetaTrans;

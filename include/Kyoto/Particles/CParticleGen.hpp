@@ -1,13 +1,9 @@
 #ifndef _CPARTICLEGEN
 #define _CPARTICLEGEN
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
 #include "Kyoto/Math/CAABox.hpp"

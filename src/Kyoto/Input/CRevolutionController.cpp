@@ -9,10 +9,8 @@
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #endif
 #include "Kyoto/Input/CFinalInput.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Input/CInputFilter.hpp"
 #include "Kyoto/Input/CRevolutionMotionProcessor.hpp"
-#endif
 #include "Kyoto/Math/CMath.hpp"
 
 #include "dolphin/vi.h"

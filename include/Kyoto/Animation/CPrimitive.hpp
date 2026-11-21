@@ -4,9 +4,7 @@
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/SObjectTag.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "rstl/StringExtras.hpp"
 #include "rstl/string.hpp"

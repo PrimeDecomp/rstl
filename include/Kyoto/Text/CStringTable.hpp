@@ -17,13 +17,9 @@
 
 #include "rstl/auto_ptr.hpp"
 #include "rstl/single_ptr.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/vector.hpp"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 
 class CInputStream;
 

@@ -1,10 +1,8 @@
 #ifndef _CELEMENTGEN
 #define _CELEMENTGEN
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -12,12 +10,9 @@
 #include "rstl/types.h"
 
 #include "Kyoto/CRandom16.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
 #include "Kyoto/Math/CAABox.hpp"
-
-#endif
 #include "Kyoto/Math/CMatrix3f.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"

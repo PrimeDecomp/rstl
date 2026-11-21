@@ -1,19 +1,15 @@
 #ifndef _CSOUNDPOINODE
 #define _CSOUNDPOINODE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #endif
 #include "Kyoto/Animation/CPOINode.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
-#endif
 
 class CSoundPOINode : public CPOINode {
 public:

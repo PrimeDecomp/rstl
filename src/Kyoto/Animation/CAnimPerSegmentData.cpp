@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSegId.hpp"
-#endif
 #include "Kyoto/Math/CQuaternion.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Math/CVector3f.hpp"

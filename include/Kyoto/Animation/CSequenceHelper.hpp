@@ -2,9 +2,7 @@
 #define _CSEQUENCEHELPER
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CSequenceFundamentals.hpp"
 

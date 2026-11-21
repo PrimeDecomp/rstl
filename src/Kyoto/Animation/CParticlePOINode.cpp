@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #if !RSTL_CORRUPTION
 #if !RSTL_PRIME1

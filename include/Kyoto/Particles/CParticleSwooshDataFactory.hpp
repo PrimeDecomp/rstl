@@ -1,11 +1,9 @@
 #ifndef _CPARTICLESWOOSHDATAFACTORY
 #define _CPARTICLESWOOSHDATAFACTORY
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
-#endif
 #include "Kyoto/CFactoryMgr.hpp"
 
 

@@ -1,7 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CColorElement.hpp"
 #include "Kyoto/Particles/CEmitterElement.hpp"

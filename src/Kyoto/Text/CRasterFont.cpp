@@ -7,9 +7,7 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #else
@@ -22,9 +20,7 @@
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"
-#endif
 #include "Kyoto/Graphics/CTexture.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"

@@ -1,10 +1,8 @@
 #ifndef _IANIMREADER
 #define _IANIMREADER
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -20,10 +18,7 @@
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
 
 #include "Kyoto/Particles/CParticleData.hpp"
-#if !RSTL_CORRUPTION
-
 #include "rstl/auto_ptr.hpp"
-#endif
 
 #include "rstl/math.hpp"
 #include "rstl/optional_object.hpp"

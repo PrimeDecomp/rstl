@@ -14,10 +14,8 @@
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 #include "rstl/vector.hpp"
 

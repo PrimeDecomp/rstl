@@ -1,17 +1,12 @@
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CAnimSource.hpp"
 
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CBoolPOINode.hpp"
-
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
-#endif
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
@@ -31,9 +26,7 @@
 #endif
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 #include "Kyoto/Streams/CInputStream.hpp"
 #if RSTL_CORRUPTION
 #include <rstl/types.h>

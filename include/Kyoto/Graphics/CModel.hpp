@@ -1,10 +1,8 @@
 #ifndef _CMODEL
 #define _CMODEL
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -14,12 +12,9 @@
 #include "rstl/types.h"
 
 #include "Kyoto/CFactoryMgr.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
-
-#endif
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/TToken.hpp"
 

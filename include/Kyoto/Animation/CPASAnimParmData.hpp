@@ -1,9 +1,7 @@
 #ifndef _CPASANIMPARMDATA
 #define _CPASANIMPARMDATA
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
 #include "Kyoto/Animation/CPASAnimState.hpp"
 

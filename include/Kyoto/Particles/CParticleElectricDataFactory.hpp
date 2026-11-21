@@ -1,13 +1,9 @@
 #ifndef _CPARTICLEELECTRICDATAFACTORY
 #define _CPARTICLEELECTRICDATAFACTORY
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
-#endif
 
-#if !RSTL_CORRUPTION
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 #include "Kyoto/CFactoryMgr.hpp"
 
 #if !RSTL_CORRUPTION

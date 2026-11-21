@@ -1,10 +1,8 @@
 #ifndef _CANIMSOURCE
 #define _CANIMSOURCE
 #include "rstl/RstlVersions.h"
-#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
@@ -24,16 +22,11 @@
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #endif
 #include "Kyoto/Math/CQuaternion.hpp"
-#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-
-#endif
 #include "rstl/auto_ptr.hpp"
-#if !RSTL_CORRUPTION
 #include "rstl/pair.hpp"
 #include "rstl/set.hpp"
 #include "rstl/string.hpp"
-#endif
 #include "rstl/math.hpp"
 
 #include "rstl/vector.hpp"

@@ -2,10 +2,8 @@
 #define _IMETATRANS
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_CORRUPTION
 #include "rstl/types.h"
 #include "rstl/RstlVersions.h"
-#endif
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 #include "rstl/rc_ptr.hpp"
 

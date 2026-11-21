@@ -2,9 +2,7 @@
 #define _CPARTICLESPAWNSYSTEMDATAFACTORY
 #include "rstl/RstlVersions.h"
 
-#if !RSTL_CORRUPTION
 #include "rstl/types.h"
-#endif
 #include "Kyoto/CFactoryMgr.hpp"
 #if RSTL_CORRUPTION
 #include "rstl/types.h"
