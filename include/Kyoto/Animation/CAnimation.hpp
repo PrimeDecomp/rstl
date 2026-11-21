@@ -12,6 +12,7 @@ class CInputStream;
 class CAnimation {
 public:
   CAnimation(CInputStream& in);
+  const rstl::string& GetName() const { return mName; }
   const rstl::rc_ptr< IMetaAnim >& GetMetaAnim() const { return mAnim; }
 
 private:

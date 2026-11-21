@@ -33,7 +33,7 @@ CMetaAnimPhaseBlend::VGetAnimationTree(const CAnimSysContext& animSys,
   CCharAnimTime duration = durationA + (durationB - durationA) * mBlend;
   float scaleA = durationA / duration;
   float scaleB = durationB / duration;
-  rstl::ncrc_ptr< CAnimTreeNode > scaledA = rs_new CAnimTreeTimeScale(
+  rstl::ncrc_ptr< CAnimTreeNode > scaledA = rs_new_line(83) CAnimTreeTimeScale(
       a, scaleA,
       CAnimTreeTimeScale::CreatePrimitiveName(a, scaleA, CCharAnimTime::Infinity(), -1.f));
   rstl::ncrc_ptr< CAnimTreeNode > scaledB = rs_new CAnimTreeTimeScale(

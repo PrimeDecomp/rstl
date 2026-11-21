@@ -27,6 +27,8 @@ public:
   static CSegId Null() {
 #if RSTL_PRIME1
     return CSegId(0);
+#elif RSTL_CORRUPTION
+    return CSegId(149);
 #else
     return CSegId(99);
 #endif
