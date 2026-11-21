@@ -475,28 +475,14 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mLoadedGenDesc->mMAXP->GetValue(mCurFrame, mMAXP);
 #endif
   }
-#if RSTL_CORRUPTION
-  int initialCapacity = mMAXP;
-  if (initialCapacity > 256) {
-    initialCapacity = 256;
-#else
   int count = mMAXP;
   if (count > 256) {
     count = 256;
-#endif
   }
-#if RSTL_CORRUPTION
-  mParticles.reserve(initialCapacity);
-#else
   mParticles.reserve(count);
 
-#endif
   if (mEnableADV) {
-#if RSTL_CORRUPTION
-    mAdvValues.assign(initialCapacity);
-#else
     mAdvValues.assign(count);
-#endif
   }
 
   if (mOrientType == kMOT_One) {
