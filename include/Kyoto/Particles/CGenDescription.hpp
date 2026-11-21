@@ -67,19 +67,11 @@ public:
   bool mVMD3 : 1;
   bool mVMD4 : 1;
   bool mCIND : 1;
-#if RSTL_CORRUPTION
-  bool mINDM : 1;
-#else
 #if !RSTL_PRIME1
   bool mINDM : 1;
 #endif
 
-#endif
   bool mOPTS : 1;
-#if RSTL_CORRUPTION
-  bool mRDOP : 1;
-  bool mVMPC : 1;
-#else
 #if RSTL_PARTICLE_RDOP
   bool mRDOP : 1;
 #endif
@@ -87,7 +79,6 @@ public:
   bool mVMPC : 1;
 #endif
 
-#endif
   CIntElement* mMBSP;
   CRealElement* mSIZE;
 #if RSTL_CORRUPTION
@@ -117,14 +108,10 @@ public:
   CVectorElement* mPMRT;
   CVectorElement* mPMSC;
   CColorElement* mPMCL;
-#if RSTL_CORRUPTION
-  CVectorElement* mPMOV;
-#else
 #if !RSTL_PRIME1
   CVectorElement* mPMOV;
 #endif
 
-#endif
   CModVectorElement* mVEL1;
   CModVectorElement* mVEL2;
   CModVectorElement* mVEL3;
@@ -140,15 +127,11 @@ public:
 
   CIntElement* mPISY;
   CIntElement* mSISY;
-#if RSTL_CORRUPTION
-  CSpawnSystemKeyframeData* mKSSM;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::single_ptr< CSpawnSystemKeyframeData > mKSSM;
 #else
   CSpawnSystemKeyframeData* mKSSM;
-#endif
 #endif
   TSwooshGeneratorDesc mSSWH;
 
@@ -174,13 +157,6 @@ public:
   CRealElement* mADV6;
   CRealElement* mADV7;
   CRealElement* mADV8;
-#if RSTL_CORRUPTION
-  CRealElement* mADV9;
-  CVectorElement* mVAV1;
-  CVectorElement* mVAV2;
-  CVectorElement* mVAV3;
-  int mDFLG;
-#else
 #if !RSTL_PRIME1
   CRealElement* mADV9;
   CVectorElement* mVAV1;
@@ -189,7 +165,6 @@ public:
   int mDFLG;
 #endif
 
-#endif
 };
 #if RSTL_CORRUPTION
 CHECK_SIZEOF(CGenDescription, 0x15C)

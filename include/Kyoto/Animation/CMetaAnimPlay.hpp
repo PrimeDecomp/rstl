@@ -15,13 +15,6 @@
 
 class CMetaAnimPlay : public IMetaAnim {
 public:
-#if RSTL_CORRUPTION
-  explicit CMetaAnimPlay(CInputStream& in) : mPrimitive(in), mStartTime(in) {}
-
-  // IMetaAnim
-  ~CMetaAnimPlay() override {}
-  void GetUniquePrimitives(rstl::set< CPrimitive >& primsOut) const override;
-#else
 #if !RSTL_PRIME1
   explicit CMetaAnimPlay(CInputStream& in) : mPrimitive(in), mStartTime(in) {}
 
@@ -30,11 +23,7 @@ public:
   void GetUniquePrimitives(rstl::set< CPrimitive >& primsOut) const override;
 #endif
 
-#endif
   EMetaAnimType GetType() const override { return kMAT_Play; }
-#if RSTL_CORRUPTION
-  void WriteAnimData(COutputStream& out) const override;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void GetUniquePrimitives(rstl::set< CPrimitive >& primsOut) const override;
@@ -42,7 +31,6 @@ public:
   void WriteAnimData(COutputStream& out) const override;
 #endif
 
-#endif
   rstl::ncrc_ptr< CAnimTreeNode >
   VGetAnimationTree(const CAnimSysContext& animSys,
                     const CMetaAnimTreeBuildOrders& orders) const override;

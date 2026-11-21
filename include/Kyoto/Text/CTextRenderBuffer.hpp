@@ -48,26 +48,6 @@ public:
     signed char mIndex;
   };
 
-#if RSTL_CORRUPTION
-  struct SFontPalette {
-    SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette1,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette2,
-                 const rstl::auto_ptr< CGraphicsPalette >& palette3)
-    : mMode(mode)
-    , mPalette0(palette0)
-    , mPalette1(palette1)
-    , mPalette2(palette2)
-    , mPalette3(palette3) {}
-
-    EFontMode mMode;
-    ushort mColors[4];
-    rstl::auto_ptr< CGraphicsPalette > mPalette0;
-    rstl::auto_ptr< CGraphicsPalette > mPalette1;
-    rstl::auto_ptr< CGraphicsPalette > mPalette2;
-    rstl::auto_ptr< CGraphicsPalette > mPalette3;
-  };
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   struct SFontPalette {
     SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
@@ -92,7 +72,6 @@ public:
     rstl::auto_ptr< CGraphicsPalette > mPalette2;
     rstl::auto_ptr< CGraphicsPalette > mPalette3;
   };
-#endif
 #endif
 
   explicit CTextRenderBuffer(EMode mode);
@@ -133,9 +112,6 @@ public:
   Primitive GetPrimitive(int index) const;
   void SetPrimitive(const Primitive& prim, int index);
   // Guessed name. Returns cached bounds, rebuilding them when dirty.
-#if RSTL_CORRUPTION
-  const rstl::pair< CVector2i, CVector2i >& GetTextBounds();
-#else
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   const rstl::pair< CVector2i, CVector2i >& AccumulateTextBounds();
@@ -147,18 +123,9 @@ public:
   // Guessed name. Returns cached bounds, rebuilding them when dirty.
   const rstl::pair< CVector2i, CVector2i >& GetTextBounds();
 #endif
-#endif
 
 private:
   void VerifyBuffer();
-#if RSTL_CORRUPTION
-  void AccumulateTextBounds();
-  void GetNextAvailablePalette() const;
-  int GetMatchingPaletteIndex(EFontMode mode, const CGraphicsPalette& palette) const;
-  // Guessed name for the mode/layer palette expansion helper.
-  static void GeneratePalette(EFontMode mode, int layer, CGraphicsPalette& dest,
-                              const CGraphicsPalette& source);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -171,7 +138,6 @@ private:
   // Guessed name for the mode/layer palette expansion helper.
   static void GeneratePalette(EFontMode mode, int layer, CGraphicsPalette& dest,
                               const CGraphicsPalette& source);
-#endif
 #endif
 
   EMode mMode;
@@ -187,16 +153,12 @@ private:
   mutable char mActivePalette;
   mutable char mQueuedFont;
   mutable char mQueuedPalette;
-#if RSTL_CORRUPTION
-  mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
 #else
   mutable rstl::reserved_vector< rstl::auto_ptr< CGraphicsPalette >, 64 > mPalettes;
 #endif
 
-#endif
   mutable int mNextPalette;
 #if RSTL_CORRUPTION
   rstl::pair< CVector2i, CVector2i > mTextBounds;
@@ -224,12 +186,8 @@ CHECK_SIZEOF(CTextRenderBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xb6c : 0x258))
 
 #endif
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, Primitive, 0x10)
-#if RSTL_CORRUPTION
-NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
-#endif
 #endif
 
 #endif // _CTEXTRENDERBUFFER

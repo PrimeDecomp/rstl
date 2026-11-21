@@ -24,16 +24,12 @@ struct SDSPStreamCacheEntry {
 
   SDSPStreamCacheEntry();
   SDSPStreamCacheEntry(int playState, const rstl::string& fileName, int volume, float fadeIn,
-#if RSTL_CORRUPTION
-                       float fadeOut, float fadeFactor, int handle, bool music);
-#else
                        float fadeOut,
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                        float fadeFactor,
 #endif
                        int handle, bool music);
-#endif
 };
 #if RSTL_CORRUPTION
 CHECK_SIZEOF(SDSPStreamCacheEntry, 0x2C)
@@ -108,14 +104,10 @@ private:
   static float mCurrentVolume;
   static float mTargetVolume;
   static int mGlobalVolume;
-#if RSTL_CORRUPTION
-  static int mCurrentGlobalVolume;
-#else
 #if !RSTL_PRIME1
   static int mCurrentGlobalVolume;
 #endif
 
-#endif
   static int mForegroundVolume;
   static bool mEnable;
   static bool mForegroundEnable;

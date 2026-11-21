@@ -22,17 +22,6 @@
 
 class CPoseAsTransforms {
 public:
-#if RSTL_CORRUPTION
-  const CMatrix3f& GetRotation(const CSegId& id) const;
-
-  private:
-  CSegId mNextId;
-  CSegId mCount;
-  // TODO TSegIdMapVariableSize<CPoseAsTransforms::CElementType>
-  rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mLinks;
-  rstl::single_ptr< CTransform4f > mTransformArr;
-  CSegId mLastInserted;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   class CElementType {
@@ -73,7 +62,6 @@ private:
   rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mLinks;
   rstl::single_ptr< CTransform4f > mTransformArr;
   CSegId mLastInserted;
-#endif
 #endif
 };
 CHECK_SIZEOF(CPoseAsTransforms, 0xd8)

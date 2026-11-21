@@ -30,12 +30,8 @@ private:
   rstl::string mName;
   rstl::rc_ptr< IMetaAnim > mAnim;
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CAnimation, 0x18)
-#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CAnimation, 0x18)
-#endif
 #endif
 
 #endif // _CANIMATION

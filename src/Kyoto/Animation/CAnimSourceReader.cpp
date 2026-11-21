@@ -100,15 +100,11 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
   UpdatePOIStates();
 #endif
 
-#if RSTL_CORRUPTION
-  const CSegId root = CSegId(0);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
-#endif
 #endif
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
   const CQuaternion newRotation = mSource->GetRotation(root, mCurTime);
@@ -260,15 +256,11 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
     mCurTime = CCharAnimTime();
   }
 
-#if RSTL_CORRUPTION
-  const CSegId root = CSegId(0);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
-#endif
 #endif
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
   const CQuaternion newRotation = mSource->GetRotation(root, mCurTime);
@@ -369,15 +361,11 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
     currentTime = duration;
   }
 
-#if RSTL_CORRUPTION
-  const CSegId root = CSegId(0);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
-#endif
 #endif
   CVector3f offset(0.f, 0.f, 0.f);
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
@@ -400,10 +388,6 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
 #endif
 }
 
-#if RSTL_CORRUPTION
-CAnimSourceReader::~CAnimSourceReader() {}
-#else
 #if !RSTL_PRIME1
 CAnimSourceReader::~CAnimSourceReader() {}
-#endif
 #endif

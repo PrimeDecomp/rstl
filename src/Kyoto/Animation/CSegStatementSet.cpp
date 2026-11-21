@@ -95,9 +95,6 @@ inline void* AllocateSegment() {
 }
 
 inline void FreeSegment(CSegStatement* seg) {
-#if RSTL_CORRUPTION
-  char* base = static_cast< char* >(LCGetBase());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #ifdef __MWERKS__
@@ -109,17 +106,12 @@ inline void FreeSegment(CSegStatement* seg) {
 #else
   char* base = static_cast< char* >(LCGetBase());
 #endif
-#endif
   char* ptr = reinterpret_cast< char* >(seg);
-#if RSTL_CORRUPTION
-  if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (ptr >= base && ptr < base + 5 * kSegmentSetSize) {
 #else
   if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
-#endif
 #endif
     int index = (ptr - base) / kSegmentSetSize;
     sFreeSegments |= 1 << index;

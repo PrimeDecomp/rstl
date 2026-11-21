@@ -75,20 +75,6 @@ static FourCC mCurrentLanguage = 'ENGL';
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-struct SLanguageInfo {
-  FourCC mLanguage;
-  uint mOffset;
-  uint mSize;
-};
-
-struct SStringNameLess {
-  template < typename T >
-  bool operator()(const T& a, const T& b) const {
-    return strcmp(a.mName, b.mName) < 0;
-  }
-};
-#else
 #if !RSTL_PRIME1
 struct SLanguageInfo {
   FourCC mLanguage;
@@ -103,14 +89,9 @@ struct SStringNameLess {
   }
 };
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
-#endif
 #endif
 
 CStringTable::CStringTable(CInputStream& in)
@@ -346,9 +327,6 @@ const wchar_t* CStringTable::GetString(int idx) const {
   if (idx < 0 || idx >= mStringCount) {
     return skInvalidString;
   }
-#if RSTL_CORRUPTION
-  return mStrings[idx];
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
@@ -359,7 +337,6 @@ const wchar_t* CStringTable::GetString(int idx) const {
 #endif
 #else
   return mStrings[idx];
-#endif
 #endif
 }
 

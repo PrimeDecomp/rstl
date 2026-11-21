@@ -506,16 +506,6 @@ void CModel::Draw(const CModelFlags& flags) const {
 }
 #endif
 
-#if RSTL_CORRUPTION
-void CModel::Draw(u64 mask, const CModelFlags& flags) const {
-  PreDrawModel(flags);
-  if (flags.GetOtherFlags() & CModelFlags::kF_DrawNormal) {
-    mModelInstance->DrawNormal(kSS_All);
-  }
-  CSkinMatricesGuard guard(SetupSkinMatrices());
-  mModelInstance->Draw(mask, flags);
-}
-#else
 #if !RSTL_PRIME1
 void CModel::Draw(u64 mask, const CModelFlags& flags) const {
   PreDrawModel(flags);
@@ -525,7 +515,6 @@ void CModel::Draw(u64 mask, const CModelFlags& flags) const {
   CSkinMatricesGuard guard(SetupSkinMatrices());
   mModelInstance->Draw(mask, flags);
 }
-#endif
 #endif
 
 void CModel::DrawUnsortedParts(const CModelFlags& flags) const {
@@ -926,16 +915,10 @@ void CModel::RemapData(uchar* data) {
 
 void CModel::UpdateLastFrame() const { mLastFrame = CGraphics::GetFrameCounter(); }
 
-#if RSTL_CORRUPTION
-bool CModel::IsDefinitelyOpaque() const {
-  return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
-}
-#else
 #if !RSTL_PRIME1
 bool CModel::IsDefinitelyOpaque() const {
   return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
 }
-#endif
 #endif
 
 const CAABox& CModel::GetAABB() const { return mModelInstance->GetBoundingBox(); }

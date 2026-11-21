@@ -325,9 +325,6 @@ private:
 #endif
 #endif
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CSkinnedModel, 0x24)
-#else
 
 #if RSTL_PRIME1
 class CSkinnedModelWithAvgNormals {
@@ -341,7 +338,6 @@ public:
 };
 #else
 CHECK_SIZEOF(CSkinnedModel, 0x24)
-#endif
 #endif
 
 #endif // _CSKINNEDMODEL

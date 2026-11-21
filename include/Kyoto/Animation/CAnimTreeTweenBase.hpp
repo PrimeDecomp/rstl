@@ -64,16 +64,6 @@ public:
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-  // CAnimTreeNode
-  void VGetWeightedReaders(
-      float weight,
-      rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const override;
-
-  // CAnimTreeDoubleChild
-  float VGetRightChildWeight() const override;
-
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   // CAnimTreeNode
@@ -85,16 +75,10 @@ public:
   float VGetRightChildWeight() const override;
 
 #endif
-#endif
   virtual void SetBlendingWeight(float weight) = 0;
-#if RSTL_CORRUPTION
-  virtual rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VReverseSimplified();
-  virtual float VGetBlendingWeight() const = 0;
-#else
 #if !RSTL_PRIME1
   virtual rstl::optional_object< rstl::ownership_transfer< IAnimReader > > VReverseSimplified();
   virtual float VGetBlendingWeight() const = 0;
-#endif
 #endif
 
   float GetBlendingWeight() const;
@@ -126,14 +110,10 @@ public:
 protected:
   int mFlags;
   s32 mCharacterSpaceBlend : 1;
-#if RSTL_CORRUPTION
-  s32 mCullSelector : 2;
-#else
 #if RSTL_PRIME1 && NONMATCHING
   u32 mCullSelector : 2;
 #else
   s32 mCullSelector : 2;
-#endif
 #endif
 
 private:

@@ -75,10 +75,6 @@ private:
 class CGlyph {
 public:
   CGlyph(const int a, const int b, const int c, const float startU, const float startV,
-#if RSTL_CORRUPTION
-         const float endU, const float endV, const int layer, const int cellWidth,
-         const int cellHeight, const int baseline, const int kernStart)
-#else
          const float endU, const float endV,
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -90,7 +86,6 @@ public:
          , const uchar layer = 0
 #endif
          )
-#endif
   : mA(a)
   , mB(b)
   , mC(c)
@@ -98,12 +93,8 @@ public:
   , mStartV(startV)
   , mEndU(endU)
   , mEndV(endV)
-#if RSTL_CORRUPTION
-  , mLayer(layer)
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   , mLayer(layer)
-#endif
 #endif
   , mCellWidth(cellWidth)
   , mCellHeight(cellHeight)
@@ -117,11 +108,6 @@ public:
   float GetStartV() const { return mStartV; }
   float GetEndU() const { return mEndU; }
   float GetEndV() const { return mEndV; }
-#if RSTL_CORRUPTION
-  uchar GetCellWidth() const { return mCellWidth; }
-  uchar GetCellHeight() const { return mCellHeight; }
-  uchar GetBaseline() const { return mBaseline; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetCellWidth() const { return mCellWidth; }
@@ -133,11 +119,7 @@ public:
   uchar GetBaseline() const { return mBaseline; }
 #endif
 
-#endif
   int GetKernStart() const { return mKernStart; }
-#if RSTL_CORRUPTION
-  uchar GetLayer() const { return mLayer; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetLayer() const {
@@ -150,7 +132,6 @@ public:
 #else
   uchar GetLayer() const { return mLayer; }
 #endif
-#endif
 
 private:
   short mA;
@@ -160,12 +141,6 @@ private:
   float mStartV;
   float mEndU;
   float mEndV;
-#if RSTL_CORRUPTION
-  uchar mLayer;
-  uchar mCellWidth;
-  uchar mCellHeight;
-  uchar mBaseline;
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   uchar mLayer;
   uchar mCellWidth;
@@ -175,7 +150,6 @@ private:
   short mCellWidth;
   short mCellHeight;
   short mBaseline;
-#endif
 #endif
   short mKernStart;
 };

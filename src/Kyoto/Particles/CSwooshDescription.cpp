@@ -40,26 +40,18 @@ CSwooshDescription::CSwooshDescription()
 , mSROT(false)
 , mWIRE(false)
 , mTEXW(false)
-#if RSTL_CORRUPTION
-, mCLTX(false)
-#else
 #if !RSTL_PRIME1
 , mCLTX(false)
 #endif
 
-#endif
 , mAALP(false)
 , mZBUF(false)
 , mORNT(false)
 , mCRND(false)
-#if RSTL_CORRUPTION
-, mDFLG(0) {}
-#else
 #if !RSTL_PRIME1
 , mDFLG(0)
 #endif
 {}
-#endif
 
 CSwooshDescription::~CSwooshDescription() {
   delete mPSLT;

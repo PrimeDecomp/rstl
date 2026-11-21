@@ -175,11 +175,6 @@ private:
 
 #endif
   mutable uint mLastFrame;
-#if RSTL_CORRUPTION
-  mutable uint mCurrentMatxIdx : 16;
-  uint mInitialTextureLocksReleased : 1;
-  uint mHasSkinMatrices : 1;
-#else
 #if !RSTL_PRIME1
   mutable uint mCurrentMatxIdx : 16;
   uint mInitialTextureLocksReleased : 1;
@@ -188,7 +183,6 @@ private:
 #if defined(TARGET_PC)
   uint mResourceSize;
 #endif
-#endif
 };
 #if RSTL_CORRUPTION
 CHECK_SIZEOF(CModel, 0x24)
@@ -196,9 +190,6 @@ CHECK_SIZEOF(CModel, 0x24)
 CHECK_SIZEOF(CModel, RSTL_PRIME1 ? 0x3c : 0x34)
 #endif
 
-#if RSTL_CORRUPTION
-CFactoryFnReturn FModelFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& ptr, int len,
-#else
 #if RSTL_PRIME1
 inline bool CModel::IsDefinitelyOpaque() const {
   return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
@@ -221,7 +212,6 @@ inline void CModel::PreDrawModel(const CModelFlags& flags) const {
 
 RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
                                                  const rstl::auto_ptr< uchar >& ptr, int len,
-#endif
                                                  const CVParamTransfer& xfer);
 
 #endif // _CMODEL

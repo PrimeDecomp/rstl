@@ -40,17 +40,12 @@ SPASAnimSelection CPASDatabase::FindBestAnimation(const CPASAnimParmData& data,
 rstl::pair< float, int > CPASDatabase::FindBestAnimation(const CPASAnimParmData& data,
 #endif
                                                          int ignoreAnim) const {
-#if RSTL_CORRUPTION
-  rstl::vector< CPASAnimState >::const_iterator it =
-      rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   AUTO(it, rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId())));
 #else
   rstl::vector< CPASAnimState >::const_iterator it =
       rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
-#endif
 #endif
   if (it != mStates.end()) {
     CRandom16 random(0x1234);
@@ -69,17 +64,12 @@ SPASAnimSelection CPASDatabase::FindBestAnimation(const CPASAnimParmData& data,
 rstl::pair< float, int > CPASDatabase::FindBestAnimation(const CPASAnimParmData& data,
 #endif
                                                          CRandom16& random, int ignoreAnim) const {
-#if RSTL_CORRUPTION
-  rstl::vector< CPASAnimState >::const_iterator it =
-      rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   AUTO(it, rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId())));
 #else
   rstl::vector< CPASAnimState >::const_iterator it =
       rstl::binary_find(mStates.begin(), mStates.end(), CPASAnimState(data.GetStateId()));
-#endif
 #endif
   if (it != mStates.end()) {
     return it->FindBestAnimation(data.GetAnimParmData(), random, ignoreAnim);

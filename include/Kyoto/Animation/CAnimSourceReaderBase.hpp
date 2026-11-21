@@ -98,12 +98,8 @@ public:
 #endif
 #endif
   : mSourceInfo(sourceInfo)
-#if RSTL_CORRUPTION
-  , mPOIData(poiData)
-#else
 #if !RSTL_PRIME1
   , mPOIData(poiData)
-#endif
 #endif
   , mCurTime(time)
   , mPassedBoolCount(passedBoolCount)
@@ -166,12 +162,8 @@ protected:
 #endif
 
   rstl::object_owner< IAnimSourceInfo > mSourceInfo;
-#if RSTL_CORRUPTION
-  const CAnimPOIData* mPOIData;
-#else
 #if !RSTL_PRIME1
   const CAnimPOIData* mPOIData;
-#endif
 #endif
   CCharAnimTime mCurTime;
   int mPassedBoolCount;

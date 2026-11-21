@@ -46,12 +46,8 @@ private:
   TToken< CRasterFont > mFont;
 };
 
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CFontInstruction, 0xc)
-#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CFontInstruction, 0xc)
-#endif
 #endif
 
 #endif // _CFONTINSTRUCTION

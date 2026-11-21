@@ -114,19 +114,11 @@ CGenDescription::CGenDescription()
 , mVMD3(false)
 , mVMD4(false)
 , mCIND(false)
-#if RSTL_CORRUPTION
-, mINDM(false)
-#else
 #if !RSTL_PRIME1
 , mINDM(false)
 #endif
 
-#endif
 , mOPTS(false)
-#if RSTL_CORRUPTION
-, mRDOP(true)
-, mVMPC(false)
-#else
 #if RSTL_PARTICLE_RDOP
 , mRDOP(true)
 #endif
@@ -134,7 +126,6 @@ CGenDescription::CGenDescription()
 , mVMPC(false)
 #endif
 
-#endif
 , mMBSP(nullptr)
 , mSIZE(nullptr)
 #if RSTL_CORRUPTION
@@ -163,14 +154,10 @@ CGenDescription::CGenDescription()
 , mPMRT(nullptr)
 , mPMSC(nullptr)
 , mPMCL(nullptr)
-#if RSTL_CORRUPTION
-, mPMOV(nullptr)
-#else
 #if !RSTL_PRIME1
 , mPMOV(nullptr)
 #endif
 
-#endif
 , mVEL1(nullptr)
 , mVEL2(nullptr)
 , mVEL3(nullptr)
@@ -180,14 +167,10 @@ CGenDescription::CGenDescription()
 , mNDSY(nullptr)
 , mPISY(nullptr)
 , mSISY(nullptr)
-#if RSTL_CORRUPTION
-, mKSSM(nullptr)
-#else
 #if !RSTL_PRIME1
 , mKSSM(nullptr)
 #endif
 
-#endif
 , mSSSD(nullptr)
 , mSSPO(nullptr)
 , mSESD(nullptr)
@@ -208,13 +191,6 @@ CGenDescription::CGenDescription()
 , mADV6(nullptr)
 , mADV7(nullptr)
 , mADV8(nullptr)
-#if RSTL_CORRUPTION
-, mADV9(nullptr)
-, mVAV1(nullptr)
-, mVAV2(nullptr)
-, mVAV3(nullptr)
-, mDFLG(0) {}
-#else
 #if !RSTL_PRIME1
 , mADV9(nullptr)
 , mVAV1(nullptr)
@@ -223,18 +199,13 @@ CGenDescription::CGenDescription()
 , mDFLG(0)
 #endif
 {}
-#endif
 
 CGenDescription::~CGenDescription() {
   for (int i = 0; i < ARRAY_SIZE(skGenOffsets); ++i) {
     delete *element_from_desc(this, skGenOffsets[i]);
   }
-#if RSTL_CORRUPTION
-  delete mKSSM;
-#else
 #if !RSTL_PRIME1
   delete mKSSM;
 #endif
 
-#endif
 }

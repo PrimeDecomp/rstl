@@ -176,30 +176,18 @@ bool CParticleSwooshDataFactory::CreateWPSM(CSwooshDescription* desc, CInputStre
     case 'TEXW':
       desc->mTEXW = CParticleDataFactory::GetBool(in);
       break;
-#if RSTL_CORRUPTION
-    case 'CLTX':
-      desc->mCLTX = CParticleDataFactory::GetBool(in);
-      break;
-#else
 #if !RSTL_PRIME1
     case 'CLTX':
       desc->mCLTX = CParticleDataFactory::GetBool(in);
       break;
-#endif
 #endif
     case 'CRND':
       desc->mCRND = CParticleDataFactory::GetBool(in);
       break;
-#if RSTL_CORRUPTION
-    case 'DFLG':
-      desc->mDFLG = CParticleDataFactory::GetBitflag(in);
-      break;
-#else
 #if !RSTL_PRIME1
     case 'DFLG':
       desc->mDFLG = CParticleDataFactory::GetBitflag(in);
       break;
-#endif
 #endif
     case '_END':
       done = true;

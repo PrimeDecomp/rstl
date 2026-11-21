@@ -91,25 +91,6 @@ void CUVEAnimTexture::GetValueUV(int frame, SUVElementSet& valOut) const {
   int cv = 1;
   mCycleFrames->GetValue(frame, cv);
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  int tile = 0;
-  if (cv != 0) {
-    float cvf =
-        static_cast< float >(frame) / (static_cast< float >(cv) / static_cast< float >(mTiles));
-
-    if (mLoop) {
-      tile = rstl::max_val(static_cast< int >(cvf), 0);
-      if (tile >= mTiles) {
-        tile = tile % mTiles;
-      }
-    } else {
-      tile = static_cast< int >(cvf);
-      if (static_cast< int >(cvf) >= mTiles) {
-        tile = mTiles - 1;
-      }
-    }
-  }
-#else
 #if RSTL_PRIME1
   float cvf =
       static_cast< float >(frame) / (static_cast< float >(cv) / static_cast< float >(mTiles));
@@ -144,7 +125,6 @@ void CUVEAnimTexture::GetValueUV(int frame, SUVElementSet& valOut) const {
       }
     }
   }
-#endif
 #endif
 
   valOut = mUvElems[tile];

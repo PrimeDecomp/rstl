@@ -27,9 +27,6 @@ class CPoseAsTransforms;
 
 class CVertexMorphEffect {
 public:
-#if RSTL_CORRUPTION
-  ~CVertexMorphEffect() {}
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVertexMorphEffect(const CUnitVector3f& dir, const CVector3f& pos, float duration,
@@ -49,7 +46,6 @@ public:
 #else
   ~CVertexMorphEffect() {}
 #endif
-#endif
 
 private:
   CUnitVector3f mDir;
@@ -58,10 +54,6 @@ private:
   float mElapsed;
   float mDiagExtent;
   CRandom16& mRandom;
-#if RSTL_CORRUPTION
-  rstl::vector< uint > mIndices;
-  rstl::vector< float > mFloats;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mutable rstl::vector< uint > mIndices;
@@ -69,7 +61,6 @@ private:
 #else
   rstl::vector< uint > mIndices;
   rstl::vector< float > mFloats;
-#endif
 #endif
 };
 

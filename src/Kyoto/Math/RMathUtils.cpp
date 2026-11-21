@@ -172,9 +172,6 @@ const float CMath::FloorF(float x) { return floor(x); }
 #endif
 
 float CMath::CeilingF(float x) {
-#if RSTL_CORRUPTION
-  float tmp = floor(x);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
@@ -186,44 +183,12 @@ float CMath::CeilingF(float x) {
   float tmp = floor(x);
 #endif
 
-#endif
   if (tmp == x) {
     return x;
   }
   return tmp + 1.f;
 }
 
-#if RSTL_CORRUPTION
-CVector3f CMath::GetHermiteSplinePoint(const CVector3f& a, const CVector3f& b,
-                                       const CVector3f& tangentA, const CVector3f& tangentB,
-                                       float t) {
-  if (t <= 0.f) {
-    return a;
-  }
-  if (t >= 1.f) {
-    return b;
-  }
-
-  const float t2 = t * t;
-  const float t3 = t2 * t;
-  const float h00 = 1.f + (2.f * t3 - 3.f * t2);
-  const float h01 = -2.f * t3 + 3.f * t2;
-  const float h10 = t + (t3 - 2.f * t2);
-  const float h11 = t3 - t2;
-  return h00 * a + h01 * b + h10 * tangentA + h11 * tangentB;
-}
-
-CVector3f CMath::GetHermiteSplineTangent(const CVector3f& a, const CVector3f& b,
-                                         const CVector3f& tangentA, const CVector3f& tangentB,
-                                         float t) {
-  const float t2 = t * t;
-  const float h00 = 6.f * t2 - 6.f * t;
-  const float h01 = -6.f * t2 + 6.f * t;
-  const float h10 = 1.f + (3.f * t2 - 4.f * t);
-  const float h11 = 3.f * t2 - 2.f * t;
-  return h00 * a + h01 * b + h10 * tangentA + h11 * tangentB;
-}
-#else
 #if !RSTL_PRIME1
 CVector3f CMath::GetHermiteSplinePoint(const CVector3f& a, const CVector3f& b,
                                        const CVector3f& tangentA, const CVector3f& tangentB,
@@ -254,7 +219,6 @@ CVector3f CMath::GetHermiteSplineTangent(const CVector3f& a, const CVector3f& b,
   const float h11 = 3.f * t2 - 2.f * t;
   return h00 * a + h01 * b + h10 * tangentA + h11 * tangentB;
 }
-#endif
 #endif
 
 CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
@@ -278,14 +242,6 @@ CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b
 #endif
 }
 
-#if RSTL_CORRUPTION
-CVector3f CMath::GetCatmullRomSplineTangent(const CVector3f& a, const CVector3f& b,
-                                            const CVector3f& c, const CVector3f& d, float t) {
-  const float t2 = t * t;
-  return 0.5f * ((-3.f * t2 + 4.f * t - 1.f) * a + (9.f * t2 - 10.f * t) * b +
-                 (1.f + (-9.f * t2 + 8.f * t)) * c + (3.f * t2 - 2.f * t) * d);
-}
-#else
 #if !RSTL_PRIME1
 CVector3f CMath::GetCatmullRomSplineTangent(const CVector3f& a, const CVector3f& b,
                                             const CVector3f& c, const CVector3f& d, float t) {
@@ -293,7 +249,6 @@ CVector3f CMath::GetCatmullRomSplineTangent(const CVector3f& a, const CVector3f&
   return 0.5f * ((-3.f * t2 + 4.f * t - 1.f) * a + (9.f * t2 - 10.f * t) * b +
                  (1.f + (-9.f * t2 + 8.f * t)) * c + (3.f * t2 - 2.f * t) * d);
 }
-#endif
 #endif
 
 float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float t) {
@@ -859,15 +814,11 @@ static const uint skSinX4 = 0xb9206873; // -0.000152977f
 
 #endif
 float CMath::FastSinR(float x) {
-#if RSTL_CORRUPTION
-  if (fabsf(x) > M_PIF) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (fabs(x) > M_PIF) {
 #else
   if (fabsf(x) > M_PIF) {
-#endif
 #endif
     x = WrapPi(x);
   }
@@ -893,15 +844,11 @@ static const uint skCosX5 = 0x37a93188; // 0.000020169435f
 
 #endif
 float CMath::FastCosR(float x) {
-#if RSTL_CORRUPTION
-  if (fabsf(x) > M_PIF) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (fabs(x) > M_PIF) {
 #else
   if (fabsf(x) > M_PIF) {
-#endif
 #endif
     x = WrapPi(x);
   }
@@ -927,15 +874,11 @@ static const uint skArcCosX5 = 0xbe980d88; // -0.29697824f
 
 #endif
 float CMath::FastArcCosR(float x) {
-#if RSTL_CORRUPTION
-  if (fabsf(x) > 0.925f) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (fabs(x) > 0.925f) {
 #else
   if (fabsf(x) > 0.925f) {
-#endif
 #endif
     return acosf(x);
   }

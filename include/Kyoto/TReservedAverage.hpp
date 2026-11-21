@@ -12,21 +12,6 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
 
-#if RSTL_CORRUPTION
-
-
-template < typename T >
-T GetMaxValue(const T* values, int count) {
-  const T* end = values + count;
-  T maximum = *values++;
-  for (; values < end; ++values) {
-    if (maximum < *values) {
-      maximum = *values;
-    }
-  }
-  return maximum;
-}
-#else
 #if !RSTL_PRIME1
 template < typename T >
 T GetMaxValue(const T* values, int count) {
@@ -39,7 +24,6 @@ T GetMaxValue(const T* values, int count) {
   }
   return maximum;
 }
-#endif
 #endif
 
 template < typename T, int N >

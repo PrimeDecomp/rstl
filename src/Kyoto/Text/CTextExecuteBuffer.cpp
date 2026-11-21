@@ -12,14 +12,10 @@
 
 #endif
 #include "Kyoto/Text/CBlockInstruction.hpp"
-#if RSTL_CORRUPTION
-#include "Kyoto/Text/CCharacterExtraSpaceInstruction.hpp"
-#else
 #if !RSTL_PRIME1
 #include "Kyoto/Text/CCharacterExtraSpaceInstruction.hpp"
 #endif
 
-#endif
 #include "Kyoto/Text/CColorInstruction.hpp"
 #include "Kyoto/Text/CColorOverrideInstruction.hpp"
 #if !RSTL_CORRUPTION
@@ -129,10 +125,6 @@ void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool im
 }
 
 void CTextExecuteBuffer::EndBlock() {
-#if RSTL_CORRUPTION
-  if (mCurLine) {
-    TerminateLine(true);
-#else
   if (mCurLine) {
     TerminateLine(
 // TODO: verify that this Prime/Echoes difference is real
@@ -140,7 +132,6 @@ void CTextExecuteBuffer::EndBlock() {
         true
 #endif
     );
-#endif
   }
 #if RSTL_CORRUPTION
   mCurLine = nullptr;
@@ -184,12 +175,6 @@ void CTextExecuteBuffer::AddFont(const TToken< CRasterFont >& font) {
 #endif
 #endif
     }
-#if RSTL_CORRUPTION
-    if (mCurLine) {
-      mCurLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
-                                mState.GetFont()->GetCarriageAdvance(),
-                                mState.GetFont()->GetBaseLine());
-#else
     if (mCurLine) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -201,22 +186,10 @@ void CTextExecuteBuffer::AddFont(const TToken< CRasterFont >& font) {
                                 mState.GetFont()->GetCarriageAdvance(),
                                 mState.GetFont()->GetBaseLine());
 #endif
-#endif
     }
   }
 }
 
-#if RSTL_CORRUPTION
-int CFontImageDef::GetWidth() const {
-  TToken< CTexture > tex = mTextures[0];
-  return tex->GetWidth() * mCropFactor.GetX();
-}
-
-int CFontImageDef::GetHeight() const {
-  TToken< CTexture > tex = mTextures[0];
-  return tex->GetHeight() * mCropFactor.GetY();
-}
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -248,7 +221,6 @@ int CFontImageDef::GetHeight() const {
   TToken< CTexture > tex = mTextures[0];
   return tex->GetHeight() * mCropFactor.GetY();
 }
-#endif
 #endif
 #endif
 
@@ -481,12 +453,6 @@ void CTextExecuteBuffer::AddPopState() {
   }
 }
 
-#if RSTL_CORRUPTION
-void CTextExecuteBuffer::TerminateLineLTR(bool lastLine) {
-  if (mCurLine->GetY() == 0 && mState.IsFinishedLoading()) {
-    mCurLine->SetHeight(
-        rstl::max_val(mState.GetFont()->GetCarriageAdvance(), mCurLine->GetHeight()));
-#else
 void CTextExecuteBuffer::TerminateLineLTR(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -501,7 +467,6 @@ void CTextExecuteBuffer::TerminateLineLTR(
 #else
     mCurLine->SetHeight(
         rstl::max_val(mState.GetFont()->GetCarriageAdvance(), mCurLine->GetHeight()));
-#endif
 #endif
   }
 #if RSTL_CORRUPTION
@@ -568,10 +533,6 @@ void CTextExecuteBuffer::StartNewWord() {
 }
 
 void CTextExecuteBuffer::StartNewLine() {
-#if RSTL_CORRUPTION
-  if (mCurLine) {
-    TerminateLine(false);
-#else
   if (mCurLine) {
     TerminateLine(
 // TODO: verify that this Prime/Echoes difference is real
@@ -579,7 +540,6 @@ void CTextExecuteBuffer::StartNewLine() {
         false
 #endif
     );
-#endif
   }
 #if RSTL_CORRUPTION
   const rstl::ncrc_ptr< CInstruction > instruction =
@@ -703,9 +663,6 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
   int rem = len;
   if (mState.IsFinishedLoading()) {
     int width, height;
-#if RSTL_CORRUPTION
-    mState.GetFont()->GetSize(mState.GetOptions(), width, height, str, len);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     (*mState.GetFont())->GetSize(mState.GetOptions(), width, height, str, len);
@@ -713,7 +670,6 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
     mState.GetFont()->GetSize(mState.GetOptions(), width, height, str, len);
 #endif
 
-#endif
     if (mState.IsWordWrapping()) {
 #if RSTL_CORRUPTION
       if (width + mCurLine->GetWidth() > mCurrentBlock->GetOutputWidth() &&
@@ -843,15 +799,11 @@ void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
         int height = 0;
         if (mState.IsFinishedLoading()) {
           wchar_t space = L' ';
-#if RSTL_CORRUPTION
-          mState.GetFont()->GetSize(mState.GetOptions(), width, height, &space, 1);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
           (*mState.GetFont())->GetSize(mState.GetOptions(), width, height, &space, 1);
 #else
           mState.GetFont()->GetSize(mState.GetOptions(), width, height, &space, 1);
-#endif
 #endif
         }
 #if RSTL_CORRUPTION
@@ -876,9 +828,6 @@ void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
 
 rstl::vector< CToken > CTextExecuteBuffer::GetAssets() const {
   int count = 0;
-#if RSTL_CORRUPTION
-  for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
-#else
   for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -887,15 +836,11 @@ rstl::vector< CToken > CTextExecuteBuffer::GetAssets() const {
        InstList::const_iterator it = mInstructions.begin();
 #endif
        it != mInstructions.end(); ++it) {
-#endif
     count += (*it)->GetAssetCount();
   }
   rstl::vector< CToken > assets;
   if (count > 0) {
     assets.reserve(count);
-#if RSTL_CORRUPTION
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
-#else
     for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -904,7 +849,6 @@ rstl::vector< CToken > CTextExecuteBuffer::GetAssets() const {
          InstList::const_iterator it = mInstructions.begin();
 #endif
          it != mInstructions.end(); ++it) {
-#endif
       (*it)->GetAssets(assets);
     }
   }
@@ -915,9 +859,6 @@ CTextRenderBuffer CTextExecuteBuffer::BuildRenderBuffer() const {
   CTextRenderBuffer buffer(CTextRenderBuffer::kM_AllocTally);
   {
     CFontRenderState state;
-#if RSTL_CORRUPTION
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
-#else
     for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -926,16 +867,12 @@ CTextRenderBuffer CTextExecuteBuffer::BuildRenderBuffer() const {
          InstList::const_iterator it = mInstructions.begin();
 #endif
          it != mInstructions.end(); ++it) {
-#endif
       (*it)->Invoke(state, &buffer);
     }
   }
   buffer.SetMode(CTextRenderBuffer::kM_BufferFill);
   {
     CFontRenderState state;
-#if RSTL_CORRUPTION
-    for (InstList::const_iterator it = mInstructions.begin(); it != mInstructions.end(); ++it) {
-#else
     for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -944,7 +881,6 @@ CTextRenderBuffer CTextExecuteBuffer::BuildRenderBuffer() const {
          InstList::const_iterator it = mInstructions.begin();
 #endif
          it != mInstructions.end(); ++it) {
-#endif
       (*it)->Invoke(state, &buffer);
     }
   }
@@ -985,10 +921,6 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
     CTextRenderBuffer buffer(CTextRenderBuffer::kM_AllocTally);
     {
       CFontRenderState state;
-#if RSTL_CORRUPTION
-      for (InstList::const_iterator it2 = mInstructions.begin(); it2 != mInstructions.end();
-           ++it2) {
-#else
       for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -997,7 +929,6 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
            InstList::const_iterator it2 = mInstructions.begin();
 #endif
            it2 != mInstructions.end(); ++it2) {
-#endif
         (*it2)->Invoke(state, &buffer);
       }
     }
@@ -1005,9 +936,6 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
     CFontRenderState state;
     InstList::const_iterator pageEnd = it;
     bool seeking = true;
-#if RSTL_CORRUPTION
-    for (InstList::const_iterator it2 = mInstructions.begin(); it2 != mInstructions.end(); ++it2) {
-#else
     for (
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1016,7 +944,6 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
          InstList::const_iterator it2 = mInstructions.begin();
 #endif
          it2 != mInstructions.end(); ++it2) {
-#endif
       if (it2 == it) {
         seeking = false;
       }
@@ -1024,15 +951,11 @@ CTextExecuteBuffer::BuildRenderBufferPages(const CVector2i& extent) const {
         (*it2)->PageInvoke(state, &buffer);
       } else {
         (*it2)->Invoke(state, &buffer);
-#if RSTL_CORRUPTION
-        if ((*it2)->IsLineInstruction() && state.GetY() > extent.GetY()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         if (!buffer.HasSpaceAvailable(CVector2i(0, 0), extent)) {
 #else
         if ((*it2)->IsLineInstruction() && state.GetY() > extent.GetY()) {
-#endif
 #endif
           break;
         }

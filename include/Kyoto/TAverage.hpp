@@ -12,14 +12,6 @@
 
 template < typename T >
 T GetAverageValue(const T* ptr, int count) {
-#if RSTL_CORRUPTION
-  const T* end = ptr + count;
-  T sum = *ptr++;
-  for (; ptr < end; ++ptr) {
-    sum = sum + *ptr;
-  }
-  return sum * (1.f / count);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   T ret = *ptr;
@@ -35,7 +27,6 @@ T GetAverageValue(const T* ptr, int count) {
     sum = sum + *ptr;
   }
   return sum * (1.f / count);
-#endif
 #endif
 }
 

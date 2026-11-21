@@ -17,13 +17,9 @@ public:
   : CAnimTreeNode(name), mChild(child) {}
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  ~CAnimTreeSingleChild() override {}
-#else
 #if !RSTL_PRIME1
   // IAnimReader
   ~CAnimTreeSingleChild() override {}
-#endif
 #endif
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 

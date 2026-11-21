@@ -28,14 +28,10 @@
 #endif
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if RSTL_CORRUPTION
-#include "Kyoto/Graphics/PortalPlane.hpp"
-#else
 #if !RSTL_PRIME1
 #include "Kyoto/Graphics/PortalPlane.hpp"
 #endif
 
-#endif
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CPlane.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
@@ -97,20 +93,12 @@ typedef void (*TTevHandler)(const uint*& materialData, uint firstTev, uint& tevC
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-static void HandleThermalTevs(const uint*& materialData, uint firstTev, uint& tevCount,
-                              uint& tcgCount);
-static void HandleNormalTevs(const uint*& materialData, uint firstTev, uint& tevCount,
-                             uint& tcgCount);
-static void SetupAlphaMaskVtxDesc(uint vtxDesc);
-#else
 #if !RSTL_PRIME1
 static void HandleThermalTevs(const uint*& materialData, uint firstTev, uint& tevCount,
                               uint& tcgCount);
 static void HandleNormalTevs(const uint*& materialData, uint firstTev, uint& tevCount,
                              uint& tcgCount);
 static void SetupAlphaMaskVtxDesc(uint vtxDesc);
-#endif
 #endif
 
 static const float gkEpsilon32 = FLT_EPSILON;
@@ -146,19 +134,6 @@ static float sLastTime = 0.f;
 static float sThrobX = 1.f;
 static float sThrobY = 1.f;
 static int sReflectionStage = -1;
-#if RSTL_CORRUPTION
-static int sAlphaMaskPostTexMtx = GX_PTIDENTITY;
-static int sAlphaMaskTexCoord = GX_TEXCOORD_NULL;
-static int sTransparencyKColor = -1;
-static TTevHandler sTevHandler = HandleNormalTevs;
-const CCubeModel* CCubeMaterial::sLastModelCached = nullptr;
-const CCubeModel* CCubeMaterial::sRenderingModel = nullptr;
-static int sMaterialCachedState = 0;
-const uchar* sLastMaterialCached = nullptr;
-static bool sKColorModulated = false;
-static float sReflectionAlpha = 0.f;
-static float sLastTime = 0.f;
-#else
 #if !RSTL_PRIME1
 static int sAlphaMaskPostTexMtx = GX_PTIDENTITY;
 static int sAlphaMaskTexCoord = GX_TEXCOORD_NULL;
@@ -173,11 +148,7 @@ static float sReflectionAlpha = 0.f;
 static float sLastTime = 0.f;
 #endif
 
-#endif
 static bool sbRenderModelBlack = false;
-#if RSTL_CORRUPTION
-static bool sbRenderModelBlackKonst = false;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static bool lbl_805A9559 = false;
@@ -185,11 +156,7 @@ static bool lbl_805A9559 = false;
 static bool sbRenderModelBlackKonst = false;
 #endif
 
-#endif
 static bool sbRenderModelShadow = false;
-#if RSTL_CORRUPTION
-static CTexture* spShadowTexture = nullptr;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static CTexture* spShadowTexture = NULL;
@@ -197,7 +164,6 @@ static CTexture* spShadowTexture = NULL;
 static CTexture* spShadowTexture = nullptr;
 #endif
 
-#endif
 static uchar sChannel0DisableLightMask = 0;
 static uchar sChannel1EnableLightMask = 0;
 static const GXColor sGXBlack = {0, 0, 0, 255};
@@ -289,18 +255,11 @@ void CCubeMaterial::SetupBlendMode(const uint blendFactors, const CModelFlags& f
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-  GXCompare alphaCompare;
-#else
 #if !RSTL_PRIME1
   GXCompare alphaCompare;
 #endif
 
-#endif
   if (alphaTest) {
-#if RSTL_CORRUPTION
-    alphaCompare = GX_GEQUAL;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::SetAlphaCompare(GX_GEQUAL, 64, GX_AOP_OR, GX_NEVER, 0);
@@ -308,13 +267,9 @@ void CCubeMaterial::SetupBlendMode(const uint blendFactors, const CModelFlags& f
     alphaCompare = GX_GEQUAL;
 #endif
 
-#endif
     newSrcFactor = GX_BL_ONE;
     newDstFactor = GX_BL_ZERO;
   } else {
-#if RSTL_CORRUPTION
-    alphaCompare = GX_ALWAYS;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
@@ -322,13 +277,7 @@ void CCubeMaterial::SetupBlendMode(const uint blendFactors, const CModelFlags& f
     alphaCompare = GX_ALWAYS;
 #endif
 
-#endif
   }
-#if RSTL_CORRUPTION
-  CGX::SetAlphaCompare(alphaCompare, 64, GX_AOP_AND, GX_ALWAYS, 0);
-
-  if (blendMode > 4 && newSrcFactor == GX_BL_ONE) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   // TODO: how to check
@@ -339,7 +288,6 @@ void CCubeMaterial::SetupBlendMode(const uint blendFactors, const CModelFlags& f
   if (blendMode > 4 && newSrcFactor == GX_BL_ONE) {
 #endif
 
-#endif
     newSrcFactor = GX_BL_SRCALPHA;
     if (newDstFactor == GX_BL_ZERO) {
       newDstFactor = blendMode > 6 ? GX_BL_ONE : GX_BL_INVSRCALPHA;
@@ -463,9 +411,6 @@ static uint HandleThermalTev(int tevCur, const uint* materialDataCur,
 #endif
 }
 
-#if RSTL_CORRUPTION
-static uint HandleUVInvModelView(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static uint HandleAnimatedUV(const uint* uvAnim, GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
@@ -487,14 +432,10 @@ static uint HandleAnimatedUV(const uint* uvAnim, GXTexMtx texMtx, GXPTTexMtx ptT
 static uint HandleUVInvModelView(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
 #endif
 
-#endif
     CTransform4f xf = CGraphics::GetViewMatrix().GetQuickInverse().MultiplyIgnoreTranslation(
         CGraphics::GetModelMatrix());
     xf.SetTranslation(CVector3f::Zero());
     CGX::LoadTexMtxImm(xf.GetCStyleMatrix(), texMtx, GX_MTX3x4);
-#if RSTL_CORRUPTION
-  CGX::LoadTexMtxImm(sEnvPostMtx, ptTexMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::LoadTexMtxImm(postMtx, ptTexMtx, GX_MTX3x4);
@@ -502,25 +443,17 @@ static uint HandleUVInvModelView(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
   CGX::LoadTexMtxImm(sEnvPostMtx, ptTexMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 1;
   }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-static uint HandleUVInvModelViewTranslated(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
-#else
 #if RSTL_PRIME1
   case 1: {
 #else
 static uint HandleUVInvModelViewTranslated(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
 #endif
 
-#endif
     CTransform4f xf = CGraphics::GetViewMatrix().GetQuickInverse() * CGraphics::GetModelMatrix();
     CGX::LoadTexMtxImm(xf.GetCStyleMatrix(), texMtx, GX_MTX3x4);
-#if RSTL_CORRUPTION
-  CGX::LoadTexMtxImm(sEnvPostMtx, ptTexMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::LoadTexMtxImm(postMtx, ptTexMtx, GX_MTX3x4);
@@ -528,7 +461,6 @@ static uint HandleUVInvModelViewTranslated(GXTexMtx texMtx, GXPTTexMtx ptTexMtx)
   CGX::LoadTexMtxImm(sEnvPostMtx, ptTexMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 1;
   }
 // TODO: verify that this Prime/Echoes difference is real
@@ -555,11 +487,6 @@ static uint HandleUVScroll(const float* params, GXTexMtx texMtx) {
 
 #endif
     const float seconds = CGraphics::GetSecondsMod900();
-#if RSTL_CORRUPTION
-  sScrollTexMtx[0][3] = f1 + seconds * f3;
-  sScrollTexMtx[1][3] = f2 + seconds * f4;
-  CGX::LoadTexMtxImm(sScrollTexMtx, texMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     texMtx1[0][3] = f1 + seconds * f3;
@@ -571,7 +498,6 @@ static uint HandleUVScroll(const float* params, GXTexMtx texMtx) {
   CGX::LoadTexMtxImm(sScrollTexMtx, texMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 5;
   }
 // TODO: verify that this Prime/Echoes difference is real
@@ -632,10 +558,6 @@ static uint HandleUVFilmstrip(const float* params, uint type, GXTexMtx texMtx) {
     const float fs = CCast::FtoS(fmod * f2);
     const float v2 = fs * f3;
     if (type == 4) {
-#if RSTL_CORRUPTION
-    sScrollTexMtx[0][3] = v2;
-    sScrollTexMtx[1][3] = 0.f;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       texMtx1[0][3] = v2;
@@ -645,12 +567,7 @@ static uint HandleUVFilmstrip(const float* params, uint type, GXTexMtx texMtx) {
     sScrollTexMtx[1][3] = 0.f;
 #endif
 
-#endif
     } else {
-#if RSTL_CORRUPTION
-    sScrollTexMtx[0][3] = 0.f;
-    sScrollTexMtx[1][3] = v2;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       texMtx1[0][3] = 0.f;
@@ -660,11 +577,7 @@ static uint HandleUVFilmstrip(const float* params, uint type, GXTexMtx texMtx) {
     sScrollTexMtx[1][3] = v2;
 #endif
 
-#endif
     }
-#if RSTL_CORRUPTION
-  CGX::LoadTexMtxImm(sScrollTexMtx, texMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::LoadTexMtxImm(texMtx1, texMtx, GX_MTX3x4);
@@ -672,14 +585,9 @@ static uint HandleUVFilmstrip(const float* params, uint type, GXTexMtx texMtx) {
   CGX::LoadTexMtxImm(sScrollTexMtx, texMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 5;
   }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-static uint HandleUVModelMatrix(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
-  static const SMtx sPtMtx = {{
-#else
 #if RSTL_PRIME1
   case 6: {
     static const Mtx sTexMtx = {
@@ -693,20 +601,9 @@ static uint HandleUVModelMatrix(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
   static const SMtx sPtMtx = {{
 #endif
 
-#endif
         {0.5f, 0.f, 0.f, 0.f},
         {0.f, 0.f, 0.5f, 0.f},
         {0.f, 0.f, 0.f, 1.f},
-#if RSTL_CORRUPTION
-  }};
-  CTransform4f xf = CGraphics::GetModelMatrix();
-  xf.SetTranslation(CVector3f::Zero());
-  SMtx tmpPtMtx = sPtMtx;
-  tmpPtMtx.m[0][3] = CGraphics::GetModelMatrix().Get03() * 0.05f;
-  tmpPtMtx.m[1][3] = CGraphics::GetModelMatrix().Get13() * 0.05f;
-  CGX::LoadTexMtxImm(xf.GetCStyleMatrix(), texMtx, GX_MTX3x4);
-  CGX::LoadTexMtxImm(tmpPtMtx.m, ptTexMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     };
@@ -742,14 +639,9 @@ static uint HandleUVModelMatrix(GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
   CGX::LoadTexMtxImm(tmpPtMtx.m, ptTexMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 1;
   }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-static uint HandleUVCylinder(const float* params, GXTexMtx texMtx, GXPTTexMtx ptTexMtx) {
-  static const SMtx sPtMtx = {{
-#else
 #if RSTL_PRIME1
   case 7: {
     static const Mtx sPtMtx = {
@@ -758,13 +650,9 @@ static uint HandleUVCylinder(const float* params, GXTexMtx texMtx, GXPTTexMtx pt
   static const SMtx sPtMtx = {{
 #endif
 
-#endif
         {0.f, 0.f, 0.f, 0.f},
         {0.f, 0.f, 0.f, 0.f},
         {0.f, 0.f, 0.f, 1.f},
-#if RSTL_CORRUPTION
-  }};
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     };
@@ -772,7 +660,6 @@ static uint HandleUVCylinder(const float* params, GXTexMtx texMtx, GXPTTexMtx pt
   }};
 #endif
 
-#endif
     const CTransform4f& vm = CGraphics::GetViewMatrix();
     CTransform4f xf = CGraphics::GetViewMatrix().GetQuickInverse().MultiplyIgnoreTranslation(
         CGraphics::GetModelMatrix());
@@ -815,9 +702,6 @@ static uint HandleUVCylinder(const float* params, GXTexMtx texMtx, GXPTTexMtx pt
 
 #endif
     CGX::LoadTexMtxImm(xf.GetCStyleMatrix(), texMtx, GX_MTX3x4);
-#if RSTL_CORRUPTION
-  CGX::LoadTexMtxImm(tmpPtMtx.m, ptTexMtx, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CGX::LoadTexMtxImm(tmpPtMtx, ptTexMtx, GX_MTX3x4);
@@ -825,7 +709,6 @@ static uint HandleUVCylinder(const float* params, GXTexMtx texMtx, GXPTTexMtx pt
   CGX::LoadTexMtxImm(tmpPtMtx.m, ptTexMtx, GX_MTX3x4);
 #endif
 
-#endif
     return 3;
   }
 #if RSTL_CORRUPTION
@@ -2513,9 +2396,6 @@ static void HandleTransparency(uint& finalTevCount, uint& finalKColorCount,
 }
 
 static void DoModelShadow(uint texCount, uint tcgCount) {
-#if RSTL_CORRUPTION
-  static const SMtx identity2D = {{
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static const Mtx identity2D = {
@@ -2523,35 +2403,18 @@ static void DoModelShadow(uint texCount, uint tcgCount) {
   static const SMtx identity2D = {{
 #endif
 
-#endif
       {0.f, 0.f, 0.f, 0.f},
       {0.f, 0.f, 0.f, 0.f},
       {0.f, 0.f, 0.f, 1.f},
-#if RSTL_CORRUPTION
-  }};
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   };
 #else
   }};
 #endif
-#endif
 
   spShadowTexture->Load(static_cast< GXTexMapID >(texCount), CTexture::kCM_Repeat);
 
-#if RSTL_CORRUPTION
-  SMtx mtx = identity2D;
-  mtx.m[0][0] = sTextureProjectionTransform.Get00();
-  mtx.m[0][1] = sTextureProjectionTransform.Get01();
-  mtx.m[0][2] = sTextureProjectionTransform.Get02();
-  mtx.m[0][3] = sTextureProjectionTransform.Get03();
-  mtx.m[1][0] = sTextureProjectionTransform.Get20();
-  mtx.m[1][1] = sTextureProjectionTransform.Get21();
-  mtx.m[1][2] = sTextureProjectionTransform.Get22();
-  mtx.m[1][3] = sTextureProjectionTransform.Get23();
-  CGX::LoadTexMtxImm(mtx.m, GX_TEXMTX5, GX_MTX3x4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   Mtx mtx;
@@ -2576,7 +2439,6 @@ static void DoModelShadow(uint texCount, uint tcgCount) {
   mtx.m[1][2] = sTextureProjectionTransform.Get22();
   mtx.m[1][3] = sTextureProjectionTransform.Get23();
   CGX::LoadTexMtxImm(mtx.m, GX_TEXMTX5, GX_MTX3x4);
-#endif
 #endif
 
   CGX::SetTexCoordGen(static_cast< GXTexCoordID >(tcgCount), GX_TG_MTX3x4, GX_TG_POS, GX_TEXMTX5,
@@ -3228,16 +3090,11 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 #endif
     EnsureViewDepStateCached((matFlags & kStateFlag_ReflectionSurfaceEye) != 0 ? &surface
                                                                                : nullptr);
-#if RSTL_CORRUPTION
-  } else {
-    sMaterialCachedState = 0;
-#else
 #if !RSTL_PRIME1
   } else {
     sMaterialCachedState = 0;
 #endif
 
-#endif
   }
 #if !RSTL_CORRUPTION
 
@@ -3318,39 +3175,25 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 #endif
 
   if (sLastMaterialUnique != -1 && sLastMaterialUnique == groupIdx && sMaterialCachedState == 0) {
-#if RSTL_CORRUPTION
-    if (sKColorModulated) {
-      ModulateKColor(flags);
-    }
-#else
 #if !RSTL_PRIME1
     if (sKColorModulated) {
       ModulateKColor(flags);
     }
 #endif
 
-#endif
     return;
   }
   sLastMaterialUnique = groupIdx;
-#if RSTL_CORRUPTION
-  sKColorModulated = false;
-#else
 #if !RSTL_PRIME1
   sKColorModulated = false;
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-  CGX::SetVtxDescv_Compressed(vertexDesc);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CGX::SetVtxDescv_Compressed(SBig(materialDataCur.words[0]));
   materialDataCur.words += 2;
 #else
   CGX::SetVtxDescv_Compressed(vertexDesc);
-#endif
 #endif
 
   const bool packedLightmaps = (matFlags & kStateFlag_LightmapUvArray) != 0;
@@ -3568,10 +3411,6 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
     if (sReflectionAlpha > 0.f) {
       uint addedTevs = 0;
       if (indTex) {
-#if RSTL_CORRUPTION
-        addedTevs = HandleReflection(static_cast< GXTexMapID >(indTexSlot & 7), 0, finalTevCount,
-                                     texCount, tcgCount, finalKColorCount);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         addedTevs = HandleReflection(usesTevReg2, static_cast< GXTexMapID >(indTexSlot & 7), 0,
@@ -3582,14 +3421,9 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
                                      texCount, tcgCount, finalKColorCount);
 #endif
 
-#endif
         numIndStages = 1;
         tcgCount += 2;
       } else {
-#if RSTL_CORRUPTION
-        addedTevs = HandleReflection(GX_TEXMAP_NULL, 0, finalTevCount, texCount, tcgCount,
-                                     finalKColorCount);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         addedTevs = HandleReflection(usesTevReg2, GX_TEXMAP_NULL, 0, finalTevCount, texCount,
@@ -3599,17 +3433,12 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
                                      finalKColorCount);
 #endif
 
-#endif
         tcgCount += 1;
       }
-#if RSTL_CORRUPTION
-      finalTevCount += addedTevs;
-#else
 #if !RSTL_PRIME1
       finalTevCount += addedTevs;
 #endif
 
-#endif
       texCount += 1;
 #if !RSTL_CORRUPTION
 #if RSTL_PRIME1
@@ -3641,14 +3470,10 @@ void CCubeMaterial::SetCurrent(const CModelFlags& flags, const CCubeSurface& sur
 
   if (sbRenderModelShadow) {
     DoModelShadow(texCount, tcgCount);
-#if RSTL_CORRUPTION
-    texCount += 1;
-#else
 #if !RSTL_PRIME1
     texCount += 1;
 #endif
 
-#endif
     tcgCount += 1;
   }
 
@@ -3689,13 +3514,6 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
       {0.f, 0.f, 0.5f, 0.5f},
       {0.f, 0.f, 0.f, 1.f},
   };
-#if RSTL_CORRUPTION
-  static const SMtx texMtx2 = {{
-      {0.f, 0.f, 0.f, 0.f},
-      {0.f, 0.f, 0.f, 0.f},
-      {0.f, 0.f, 0.f, 1.f},
-  }};
-#else
 #if !RSTL_PRIME1
   static const SMtx texMtx2 = {{
       {0.f, 0.f, 0.f, 0.f},
@@ -3703,11 +3521,7 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
       {0.f, 0.f, 0.f, 1.f},
   }};
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-  if ((surface == nullptr && sLastModelCached == sRenderingModel) || sRenderingModel == nullptr) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if ((surface == NULL && sLastModelCached == sRenderingModel) || sRenderingModel == NULL) {
@@ -3715,7 +3529,6 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
   if ((surface == nullptr && sLastModelCached == sRenderingModel) || sRenderingModel == nullptr) {
 #endif
 
-#endif
     return;
   }
 
@@ -3734,9 +3547,6 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
   CVector3f& playerPoint = points[1];
   float radius = 0.f;
 
-#if RSTL_CORRUPTION
-  if (surface != nullptr) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (surface != NULL) {
@@ -3744,7 +3554,6 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
   if (surface != nullptr) {
 #endif
 
-#endif
     sMaterialCachedState = 2;
 
     const CPlane plane(surface->GetCenter(), surface->GetNormalHint());
@@ -3764,9 +3573,6 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
   CUBE_RENDERER* renderer = CUBE_RENDERER::That();
 #endif
   if (renderer->GetReflectionFlag()) {
-#if RSTL_CORRUPTION
-    const CVector3f& oldDelta = sViewingFrom - sPlayerPosition;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const float oldMag = ReflectionDistanceSquared(sViewingFrom, sPlayerPosition);
@@ -3774,16 +3580,11 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
     const CVector3f& oldDelta = sViewingFrom - sPlayerPosition;
 #endif
 
-#endif
     const CVector3f& newDelta = modelPoint - sPlayerPosition;
-#if RSTL_CORRUPTION
-    const float oldMag = oldDelta.MagSquared();
-#else
 #if !RSTL_PRIME1
     const float oldMag = oldDelta.MagSquared();
 #endif
 
-#endif
     const float newMag = newDelta.MagSquared();
     if (newMag < oldMag) {
 #if RSTL_CORRUPTION
@@ -3836,14 +3637,10 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
   if (right.CanBeNormalized()) {
     right.Normalize();
   } else {
-#if RSTL_CORRUPTION
-    dir = CVector3f::Forward();
-#else
 #if !RSTL_PRIME1
     dir = CVector3f::Forward();
 #endif
 
-#endif
     right = CVector3f::Right();
   }
 
@@ -4010,9 +3807,6 @@ void CCubeModel::SetNewPlayerPositionAndTime(const CVector3f& pos, const CStopwa
 
 void CCubeModel::SetRenderModelBlack(bool v) {
   sbRenderModelBlack = v;
-#if RSTL_CORRUPTION
-  sbRenderModelBlackKonst = false;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   lbl_805A9559 = false;
@@ -4020,7 +3814,6 @@ void CCubeModel::SetRenderModelBlack(bool v) {
   sbRenderModelBlackKonst = false;
 #endif
 
-#endif
 }
 
 void CCubeModel::EnableShadowMaps(const CTexture* shadowTex, const CTransform4f& textureProjXf,

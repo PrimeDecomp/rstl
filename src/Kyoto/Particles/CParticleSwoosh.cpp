@@ -26,26 +26,16 @@
 #include "rstl/math.hpp"
 #include "rstl/reserved_vector.hpp"
 
-#if RSTL_CORRUPTION
-
-
-static const CVector3f skOneVector(1.f, 1.f, 1.f);
-#else
 #if !RSTL_PRIME1
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
 #endif
-#endif
 
 uint CParticleSwoosh::mSwooshAliveCount = 0;
-#if RSTL_CORRUPTION
-static const double kFrameTime = 1.0 / 60.0;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static float kFrameTime = 1.f / 60.f;
 #else
 static const double kFrameTime = 1.0 / 60.0;
-#endif
 #endif
 
 CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const int leng)
@@ -53,9 +43,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mCurFrame(0)
 , mPSLT(0)
 , mCurTime(0.0)
-#if RSTL_CORRUPTION
-, mTranslation(CVector3f::Zero())
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mTranslation(0.f, 0.f, 0.f)
@@ -63,16 +50,12 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mTranslation(CVector3f::Zero())
 #endif
 
-#endif
 , mOrientation(CTransform4f::Identity())
 #if RSTL_CORRUPTION
 , mRotation(CTransform4f::Identity())
 , mBaseOrientation(CTransform4f::Identity())
 #endif
 , mInvOrientation(CTransform4f::Identity())
-#if RSTL_CORRUPTION
-, mGlobalTranslation(CVector3f::Zero())
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mGlobalTranslation(0.f, 0.f, 0.f)
@@ -80,11 +63,7 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mGlobalTranslation(CVector3f::Zero())
 #endif
 
-#endif
 , mGlobalOrientation(CTransform4f::Identity())
-#if RSTL_CORRUPTION
-, mGlobalScale(skOneVector)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mGlobalScale(1.f, 1.f, 1.f)
@@ -92,12 +71,8 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mGlobalScale(skOneVector)
 #endif
 
-#endif
 , mScaleXf(CTransform4f::Identity())
 , mInvScaleXf(CTransform4f::Identity())
-#if RSTL_CORRUPTION
-, mLocalScale(skOneVector)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mLocalScale(1.f, 1.f, 1.f)
@@ -105,7 +80,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mLocalScale(skOneVector)
 #endif
 
-#endif
 , mCurParticle(0)
 , mParticleCount(0)
 , mSPLN(0)
@@ -134,14 +108,10 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mMaxRadius(0.f)
 , mModuColor(0xffffffff) {
   int i = 0;
-#if RSTL_CORRUPTION
-  SetDrawFlags(mDesc->mDFLG);
-#else
 #if !RSTL_PRIME1
   SetDrawFlags(mDesc->mDFLG);
 #endif
 
-#endif
   CGlobalRandom _(mRand);
   mSwooshAliveCount++;
 
@@ -179,9 +149,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
     mSwooshes.clear();
     mSwooshes.reserve(mLENG);
     for (i = 0; i < mSwooshes.capacity(); i++) {
-#if RSTL_CORRUPTION
-      mSwooshes.push_back_unsafe(SSwooshData());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mSwooshes.push_back(SSwooshData());
@@ -189,7 +156,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
       mSwooshes.push_back_unsafe(SSwooshData());
 #endif
 
-#endif
     }
 
     SetOrientation(CTransform4f::Identity());
@@ -198,9 +164,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
     mP0.reserve(mSIDE);
 
     for (i = 0; i < mP0.capacity(); i++) {
-#if RSTL_CORRUPTION
-      mP0.push_back_unsafe(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mP0.push_back(CVector3f::Zero());
@@ -208,14 +171,10 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
       mP0.push_back_unsafe(CVector3f::Zero());
 #endif
 
-#endif
     }
     mP1.clear();
     mP1.reserve(mSIDE);
     for (i = 0; i < mP1.capacity(); i++) {
-#if RSTL_CORRUPTION
-      mP1.push_back_unsafe(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mP1.push_back(CVector3f::Zero());
@@ -223,15 +182,11 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
       mP1.push_back_unsafe(CVector3f::Zero());
 #endif
 
-#endif
     }
 
     mP2.clear();
     mP2.reserve(mSIDE);
     for (i = 0; i < mP2.capacity(); i++) {
-#if RSTL_CORRUPTION
-      mP2.push_back_unsafe(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mP2.push_back(CVector3f::Zero());
@@ -239,14 +194,10 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
       mP2.push_back_unsafe(CVector3f::Zero());
 #endif
 
-#endif
     }
     mP3.clear();
     mP3.reserve(mSIDE);
     for (i = 0; i < mP3.capacity(); i++) {
-#if RSTL_CORRUPTION
-      mP3.push_back_unsafe(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mP3.push_back(CVector3f::Zero());
@@ -254,7 +205,6 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
       mP3.push_back_unsafe(CVector3f::Zero());
 #endif
 
-#endif
     }
   }
 }
@@ -272,9 +222,6 @@ const bool CParticleSwoosh::Update(double dt) {
   CParticleGlobals::SetEmitterTime(mCurFrame);
   CParticleGlobals::UpdateParticleLifetimeTweenValues(0);
   CGlobalRandom random(mRand);
-#if RSTL_CORRUPTION
-  double evalTime = kFrameTime * mCurFrame;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   double evalTime = mCurFrame * kFrameTime;
@@ -282,7 +229,6 @@ const bool CParticleSwoosh::Update(double dt) {
   double evalTime = kFrameTime * mCurFrame;
 #endif
 
-#endif
   float timeScale = 1.f;
   if (mDesc->mTIME) {
     mDesc->mTIME->GetValue(mCurFrame, timeScale);
@@ -336,9 +282,6 @@ const bool CParticleSwoosh::Update(double dt) {
       if (mDesc->mCOLR) {
         mDesc->mCOLR->GetValue(mCurFrame, mSwooshes[mCurParticle].mColor);
       } else {
-#if RSTL_CORRUPTION
-        mSwooshes[mCurParticle].mColor = CColor::White();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mSwooshes[mCurParticle].mColor = CColor(1.f, 1.f, 1.f, 1.f);
@@ -346,7 +289,6 @@ const bool CParticleSwoosh::Update(double dt) {
         mSwooshes[mCurParticle].mColor = CColor::White();
 #endif
 
-#endif
       }
       int tspn = 0;
       if (mDesc->mTSPN) {
@@ -392,11 +334,6 @@ void CParticleSwoosh::UpdateTranslationAndOrientation() {
   CParticleGlobals::SetParticleLifetime(mLENG);
   CParticleGlobals::SetEmitterTime(mCurFrame);
   int i = 0;
-#if RSTL_CORRUPTION
-  CVector3f offset(CVector3f::Zero());
-  CVector3f localVel(CVector3f::Zero());
-  CVector3f localTrans(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f offset(0.f, 0.f, 0.f);
@@ -408,7 +345,6 @@ void CParticleSwoosh::UpdateTranslationAndOrientation() {
   CVector3f localTrans(CVector3f::Zero());
 #endif
 
-#endif
   for (i = 0; i < mSwooshes.capacity(); ++i) {
     SSwooshData& swoosh = mSwooshes.data()[i];
     if (!swoosh.mActive) {
@@ -543,9 +479,6 @@ void CParticleSwoosh::Render() {
     if (mDesc->mTEXR) {
       {
         TToken< CTexture > tex = mDesc->mTEXR->GetValueTexture(mCurFrame);
-#if RSTL_CORRUPTION
-        tex->Load(GX_TEXMAP0, mDesc->mCLTX ? CTexture::kCM_Clamp : CTexture::kCM_Repeat);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         tex->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
@@ -553,7 +486,6 @@ void CParticleSwoosh::Render() {
         tex->Load(GX_TEXMAP0, mDesc->mCLTX ? CTexture::kCM_Clamp : CTexture::kCM_Repeat);
 #endif
 
-#endif
         mTex = tex.operator->();
       }
       SUVElementSet uvs;
@@ -615,18 +547,6 @@ void CParticleSwoosh::Render() {
   }
 }
 
-#if RSTL_CORRUPTION
-// Guessed coefficient names; bit representation follows RMathUtils.
-static const uint skSinX1 = 0x3f7ff347;
-static const uint skSinX3 = 0xbe2a34ae;
-static const uint skSinX5 = 0x3c047fca;
-static const uint skSinX7 = 0xb9206873;
-static const uint skCosX0 = 0x3f800000;
-static const uint skCosX2 = 0xbefffd62;
-static const uint skCosX4 = 0x3d2a7a18;
-static const uint skCosX6 = 0xbab2bb2b;
-static const uint skCosX8 = 0x37a93188;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 static const uint skSinX1 = 0x3f7ff347; // 0.99980587f
@@ -645,7 +565,6 @@ static const uint skCosX4 = 0x3d2a7a18;
 static const uint skCosX6 = 0xbab2bb2b;
 static const uint skCosX8 = 0x37a93188;
 #endif
-#endif
 
 static inline float fast_sine(float x) {
 #if !RSTL_CORRUPTION
@@ -659,9 +578,6 @@ static inline float fast_sine(float x) {
 #endif
   const float x2 = x * x;
   float power = x;
-#if RSTL_CORRUPTION
-  float result = power * reinterpret_cast< const float& >(skSinX1);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float result = power * c1;
@@ -669,11 +585,7 @@ static inline float fast_sine(float x) {
   float result = power * reinterpret_cast< const float& >(skSinX1);
 #endif
 
-#endif
   power *= x2;
-#if RSTL_CORRUPTION
-  result += power * reinterpret_cast< const float& >(skSinX3);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c3;
@@ -681,11 +593,7 @@ static inline float fast_sine(float x) {
   result += power * reinterpret_cast< const float& >(skSinX3);
 #endif
 
-#endif
   power *= x2;
-#if RSTL_CORRUPTION
-  result += power * reinterpret_cast< const float& >(skSinX5);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c5;
@@ -693,11 +601,7 @@ static inline float fast_sine(float x) {
   result += power * reinterpret_cast< const float& >(skSinX5);
 #endif
 
-#endif
   power *= x2;
-#if RSTL_CORRUPTION
-  result += power * reinterpret_cast< const float& >(skSinX7);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c7;
@@ -705,7 +609,6 @@ static inline float fast_sine(float x) {
   result += power * reinterpret_cast< const float& >(skSinX7);
 #endif
 
-#endif
   return result;
 }
 
@@ -732,10 +635,6 @@ static inline float fast_cosine(float x) {
 #endif
   const float x2 = x * x;
   float power = x2;
-#if RSTL_CORRUPTION
-  float result = reinterpret_cast< const float& >(skCosX0);
-  result += power * reinterpret_cast< const float& >(skCosX2);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float result = c0;
@@ -745,11 +644,7 @@ static inline float fast_cosine(float x) {
   result += power * reinterpret_cast< const float& >(skCosX2);
 #endif
 
-#endif
   power *= x2;
-#if RSTL_CORRUPTION
-  result += power * reinterpret_cast< const float& >(skCosX4);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c4;
@@ -757,11 +652,7 @@ static inline float fast_cosine(float x) {
   result += power * reinterpret_cast< const float& >(skCosX4);
 #endif
 
-#endif
   power *= x2;
-#if RSTL_CORRUPTION
-  result += power * reinterpret_cast< const float& >(skCosX6);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c6;
@@ -769,7 +660,6 @@ static inline float fast_cosine(float x) {
   result += power * reinterpret_cast< const float& >(skCosX6);
 #endif
 
-#endif
   power *= x2;
 #if RSTL_CORRUPTION
   result += power * reinterpret_cast< const float& >(skCosX8);
@@ -878,9 +768,6 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           if (mTSPNInt > 0) {
             uvOffset += mUvSpan;
           } else {
-#if RSTL_CORRUPTION
-            uvOffset = mUvSpan * static_cast< float >(i);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
             uvOffset = mUvSpan * CCast::ToReal32(i);
@@ -888,7 +775,6 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
             uvOffset = mUvSpan * static_cast< float >(i);
 #endif
 
-#endif
           }
         }
       }
@@ -957,9 +843,6 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           if (mTSPNInt > 0) {
             uvOffset += mUvSpan;
           } else {
-#if RSTL_CORRUPTION
-            uvOffset = mUvSpan * static_cast< float >(i);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
             uvOffset = mUvSpan * CCast::ToReal32(i);
@@ -967,7 +850,6 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
             uvOffset = mUvSpan * static_cast< float >(i);
 #endif
 
-#endif
           }
         }
       }
@@ -1059,9 +941,6 @@ void CParticleSwoosh::Render2SidedNoSplineGaps() {
       CGraphics::StreamBegin(kP_TriangleStrip);
     }
     angle = (swoosh.mInitialRot + swoosh.mRotm) * (M_PIF / 180.f);
-#if RSTL_CORRUPTION
-    angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     angle = fabs(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
@@ -1069,7 +948,6 @@ void CParticleSwoosh::Render2SidedNoSplineGaps() {
     angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
 #endif
 
-#endif
     cosine = fast_cosine(angle);
     sine = fast_sine(angle);
     leftRadius = swoosh.mLeftRad;
@@ -1146,9 +1024,6 @@ void CParticleSwoosh::Render3SidedSolidNoSplineNoGaps() {
       curIdx = mSwooshes.size() - 1;
     }
     float rawAngle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
-#if RSTL_CORRUPTION
-    float angle = CMath::AbsF(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float angle = fabs(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
@@ -1156,7 +1031,6 @@ void CParticleSwoosh::Render3SidedSolidNoSplineNoGaps() {
     float angle = CMath::AbsF(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
 #endif
 
-#endif
     const float radius = swoosh.mLeftRad;
     const float cosinea = fast_cosine(angle);
     const float sinea = fast_sine(angle);
@@ -1276,9 +1150,6 @@ void CParticleSwoosh::Render3SidedSolidSpline() {
       curIdx = mSwooshes.size() - 1;
     }
     float rawAngle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
-#if RSTL_CORRUPTION
-    float angle = CMath::AbsF(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float angle = fabs(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
@@ -1286,7 +1157,6 @@ void CParticleSwoosh::Render3SidedSolidSpline() {
     float angle = CMath::AbsF(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
 #endif
 
-#endif
     const float radius = swoosh.mLeftRad;
     const float cosinea = fast_cosine(angle);
     const float sinea = fast_sine(angle);
@@ -1470,10 +1340,6 @@ void CParticleSwoosh::RenderNSidedSpline() {
       for (k = 0; k < mSIDE; ++k) {
         const float sideAngle = sideDiv * k;
         const float rawAngle = M_PIF * (sideAngle + (swoosh.mInitialRot + swoosh.mRotm)) / 180.f;
-#if RSTL_CORRUPTION
-        float angle = rawAngle;
-        angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         const float angle = fabs(rawAngle) > M_PIF ? CMath::WrapPi(rawAngle) : rawAngle;
@@ -1482,7 +1348,6 @@ void CParticleSwoosh::RenderNSidedSpline() {
         angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
 #endif
 
-#endif
         const float cosine = fast_cosine(angle);
         const float sine = fast_sine(angle);
         float x;
@@ -1709,13 +1574,8 @@ void CParticleSwoosh::UpdateBounds(const CVector3f& pos) {
 void CParticleSwoosh::UpdateMaxRadius(float radius) {
   mMaxRadius = rstl::max_val(mMaxRadius, radius);
 }
-#if RSTL_CORRUPTION
-
-int CParticleSwoosh::GetEmitterTime() const { return mCurFrame; }
-#else
 #if !RSTL_PRIME1
 int CParticleSwoosh::GetEmitterTime() const { return mCurFrame; }
-#endif
 #endif
 
 CLight CParticleSwoosh::GetLight() const {
@@ -1739,14 +1599,10 @@ void CParticleSwoosh::SetGlobalScale(const CVector3f& scale) {
 
 bool CParticleSwoosh::SystemHasLight() const { return false; }
 void CParticleSwoosh::DestroyParticles() {}
-#if RSTL_CORRUPTION
-int CParticleSwoosh::GetSystemCount() const { return 1; }
-#else
 #if !RSTL_PRIME1
 int CParticleSwoosh::GetSystemCount() const { return 1; }
 #endif
 
-#endif
 bool CParticleSwoosh::GetParticleEmission() const { return mEmitting; }
 const CTransform4f& CParticleSwoosh::GetOrientation() const { return mOrientation; }
 const CVector3f& CParticleSwoosh::GetGlobalScale() const { return mGlobalScale; }

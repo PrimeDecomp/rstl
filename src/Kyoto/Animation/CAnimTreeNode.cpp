@@ -10,13 +10,8 @@
 #include "rstl/auto_ptr.hpp"
 
 CAnimTreeNode::CAnimTreeNode(const rstl::string& name) : mName(name) {}
-#if RSTL_CORRUPTION
-
-CAnimTreeNode::~CAnimTreeNode() {}
-#else
 #if !RSTL_PRIME1
 CAnimTreeNode::~CAnimTreeNode() {}
-#endif
 #endif
 
 rstl::ncrc_ptr< CAnimTreeNode > Cast(const rstl::ownership_transfer< IAnimReader >& ptr) {

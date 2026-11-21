@@ -41,12 +41,8 @@ public:
   };
 
   CStringTable(CInputStream& in);
-#if RSTL_CORRUPTION
-  ~CStringTable();
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   ~CStringTable();
-#endif
 #endif
 
   void Load(CInputStream& in);
@@ -73,13 +69,6 @@ public:
   int GetStringCount() const { return mStringCount; }
 
 private:
-#if RSTL_CORRUPTION
-  struct SStringName {
-    const char* mName;
-    int mIndex;
-  };
-
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   // Echoes STRG files can name strings; names are sorted for binary search.
@@ -89,22 +78,12 @@ private:
   };
 
 #endif
-#endif
   int mStringCount;
-#if RSTL_CORRUPTION
-  int mNameCount;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   int mNameCount;
 #endif
-#endif
   rstl::single_ptr< uchar > mData;
-#if RSTL_CORRUPTION
-  SStringName* mNames;
-  const wchar_t** mStrings;
-  rstl::single_ptr< SReloadData > mReloadData;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   SStringName* mNames;
@@ -117,7 +96,6 @@ private:
 #if RSTL_PRIME1
 #if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
   rstl::vector< rstl::vector< wchar_t > > mNativeStrings;
-#endif
 #endif
 #endif
 };

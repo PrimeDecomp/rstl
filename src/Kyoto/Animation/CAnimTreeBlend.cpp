@@ -12,15 +12,11 @@ rstl::ownership_transfer< IAnimReader > CAnimTreeBlend::VClone() const {
 float CAnimTreeBlend::VGetBlendingWeight() const { return mBlendWeight; }
 
 CCharAnimTime CAnimTreeBlend::VGetTimeRemaining() const {
-#if RSTL_CORRUPTION
-  return rstl::max_val< const CCharAnimTime& >(mA->VGetTimeRemaining(), mB->VGetTimeRemaining());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::max_val(mA->GetTimeRemaining(), mB->GetTimeRemaining());
 #else
   return rstl::max_val< const CCharAnimTime& >(mA->VGetTimeRemaining(), mB->VGetTimeRemaining());
-#endif
 #endif
 }
 
@@ -54,11 +50,6 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
     offset = offsetA + offsetB;
   }
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  return CSteadyStateAnimInfo(
-      infoB.IsLooping(),
-      rstl::max_val< const CCharAnimTime& >(infoA.GetDuration(), infoB.GetDuration()), offset);
-#else
 #if RSTL_PRIME1
   return CSteadyStateAnimInfo(infoB.IsLooping(),
                               rstl::max_val(infoA.GetDuration(), infoB.GetDuration()), offset);
@@ -66,7 +57,6 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
   return CSteadyStateAnimInfo(
       infoB.IsLooping(),
       rstl::max_val< const CCharAnimTime& >(infoA.GetDuration(), infoB.GetDuration()), offset);
-#endif
 #endif
 }
 

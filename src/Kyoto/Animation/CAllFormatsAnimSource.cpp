@@ -72,10 +72,6 @@ CAnimFormatUnion::~CAnimFormatUnion() {
 void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream& in,
                                     IObjectStore& store) {
   switch (format) {
-#if RSTL_CORRUPTION
-  case kF_AnimSource:
-    new (ptr) CAnimSource(in);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   case 0:
@@ -87,7 +83,6 @@ void CAnimFormatUnion::SubConstruct(uchar* ptr, const uint format, CInputStream&
                           , store
 #endif
     );
-#endif
     break;
 #if RSTL_CORRUPTION
   case kF_CompressedAnimSource:
@@ -148,16 +143,12 @@ RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInp
 
 rstl::ownership_transfer< IAnimReader >
 CAllFormatsAnimSource::GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok,
-#if RSTL_CORRUPTION
-                                    const CCharAnimTime& time, const CAnimPOIData* poiData) {
-#else
                                     const CCharAnimTime& time
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                                     , const CAnimPOIData* poiData
 #endif
                                     ) {
-#endif
   switch (tok->GetType()) {
 #if RSTL_CORRUPTION
   case CAnimFormatUnion::kF_AnimSource:

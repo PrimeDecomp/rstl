@@ -16,21 +16,13 @@
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-
-class CSegStatement {
-#else
 #if RSTL_PRIME1
 struct
 #else
 class
 #endif
 CSegStatement {
-#endif
 public:
-#if RSTL_CORRUPTION
-  CSegStatement() : mRotationValid(false), mOffsetValid(false), mScaleValid(false) {}
-#else
   CSegStatement()
 #if RSTL_PRIME1
   : mStatus(0)
@@ -46,7 +38,6 @@ public:
   CVector3f GetOffset() const { return Offset(); }
   CQuaternion& Orientation() { return mRotation; }
 #endif
-#endif
 
   const CQuaternion& Orientation() const { return mRotation; }
 #if !RSTL_CORRUPTION
@@ -56,12 +47,6 @@ public:
 
 #endif
   const CVector3f& Offset() const { return mOffset; }
-#if RSTL_CORRUPTION
-  const CVector3f& Scale() const { return mScale; }
-  bool RotationValid() const { return mRotationValid; }
-  bool OffsetValid() const { return mOffsetValid; }
-  bool ScaleValid() const { return mScaleValid; }
-#else
 #if !RSTL_PRIME1
   const CVector3f& Scale() const { return mScale; }
   bool RotationValid() const { return mRotationValid; }
@@ -78,52 +63,32 @@ public:
 #else
   bool ScaleValid() const { return mScaleValid; }
 #endif
-#endif
 
   void Set(const CQuaternion& rotation) {
-#if RSTL_CORRUPTION
-    mRotation = rotation;
-    mRotationValid = true;
-#else
 #if RSTL_PRIME1
     Orientation() = rotation;
 #else
     mRotation = rotation;
     mRotationValid = true;
 #endif
-#endif
   }
 
   void Set(const CVector3f& offset) {
     mOffset = offset;
-#if RSTL_CORRUPTION
-    mOffsetValid = true;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mStatus = 1;
 #else
     mOffsetValid = true;
 #endif
-#endif
   }
-#if RSTL_CORRUPTION
-  void SetScale(const CVector3f& scale) {
-    mScale = scale;
-    mScaleValid = true;
-  }
-#else
 #if !RSTL_PRIME1
   void SetScale(const CVector3f& scale) {
     mScale = scale;
     mScaleValid = true;
   }
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-private:
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 public:
@@ -131,15 +96,8 @@ public:
 private:
 #endif
 
-#endif
   CQuaternion mRotation;
   CVector3f mOffset;
-#if RSTL_CORRUPTION
-  CVector3f mScale;
-  bool mRotationValid : 1;
-  bool mOffsetValid : 1;
-  bool mScaleValid : 1;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint mStatus; // 0 free, 1 used
@@ -148,7 +106,6 @@ private:
   bool mRotationValid : 1;
   bool mOffsetValid : 1;
   bool mScaleValid : 1;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION

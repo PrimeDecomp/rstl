@@ -38,14 +38,8 @@
 #include "rstl/pair.hpp"
 #include "rstl/single_ptr.hpp"
 
-#if RSTL_CORRUPTION
-#include "string.h"
-
-
-#else
 #if !RSTL_PRIME1
 #include "string.h"
-#endif
 #endif
 
 class IObjectStore;
@@ -99,12 +93,8 @@ public:
   bool IsLooping() const { return mLooping != 0; }
   uint GetRotationValueForOne() const { return mRotationValueForOne; }
   float GetOffsetResolution() const { return mOffsetResolution; }
-#if RSTL_CORRUPTION
-  float GetScaleResolution() const { return mScaleResolution; }
-#else
 #if !RSTL_PRIME1
   float GetScaleResolution() const { return mScaleResolution; }
-#endif
 #endif
 
 private:
@@ -112,40 +102,28 @@ private:
   static const uchar kCurrentVersionNumber;
 #endif
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  uchar mVersionNumber;
-#else
 #if RSTL_PRIME1
   uint x0_;
 #else
   uchar mVersionNumber;
 #endif
 
-#endif
   float mMaxTime;
   float mStandardInterval;
   uint mRootBoneId;
   uint mLooping;
   uint mRotationValueForOne;
   float mOffsetResolution;
-#if RSTL_CORRUPTION
-  float mScaleResolution;
-#else
 #if !RSTL_PRIME1
   float mScaleResolution;
 #endif
 
-#endif
   uint mBoneChannelCount;
-#if RSTL_CORRUPTION
-  uint x24_;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint x20_;
 #else
   uint x24_;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION
@@ -161,15 +139,11 @@ class TLoadedVal {
 public:
   TLoadedVal() {}
   TLoadedVal(T value) { Write(mValue, value); }
-#if RSTL_CORRUPTION
-  T operator*() const { return Read(mValue); }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && defined(__MWERKS__)
   const T& operator*() const { return *reinterpret_cast< const T* >(mValue); }
 #else
   T operator*() const { return Read(mValue); }
-#endif
 #endif
 
   static T Read(const void* data) {
@@ -201,9 +175,6 @@ template < uint Components, uint ConstantComponent, uint SignComponent >
 class CFBBitCompressedDataChannelHeader {
 public:
   explicit CFBBitCompressedDataChannelHeader(CInputStream& in);
-#if RSTL_CORRUPTION
-  uint GetWidth() const { return *mWidth; }
-#else
 #if RSTL_PRIME1
   static void Write(uchar* out, short value) { TLoadedVal< short >::Write(out, value); }
   const TLoadedVal< ushort >& Width() const { return mWidth; }
@@ -219,7 +190,6 @@ public:
   static uint Height() { return Components; }
 #endif
 
-#endif
   short GetInitialValue(uint component) const;
   uint GetBitCount(uint component) const;
   const uchar* AfterEnd() const;
@@ -229,11 +199,6 @@ private:
   TLoadedVal< ushort > mWidth;
 };
 
-#if RSTL_CORRUPTION
-template < uint Components, uint ConstantComponent, uint SignComponent >
-short CFBBitCompressedDataChannelHeader< Components, ConstantComponent,
-                                         SignComponent >::GetInitialValue(uint component) const {
-#else
 #if RSTL_PRIME1
 template < uint Components, uint ConstantComponent, uint SignComponent >
 RSTL_KYOTO_ANIMATION_INLINE
@@ -258,7 +223,6 @@ template < uint Components, uint ConstantComponent, uint SignComponent >
 RSTL_KYOTO_ANIMATION_INLINE short
 CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::GetInitialValue(
     uint component) const {
-#endif
   if (component == SignComponent) {
     return 0;
   }
@@ -286,29 +250,6 @@ CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent 
 }
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-#if RSTL_CORRUPTION
-CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::
-    CFBBitCompressedDataChannelHeader(CInputStream& in) {
-  ushort width = in.ReadUint16();
-  TLoadedVal< ushort >::Write(this, width);
-  uchar* data = reinterpret_cast< uchar* >(this) + sizeof(ushort);
-  if (width != 0) {
-    for (uint i = 0; i < Components; ++i) {
-      if (i != SignComponent) {
-        TLoadedVal< short >::Write(data, in.ReadInt16());
-        data[2] = in.ReadInt8();
-        data += 3;
-      }
-    }
-  }
-}
-
-template < uint Components, uint ConstantComponent, uint SignComponent >
-const uchar*
-CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd()
-    const {
-  if (GetWidth() == 0) {
-#else
 #if RSTL_PRIME1
 RSTL_KYOTO_ANIMATION_INLINE const uchar*
 CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent >::AfterEnd() const
@@ -340,28 +281,18 @@ CFBBitCompressedDataChannelHeader< Components, ConstantComponent, SignComponent 
   if (GetWidth() == 0)
 #endif
   {
-#endif
     return reinterpret_cast< const uchar* >(this) + sizeof(ushort);
   }
   return reinterpret_cast< const uchar* >(this) + sizeof(ushort) +
-#if RSTL_CORRUPTION
-         3 * (Components - (SignComponent < Components));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
          3 * (Height() - (SignComponent < Components));
 #else
          3 * (Components - (SignComponent < Components));
 #endif
-#endif
 }
 
 template < uint Components, uint ConstantComponent, uint SignComponent >
-#if RSTL_CORRUPTION
-uint CFBBitCompressedDataChannelHeader< Components, ConstantComponent,
-                                        SignComponent >::GetSumOfBitCounts() const {
-  if (*mWidth == 0) {
-#else
 RSTL_KYOTO_ANIMATION_INLINE uint CFBBitCompressedDataChannelHeader<
     Components, ConstantComponent, SignComponent >::GetSumOfBitCounts() const {
 #if RSTL_PRIME1
@@ -370,7 +301,6 @@ RSTL_KYOTO_ANIMATION_INLINE uint CFBBitCompressedDataChannelHeader<
   if (*mWidth == 0)
 #endif
   {
-#endif
     return 0;
   }
   uint sum = 0;
@@ -390,17 +320,10 @@ class CFBStreamedPerChannelHeader {
 public:
   typedef CFBBitCompressedDataChannelHeader< 4, 100000, 0 > RotationHeader;
   typedef CFBBitCompressedDataChannelHeader< 3, 100000, 100000 > OffsetHeader;
-#if RSTL_CORRUPTION
-  typedef CFBBitCompressedDataChannelHeader< 3, 100000, 100000 > ScaleHeader;
-#else
 #if !RSTL_PRIME1
   typedef CFBBitCompressedDataChannelHeader< 3, 100000, 100000 > ScaleHeader;
 #endif
-#endif
 
-#if RSTL_CORRUPTION
-  explicit CFBStreamedPerChannelHeader(CInputStream& in) : mSegId(in.ReadInt8()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CFBStreamedPerChannelHeader(CInputStream& in)
@@ -410,20 +333,12 @@ public:
   : mSegId(in.ReadInt8())
 #endif
   {
-#endif
     new (const_cast< RotationHeader* >(&GetRotationBitStorage())) RotationHeader(in);
     new (const_cast< OffsetHeader* >(&GetOffsetBitStorage())) OffsetHeader(in);
-#if RSTL_CORRUPTION
-    new (const_cast< ScaleHeader* >(&GetScaleBitStorage())) ScaleHeader(in);
-#else
 #if !RSTL_PRIME1
     new (const_cast< ScaleHeader* >(&GetScaleBitStorage())) ScaleHeader(in);
 #endif
-#endif
   }
-#if RSTL_CORRUPTION
-  CSegId GetSegId() const { return mSegId; }
-#else
   CSegId GetSegId() const {
 #if RSTL_PRIME1
     return CSegId(*mSegId);
@@ -432,42 +347,27 @@ public:
 #endif
   }
 
-#endif
   const RotationHeader& GetRotationBitStorage() const {
     return *reinterpret_cast< const RotationHeader* >(this + 1);
   }
   const OffsetHeader& GetOffsetBitStorage() const {
     return *reinterpret_cast< const OffsetHeader* >(GetRotationBitStorage().AfterEnd());
   }
-#if RSTL_CORRUPTION
-  const ScaleHeader& GetScaleBitStorage() const {
-    return *reinterpret_cast< const ScaleHeader* >(GetOffsetBitStorage().AfterEnd());
-  }
-#else
 #if !RSTL_PRIME1
   const ScaleHeader& GetScaleBitStorage() const {
     return *reinterpret_cast< const ScaleHeader* >(GetOffsetBitStorage().AfterEnd());
   }
 #endif
 
-#endif
   const CFBStreamedPerChannelHeader* AfterEnd() const {
-#if RSTL_CORRUPTION
-    return reinterpret_cast< const CFBStreamedPerChannelHeader* >(GetScaleBitStorage().AfterEnd());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return reinterpret_cast< const CFBStreamedPerChannelHeader* >(GetOffsetBitStorage().AfterEnd());
 #else
     return reinterpret_cast< const CFBStreamedPerChannelHeader* >(GetScaleBitStorage().AfterEnd());
 #endif
-#endif
   }
   uint GetSumOfBitCounts() const {
-#if RSTL_CORRUPTION
-    return GetRotationBitStorage().GetSumOfBitCounts() + GetOffsetBitStorage().GetSumOfBitCounts() +
-           GetScaleBitStorage().GetSumOfBitCounts();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return GetRotationBitStorage().GetSumOfBitCounts() + GetOffsetBitStorage().GetSumOfBitCounts();
@@ -475,19 +375,14 @@ public:
     return GetRotationBitStorage().GetSumOfBitCounts() + GetOffsetBitStorage().GetSumOfBitCounts() +
            GetScaleBitStorage().GetSumOfBitCounts();
 #endif
-#endif
   }
 
 private:
-#if RSTL_CORRUPTION
-  CSegId mSegId;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   TLoadedVal< uint > mSegId;
 #else
   CSegId mSegId;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION
@@ -529,22 +424,15 @@ public:
 #endif
     const_iterator& operator++() {
       --mCount;
-#if RSTL_CORRUPTION
-      mPtr = mPtr->AfterEnd();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mPtr = reinterpret_cast< const T* >(mPtr->AfterEnd());
 #else
       mPtr = mPtr->AfterEnd();
 #endif
-#endif
       return *this;
     }
     const T& operator*() const { return *mPtr; }
-#if RSTL_CORRUPTION
-    const T* operator->() const { return mPtr; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8P_00
     const T* operator->() const { return &**this; }
@@ -552,7 +440,6 @@ public:
     const T* operator->() const { return mPtr; }
 #endif
 
-#endif
     bool operator==(const const_iterator& other) const { return mCount == other.mCount; }
     bool operator!=(const const_iterator& other) const { return !(*this == other); }
 
@@ -561,9 +448,6 @@ public:
     int mCount;
   };
 
-#if RSTL_CORRUPTION
-  explicit TVectorOfVaryingLengthItems(CInputStream& in) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   template < typename Stream >
@@ -572,7 +456,6 @@ public:
   explicit TVectorOfVaryingLengthItems(CInputStream& in)
 #endif
   {
-#endif
     this->LoadSize(this->mSize, in);
     int count = this->size();
     const T* ptr = reinterpret_cast< const T* >(this->GetFirstAddress());
@@ -604,10 +487,6 @@ RSTL_KYOTO_ANIMATION_INLINE const uchar* TVectorOfVaryingLengthItems< Size, T >:
 class CFBStreamedPerChannelHeaderList
 : public TVectorOfVaryingLengthItems< uint, CFBStreamedPerChannelHeader > {
 public:
-#if RSTL_CORRUPTION
-  explicit CFBStreamedPerChannelHeaderList(CInputStream& in)
-  : TVectorOfVaryingLengthItems< uint, CFBStreamedPerChannelHeader >(in) {}
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   template < typename Stream >
@@ -618,7 +497,6 @@ public:
   : TVectorOfVaryingLengthItems< uint, CFBStreamedPerChannelHeader >(in) {
   }
 
-#endif
   uint GetSumOfBitCounts() const {
     uint sum = 0;
     for (const_iterator it = begin(); it != end(); ++it) {
@@ -626,16 +504,10 @@ public:
     }
     return sum;
   }
-#if RSTL_CORRUPTION
-  // Guessed names.
-  bool HasOffsetData() const;
-  bool HasScaleData() const;
-#else
 #if !RSTL_PRIME1
   // Guessed names.
   bool HasOffsetData() const;
   bool HasScaleData() const;
-#endif
 #endif
 };
 CHECK_SIZEOF(CFBStreamedPerChannelHeaderList, 0x4)
@@ -644,10 +516,6 @@ class CFBKeyFrameReductionPerChannel_HeaderForAll {
 public:
   typedef rstl::pair< const uint*, uint > FrameIterator;
 
-#if RSTL_CORRUPTION
-  explicit CFBKeyFrameReductionPerChannel_HeaderForAll(CInputStream& in)
-  : mBitCount(in.Get< uint >()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   template < typename Stream >
@@ -658,19 +526,14 @@ public:
   : mBitCount(in.Get< uint >())
 #endif
   {
-#endif
     uint words = Uint32sForBitCount(mBitCount);
     uint* data = &mBitCount + 1;
     for (uint i = 0; i < words; ++i) {
-#if RSTL_CORRUPTION
-      data[i] = in.Get< uint >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       data[i] = LoadUint32(in);
 #else
       data[i] = in.Get< uint >();
-#endif
 #endif
     }
   }
@@ -688,15 +551,11 @@ public:
     FrameIterator it(reinterpret_cast< const uint* >(this + 1) + word, 1u << bit);
     do {
       ++frame;
-#if RSTL_CORRUPTION
-      RSTL_PRECONDITION(frame < mBitCount);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       RS_ASSERT(frame < mBitCount, "Ran past the last keyframe");
 #else
       RSTL_PRECONDITION(frame < mBitCount);
-#endif
 #endif
       Advance(it);
     } while (!FrameAt(it));
@@ -727,10 +586,6 @@ CHECK_SIZEOF(CFBKeyFrameReductionPerChannel_HeaderForAll,
 
 class CFBStreamedCompressionTimeHeader : public CFBKeyFrameReductionPerChannel_HeaderForAll {
 public:
-#if RSTL_CORRUPTION
-  explicit CFBStreamedCompressionTimeHeader(CInputStream& in)
-  : CFBKeyFrameReductionPerChannel_HeaderForAll(in) {}
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   template < typename Stream >
@@ -740,7 +595,6 @@ public:
 #endif
   : CFBKeyFrameReductionPerChannel_HeaderForAll(in) {
   }
-#endif
 };
 #if RSTL_CORRUPTION
 CHECK_SIZEOF(CFBStreamedCompressionTimeHeader, 0x4)
@@ -756,9 +610,6 @@ public:
 
   CCharAnimTime GetAnimationDuration() const;
   float GetAverageVelocity() const { return mAverageVelocity; }
-#if RSTL_CORRUPTION
-  bool HasScaleData() const;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool HasPOIData() const { return !mEvntToken.null(); }
@@ -778,7 +629,6 @@ public:
   bool HasScaleData() const;
 #endif
 
-#endif
   CSteadyStateAnimInfo GetSteadyStateAnimInfo() const {
     return CSteadyStateAnimInfo(MainHeader().IsLooping(), GetAnimationDuration(), mRootOffset);
   }
@@ -812,9 +662,6 @@ private:
   static rstl::auto_ptr< uint > GetRotationsAndOffsets(uint words, CInputStream& in);
 
   uint mScratchSize;
-#if RSTL_CORRUPTION
-  uchar mVersionNumber;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint mEvnt;
@@ -823,7 +670,6 @@ private:
   uchar mVersionNumber;
 #endif
 
-#endif
   rstl::single_ptr< uint > mRotsAndOffs;
   float mAverageVelocity;
   CVector3f mRootOffset;

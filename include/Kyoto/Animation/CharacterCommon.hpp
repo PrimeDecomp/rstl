@@ -136,9 +136,6 @@ enum EAdditiveReactionType {
   kART_Seven
 };
 
-#if RSTL_CORRUPTION
-enum EJumpType { kJT_Invalid = -1, kJT_Normal, kJT_One, kJT_Ambush, kJT_Three }; // kJT_Three: Guessed name
-#else
 enum EJumpType {
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -152,7 +149,6 @@ enum EJumpType {
   , kJT_Three
 #endif
 };
-#endif
 
 enum EJumpState {
   kJS_Invalid = -1,
@@ -161,15 +157,10 @@ enum EJumpState {
   kJS_Loop,
   kJS_OutOfJump,
   kJS_WallBounceLeft,
-#if RSTL_CORRUPTION
-  kJS_WallBounceRight,
-  kJS_ExitJump // Guessed name
-#else
   kJS_WallBounceRight
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   , kJS_ExitJump // Guessed name
-#endif
 #endif
 };
 
@@ -209,19 +200,12 @@ enum ESeverity {
   kS_Five = 5,
   kS_Six = 6,
   kS_Seven = 7,
-#if RSTL_CORRUPTION
-  kS_Eight = 8,
-  kS_Nine = 9,   // Guessed name
-  kS_Ten = 10,   // Guessed name
-  kS_Eleven = 11 // Guessed name
-#else
   kS_Eight = 8
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   , kS_Nine = 9
   , kS_Ten = 10
   , kS_Eleven = 11
-#endif
 #endif
 };
 
@@ -334,10 +318,6 @@ enum EBodyType {
   kBT_BiPedal,
   kBT_Restricted,
   kBT_Flyer,
-#if RSTL_CORRUPTION
-  kBT_PitchableFlyer, // Cross-game name (DKCR HD); Echoes factory corroborated.
-  kBT_Floater,        // Cross-game name (DKCR HD); Echoes factory corroborated.
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   kBT_Pitchable,
@@ -345,7 +325,6 @@ enum EBodyType {
 #else
   kBT_PitchableFlyer, // Cross-game name (DKCR HD); Echoes factory corroborated.
   kBT_Floater,        // Cross-game name (DKCR HD); Echoes factory corroborated.
-#endif
 #endif
   kBT_WallWalker,
 #if RSTL_CORRUPTION
@@ -380,12 +359,8 @@ enum EBodyStateCmd {
   kBSC_ExitState,
   kBSC_LeanFromCover,
   kBSC_NextState,
-#if RSTL_CORRUPTION
-  kBSC_AbortScripted, // Guessed name
-#else
 #if !RSTL_PRIME1
   kBSC_AbortScripted, // Guessed name
-#endif
 #endif
   kBSC_MaintainVelocity,
   kBSC_Generate,

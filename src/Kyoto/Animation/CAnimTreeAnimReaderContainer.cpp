@@ -43,41 +43,29 @@ CSteadyStateAnimInfo CAnimTreeAnimReaderContainer::VGetSteadyStateAnimInfo() con
 }
 
 bool CAnimTreeAnimReaderContainer::VHasOffset(const CSegId& seg) const {
-#if RSTL_CORRUPTION
-  return mReader->VHasOffset(seg);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mReader->HasOffset(seg);
 #else
   return mReader->VHasOffset(seg);
 #endif
-#endif
 }
 
 CVector3f CAnimTreeAnimReaderContainer::VGetOffset(const CSegId& seg) const {
-#if RSTL_CORRUPTION
-  return mReader->VGetOffset(seg);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mReader->GetOffset(seg);
 #else
   return mReader->VGetOffset(seg);
 #endif
-#endif
 }
 
 CQuaternion CAnimTreeAnimReaderContainer::VGetRotation(const CSegId& seg) const {
-#if RSTL_CORRUPTION
-  return mReader->VGetRotation(seg);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mReader->GetRotation(seg);
 #else
   return mReader->VGetRotation(seg);
-#endif
 #endif
 }
 
@@ -196,30 +184,22 @@ CAnimTreeAnimReaderContainer::VGetParticlePOIState(uint nameHash) const {
 
 void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
                                                        CSegStatementSet& setOut) const {
-#if RSTL_CORRUPTION
-  mReader->VGetSegStatementSet(list, setOut);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mReader->GetSegStatementSet(list, setOut);
 #else
   mReader->VGetSegStatementSet(list, setOut);
 #endif
-#endif
 }
 
 void CAnimTreeAnimReaderContainer::VGetSegStatementSet(const CSegIdList& list,
                                                        CSegStatementSet& setOut,
                                                        const CCharAnimTime& time) const {
-#if RSTL_CORRUPTION
-  mReader->VGetSegStatementSet(list, setOut, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mReader->GetSegStatementSet(list, setOut, time);
 #else
   mReader->VGetSegStatementSet(list, setOut, time);
-#endif
 #endif
 }
 
@@ -289,9 +269,6 @@ CAnimTreeAnimReaderContainer::VSimplified() {
   return rstl::optional_object_null();
 }
 
-#if RSTL_CORRUPTION
-void CAnimTreeAnimReaderContainer::VSetPhase(float phase) { mReader->VSetPhase(phase); }
-#else
 void CAnimTreeAnimReaderContainer::VSetPhase(float phase) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -300,20 +277,15 @@ void CAnimTreeAnimReaderContainer::VSetPhase(float phase) {
   mReader->VSetPhase(phase);
 #endif
 }
-#endif
 
 SAdvancementResults
 CAnimTreeAnimReaderContainer::VGetAdvancementResults(const CCharAnimTime& time,
                                                      const CCharAnimTime& startOffset) const {
-#if RSTL_CORRUPTION
-  return mReader->VGetAdvancementResults(time, startOffset);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mReader->GetAdvancementResults(time, startOffset);
 #else
   return mReader->VGetAdvancementResults(time, startOffset);
-#endif
 #endif
 }
 

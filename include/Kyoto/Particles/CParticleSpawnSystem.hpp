@@ -44,14 +44,9 @@ public:
   const CVector3f& GetGlobalScale() const override;
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
-#if RSTL_CORRUPTION
-  int GetEmitterTime() const override;
-  int GetSystemCount() const override;
-#else
 #if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
-#endif
 #endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
@@ -102,14 +97,10 @@ private:
   double mCurSeconds;
   int mLifetime;
   int mParticleCount;
-#if RSTL_CORRUPTION
-  CElementGen::EOptionalSystemFlags mOptionalFlags;
-#else
 #if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
   CElementGen::EOptionalSystemFlags mOptionalFlags;
 #else
   bool mEnableOPTS : 1;
-#endif
 #endif
   bool mModelsUseLights : 1;
   bool mParticleEmission : 1;

@@ -79,9 +79,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
     const float scalar = start.GetScalar() + t * (end.GetScalar() - start.GetScalar());
     const CVector3f vector = start.GetVector() + t * (end.GetVector() - start.GetVector());
     const float invMag = CMath::InvSqrtF(scalar * scalar + vector.MagSquared());
-#if RSTL_CORRUPTION
-      return CQuaternion(scalar * invMag, invMag * vector);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return CQuaternion(invMag * scalar, invMag * vector);
@@ -95,7 +92,6 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
     return CQuaternion(invMag * scalar, invMag * vector);
 #else
       return CQuaternion(scalar * invMag, invMag * vector);
-#endif
 #endif
   }
 #if RSTL_CORRUPTION

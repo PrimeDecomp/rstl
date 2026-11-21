@@ -82,10 +82,6 @@ CPOINode::CPOINode(
 #endif
 
 CPOINode::CPOINode(CInputStream& in)
-#if RSTL_CORRUPTION
-: mVersion(in.Get< ushort >())
-, mNameHash(ReadNameHash(mVersion, in))
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 : x4_(in.Get< ushort >())
@@ -93,7 +89,6 @@ CPOINode::CPOINode(CInputStream& in)
 #else
 : mVersion(in.Get< ushort >())
 , mNameHash(ReadNameHash(mVersion, in))
-#endif
 #endif
 , mType(in.Get< ushort >())
 , mTime(in)
@@ -113,9 +108,6 @@ CPOINode::CPOINode(CInputStream& in)
 , mFlags(in.Get< int >()) {}
 #endif
 
-#if RSTL_CORRUPTION
-uint CPOINode::GetHashForString(const char* str) { return CCRC32::CalculateString(str, -1); }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool CPOINode::operator>(const CPOINode& other) const { return mTime > other.mTime; }
@@ -123,7 +115,6 @@ bool CPOINode::operator>(const CPOINode& other) const { return mTime > other.mTi
 bool CPOINode::operator<(const CPOINode& other) const { return mTime < other.mTime; }
 #else
 uint CPOINode::GetHashForString(const char* str) { return CCRC32::CalculateString(str, -1); }
-#endif
 #endif
 
 int CPOINode::compare(const void* a, const void* b) {

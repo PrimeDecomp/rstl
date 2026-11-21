@@ -18,9 +18,6 @@ class CEffectComponent {
 public:
   explicit CEffectComponent(CInputStream& in);
 
-#if RSTL_CORRUPTION
-  uint GetComponentNameHash() const { return mNameHash; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::string& GetComponentName() const { return mName; }
@@ -28,7 +25,6 @@ public:
   uint GetComponentNameHash() const { return mNameHash; }
 #endif
 
-#endif
   const SObjectTag& GetParticleTag() const { return mTag; }
 #if RSTL_CORRUPTION
   CSegId GetSegmentId() const { return mBone; }
@@ -49,9 +45,6 @@ private:
   SObjectTag GetSObjectTagFromStream(CInputStream& in);
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  uint mNameHash;
-#else
 #if RSTL_PRIME1
   rstl::string mName;
 #else
@@ -59,11 +52,7 @@ private:
   uint mNameHash;
 #endif
 
-#endif
   SObjectTag mTag;
-#if RSTL_CORRUPTION
-  CSegId mBone;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::string mBoneName;
@@ -71,7 +60,6 @@ private:
   CSegId mBone;
 #endif
 
-#endif
   float mScale;
   CParticleData::EParentedMode mParentedMode;
   uint mFlags;

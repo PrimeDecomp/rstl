@@ -50,9 +50,6 @@ public:
 
 private:
   CCharAnimTime mTransDur;
-#if RSTL_CORRUPTION
-  bool mCharacterSpaceBlend;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool xc_;
@@ -60,7 +57,6 @@ private:
   bool mCharacterSpaceBlend;
 #endif
 
-#endif
   bool mRunA;
   u32 mFlags;
 #if RSTL_CORRUPTION

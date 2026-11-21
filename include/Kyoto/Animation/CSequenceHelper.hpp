@@ -22,15 +22,11 @@ public:
 private:
   CAnimSysContext mContext;
   rstl::vector< rstl::ncrc_ptr< CAnimTreeNode > > mNodes;
-#if RSTL_CORRUPTION
-  rstl::vector< bool > x28_;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::vector< bool > x20_;
 #else
   rstl::vector< bool > x28_;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION

@@ -24,18 +24,12 @@
 class CAnimTreeNode : public IAnimReader {
 public:
   explicit CAnimTreeNode(const rstl::string& name);
-#if RSTL_CORRUPTION
-
-  // IAnimReader
-  ~CAnimTreeNode() override;
-#else
 #if RSTL_PRIME1
   ~CAnimTreeNode() override {
     CCharAnimMemoryMetrics::SubtractFromTotalSize(mName.size(), CCharAnimMemoryMetrics::kASS_Two);
   }
 #else
   ~CAnimTreeNode() override;
-#endif
 #endif
   bool IsCAnimTreeNode() const override;
 

@@ -359,14 +359,9 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
     buffer.AddLineSpacing(v / 100.f);
   } else if (BeginsWith(string, len, L"line-extra-space=")) {
     buffer.AddLineExtraSpace(ParseInt(string + 17, len - 17, true));
-#if RSTL_CORRUPTION
-  } else if (BeginsWith(string, len, L"character-extra-space=")) {
-    buffer.AddCharacterExtraSpace(ParseInt(string + 22, len - 22, true));
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   } else if (BeginsWith(string, len, L"character-extra-space=")) {
     buffer.AddCharacterExtraSpace(ParseInt(string + 22, len - 22, true));
-#endif
 #endif
   } else if (BeginsWith(string, len, L"just=")) {
     if (Equals(string + 5, len - 5, L"left")) {
@@ -562,12 +557,6 @@ RSTL_PRIME1_CONST int CTextParser::GetColorValue(const wchar_t* str) {
 }
 
 CTextColor CTextParser::ParseColor(const wchar_t* str, int len) {
-#if RSTL_CORRUPTION
-  const int r = GetColorValue(str + 1);
-  const int g = GetColorValue(str + 3);
-  const int b = GetColorValue(str + 5);
-  const int a = len == 9 ? GetColorValue(str + 7) : 255;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint r = GetColorValue(str + 1);
@@ -579,7 +568,6 @@ CTextColor CTextParser::ParseColor(const wchar_t* str, int len) {
   const int g = GetColorValue(str + 3);
   const int b = GetColorValue(str + 5);
   const int a = len == 9 ? GetColorValue(str + 7) : 255;
-#endif
 #endif
   return CTextColor(r, g, b, a);
 }

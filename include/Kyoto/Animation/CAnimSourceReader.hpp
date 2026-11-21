@@ -14,14 +14,8 @@
 #include "Kyoto/Animation/CAnimSource.hpp"
 
 #include "Kyoto/Animation/CAnimSourceReaderBase.hpp"
-#if RSTL_CORRUPTION
-#include "Kyoto/Animation/TSubAnimTypeToken.hpp"
-
-
-#else
 #if !RSTL_PRIME1
 #include "Kyoto/Animation/TSubAnimTypeToken.hpp"
-#endif
 #endif
 
 class CAnimSourceInfo : public IAnimSourceInfo {
@@ -73,18 +67,12 @@ class CAnimSourceReader : public CAnimSourceReaderBase {
 public:
   CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source, const CCharAnimTime& time,
                     const CAnimPOIData* poiData);
-#if RSTL_CORRUPTION
-
-  // IAnimReader
-  ~CAnimSourceReader() override;
-#else
 #if !RSTL_PRIME1
 
   // IAnimReader
   ~CAnimSourceReader() override;
 #else
   ~CAnimSourceReader() override {}
-#endif
 #endif
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 

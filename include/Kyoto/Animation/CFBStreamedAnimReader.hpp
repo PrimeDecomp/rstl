@@ -86,15 +86,6 @@ public:
   uint GetFrameNumber() const { return mCurKey; }
   uint NumEntries() const { return mBoneChanCount; }
   uint GetSegId(uint index) const { return mSegIds[index]; }
-#if RSTL_CORRUPTION
-  const bool* GetRotationFlags() const { return mHasRotation; } // Guessed name.
-
-  const bool* GetOffsetFlags() const { return mHasOffset; } // Guessed name.
-
-  const bool* GetScaleFlags() const { return mHasScale; } // Guessed name.
-
-  bool HasRotation(uint index) const { return mHasRotation[index]; }
-#else
 #if !RSTL_PRIME1
   const bool* GetRotationFlags() const { return mHasRotation; } // Guessed name.
 
@@ -103,39 +94,24 @@ public:
   const bool* GetScaleFlags() const { return mHasScale; } // Guessed name.
 
   bool HasRotation(uint index) const { return mHasRotation[index]; }
-#endif
 #endif
   bool HasOffset(uint index) const { return mHasOffset[index]; }
-#if RSTL_CORRUPTION
-  bool HasScale(uint index) const { return mHasScale[index]; }
-  const bool HasOffsetData() const { return mHasOffsetData; }
-  const bool HasScaleData() const { return mHasScaleData; }
-#else
 #if !RSTL_PRIME1
   bool HasScale(uint index) const { return mHasScale[index]; }
   const bool HasOffsetData() const { return mHasOffsetData; }
   const bool HasScaleData() const { return mHasScaleData; }
 #endif
 
-#endif
   bool AmCalculatedDown() const { return mCalculated; }
   const CQuaternion& GetQuat(uint index) const {
-#if RSTL_CORRUPTION
-    return *reinterpret_cast< const CQuaternion* >(mComputedFloats + index * mValuesPerChannel);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return *reinterpret_cast< const CQuaternion* >(mComputedFloats + index * 8);
 #else
     return *reinterpret_cast< const CQuaternion* >(mComputedFloats + index * mValuesPerChannel);
 #endif
-#endif
   }
   const CVector3f& GetVector(uint index) const {
-#if RSTL_CORRUPTION
-    return *reinterpret_cast< const CVector3f* >(mComputedFloats +
-                                                 (index * mValuesPerChannel + kRotationValueCount));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     uint offset = index * 8 + 4;
@@ -144,90 +120,54 @@ public:
     return *reinterpret_cast< const CVector3f* >(mComputedFloats +
                                                  (index * mValuesPerChannel + kRotationValueCount));
 #endif
-#endif
   }
-#if RSTL_CORRUPTION
-  const CVector3f& GetScale(uint index) const {
-    uint offset = mHasOffsetData ? kRotationValueCount + kOffsetValueCount : kRotationValueCount;
-    return *reinterpret_cast< const CVector3f* >(mComputedFloats +
-                                                 (offset + index * mValuesPerChannel));
-  }
-#else
 #if !RSTL_PRIME1
   const CVector3f& GetScale(uint index) const {
     uint offset = mHasOffsetData ? kRotationValueCount + kOffsetValueCount : kRotationValueCount;
     return *reinterpret_cast< const CVector3f* >(mComputedFloats +
                                                  (offset + index * mValuesPerChannel));
   }
-#endif
 #endif
 
 private:
-#if RSTL_CORRUPTION
-  static const uchar kRotationValueCount; // Guessed name.
-  static const uchar kOffsetValueCount;   // Guessed name.
-#else
 #if !RSTL_PRIME1
   static const uchar kRotationValueCount; // Guessed name.
   static const uchar kOffsetValueCount;   // Guessed name.
-#endif
 #endif
 
   void Allocate(uint channelCount);
   uchar GetValuesPerChannel() const; // Guessed name.
 
   uchar* mBuffer;
-#if RSTL_CORRUPTION
-  uint mBufferSize;
-#else
 #if !RSTL_PRIME1
   uint mBufferSize;
 #endif
 
-#endif
   short* mCumulativeInts;
-#if RSTL_CORRUPTION
-  bool* mHasRotation;
-#else
 #if !RSTL_PRIME1
   bool* mHasRotation;
-#endif
 #endif
   bool* mHasOffset;
-#if RSTL_CORRUPTION
-  bool* mHasScale;
-#else
 
 #if !RSTL_PRIME1
   bool* mHasScale;
 #endif
 
-#endif
   short* mSegIds;
   float* mComputedFloats;
   uint mRotDiv;
   float mOffsetMult;
-#if RSTL_CORRUPTION
-  float mScaleMult;
-#else
 #if !RSTL_PRIME1
   float mScaleMult;
 #endif
 
-#endif
   uint mCurKey;
   bool mCalculated;
   uint mBoneChanCount;
-#if RSTL_CORRUPTION
-  bool mHasOffsetData;
-  bool mHasScaleData;
-  uchar mValuesPerChannel;
-#else
 #if !RSTL_PRIME1
   bool mHasOffsetData;
   bool mHasScaleData;
   uchar mValuesPerChannel;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION
@@ -290,10 +230,6 @@ class CMemoryInputToBitLevelLoader {
   friend class CBitLevelLoader< CMemoryInputToBitLevelLoader >;
 
 public:
-#if RSTL_CORRUPTION
-  explicit CMemoryInputToBitLevelLoader(const uint* data)
-  : mData(reinterpret_cast< const uchar* >(data) - sizeof(uint)) {}
-#else
 #if RSTL_PRIME1 && NONMATCHING
   CMemoryInputToBitLevelLoader(const uint* data) : mData(reinterpret_cast< const uchar* >(data)) {}
 #else
@@ -303,7 +239,6 @@ public:
 #endif
   CMemoryInputToBitLevelLoader(const uint* data)
   : mData(reinterpret_cast< const uchar* >(data) - sizeof(uint)) {}
-#endif
 #endif
 
 private:
@@ -351,18 +286,11 @@ RSTL_KYOTO_ANIMATION_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
     mBit += count;
     shift += count;
     remaining -= count;
-#if RSTL_CORRUPTION
-    if (mBit == 32) {
-      mBit = 0;
-      mWord = Input(*mInput);
-    }
-#else
 #if !(RSTL_PRIME1 && NONMATCHING)
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
     }
-#endif
 #endif
   }
   return result;
@@ -378,14 +306,10 @@ RSTL_KYOTO_ANIMATION_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
     return 0;
   }
   uint value = LoadUnsigned(bits);
-#if RSTL_CORRUPTION
-  if (value & (1 << (bits - 1))) {
-#else
 #if RSTL_PRIME1 && NONMATCHING
   if (bits < 32 && (value & (1u << (bits - 1)))) {
 #else
   if (value & (1 << (bits - 1))) {
-#endif
 #endif
     value |= ~0u << bits;
   }
@@ -395,10 +319,6 @@ RSTL_KYOTO_ANIMATION_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
 template <>
 inline uint
 CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoader& input) {
-#if RSTL_CORRUPTION
-  input.mData += sizeof(uint);
-  return TLoadedVal< uint >::Read(input.mData);
-#else
 #if RSTL_PRIME1 && NONMATCHING
   uint value = TLoadedVal< uint >::Read(input.mData);
   input.mData += sizeof(uint);
@@ -407,20 +327,15 @@ CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoa
   input.mData += sizeof(uint);
   return TLoadedVal< uint >::Read(input.mData);
 #endif
-#endif
 }
 
 class CSegIdToIndexConverter {
 public:
   explicit CSegIdToIndexConverter(const CFBStreamedAnimReaderTotals& totals);
-#if RSTL_CORRUPTION
-  ~CSegIdToIndexConverter();
-#else
 #if !RSTL_PRIME1
   ~CSegIdToIndexConverter();
 #endif
 
-#endif
   uint SegIdToIndex(uint seg) const { return mIndices[seg]; }
 
 private:

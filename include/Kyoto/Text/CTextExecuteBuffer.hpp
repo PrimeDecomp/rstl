@@ -99,10 +99,6 @@ private:
 #endif
   void StartNewLine();
   void StartNewWord();
-#if RSTL_CORRUPTION
-  void TerminateLine(bool lastLine);
-  void TerminateLineLTR(bool lastLine);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void TerminateLine();
@@ -110,7 +106,6 @@ private:
 #else
   void TerminateLine(bool lastLine);
   void TerminateLineLTR(bool lastLine);
-#endif
 #endif
 
   InstList mInstructions;

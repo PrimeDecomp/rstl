@@ -70,9 +70,6 @@ public:
   CPOINode(CInputStream& in);
   virtual ~CPOINode() {}
 
-#if RSTL_CORRUPTION
-  uint GetNameHash() const { return mNameHash; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::string& GetString() const { return mName; }
@@ -80,7 +77,6 @@ public:
   uint GetNameHash() const { return mNameHash; }
 #endif
 
-#endif
   const EPOIType GetPoiType() const { return static_cast< EPOIType >(mType); }
   const CCharAnimTime& GetTime() const { return mTime; }
   void SetTime(const CCharAnimTime& time) { mTime = time; }
@@ -118,10 +114,6 @@ public:
 
 #endif
 protected:
-#if RSTL_CORRUPTION
-  ushort mVersion;
-  uint mNameHash;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ushort x4_;
@@ -131,7 +123,6 @@ protected:
   uint mNameHash;
 #endif
 
-#endif
   ushort mType;
   CCharAnimTime mTime;
   int mIndex;

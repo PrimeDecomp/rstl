@@ -206,16 +206,12 @@ public:
 
 class CIEGetEmitterTime : public CIntElement {
 public:
-#if RSTL_CORRUPTION
-  ~CIEGetEmitterTime() override {}
-#else
 #if RSTL_PRIME1
   ~CIEGetEmitterTime() override;
 #else
   ~CIEGetEmitterTime() override {}
 #endif
 
-#endif
   bool GetValue(int frame, int& valOut) const override;
 };
 

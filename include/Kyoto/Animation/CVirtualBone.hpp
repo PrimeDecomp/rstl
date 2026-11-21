@@ -16,22 +16,13 @@
 
 #include "rstl/reserved_vector.hpp"
 
-#if RSTL_CORRUPTION
-#include "dolphin/mtx.h"
-
-
-#else
 #if !RSTL_PRIME1
 #include "dolphin/mtx.h"
-#endif
 #endif
 
 struct SSkinWeighting {
   CSegId mId;
   float mWeight;
-#if RSTL_CORRUPTION
-  explicit SSkinWeighting(CInputStream& in) : mId(in.Get< int >()), mWeight(in.Get< float >()) {}
-#else
   explicit SSkinWeighting(CInputStream& in)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -42,14 +33,9 @@ struct SSkinWeighting {
   , mWeight(in.Get< float >())
 #endif
   {}
-#endif
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(SSkinWeighting, 0x8)
-#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(SSkinWeighting, 0x8)
-#endif
 #endif
 
 #if RSTL_CORRUPTION
@@ -79,16 +65,12 @@ class CVirtualBone {
 public:
   explicit CVirtualBone(CInputStream& in);
   const rstl::reserved_vector< SSkinWeighting, 3 >& GetWeights() const { return mWeights; }
-#if RSTL_CORRUPTION
-  uint GetVertexCount() const { return mVertexCount; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetNumIndices() const { return mVertexCount; }
   const CTransform4f& GetTransform() const { return mXf; }
 #else
   uint GetVertexCount() const { return mVertexCount; }
-#endif
 #endif
 
 #if RSTL_CORRUPTION
@@ -118,9 +100,6 @@ public:
 
 private:
   rstl::reserved_vector< SSkinWeighting, 3 > mWeights;
-#if RSTL_CORRUPTION
-  uint mVertexCount;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int mVertexCount;
@@ -128,7 +107,6 @@ private:
   mutable CMatrix3f mRotation;
 #else
   uint mVertexCount;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION

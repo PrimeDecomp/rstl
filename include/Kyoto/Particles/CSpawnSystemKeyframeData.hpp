@@ -38,12 +38,8 @@ public:
     }
     void LoadToken(CSimplePool* pool);
     rstl::optional_object< CToken > GetToken() const { return mToken; }
-#if RSTL_CORRUPTION
-    uint GetType() const { return mType; }
-#else
 #if !RSTL_PRIME1
     uint GetType() const { return mType; }
-#endif
 #endif
 
   private:
@@ -68,12 +64,8 @@ public:
 
   void LoadAllSpawnedSystemTokens(CSimplePool* pool);
   rstl::vector< CSpawnSystemKeyframeInfo >& GetSpawnedSystemsAtFrame(uint frame);
-#if RSTL_CORRUPTION
-  uint GetEndFrame() const { return mEndFrame; }
-#else
 #if !RSTL_PRIME1
   uint GetEndFrame() const { return mEndFrame; }
-#endif
 #endif
 
 private:

@@ -80,17 +80,12 @@ public:
   uint GetFrameSizeInBytes() const;
 
   const uint* StartForFrame(uint frame) const {
-#if RSTL_CORRUPTION
-    return mStorage.get() +
-           (mRotationsPerFrame * 4 + mOffsetsPerFrame * 3) * rstl::min_val(frame, mNumFrames - 1);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return mStorage.get() + frame * (mRotationsPerFrame * 4 + mOffsetsPerFrame * 3);
 #else
     return mStorage.get() +
            (mRotationsPerFrame * 4 + mOffsetsPerFrame * 3) * rstl::min_val(frame, mNumFrames - 1);
-#endif
 #endif
   }
 
@@ -123,9 +118,6 @@ CHECK_SIZEOF(RotationAndOffsetStorage, 0x14)
 
 class CAnimSource {
 public:
-#if RSTL_CORRUPTION
-  explicit CAnimSource(CInputStream& in);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CAnimSource(CInputStream& in, IObjectStore& store);
@@ -133,7 +125,6 @@ public:
   explicit CAnimSource(CInputStream& in);
 #endif
 
-#endif
   ~CAnimSource();
 
   bool HasRotation(const CSegId& seg) const;
@@ -212,14 +203,6 @@ private:
 
 #endif
   CSegId mRoot;
-#if RSTL_CORRUPTION
-  rstl::vector< signed char > mSegmentChannels;
-  rstl::vector< signed char > mRotationChannels;
-  rstl::vector< signed char > mOffsetChannels;
-  rstl::vector< signed char > mScaleChannels;
-  rstl::vector< CVector3f > mScales;
-  uint mScalesPerFrame;
-#else
 #if !RSTL_PRIME1
   rstl::vector< signed char > mSegmentChannels;
 #endif
@@ -235,7 +218,6 @@ private:
   uint mScalesPerFrame;
 #endif
 
-#endif
   RotationAndOffsetStorage mStorage;
 #if RSTL_CORRUPTION
   CVector3f mRootDisplacement;                  // Guessed name

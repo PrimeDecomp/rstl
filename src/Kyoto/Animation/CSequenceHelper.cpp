@@ -19,10 +19,6 @@ CSequenceHelper::CSequenceHelper(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                  const CAnimSysContext& context)
 : mContext(context) {
   mNodes.reserve(2);
-#if RSTL_CORRUPTION
-  mNodes.push_back_unsafe(a);
-  mNodes.push_back_unsafe(b);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mNodes.push_back(a);
@@ -31,7 +27,6 @@ CSequenceHelper::CSequenceHelper(const rstl::ncrc_ptr< CAnimTreeNode >& a,
   mNodes.push_back_unsafe(a);
   mNodes.push_back_unsafe(b);
 #endif
-#endif
 }
 
 CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >& anims,
@@ -39,10 +34,6 @@ CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >
 : mContext(context) {
   mNodes.reserve(anims.size());
 
-#if RSTL_CORRUPTION
-  rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator it = anims.begin();
-  rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator end = anims.end();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   AUTO(it, anims.begin());
@@ -51,18 +42,13 @@ CSequenceHelper::CSequenceHelper(const rstl::vector< rstl::rc_ptr< IMetaAnim > >
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator it = anims.begin();
   rstl::vector< rstl::rc_ptr< IMetaAnim > >::const_iterator end = anims.end();
 #endif
-#endif
   for (; it != end; ++it) {
     const rstl::rc_ptr< IMetaAnim >& anim = *it;
-#if RSTL_CORRUPTION
-    mNodes.push_back_unsafe(
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mNodes.push_back(
 #else
     mNodes.push_back_unsafe(
-#endif
 #endif
         anim->GetAnimationTree(context, CMetaAnimTreeBuildOrders::NoSpecialOrders()));
   }
@@ -142,15 +128,11 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
       for (uint j = 0; j < numParts; ++j) {
         CParticlePOINode& poi = partArray[j];
         poi.SetTime(poi.GetTime() + duration);
-#if RSTL_CORRUPTION
-        partNodes.push_back_unsafe(poi);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         partNodes.push_back(poi);
 #else
         partNodes.push_back_unsafe(poi);
-#endif
 #endif
       }
 
@@ -164,15 +146,11 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
       for (uint j = 0; j < numSounds; ++j) {
         CSoundPOINode& poi = soundArray[j];
         poi.SetTime(poi.GetTime() + duration);
-#if RSTL_CORRUPTION
-        soundNodes.push_back_unsafe(poi);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         soundNodes.push_back(poi);
 #else
         soundNodes.push_back_unsafe(poi);
-#endif
 #endif
       }
 
@@ -215,16 +193,12 @@ CSequenceFundamentals CSequenceHelper::ComputeSequenceFundamentals() const {
 
         remaining = result.GetRemainder();
         elapsed += previous - remaining;
-#if RSTL_CORRUPTION
-        const rstl::optional_object< CVector3f > delta = result.mDeltas.mPosDelta;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         const rstl::optional_object< CVector3f > delta =
             result.GetAdvancementDeltas().GetOffsetDelta();
 #else
         const rstl::optional_object< CVector3f > delta = result.mDeltas.mPosDelta;
-#endif
 #endif
         offset += *delta;
       }

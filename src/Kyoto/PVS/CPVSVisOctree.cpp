@@ -28,10 +28,6 @@ int CPVSVisOctree::IterateSearch(uchar octant, const CVector3f& pos) const {
     return -1;
   }
 
-#if RSTL_CORRUPTION
-  const CVector3f halfExtent = (mMax - mMin) * 0.5f;
-  const CVector3f& center = halfExtent + mMin;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f halfExtent = (mMax - mMin) * 0.5f;
@@ -41,7 +37,6 @@ int CPVSVisOctree::IterateSearch(uchar octant, const CVector3f& pos) const {
   const CVector3f& center = halfExtent + mMin;
 #endif
 
-#endif
   float minX, maxX;
   float minY, maxY;
   float minZ, maxZ;

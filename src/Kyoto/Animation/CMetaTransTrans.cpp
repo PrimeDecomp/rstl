@@ -56,15 +56,11 @@ CMetaTransTrans::VGetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 
 void CMetaTransTrans::WriteTransData(COutputStream& out) const {
   mTransDur.PutTo(out);
-#if RSTL_CORRUPTION
-  out.WriteChar(bool(mCharacterSpaceBlend));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   out.WriteChar(bool(xc_));
 #else
   out.WriteChar(bool(mCharacterSpaceBlend));
-#endif
 #endif
   out.WriteChar(bool(mRunA));
   out.WriteLong(mFlags);

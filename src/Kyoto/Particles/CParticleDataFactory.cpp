@@ -62,15 +62,11 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
 
   if (sFreeChunk == nullptr || !sFreeChunk->Contains(ptr)) {
     sFreeChunk = nullptr;
-#if RSTL_CORRUPTION
-    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     for (AUTO(it, sElementAllocationChunks.begin());
 #else
     for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
-#endif
 #endif
          it != sElementAllocationChunks.end(); ++it) {
       if (it->Contains(ptr)) {
@@ -82,15 +78,11 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
 
   sFreeChunk->Free(ptr);
   if (sFreeChunk->GetAllocationCount() == 0) {
-#if RSTL_CORRUPTION
-    for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     for (AUTO(it, sElementAllocationChunks.begin());
 #else
     for (rstl::list< CElementAllocationChunk >::iterator it = sElementAllocationChunks.begin();
-#endif
 #endif
          it != sElementAllocationChunks.end(); ++it) {
       if (&*it == sFreeChunk) {
@@ -122,9 +114,6 @@ RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInpu
 
 #endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
-#if RSTL_CORRUPTION
-  CGenDescription* desc = CParticleDataFactory::GetGeneratorDesc(in, pool, tag.id);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CGenDescription* desc = CParticleDataFactory::GetGeneratorDesc(in, pool, tag.GetId());
@@ -132,7 +121,6 @@ RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInpu
   CGenDescription* desc = CParticleDataFactory::GetGeneratorDesc(in, pool, tag.id);
 #endif
 
-#endif
   return desc;
 }
 
@@ -160,9 +148,6 @@ CGenDescription* CParticleDataFactory::CreateGeneratorDescription(CInputStream& 
   if (rstl::count(assets.begin(), assets.end(), id) != 0) {
     return nullptr;
   }
-#if RSTL_CORRUPTION
-  assets.push_back_unsafe(id);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   assets.push_back(id);
@@ -170,7 +155,6 @@ CGenDescription* CParticleDataFactory::CreateGeneratorDescription(CInputStream& 
   assets.push_back_unsafe(id);
 #endif
 
-#endif
   FourCC clsId = GetClassID(in);
   if (clsId != SBIG('GPSM')) {
     return nullptr;
@@ -420,26 +404,17 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('CIND'):
       desc->mCIND = GetBool(in);
       break;
-#if RSTL_CORRUPTION
-    case SBIG('INDM'):
-      desc->mINDM = GetBool(in);
-      break;
-#else
 #if !RSTL_PRIME1
     case SBIG('INDM'):
       desc->mINDM = GetBool(in);
       break;
 #endif
 
-#endif
     case SBIG('PMDL'): {
       rstl::optional_object< TToken< CModel > > model(GetModel(in, pool));
       if (model) {
         desc->mPMDL = TCachedToken< CModel >(*model);
       } else {
-#if RSTL_CORRUPTION
-        desc->mPMDL = CGenDescription::TParticleModel();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mPMDL = rstl::optional_object_null();
@@ -447,7 +422,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mPMDL = CGenDescription::TParticleModel();
 #endif
 
-#endif
       }
     } break;
     case SBIG('PMOP'):
@@ -471,14 +445,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('PMOO'):
       desc->mPMOO = GetBool(in);
       break;
-#if RSTL_CORRUPTION
-    case SBIG('VMPC'):
-      desc->mVMPC = GetBool(in);
-      break;
-    case SBIG('PMOV'):
-      desc->mPMOV = GetVectorElement(in);
-      break;
-#else
 #if !RSTL_PRIME1
     case SBIG('VMPC'):
       desc->mVMPC = GetBool(in);
@@ -488,7 +454,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       break;
 #endif
 
-#endif
     case SBIG('SEED'):
       desc->mSEED = GetIntElement(in);
       break;
@@ -498,9 +463,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       if (child) {
         desc->mICTS = TCachedToken< CGenDescription >(*child);
       } else {
-#if RSTL_CORRUPTION
-        desc->mICTS = CGenDescription::TChildGeneratorDesc();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mICTS = rstl::optional_object_null();
@@ -508,7 +470,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mICTS = CGenDescription::TChildGeneratorDesc();
 #endif
 
-#endif
       }
       break;
     }
@@ -524,9 +485,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       if (child) {
         desc->mIDTS = TCachedToken< CGenDescription >(*child);
       } else {
-#if RSTL_CORRUPTION
-        desc->mIDTS = CGenDescription::TChildGeneratorDesc();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mIDTS = rstl::optional_object_null();
@@ -534,7 +492,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mIDTS = CGenDescription::TChildGeneratorDesc();
 #endif
 
-#endif
       }
       break;
     }
@@ -547,9 +504,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       if (child) {
         desc->mIITS = TCachedToken< CGenDescription >(*child);
       } else {
-#if RSTL_CORRUPTION
-        desc->mIITS = CGenDescription::TChildGeneratorDesc();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mIITS = rstl::optional_object_null();
@@ -557,7 +511,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mIITS = CGenDescription::TChildGeneratorDesc();
 #endif
 
-#endif
       }
       break;
     }
@@ -572,9 +525,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       if (child) {
         desc->mSSWH = TCachedToken< CSwooshDescription >(*child);
       } else {
-#if RSTL_CORRUPTION
-        desc->mSSWH = CGenDescription::TSwooshGeneratorDesc();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mSSWH = rstl::optional_object_null();
@@ -582,7 +532,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mSSWH = CGenDescription::TSwooshGeneratorDesc();
 #endif
 
-#endif
       }
       break;
     }
@@ -598,9 +547,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       if (electric) {
         desc->mSELC = *electric;
       } else {
-#if RSTL_CORRUPTION
-        desc->mSELC = CGenDescription::TElectricGeneratorDesc();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         desc->mSELC = rstl::optional_object_null();
@@ -608,7 +554,6 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
         desc->mSELC = CGenDescription::TElectricGeneratorDesc();
 #endif
 
-#endif
       }
       break;
     }
@@ -777,22 +722,6 @@ bool CParticleDataFactory::GetBool(CInputStream& in) {
   return in.ReadBool();
 }
 
-#if RSTL_CORRUPTION
-int CParticleDataFactory::GetBitflag(CInputStream& in) {
-  GetClassID(in);
-  FourCC type = GetClassID(in);
-  uint count = in.ReadInt32();
-  switch (type) {
-  case SBIG('BITF'):
-    return in.ReadInt32();
-  default:
-    for (uint i = 0; i < count; ++i) {
-      in.ReadUint8();
-    }
-    return 0;
-  }
-}
-#else
 #if !RSTL_PRIME1
 int CParticleDataFactory::GetBitflag(CInputStream& in) {
   GetClassID(in);
@@ -808,7 +737,6 @@ int CParticleDataFactory::GetBitflag(CInputStream& in) {
     return 0;
   }
 }
-#endif
 #endif
 
 int CParticleDataFactory::GetInt(CInputStream& in) { return in.ReadInt32(); }
@@ -2165,9 +2093,6 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
 
 #endif
   } else {
-#if RSTL_CORRUPTION
-    return rstl::optional_object< TToken< CGenDescription > >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return rstl::optional_object_null();
@@ -2175,7 +2100,6 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
     return rstl::optional_object< TToken< CGenDescription > >();
 #endif
 
-#endif
   }
 #if RSTL_CORRUPTION
   if (id == kInvalidAssetId) {
@@ -2198,9 +2122,6 @@ rstl::optional_object< TToken< CGenDescription > >
 CParticleDataFactory::GetChildGeneratorDesc(CAssetId id, CSimplePool* pool,
                                             const rstl::vector< CAssetId >& resources) {
   if (rstl::count(resources.begin(), resources.end(), id) == 0) {
-#if RSTL_CORRUPTION
-    return TToken< CGenDescription >(pool->GetObj(SObjectTag('PART', id)));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return TToken< CGenDescription >(pool->GetObj(SObjectTag(CParticleGen::ResType(), id)));
@@ -2208,11 +2129,7 @@ CParticleDataFactory::GetChildGeneratorDesc(CAssetId id, CSimplePool* pool,
     return TToken< CGenDescription >(pool->GetObj(SObjectTag('PART', id)));
 #endif
 
-#endif
   }
-#if RSTL_CORRUPTION
-  return rstl::optional_object< TToken< CGenDescription > >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::optional_object_null();
@@ -2220,7 +2137,6 @@ CParticleDataFactory::GetChildGeneratorDesc(CAssetId id, CSimplePool* pool,
   return rstl::optional_object< TToken< CGenDescription > >();
 #endif
 
-#endif
 }
 
 rstl::optional_object< TToken< CSwooshDescription > >
@@ -2240,9 +2156,6 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
 
 #endif
   } else {
-#if RSTL_CORRUPTION
-    return rstl::optional_object< TToken< CSwooshDescription > >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return rstl::optional_object_null();
@@ -2250,7 +2163,6 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
     return rstl::optional_object< TToken< CSwooshDescription > >();
 #endif
 
-#endif
   }
 #if RSTL_CORRUPTION
   if (id == kInvalidAssetId) {
@@ -2286,9 +2198,6 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
 
 #endif
   } else {
-#if RSTL_CORRUPTION
-    return rstl::optional_object< TToken< CElectricDescription > >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return rstl::optional_object_null();
@@ -2296,7 +2205,6 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
     return rstl::optional_object< TToken< CElectricDescription > >();
 #endif
 
-#endif
   }
 #if RSTL_CORRUPTION
   if (id == kInvalidAssetId) {
@@ -2332,9 +2240,6 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
 
 #endif
   } else {
-#if RSTL_CORRUPTION
-    return rstl::optional_object< TToken< CModel > >();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return rstl::optional_object_null();
@@ -2342,7 +2247,6 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
     return rstl::optional_object< TToken< CModel > >();
 #endif
 
-#endif
   }
 #if RSTL_CORRUPTION
   if (id == kInvalidAssetId) {

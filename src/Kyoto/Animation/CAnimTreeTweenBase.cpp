@@ -8,15 +8,11 @@
 #endif
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
-#if RSTL_CORRUPTION
-#include "Kyoto/Animation/CJointData_LinearStorage.hpp"
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
 #include "Kyoto/Animation/CJointData_LinearStorage.hpp"
 #endif
 
-#endif
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #if !RSTL_CORRUPTION
@@ -107,21 +103,6 @@ CQuaternion CAnimTreeTweenBase::VGetRotation(const CSegId& seg) const {
 }
 
 // Guessed name.
-#if RSTL_CORRUPTION
-static void GetSegStatementSet(const rstl::rc_ptr< CAnimTreeNode >& child, const CSegIdList& list,
-                               CSegStatementSet& setOut,
-                               rstl::optional_object< CCharAnimTime > time) {
-  if (time.valid()) {
-    child->VGetSegStatementSet(list, setOut, *time);
-  } else {
-    child->VGetSegStatementSet(list, setOut);
-  }
-}
-
-// Guessed name.
-void CAnimTreeTweenBase::BlendSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-                                              rstl::optional_object< CCharAnimTime > time) const {
-#else
 #if RSTL_PRIME1
 void CAnimTreeTweenBase::VGetSegStatementSet(const CSegIdList& list,
                                              CSegStatementSet& setOut) const
@@ -141,75 +122,45 @@ void CAnimTreeTweenBase::BlendSegStatementSet(const CSegIdList& list, CSegStatem
                                               rstl::optional_object< CCharAnimTime > time) const
 #endif
 {
-#endif
   float weight = GetBlendingWeight();
   static int sStack = 0;
   ++sStack;
   if (weight >= 1.0) {
-#if RSTL_CORRUPTION
-    GetSegStatementSet(mB, list, setOut, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mB->GetSegStatementSet(list, setOut);
 #else
     GetSegStatementSet(mB, list, setOut, time);
 #endif
-#endif
   } else if (sStack > 3) {
     const rstl::ncrc_ptr< CAnimTreeNode >& child = weight > 0.5f ? mB : mA;
     rstl::rc_ptr< CAnimTreeNode > best = child->GetBestUnblendedChild();
     if (!best)
       best = child;
-#if RSTL_CORRUPTION
-    GetSegStatementSet(best, list, setOut, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     best->GetSegStatementSet(list, setOut);
 #else
     GetSegStatementSet(best, list, setOut, time);
 #endif
-#endif
   } else {
     CStackSegStatementSet setA;
-#if RSTL_CORRUPTION
-    GetSegStatementSet(mA, list, setA, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mA->GetSegStatementSet(list, setA);
 #else
     GetSegStatementSet(mA, list, setA, time);
 #endif
-#endif
     CStackSegStatementSet setB;
-#if RSTL_CORRUPTION
-    GetSegStatementSet(mB, list, setB, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mB->GetSegStatementSet(list, setB);
 #else
     GetSegStatementSet(mB, list, setB, time);
 #endif
-#endif
     int count = list.size();
     for (int i = 0; i < count; ++i) {
       const CSegId& id = list[i];
-#if RSTL_CORRUPTION
-      const CQuaternion& rotationA = setA[id].Orientation();
-      setOut[id].Set(CAnimMathUtils::SlerpLocal(rotationA, setB[id].Orientation(), weight));
-      if (setA[id].OffsetValid() && setB[id].OffsetValid()) {
-        const CVector3f& offsetA = setA[id].Offset();
-        setOut[id].Set(CVector3f::Lerp(offsetA, setB[id].Offset(), weight));
-      }
-      if (setA[id].ScaleValid() || setB[id].ScaleValid()) {
-        const CVector3f scaleA = setA[id].ScaleValid() ? setA[id].Scale() : CVector3f::One();
-        const CVector3f scaleB = setB[id].ScaleValid() ? setB[id].Scale() : CVector3f::One();
-        setOut[id].SetScale(CVector3f::Lerp(scaleA, scaleB, weight));
-      }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       const CQuaternion& rotationA = setA.GetData(id).Orientation();
@@ -237,46 +188,19 @@ void CAnimTreeTweenBase::BlendSegStatementSet(const CSegIdList& list, CSegStatem
         setOut[id].SetScale(CVector3f::Lerp(scaleA, scaleB, weight));
       }
 #endif
-#endif
     }
   }
   --sStack;
 }
 
-#if RSTL_CORRUPTION
-void CAnimTreeTweenBase::VGetSegStatementSet(const CSegIdList& list,
-                                             CSegStatementSet& setOut) const {
-  BlendSegStatementSet(list, setOut, rstl::optional_object_null());
-}
-#else
 #if !RSTL_PRIME1
 void CAnimTreeTweenBase::VGetSegStatementSet(const CSegIdList& list,
                                              CSegStatementSet& setOut) const {
   BlendSegStatementSet(list, setOut, rstl::optional_object_null());
 }
 #endif
-#endif
 
 void CAnimTreeTweenBase::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-#if RSTL_CORRUPTION
-                                             const CCharAnimTime& time) const {
-  BlendSegStatementSet(list, setOut, time);
-}
-// Guessed name.
-static void GetSegData(const rstl::rc_ptr< CAnimTreeNode >& child, const CCharLayoutInfo& layout,
-                       CJointData_LinearStorage& data,
-                       rstl::optional_object< CCharAnimTime > time) {
-  if (time.valid()) {
-    child->VGetJointData_Linear(layout, data, *time);
-  } else {
-    child->VGetJointData_Linear(layout, data);
-  }
-}
-
-// Guessed name.
-void CAnimTreeTweenBase::BlendSegData(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,
-                                      rstl::optional_object< CCharAnimTime > time) const {
-#else
                                              const CCharAnimTime& time) const
 #if !RSTL_PRIME1
 {
@@ -298,45 +222,28 @@ void CAnimTreeTweenBase::BlendSegData(const CCharLayoutInfo& layout, CJointData_
                                       rstl::optional_object< CCharAnimTime > time) const
 #endif
 {
-#endif
   float weight = GetBlendingWeight();
   static int sStack = 0;
   ++sStack;
   if (weight >= 1.0) {
-#if RSTL_CORRUPTION
-    GetSegData(mB, layout, data, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mB->GetSegStatementSet(list, setOut, time);
 #else
     GetSegData(mB, layout, data, time);
 #endif
-#endif
   } else if (sStack > 3) {
     const rstl::ncrc_ptr< CAnimTreeNode >& child = weight > 0.5f ? mB : mA;
     rstl::rc_ptr< CAnimTreeNode > best = child->GetBestUnblendedChild();
     if (!best)
       best = child;
-#if RSTL_CORRUPTION
-    GetSegData(best, layout, data, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     best->GetSegStatementSet(list, setOut, time);
 #else
     GetSegData(best, layout, data, time);
 #endif
-#endif
   } else {
-#if RSTL_CORRUPTION
-    GetSegData(mA, layout, data, time);
-    CJointData_LinearStorage dataB(layout.GetNumSegments(), CJointData_LinearStorage::kAF_Pool);
-    if (data.HasScales())
-      dataB.SetHasScales(true);
-    GetSegData(mB, layout, dataB, time);
-    data.Blend(dataB, weight);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CStackSegStatementSet setA;
@@ -361,23 +268,10 @@ void CAnimTreeTweenBase::BlendSegData(const CCharLayoutInfo& layout, CJointData_
     GetSegData(mB, layout, dataB, time);
     data.Blend(dataB, weight);
 #endif
-#endif
   }
   --sStack;
 }
 
-#if RSTL_CORRUPTION
-void CAnimTreeTweenBase::VGetJointData_Linear(const CCharLayoutInfo& layout,
-                                              CJointData_LinearStorage& data,
-                                              const CCharAnimTime& time) const {
-  BlendSegData(layout, data, time);
-}
-
-void CAnimTreeTweenBase::VGetJointData_Linear(const CCharLayoutInfo& layout,
-                                              CJointData_LinearStorage& data) const {
-  BlendSegData(layout, data, rstl::optional_object_null());
-}
-#else
 #if !RSTL_PRIME1
 void CAnimTreeTweenBase::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                               CJointData_LinearStorage& data,
@@ -389,7 +283,6 @@ void CAnimTreeTweenBase::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                               CJointData_LinearStorage& data) const {
   BlendSegData(layout, data, rstl::optional_object_null());
 }
-#endif
 #endif
 
 float CAnimTreeTweenBase::VGetRightChildWeight() const { return GetBlendingWeight(); }

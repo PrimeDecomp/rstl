@@ -20,12 +20,6 @@ const EMotorState CRumbleGenerator::kStopAll[4] = {
 #endif
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-
-CRumbleGenerator::CRumbleGenerator(EIOPort inputIndex) : mInputIndex(inputIndex), mDisabled(false) {
-  HardStopAll();
-}
-#else
 #if RSTL_PRIME1
 CRumbleGenerator::CRumbleGenerator() : mDisabled(false) { HardStopAll(); }
 #else
@@ -39,21 +33,9 @@ CRumbleGenerator::CRumbleGenerator(EIOPort inputIndex)
   HardStopAll();
 }
 #endif
-#endif
 
 CRumbleGenerator::~CRumbleGenerator() { HardStopAll(); }
 
-#if RSTL_CORRUPTION
-short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriority prio) {
-  ushort freeChan = mVoice.GetFreeChannel();
-  if (prio >= mVoice.GetPriority(freeChan)) {
-    mPeriodTime = 0.f;
-    mOnTime = 0.f;
-    return mVoice.Activate(adsr, freeChan, gain, prio);
-  }
-  return -1;
-}
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriority prio,
@@ -76,7 +58,6 @@ short CRumbleGenerator::Rumble(const SAdsrData& adsr, float gain, ERumblePriorit
   }
   return -1;
 }
-#endif
 #endif
 
 void CRumbleGenerator::Update(float dt) {
@@ -259,16 +240,9 @@ void CRumbleGenerator::SetDisabled(const bool disabled) {
   mDisabled = disabled;
 }
 
-#if RSTL_CORRUPTION
-void CRumbleGenerator::Stop(short id) {
-  if (id != -1)
-    mVoice.Deactivate(id, false);
-}
-#else
 #if !RSTL_PRIME1
 void CRumbleGenerator::Stop(short id) {
   if (id != -1)
     mVoice.Deactivate(id, false);
 }
-#endif
 #endif

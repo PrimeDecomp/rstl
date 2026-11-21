@@ -37,15 +37,11 @@ public:
 
 private:
   CAssetId mAnimId;
-#if RSTL_CORRUPTION
-  int mAnimIdx;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint mAnimIdx;
 #else
   int mAnimIdx;
-#endif
 #endif
   rstl::string mAnimName;
 };

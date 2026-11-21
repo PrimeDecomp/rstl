@@ -145,15 +145,11 @@ public:
 #endif
   CCharAnimTime GetAnimationDuration() const {
     switch (GetType()) {
-#if RSTL_CORRUPTION
-    case CAnimFormatUnion::kF_AnimSource:
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     case 0:
 #else
     case CAnimFormatUnion::kF_AnimSource:
-#endif
 #endif
       return AsCAnimSource().GetAnimationDuration();
 #if RSTL_CORRUPTION
@@ -175,15 +171,11 @@ public:
   }
   float GetAverageVelocity() const {
     switch (GetType()) {
-#if RSTL_CORRUPTION
-    case CAnimFormatUnion::kF_AnimSource:
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     case 0:
 #else
     case CAnimFormatUnion::kF_AnimSource:
-#endif
 #endif
       return AsCAnimSource().GetAverageVelocity();
 #if RSTL_CORRUPTION
@@ -221,17 +213,12 @@ public:
   }
 
   static rstl::ownership_transfer< IAnimReader >
-#if RSTL_CORRUPTION
-  GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok, const CCharAnimTime& time,
-               const CAnimPOIData* poiData);
-#else
   GetNewReader(const TLockedToken< CAllFormatsAnimSource >& tok, const CCharAnimTime& time
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                , const CAnimPOIData* poiData
 #endif
                );
-#endif
 
 private:
   CAnimFormatUnion mFormatUnion;

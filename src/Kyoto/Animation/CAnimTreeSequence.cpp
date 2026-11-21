@@ -50,11 +50,6 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
     if (node.GetTime() >= curTimeCopy) {
 #endif
       T adjustedNode = T::CopyNodeMinusStartTime(node, curTimeCopy);
-#if RSTL_CORRUPTION
-      if (iterator + ret < capacity) {
-        listOut[iterator + ret++] = adjustedNode;
-      }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       uint idx = iterator + ret;
@@ -66,7 +61,6 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
       if (iterator + ret < capacity) {
         listOut[iterator + ret++] = adjustedNode;
       }
-#endif
 #endif
     }
     ++it;

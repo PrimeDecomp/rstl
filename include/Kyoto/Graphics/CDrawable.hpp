@@ -30,35 +30,23 @@ enum EDrawableType {
 class CDrawable {
 public:
   CDrawable(EDrawableType type, ushort extraSort, float distance, const CAABox& bounds,
-#if RSTL_CORRUPTION
-            const void* data, bool alpha)
-#else
             const void* data
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
             , bool alpha
 #endif
             )
-#endif
   : mType(type)
-#if RSTL_CORRUPTION
-  , mAlpha(alpha)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   , mAlpha(alpha)
 #endif
-#endif
   , mExtraSort(extraSort)
-#if RSTL_CORRUPTION
-  , mData(data)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   , mData(const_cast< void* >(data))
 #else
   , mData(data)
-#endif
 #endif
   , mBounds(bounds)
   , mViewDistance(distance) {}
@@ -70,10 +58,6 @@ public:
   // , x20_viewDist(other.x20_viewDist) {}
 
   EDrawableType GetType() const { return static_cast< EDrawableType >(mType); }
-#if RSTL_CORRUPTION
-  bool IsAlpha() const { return mAlpha; }
-  ushort GetExtraSort() const { return mExtraSort; }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void* GetData() { return mData; }
@@ -82,7 +66,6 @@ public:
   ushort GetExtraSort() const { return mExtraSort; }
 #endif
 
-#endif
   const void* GetData() const { return mData; }
 #if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
@@ -94,10 +77,6 @@ public:
   float GetDistance() const { return mViewDistance; }
 
 private:
-#if RSTL_CORRUPTION
-  ushort mType : 8;
-  ushort mAlpha : 1;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ushort mType;
@@ -106,7 +85,6 @@ private:
   ushort mAlpha : 1;
 #endif
 
-#endif
   ushort mExtraSort;
 #if RSTL_CORRUPTION
   const void* mData;

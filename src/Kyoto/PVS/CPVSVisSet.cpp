@@ -16,15 +16,10 @@
 #include "string.h"
 
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-
-CPVSVisSet::CPVSVisSet(int numBits, int numLights, rstl::auto_ptr< const char > leafPtr)
-#else
 #if RSTL_PRIME1
 CPVSVisSet::CPVSVisSet(int numBits, int numLights, const rstl::auto_ptr< const char >& leafPtr)
 #else
 CPVSVisSet::CPVSVisSet(int numBits, int numLights, rstl::auto_ptr< const char > leafPtr)
-#endif
 #endif
 : mState(kVSS_NodeFound), mNumBits(numBits), mNumLights(numLights), mPtr(leafPtr) {}
 

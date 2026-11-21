@@ -38,44 +38,24 @@ CQuaternion CAnimTreeSingleChild::VGetRotation(const CSegId& seg) const {
 
 void CAnimTreeSingleChild::VGetSegStatementSet(const CSegIdList& list,
                                                CSegStatementSet& setOut) const {
-#if RSTL_CORRUPTION
-  mChild->VGetSegStatementSet(list, setOut);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mChild->VGetSegStatementSet(list, setOut);
 #else
   mChild->VGetSegStatementSet(list, setOut);
 #endif
-#endif
 }
 
 void CAnimTreeSingleChild::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
                                                const CCharAnimTime& time) const {
-#if RSTL_CORRUPTION
-  mChild->VGetSegStatementSet(list, setOut, time);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mChild->VGetSegStatementSet(list, setOut, time);
 #else
   mChild->VGetSegStatementSet(list, setOut, time);
 #endif
-#endif
 }
 
-#if RSTL_CORRUPTION
-void CAnimTreeSingleChild::VGetJointData_Linear(const CCharLayoutInfo& layout,
-                                                CJointData_LinearStorage& data,
-                                                const CCharAnimTime& time) const {
-  mChild->VGetJointData_Linear(layout, data, time);
-}
-
-void CAnimTreeSingleChild::VGetJointData_Linear(const CCharLayoutInfo& layout,
-                                                CJointData_LinearStorage& data) const {
-  mChild->VGetJointData_Linear(layout, data);
-}
-#else
 #if !RSTL_PRIME1
 void CAnimTreeSingleChild::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                 CJointData_LinearStorage& data,
@@ -87,7 +67,6 @@ void CAnimTreeSingleChild::VGetJointData_Linear(const CCharLayoutInfo& layout,
                                                 CJointData_LinearStorage& data) const {
   mChild->VGetJointData_Linear(layout, data);
 }
-#endif
 #endif
 
 uint CAnimTreeSingleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
@@ -205,15 +184,11 @@ CAnimTreeSingleChild::VGetAdvancementResults(const CCharAnimTime& time,
 
 void CAnimTreeSingleChild::VGetWeightedReaders(
     float weight, rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const {
-#if RSTL_CORRUPTION
-  mChild->VGetWeightedReaders(weight, out);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mChild->VGetWeightedReaders(weight, out);
 #else
   mChild->VGetWeightedReaders(weight, out);
-#endif
 #endif
 }
 #if RSTL_CORRUPTION

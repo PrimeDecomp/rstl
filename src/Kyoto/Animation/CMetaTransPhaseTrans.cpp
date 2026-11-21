@@ -10,15 +10,11 @@
 
 CMetaTransPhaseTrans::CMetaTransPhaseTrans(CInputStream& in)
 : mTransDur(CCharAnimTime(in))
-#if RSTL_CORRUPTION
-, mCharacterSpaceBlend(in.ReadBool())
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , xc_(in.ReadBool())
 #else
 , mCharacterSpaceBlend(in.ReadBool())
-#endif
 #endif
 , mRunA(in.ReadBool())
 #if RSTL_CORRUPTION
@@ -97,15 +93,11 @@ CMetaTransPhaseTrans::VGetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& 
 
 void CMetaTransPhaseTrans::WriteTransData(COutputStream& out) const {
   mTransDur.PutTo(out);
-#if RSTL_CORRUPTION
-  out.WriteChar(bool(mCharacterSpaceBlend));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   out.WriteChar(bool(xc_));
 #else
   out.WriteChar(bool(mCharacterSpaceBlend));
-#endif
 #endif
   out.WriteChar(bool(mRunA));
   out.WriteLong(mFlags);

@@ -86,14 +86,10 @@ public:
     kOSF_None,
     kOSF_One,
     kOSF_Two,
-#if RSTL_CORRUPTION
-    kOSF_DisableBounds = 4, // Guessed name.
-#else
 #if !RSTL_PRIME1
     kOSF_DisableBounds = 4, // Guessed name.
 #endif
 
-#endif
   };
   enum LightType {
     kLT_None = 0,
@@ -107,10 +103,6 @@ public:
     CVector3f mPrevPos;
     CVector3f mVel;
     int mStartFrame;
-#if RSTL_CORRUPTION
-    float mLineLengthOrSize;
-    float mLineWidthOrRota;
-#else
 #if RSTL_PRIME1
     union {
       float mLineLengthOrSize;
@@ -125,7 +117,6 @@ public:
     float mLineWidthOrRota;
 #endif
 
-#endif
     CColor mColor;
 
     CParticle()
@@ -146,9 +137,6 @@ public:
   };
   // Guessed type name, based on Prime; Echoes adds ADV9 and VAV1/VAV2/VAV3.
   struct CAdvancedValues {
-#if RSTL_CORRUPTION
-    float mValues[9];
-#else
     float mValues[
 #if RSTL_PRIME1
         8
@@ -156,7 +144,6 @@ public:
         9
 #endif
     ];
-#endif
   };
 
 #if RSTL_CORRUPTION
@@ -468,9 +455,6 @@ public:
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-public:
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void SetGlobalSeed(const ushort seed) { sSeed = seed; }
@@ -480,7 +464,6 @@ private:
 public:
 #endif
 
-#endif
   TLockedToken< CGenDescription > mGenDesc;
   CGenDescription* mLoadedGenDesc;
   EModelOrientationType mOrientType;
@@ -540,27 +523,15 @@ public:
   bool mWarmedUp : 1;
   bool mModelsUseLights : 1;
   bool mEnableOPTS : 1;
-#if RSTL_CORRUPTION
-  // Guessed names, based on the bounds consumers and FXBR/FXBO properties.
-  bool mEnableDynamicBounds : 1;
-  bool mEnableFixedBounds : 1;
-#else
 #if RSTL_PARTICLE_BOUNDS_MODES
   // Guessed names, based on the bounds consumers and FXBR/FXBO properties.
   bool mEnableDynamicBounds : 1;
   bool mEnableFixedBounds : 1;
 #endif
 
-#endif
   bool mEnableADV : 1;
   int mMBSP;
   uchar mBackupLightActive;
-#if RSTL_CORRUPTION
-  union {
-    bool mHasVMD[4];
-    uint mVmdStates;
-  };
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
@@ -581,7 +552,6 @@ public:
   };
 #endif
 
-#endif
   CRandom16 mRandState;
   CModVectorElement* mVELSources[4];
   rstl::vector< CParticleGen* > mActivePartChildren;

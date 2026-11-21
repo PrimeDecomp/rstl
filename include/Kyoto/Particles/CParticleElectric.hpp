@@ -51,14 +51,10 @@ public:
 
 #endif
   void SetModulationColor(const CColor& col) override;
-#if RSTL_CORRUPTION
-  void SetGeneratorRate(float rate) override;
-#else
 #if !RSTL_PRIME1
   void SetGeneratorRate(float rate) override;
 #endif
 
-#endif
   const CTransform4f& GetOrientation() const override;
   const CVector3f& GetTranslation() const override;
   const CTransform4f& GetGlobalOrientation() const override;
@@ -67,18 +63,12 @@ public:
 
   bool GetParticleEmission() const override { return mEmitting; }
   const CColor& GetModulationColor() const override;
-#if RSTL_CORRUPTION
-  float GetGeneratorRate() const override;
-  int GetEmitterTime() const override;
-  int GetSystemCount() const override;
-#else
 #if !RSTL_PRIME1
   float GetGeneratorRate() const override;
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
 #endif
 
-#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;
@@ -86,13 +76,8 @@ public:
   CLight GetLight() const override;
   void DestroyParticles() override;
   uint Get4CharId() const override;
-#if RSTL_CORRUPTION
-
-  int GetCumulativeParticleCount() const { return mCumulativeParticles; }
-#else
 #if !RSTL_PRIME1
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
-#endif
 #endif
 
   class CLineManager {
@@ -125,28 +110,15 @@ public:
     uint mEndFrame;
     int mGPSMIdx;
     int mEPSMIdx;
-#if RSTL_CORRUPTION
-    CVector3f mInitialPos;
-    CVector3f mInitialVel;
-    CVector3f mFinalPos;
-    CVector3f mFinalVel;
-#else
 #if !RSTL_PRIME1
     CVector3f mInitialPos;
     CVector3f mInitialVel;
     CVector3f mFinalPos;
     CVector3f mFinalVel;
-#endif
 #endif
 
   public:
     CParticleElectricManager(uint idx, uint slif, uint startFrame);
-#if RSTL_CORRUPTION
-    const CVector3f& GetInitialPos() const { return mInitialPos; }
-    const CVector3f& GetInitialVel() const { return mInitialVel; }
-    const CVector3f& GetFinalPos() const { return mFinalPos; }
-    const CVector3f& GetFinalVel() const { return mFinalVel; }
-#else
 #if !RSTL_PRIME1
     const CVector3f& GetInitialPos() const { return mInitialPos; }
     const CVector3f& GetInitialVel() const { return mInitialVel; }
@@ -154,7 +126,6 @@ public:
     const CVector3f& GetFinalVel() const { return mFinalVel; }
 #endif
 
-#endif
   };
 
   void ForceParticleCreation(int count);
@@ -166,12 +137,8 @@ public:
   void SetOverrideFPos(const CVector3f& vec) { mOverrideFPos = vec; }
   void SetOverrideFVel(const CVector3f& vec) { mOverrideFVel = vec; }
   static void SetGlobalSeed(ushort seed) { sSeed = seed; }
-#if RSTL_CORRUPTION
-  static ushort GetGlobalSeed() { return sSeed; }
-#else
 #if !RSTL_PRIME1
   static ushort GetGlobalSeed() { return sSeed; }
-#endif
 #endif
 
 private:
@@ -210,9 +177,6 @@ private:
   CVector3f mGlobalScale;
   CVector3f mLocalScale;
   CTransform4f mCachedXf;
-#if RSTL_CORRUPTION
-  float x130_;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float x128_;
@@ -220,13 +184,9 @@ private:
   float x130_;
 #endif
 
-#endif
   float mRenderTime;
   CVector3f mMinBounds;
   CVector3f mMaxBounds;
-#if RSTL_CORRUPTION
-  float x150_;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float x148_;
@@ -234,7 +194,6 @@ private:
   float x150_;
 #endif
 
-#endif
   CRandom16 mRandState;
   int mSSEG;
   int mSCNT;
@@ -245,16 +204,11 @@ private:
 
 #endif
   float mGenRem;
-#if RSTL_CORRUPTION
-  float mGeneratorRate;
-  int mCumulativeParticles;
-#else
 #if !RSTL_PRIME1
   float mGeneratorRate;
   int mCumulativeParticles;
 #endif
 
-#endif
   CAABox mSystemBounds;
   rstl::optional_object< CVector3f > mOverrideIPos;
   rstl::optional_object< CVector3f > mOverrideIVel;
@@ -277,18 +231,11 @@ private:
   bool mHaveSSWH : 1;
   bool mHaveLWD : 1;
   bool mTransformDirty : 1;
-#if RSTL_CORRUPTION
-  bool mTranslationDirty : 1;
-  bool mOrientationDirty : 1;
-  bool mGlobalScaleDirty : 1;
-  bool mLocalScaleDirty : 1;
-#else
 #if !RSTL_PRIME1
   bool mTranslationDirty : 1;
   bool mOrientationDirty : 1;
   bool mGlobalScaleDirty : 1;
   bool mLocalScaleDirty : 1;
-#endif
 #endif
 
   static ushort sSeed;

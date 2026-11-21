@@ -30,9 +30,6 @@
 CAnimTreeDoubleChild::CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                            const rstl::ncrc_ptr< CAnimTreeNode >& b,
                                            const rstl::string& name)
-#if RSTL_CORRUPTION
-: CAnimTreeNode(name), mA(a), mB(b) {}
-#else
 : CAnimTreeNode(name)
 , mA(a)
 , mB(b) {
@@ -41,7 +38,6 @@ CAnimTreeDoubleChild::CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >
   CCharAnimMemoryMetrics::AddToTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
-#endif
 
 SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time) {
 #if RSTL_CORRUPTION
@@ -62,16 +58,12 @@ SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time
 #endif
 }
 
-#if RSTL_CORRUPTION
-CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {}
-#else
 CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
-#endif
 
 uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
 #if RSTL_CORRUPTION
@@ -330,15 +322,11 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
       leftRotation *= rotation;
       if (!loopLeft)
         totalTime = mA->GetTimeRemaining();
-#if RSTL_CORRUPTION
-      leftRemaining = result.mRemTime;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       leftRemaining = result.GetRemainder();
 #else
       leftRemaining = result.mRemTime;
-#endif
 #endif
     }
     while (rightRemaining.GreaterThanZero() && !close_enough(rightRemaining.GetSeconds(), 0.f)) {
@@ -361,15 +349,11 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
       rightOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
       rightRotation *= rotation;
-#if RSTL_CORRUPTION
-      rightRemaining = result.mRemTime;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       rightRemaining = result.GetRemainder();
 #else
       rightRemaining = result.mRemTime;
-#endif
 #endif
     }
   }

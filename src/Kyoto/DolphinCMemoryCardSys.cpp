@@ -824,16 +824,11 @@ void CMemoryCardSys::CCardFileInfo::WriteIconData(COutputStream& out) const {
 void CMemoryCardSys::CCardFileInfo::WriteIconData(COutputStream& out) {
 #endif
   const void* palette = nullptr;
-#if RSTL_CORRUPTION
-  const int count = mIconToks.size();
-  for (int i = 0; i < count; ++i) {
-#else
 #if RSTL_PRIME1
   for (int i = 0; i < mIconToks.size(); ++i) {
 #else
   const int count = mIconToks.size();
   for (int i = 0; i < count; ++i) {
-#endif
 #endif
     const CTexture& texture = **mIconToks[i].mTex;
     const ETexelFormat format = texture.GetTexelFormat();
@@ -1119,16 +1114,12 @@ void CMemoryCardSys::Initialize() {
 void CMemoryCardSys::Initialize(IF_TARGET_PC(const char* game, const char* maker)) {
 #endif
   if (!mIsInitialized) {
-#if RSTL_CORRUPTION
-    CARDInit();
-#else
 #if TARGET_PC
     CARDSetLoadType(CARD_RAWIMAGE);
     // CARDDetectDolphin(-1);
     CARDInit(game, maker);
 #else
     CARDInit();
-#endif
 #endif
     mIsInitialized = true;
   }

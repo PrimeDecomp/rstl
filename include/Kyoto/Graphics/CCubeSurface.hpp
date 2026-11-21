@@ -90,19 +90,11 @@ public:
   uint GetMaterialIndex() const { return mData->mMaterialIndex; }
 #endif
   CCubeModel* GetParent() const { return mData->mParent; }
-#if RSTL_CORRUPTION
-  short GetMatrixBank() const { return mData->mMatrixBank; } // Guessed name.
-  short GetShadowBank() const { return mData->x2e_; }        // Target-derived grouping key.
-#else
 #if !RSTL_PRIME1
   short GetMatrixBank() const { return mData->mMatrixBank; } // Guessed name.
   short GetShadowBank() const { return mData->x2e_; }        // Target-derived grouping key.
 #endif
-#endif
   uint GetDisplayListSize() const { return mData->mDisplayListSizeAndNormalHint & 0x7fffffff; }
-#if RSTL_CORRUPTION
-  uint GetSurfaceHeaderSize() const { return (sizeof(SSurfaceData) + 7 + mData->mExtraSize) & ~31; }
-#else
   uint GetSurfaceHeaderSize() const {
 #if defined(TARGET_PC)
     return mData->headerSize;
@@ -110,16 +102,11 @@ public:
     return (sizeof(SSurfaceData) + 7 + mData->mExtraSize) & ~31;
 #endif
   }
-#endif
   const void* GetDisplayList() const {
-#if RSTL_CORRUPTION
-    return reinterpret_cast< const uchar* >(mData) + GetSurfaceHeaderSize();
-#else
 #if defined(TARGET_PC)
     return mData->displayList;
 #else
     return reinterpret_cast< const uchar* >(mData) + GetSurfaceHeaderSize();
-#endif
 #endif
   }
   CCubeSurface GetNextSurface() const { return CCubeSurface(mData->mNextSurface); }

@@ -18,34 +18,6 @@
 #include "Kyoto/Particles/IElement.hpp"
 #include "rstl/math.hpp"
 
-#if RSTL_CORRUPTION
-
-
-// Guessed name
-static const CVector3f skOneVector(1.f, 1.f, 1.f);
-
-static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loopEnd) {
-  if (loop) {
-    if (frame >= loopEnd) {
-      frame -= loopStart;
-      frame = frame % (loopEnd - loopStart);
-      frame += loopStart;
-    }
-  } else {
-    frame = rstl::min_val(frame, loopEnd - 1);
-  }
-  return frame;
-}
-
-static inline int GetKeyframeTime(float value, float start, float rate) {
-  return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
-}
-
-static inline const CParticleElectric::CParticleElectricManager* GetCurrentElectricManager() {
-  return reinterpret_cast< const CParticleElectric::CParticleElectricManager* >(
-      CParticleGlobals::GetCurrentParticle());
-}
-#else
 #if !RSTL_PRIME1
 // Guessed name
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
@@ -71,7 +43,6 @@ static inline const CParticleElectric::CParticleElectricManager* GetCurrentElect
   return reinterpret_cast< const CParticleElectric::CParticleElectricManager* >(
       CParticleGlobals::GetCurrentParticle());
 }
-#endif
 #endif
 
 CVEConstant::CVEConstant(CRealElement* x, CRealElement* y, CRealElement* z)
@@ -102,10 +73,6 @@ bool CVEFastConstant::GetValue(int frame, CVector3f& valOut) const {
 }
 
 CVECone::CVECone(CVectorElement* direction, CRealElement* magnitude)
-#if RSTL_CORRUPTION
-: mDirection(direction), mMagnitude(magnitude), mXVec(CVector3f::Zero()), mYVec(CVector3f::Zero()) {
-  CVector3f av(CVector3f::Zero());
-#else
 : mDirection(direction)
 , mMagnitude(magnitude)
 , mXVec(CVector3f::Zero())
@@ -117,7 +84,6 @@ CVECone::CVECone(CVectorElement* direction, CRealElement* magnitude)
   CVector3f av(CVector3f::Zero());
 #endif
 
-#endif
   mDirection->GetValue(0, av);
   CVector3f avNorm = av.AsNormalized();
   if (avNorm.GetX() > 0.8f) {
@@ -135,15 +101,11 @@ CVECone::~CVECone() {
 
 bool CVECone::GetValue(int frame, CVector3f& valOut) const {
   float b;
-#if RSTL_CORRUPTION
-  CVector3f dir(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dir(0.f, 0.f, 0.f);
 #else
   CVector3f dir(CVector3f::Zero());
-#endif
 #endif
 
   mMagnitude->GetValue(frame, b);
@@ -207,9 +169,6 @@ CVECircle::CVECircle(CVectorElement* circleOffset, CVectorElement* circleNormal,
 , mAngleConstant(angleConstant)
 , mAngleLinear(angleLinear)
 , mRadius(radius) {
-#if RSTL_CORRUPTION
-  CVector3f direction(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f direction = CVector3f(0.f, 0.f, 0.f);
@@ -217,7 +176,6 @@ CVECircle::CVECircle(CVectorElement* circleOffset, CVectorElement* circleNormal,
   CVector3f direction(CVector3f::Zero());
 #endif
 
-#endif
   circleNormal->GetValue(0, direction);
   CVector3f normal = direction.AsNormalized();
 
@@ -248,9 +206,6 @@ bool CVECircle::GetValue(int frame, CVector3f& valOut) const {
 
   float curAngle = (angleLinear * frame + angleConstant) * (M_PIF / 180.f);
 
-#if RSTL_CORRUPTION
-  CVector3f offset(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f offset = CVector3f(0.f, 0.f, 0.f);
@@ -258,29 +213,12 @@ bool CVECircle::GetValue(int frame, CVector3f& valOut) const {
   CVector3f offset(CVector3f::Zero());
 #endif
 
-#endif
   mCircleOffset->GetValue(frame, offset);
 
   valOut = offset + (mXVec * radius * cosf(curAngle)) + (mYVec * radius * sinf(curAngle));
   return false;
 }
 
-#if RSTL_CORRUPTION
-CVERandomVector::CVERandomVector(CRealElement* a) : x4_(a) {}
-
-CVERandomVector::~CVERandomVector() { delete x4_; }
-
-bool CVERandomVector::GetValue(int frame, CVector3f& valOut) const {
-  float mag = 1.f;
-  x4_->GetValue(frame, mag);
-  float x = 2.f * CRandom16::GetRandomNumber()->Float() - 1.f;
-  float y = 2.f * CRandom16::GetRandomNumber()->Float() - 1.f;
-  float z = 2.f * CRandom16::GetRandomNumber()->Float() - 1.f;
-  float scale = mag * CMath::FastInvSqrtF(x * x + y * y + z * z);
-  valOut = CVector3f(x * scale, y * scale, z * scale);
-  return false;
-}
-#else
 #if !RSTL_PRIME1
 CVERandomVector::CVERandomVector(CRealElement* a) : x4_(a) {}
 
@@ -296,7 +234,6 @@ bool CVERandomVector::GetValue(int frame, CVector3f& valOut) const {
   valOut = CVector3f(x * scale, y * scale, z * scale);
   return false;
 }
-#endif
 #endif
 
 CVETimeChain::CVETimeChain(CVectorElement* a, CVectorElement* b, CIntElement* switchFrame)
@@ -330,10 +267,6 @@ CVECircleCluster::CVECircleCluster(CVectorElement* circleOffset, CVectorElement*
   cycleFrames->GetValue(0, _cycleFrames);
   mRadius = (M_PIF / 180.f) * (360.f / _cycleFrames);
 
-#if RSTL_CORRUPTION
-  CVector3f normal(CVector3f::Zero());
-  CVector3f tmp(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f normal = CVector3f(0.f, 0.f, 0.f);
@@ -347,7 +280,6 @@ CVECircleCluster::CVECircleCluster(CVectorElement* circleOffset, CVectorElement*
   CVector3f tmp(CVector3f::Zero());
 #endif
 
-#endif
   circleNormal->GetValue(0, normal);
   tmp = normal;
 #if RSTL_CORRUPTION
@@ -381,9 +313,6 @@ bool CVECircleCluster::GetValue(int frame, CVector3f& valOut) const {
   float curAngle;
   curAngle = mRadius;
   curAngle *= frame;
-#if RSTL_CORRUPTION
-  CVector3f offset(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f offset = CVector3f(0.f, 0.f, 0.f);
@@ -391,7 +320,6 @@ bool CVECircleCluster::GetValue(int frame, CVector3f& valOut) const {
   CVector3f offset(CVector3f::Zero());
 #endif
 
-#endif
   mCircleOffset->GetValue(frame, offset);
 
   CVector3f tv = offset + (mXVec * cosf(curAngle)) + (mYVec * sinf(curAngle));
@@ -442,23 +370,6 @@ bool CVEMultiply::GetValue(int frame, CVector3f& valOut) const {
   return false;
 }
 
-#if RSTL_CORRUPTION
-CVEInitialSwitch::CVEInitialSwitch(CVectorElement* a, CVectorElement* b) : x4_(a), x8_(b) {}
-
-CVEInitialSwitch::~CVEInitialSwitch() {
-  delete x4_;
-  delete x8_;
-}
-
-bool CVEInitialSwitch::GetValue(int frame, CVector3f& valOut) const {
-  if (frame == 0) {
-    x4_->GetValue(0, valOut);
-  } else {
-    x8_->GetValue(frame - 1, valOut);
-  }
-  return false;
-}
-#else
 #if !RSTL_PRIME1
 CVEInitialSwitch::CVEInitialSwitch(CVectorElement* a, CVectorElement* b) : x4_(a), x8_(b) {}
 
@@ -475,7 +386,6 @@ bool CVEInitialSwitch::GetValue(int frame, CVector3f& valOut) const {
   }
   return false;
 }
-#endif
 #endif
 
 CVEPulse::CVEPulse(CIntElement* durationA, CIntElement* durationB, CVectorElement* a,
@@ -542,12 +452,6 @@ CVEKeyframeEmitter::CVEKeyframeEmitter(CInputStream& in)
 CVEKeyframeEmitter::~CVEKeyframeEmitter() {}
 
 bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
-#if RSTL_CORRUPTION
-  if (mPercent == 0) {
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-    valOut = mKeys[emitterTime];
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (!mPercent) {
@@ -573,7 +477,6 @@ bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
         GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
     valOut = mKeys[emitterTime];
 #endif
-#endif
     return false;
   }
 
@@ -588,38 +491,6 @@ bool CVEKeyframeEmitter::GetValue(int frame, CVector3f& valOut) const {
   return false;
 }
 
-#if RSTL_CORRUPTION
-CVEKeyframeInput::CVEKeyframeInput(CInputStream& in)
-: mPercent(in.ReadInt32())
-, mUnk1(in.ReadInt32())
-, mLoop(in.ReadBool())
-, mUnk2(in.ReadBool())
-, mLoopEnd(in.ReadInt32())
-, mLoopStart(in.ReadInt32())
-, x18_(in.ReadFloat())
-, x1c_(in.ReadFloat())
-, mKeys(in)
-, x30_(CParticleDataFactory::GetRealElement(in)) {}
-
-CVEKeyframeInput::~CVEKeyframeInput() { delete x30_; }
-
-bool CVEKeyframeInput::GetValue(int frame, CVector3f& valOut) const {
-  if (mPercent == 2) {
-    float in = 0.0f;
-    x30_->GetValue(frame, in);
-    int idx =
-        GetKeyframeIndex(GetKeyframeTime(in, x18_, x1c_), mLoop, GetLoopStart(), GetLoopEnd());
-    bool lerp = idx > 0 && idx < mLoopEnd - 1;
-    if (lerp) {
-      float t = CMath::Clamp(0.0f, (in - x18_) - static_cast< float >(idx) / x1c_, 1.0f);
-      valOut = (1.0f - t) * mKeys[idx] + t * mKeys[idx + 1];
-    } else {
-      valOut = mKeys[idx];
-    }
-  }
-  return false;
-}
-#else
 #if !RSTL_PRIME1
 CVEKeyframeInput::CVEKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
@@ -650,7 +521,6 @@ bool CVEKeyframeInput::GetValue(int frame, CVector3f& valOut) const {
   }
   return false;
 }
-#endif
 #endif
 
 CVERealToVector::CVERealToVector(CRealElement* value) : mValue(value) {}
@@ -729,94 +599,6 @@ bool CVEColorToVector::GetValue(int frame, CVector3f& valOut) const {
   return false;
 }
 
-#if RSTL_CORRUPTION
-bool CVEParticleAccessParameter1::GetValue(int frame, CVector3f& valOut) const {
-  const float* params = CParticleGlobals::GetParticleAccessParameters();
-  valOut = *reinterpret_cast< const CVector3f* >(&params[0]);
-  return false;
-}
-
-bool CVEParticleAccessParameter2::GetValue(int frame, CVector3f& valOut) const {
-  const float* params = CParticleGlobals::GetParticleAccessParameters();
-  valOut = *reinterpret_cast< const CVector3f* >(&params[3]);
-  return false;
-}
-
-bool CVEParticleAccessParameter3::GetValue(int frame, CVector3f& valOut) const {
-  const float* params = CParticleGlobals::GetParticleAccessParameters();
-  valOut = *reinterpret_cast< const CVector3f* >(&params[6]);
-  return false;
-}
-
-bool CVENormalizedCompensatedVelocity::GetValue(int frame, CVector3f& valOut) const {
-  const CElementGen::CParticle* particle = CParticleGlobals::GetCurrentParticle();
-  float velMagSq = particle->mVel.MagSquared();
-  if (velMagSq > FLT_EPSILON) {
-    valOut = particle->mVel * CMath::FastInvSqrtF(velMagSq);
-  } else {
-    const CVector3f& dv = particle->mPos - particle->mPrevPos;
-    float dMagSq = dv.MagSquared();
-    if (dMagSq > FLT_EPSILON) {
-      valOut = dv * CMath::FastInvSqrtF(dMagSq);
-    } else {
-      valOut = CVector3f::Up();
-    }
-  }
-  return false;
-}
-
-CVENormalize::~CVENormalize() { delete x4_; }
-
-bool CVENormalize::GetValue(int frame, CVector3f& valOut) const {
-  x4_->GetValue(frame, valOut);
-  float mag = valOut.Magnitude();
-  if (mag > FLT_EPSILON) {
-    valOut *= 1.f / mag;
-  }
-  return false;
-}
-
-bool CVEParticleInitialNormalizedVelocity::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetInitialVel().AsNormalized();
-  return false;
-}
-
-bool CVEParticleInitialVelocity::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetInitialVel();
-  return false;
-}
-
-bool CVEParticleInitialTranslation::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetInitialPos();
-  return false;
-}
-
-bool CVEParticleEndNormalizedVelocity::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetFinalVel().AsNormalized();
-  return false;
-}
-
-bool CVEParticleEndVelocity::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetFinalVel();
-  return false;
-}
-
-bool CVEParticleEndTranslation::GetValue(int frame, CVector3f& valOut) const {
-  valOut = GetCurrentElectricManager()->GetFinalPos();
-  return false;
-}
-
-CVEKeepInitial::CVEKeepInitial(CVectorElement* a) : x4_(a) {}
-
-CVEKeepInitial::~CVEKeepInitial() { delete x4_; }
-
-bool CVEKeepInitial::GetValue(int frame, CVector3f& valOut) const {
-  if (frame == 0) {
-    x4_->GetValue(0, valOut);
-  }
-  return false;
-}
-#else
 #if !RSTL_PRIME1
 bool CVEParticleAccessParameter1::GetValue(int frame, CVector3f& valOut) const {
   const float* params = CParticleGlobals::GetParticleAccessParameters();
@@ -904,5 +686,4 @@ bool CVEKeepInitial::GetValue(int frame, CVector3f& valOut) const {
   }
   return false;
 }
-#endif
 #endif

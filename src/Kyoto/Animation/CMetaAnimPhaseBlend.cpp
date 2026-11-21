@@ -56,9 +56,6 @@ void CMetaAnimPhaseBlend::WriteAnimData(COutputStream& out) const {
   mAnimA->PutTo(out);
   mAnimB->PutTo(out);
   out.WriteReal32(mBlend);
-#if RSTL_CORRUPTION
-  out.WriteChar(bool(mCharacterSpaceBlend));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   out.WriteChar(bool(mCharacterSpaceBlend));
@@ -67,7 +64,6 @@ void CMetaAnimPhaseBlend::WriteAnimData(COutputStream& out) const {
   out.WriteChar(mCharacterSpaceBlend);
 #else
   out.WriteChar(bool(mCharacterSpaceBlend));
-#endif
 #endif
 #endif
 }

@@ -131,19 +131,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
         float startV = in.ReadFloat();
         float endU = in.ReadFloat();
         float endV = in.ReadFloat();
-#if RSTL_CORRUPTION
-        int layer = version >= 3 ? in.ReadUint8() : 0;
-        char a = version >= 4 ? in.ReadInt8() : char(in.ReadInt32());
-        char b = version >= 4 ? in.ReadInt8() : char(in.ReadInt32());
-        char c = version >= 4 ? in.ReadInt8() : char(in.ReadInt32());
-        uchar cellWidth = version >= 4 ? in.ReadUint8() : uchar(in.ReadInt32());
-        uchar cellHeight = version >= 4 ? in.ReadUint8() : uchar(in.ReadInt32());
-        uchar baseline = version >= 4 ? in.ReadUint8() : uchar(in.ReadInt32());
-        int kernStart = version >= 4 ? in.ReadUint16() : short(in.ReadInt32());
-        mGlyphs.push_back_unsafe(
-            rstl::pair< wchar_t, CGlyph >(chr, CGlyph(a, b, c, startU, startV, endU, endV, layer,
-                                                      cellWidth, cellHeight, baseline, kernStart)));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -181,7 +168,6 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
             rstl::pair< wchar_t, CGlyph >(chr, CGlyph(a, b, c, startU, startV, endU, endV, layer,
                                                       cellWidth, cellHeight, baseline, kernStart)));
 #endif
-#endif
       }
       rstl::sort_by_key(mGlyphs);
 
@@ -192,15 +178,11 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
         short first = in.Get< short >();
         short second = in.Get< short >();
         int howMuch = in.ReadInt32();
-#if RSTL_CORRUPTION
-        mKerning.push_back_unsafe(CKernPair(first, second, howMuch));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mKerning.push_back(CKernPair(first, second, howMuch));
 #else
         mKerning.push_back_unsafe(CKernPair(first, second, howMuch));
-#endif
 #endif
       }
 
@@ -219,24 +201,16 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
   height = 0;
   int curWidth = 0;
   const CGlyph* prevGlyph = nullptr;
-#if RSTL_CORRUPTION
-  for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || ptr - str < length); ++ptr) {
-#else
 #if RSTL_PRIME1 && NONMATCHING
   for (const wchar_t* ptr = str; (length == -1 || ptr - str < length) && *ptr != 0; ++ptr) {
 #else
   for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || ptr - str < length); ++ptr) {
-#endif
 #endif
     const CGlyph* glyph = GetGlyph(*ptr);
     if (glyph != nullptr) {
       int kerning =
           prevGlyph != nullptr ? KernLookup(mKerning, prevGlyph->GetKernStart(), *ptr) : 0;
       int newWidth = curWidth + glyph->GetA() + glyph->GetB() + glyph->GetC() + kerning +
-#if RSTL_CORRUPTION
-                     options.GetCharacterExtraSpace();
-      int newHeight = mMonoHeight - glyph->GetBaseline() + glyph->GetCellHeight();
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                      options.GetExtraCharacterSpacing();
@@ -252,7 +226,6 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
 #endif
                       + glyph->GetCellHeight();
 
-#endif
       if (options.GetTextDirection() == kTD_Horizontal) {
         width = newWidth;
         curWidth = newWidth;
@@ -265,9 +238,6 @@ void CRasterFont::GetSize(const CDrawStringOptions& options, int& width, int& he
   }
 }
 
-#if RSTL_CORRUPTION
-int CRasterFont::GetCarriageAdvance() const { return mMonoHeight + mLineMargin; }
-#else
 #if RSTL_VERSION < RSTL_GM8P_00
 int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
 
@@ -284,7 +254,6 @@ int CRasterFont::GetCarriageAdvance() RSTL_ECHOES_CONST {
 
 #if RSTL_VERSION < RSTL_GM8P_00
 const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGetGlyph(c); }
-#endif
 #endif
 
 void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
@@ -308,14 +277,10 @@ void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, in
     data[3] = CBasics::SwapBytes(CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3());
 #endif
     pal.UnLock();
-#if RSTL_CORRUPTION
-    buffer->AddPaletteChange(pal, GetMode());
-#else
 #if RSTL_VERSION >= RSTL_GM8P_00
     buffer->AddPaletteChange(pal, GetMode());
 #else
     buffer->AddPaletteChange(pal);
-#endif
 #endif
   }
 
@@ -350,14 +315,10 @@ void CRasterFont::SinglePassDrawString(const CDrawStringOptions& options, const 
   if (mInitialized) {
     int curX = x;
     const CGlyph* prevGlyph = nullptr;
-#if RSTL_CORRUPTION
-    for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || (ptr - str) < length); ++ptr) {
-#else
 #if RSTL_PRIME1 && NONMATCHING
     for (const wchar_t* ptr = str; (length == -1 || ptr - str < length) && *ptr != 0; ++ptr) {
 #else
     for (const wchar_t* ptr = str; *ptr != 0 && (length == -1 || (ptr - str) < length); ++ptr) {
-#endif
 #endif
       const CGlyph* curGlyph = GetGlyph(*ptr);
       if (curGlyph != nullptr) {
@@ -373,9 +334,6 @@ void CRasterFont::SinglePassDrawString(const CDrawStringOptions& options, const 
         }
 
         if (buffer) {
-#if RSTL_CORRUPTION
-          buffer->AddCharacter(CVector2i(curX + xOffset, yOffset + (y - curGlyph->GetBaseline())),
-#else
           buffer->AddCharacter(CVector2i(curX + xOffset,
                                          yOffset + (y -
 // TODO: verify that this Prime/Echoes difference is real
@@ -385,21 +343,16 @@ void CRasterFont::SinglePassDrawString(const CDrawStringOptions& options, const 
                                                     curGlyph->GetBaseline()
 #endif
                                                     )),
-#endif
                                *ptr, options.GetPaletteEntry(2));
         }
 
         if (options.GetTextDirection() == kTD_Horizontal) {
-#if RSTL_CORRUPTION
-          curX += curGlyph->GetB() + curGlyph->GetC() + options.GetCharacterExtraSpace();
-#else
           curX += curGlyph->GetB() + curGlyph->GetC() +
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                   options.GetExtraCharacterSpacing();
 #else
                   options.GetCharacterExtraSpace();
-#endif
 #endif
         }
       }

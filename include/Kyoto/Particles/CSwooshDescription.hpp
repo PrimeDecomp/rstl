@@ -51,26 +51,18 @@ public:
   bool mSROT : 1;
   bool mWIRE : 1;
   bool mTEXW : 1;
-#if RSTL_CORRUPTION
-  bool mCLTX : 1;
-#else
 #if !RSTL_PRIME1
   bool mCLTX : 1;
 #endif
 
-#endif
   bool mAALP : 1;
   bool mZBUF : 1;
   bool mORNT : 1;
   bool mCRND : 1;
-#if RSTL_CORRUPTION
-  int mDFLG;
-#else
 #if !RSTL_PRIME1
   int mDFLG;
 #endif
 
-#endif
 };
 #if RSTL_CORRUPTION
 CHECK_SIZEOF(CSwooshDescription, 0x58)

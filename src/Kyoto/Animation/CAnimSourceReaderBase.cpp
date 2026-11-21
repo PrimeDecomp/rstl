@@ -40,15 +40,11 @@ uint _getPOIList(const CCharAnimTime& time, T* listOut, uint capacity, uint iter
     if (count > 0) {
       const CCharAnimTime& duration = sourceInfo.GetAnimationDuration();
       CCharAnimTime totalTime = curTime + time;
-#if RSTL_CORRUPTION
-      CCharAnimTime endTime = rstl::min_val< const CCharAnimTime& >(duration, totalTime);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CCharAnimTime endTime = rstl::min_val(duration, totalTime);
 #else
       CCharAnimTime endTime = rstl::min_val< const CCharAnimTime& >(duration, totalTime);
-#endif
 #endif
       if (passedCount < count) {
 #if RSTL_CORRUPTION
@@ -308,10 +304,6 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
   while (mPassedBoolCount < boolCount && boolNodes[mPassedBoolCount].GetTime() <= mCurTime) {
     const CBoolPOINode& node = boolNodes[mPassedBoolCount];
     int index = node.GetIndex();
-#if RSTL_CORRUPTION
-    if (index >= 0 && index < mBoolStates.size()) {
-      mBoolStates[index] = rstl::pair< uint, bool >(mBoolStates[index].first, node.GetValue());
-#else
     if (index >= 0
 #if !RSTL_PRIME1
         && index < mBoolStates.size()
@@ -323,7 +315,6 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
           rstl::pair< rstl::string, bool >(mBoolStates[index].first, node.GetValue());
 #else
       mBoolStates[index] = rstl::pair< uint, bool >(mBoolStates[index].first, node.GetValue());
-#endif
 #endif
     }
     ++mPassedBoolCount;
@@ -405,12 +396,6 @@ void CAnimSourceReaderBase::UpdatePOIStates() {
   }
 }
 
-#if RSTL_CORRUPTION
-rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() const {
-  const rstl::vector< CBoolPOINode >& nodes = mPOIData->GetBoolPOIStream();
-  const int count = nodes.size();
-  rstl::set< rstl::pair< uint, int > > result;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 rstl::set< rstl::pair< rstl::string, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() const {
@@ -423,13 +408,7 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() 
   const int count = nodes.size();
   rstl::set< rstl::pair< uint, int > > result;
 #endif
-#endif
   for (int i = 0; i < count; ++i) {
-#if RSTL_CORRUPTION
-    if (nodes[i].GetSaveState()) {
-      result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
-    }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CBoolPOINode& node = nodes[i];
@@ -440,7 +419,6 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueBoolPOIs() 
     if (nodes[i].GetSaveState()) {
       result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
     }
-#endif
 #endif
   }
   return result;
@@ -494,11 +472,6 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueParticlePOI
 #endif
 #endif
   for (int i = 0; i < count; ++i) {
-#if RSTL_CORRUPTION
-    if (nodes[i].GetSaveState()) {
-      result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
-    }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CParticlePOINode& node = nodes[i];
@@ -509,7 +482,6 @@ rstl::set< rstl::pair< uint, int > > CAnimSourceReaderBase::GetUniqueParticlePOI
     if (nodes[i].GetSaveState()) {
       result.insert(rstl::pair< uint, int >(nodes[i].GetNameHash(), nodes[i].GetIndex()));
     }
-#endif
 #endif
   }
   return result;
@@ -586,11 +558,6 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
 #endif
 #endif
       int index = it->second;
-#if RSTL_CORRUPTION
-      if (index >= 0 && index < mBoolStates.size()) {
-        mBoolStates[index] = rstl::pair< uint, bool >(name, false);
-      }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mBoolStates[index] = rstl::pair< rstl::string, bool >(name, false);
@@ -598,7 +565,6 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
       if (index >= 0 && index < mBoolStates.size()) {
         mBoolStates[index] = rstl::pair< uint, bool >(name, false);
       }
-#endif
 #endif
       ++it;
     }
@@ -679,15 +645,11 @@ void CAnimSourceReaderBase::PostConstruct(const CCharAnimTime& time) {
     while (remaining.GreaterThanZero()) {
       remaining = VAdvanceView(remaining).GetRemainder();
     }
-#if RSTL_CORRUPTION
-  } else {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   } else if (sourceInfo.HasPOIData()) {
 #else
   } else {
-#endif
 #endif
     UpdatePOIStates();
     if (!time.GreaterThanZero()) {

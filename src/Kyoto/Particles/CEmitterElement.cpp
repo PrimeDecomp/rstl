@@ -10,23 +10,12 @@
 
 #include "Kyoto/Math/CVector3f.hpp"
 
-#if RSTL_CORRUPTION
-
-
-// Guessed name
-static CVector3f sUnitVector(1.f, 1.f, 1.f);
-
-// Guessed name
-static void GetConeVelocity(float xRange, float yRange, float coneCos, float coneSin,
-                            const CVector3f& pos, const CVector3f& vel, CVector3f& velOut);
-#else
 #if !RSTL_PRIME1
 static CVector3f sUnitVector(1.f, 1.f, 1.f);
 
 // Guessed name
 static void GetConeVelocity(float xRange, float yRange, float coneCos, float coneSin,
                             const CVector3f& pos, const CVector3f& vel, CVector3f& velOut);
-#endif
 #endif
 
 CEESimpleEmitter::CEESimpleEmitter(CVectorElement* pos, CVectorElement* vel)

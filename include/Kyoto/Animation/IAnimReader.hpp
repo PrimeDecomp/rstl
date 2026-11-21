@@ -240,12 +240,8 @@ public:
   SAdvancementResults AdvanceView(const CCharAnimTime& time) { return VAdvanceView(time); }
   CCharAnimTime GetTimeRemaining() const { return VGetTimeRemaining(); }
   CSteadyStateAnimInfo GetSteadyStateAnimInfo() const { return VGetSteadyStateAnimInfo(); }
-#if RSTL_CORRUPTION
-  bool GetBoolPOIState(uint nameHash) const { return VGetBoolPOIState(nameHash); }
-#else
 #if !RSTL_PRIME1
   bool GetBoolPOIState(uint nameHash) const { return VGetBoolPOIState(nameHash); }
-#endif
 #endif
 
   uint GetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,

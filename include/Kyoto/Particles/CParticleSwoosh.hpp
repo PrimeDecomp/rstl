@@ -64,9 +64,6 @@ public:
     , mInitialRot(irot)
     , mRotm(rotm)
     , mOrientation(orient)
-#if RSTL_CORRUPTION
-    , mColor(color)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     , mColor(CColor(color))
@@ -74,7 +71,6 @@ public:
     , mColor(color)
 #endif
 
-#endif
     , mStartFrame(startFrame)
     , mVelocity(velocity) {}
 
@@ -120,16 +116,11 @@ public:
   const CVector3f& GetGlobalScale() const override;
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
-#if RSTL_CORRUPTION
-  int GetEmitterTime() const override;
-  int GetSystemCount() const override;
-#else
 #if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
 #endif
 
-#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;
@@ -138,16 +129,12 @@ public:
   void DestroyParticles() override;
   uint Get4CharId() const override;
 
-#if RSTL_CORRUPTION
-  void UpdateAllBounds(); // Guessed name
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static int GetAliveParticleSystemCount();
 #else
   // Recomputes the bounds from every active swoosh; name is a hypothesis.
   void UpdateAllBounds(); // Guessed name
-#endif
 #endif
 
   void SetWarmUp() { mForceOneUpdate = true; }

@@ -78,12 +78,8 @@ CPASAnimState::CPASAnimState(CInputStream& in) : mId(pas::kAS_Invalid) {
   }
 }
 
-#if RSTL_CORRUPTION
-const CPASAnimInfo* CPASAnimState::GetAnimInfoByIndex(int index) const { return &mAnims[index]; }
-#else
 #if !RSTL_PRIME1
 const CPASAnimInfo* CPASAnimState::GetAnimInfoByIndex(int index) const { return &mAnims[index]; }
-#endif
 #endif
 
 #if RSTL_CORRUPTION

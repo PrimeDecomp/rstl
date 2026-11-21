@@ -33,28 +33,17 @@ public:
 
   ~CCharLayoutNode() {}
 // TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-  const CSegId& GetParent() const { return mParent; }
-#else
 #if RSTL_PRIME1
   CSegId GetParent() const { return mParent; }
 #else
   const CSegId& GetParent() const { return mParent; }
 #endif
-#endif
 
   const CVector3f& GetReferenceStanceOffset() const { return mReferenceStanceOffset; }
-#if RSTL_CORRUPTION
-
-  const CQuaternion& GetRotation() const { return mRotation; }
-
-  const CQuaternion& GetLocalRotation() const { return mLocalRotation; }
-#else
 #if !RSTL_PRIME1
   const CQuaternion& GetRotation() const { return mRotation; }
 
   const CQuaternion& GetLocalRotation() const { return mLocalRotation; }
-#endif
 #endif
 
   int GetNumConnectedParts() const { return mConnectedParts.size(); }
@@ -63,16 +52,11 @@ public:
 private:
   CSegId mParent;
   CVector3f mReferenceStanceOffset;
-#if RSTL_CORRUPTION
-  CQuaternion mRotation;
-  CQuaternion mLocalRotation;
-#else
 #if !RSTL_PRIME1
   CQuaternion mRotation;
   CQuaternion mLocalRotation;
 #endif
 
-#endif
   rstl::vector< CSegId > mConnectedParts;
 };
 #if RSTL_CORRUPTION
@@ -90,14 +74,9 @@ public:
   const rstl::map< rstl::string, CSegId >& GetNameMap() const { return mNameMap; }
 #endif
   const CCharLayoutNode& GetSegmentData(const CSegId& seg) const { return (*mNodes)[seg]; }
-#if RSTL_CORRUPTION
-
-  int GetNumSegments() const { return mNodes->GetNumNodes(); }
-#else
 #if !RSTL_PRIME1
 
   int GetNumSegments() const { return mNodes->GetNumNodes(); }
-#endif
 #endif
 
   const CSegIdList& GetBodyPartSegIds() const { return mSegIdList; }
@@ -144,10 +123,6 @@ public:
 
   CVector3f GetFromParentUnrotated(const CSegId& id) const {
     const CCharLayoutNode& node = GetSegmentData(id);
-#if RSTL_CORRUPTION
-    const CSegId parent = node.GetParent();
-    return !mNodes->ContainsDataFor(parent)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
     const CSegId parent = node.GetParent();
@@ -159,7 +134,6 @@ public:
                parent
 #endif
                )
-#endif
                ? node.GetReferenceStanceOffset()
                : node.GetReferenceStanceOffset() -
                      GetSegmentData(node.GetParent()).GetReferenceStanceOffset();

@@ -23,32 +23,6 @@
 
 #include "rstl/math.hpp"
 
-#if RSTL_CORRUPTION
-
-// Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
-static const CVector3f skOneVector(1.f, 1.f, 1.f);
-
-// Guessed name
-static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loopEnd) {
-  if (loop) {
-    if (frame >= loopEnd) {
-      frame -= loopStart;
-      frame = frame % (loopEnd - loopStart);
-      frame += loopStart;
-    }
-  } else {
-    frame = rstl::min_val(frame, loopEnd - 1);
-  }
-  return frame;
-}
-
-// Guessed name
-static inline int GetKeyframeTime(float value, float start, float rate) {
-  return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
-}
-
-CIEParticleCreationTime::~CIEParticleCreationTime() {}
-#else
 #if !RSTL_PRIME1
 // Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
@@ -75,7 +49,6 @@ static inline int GetKeyframeTime(float value, float start, float rate) {
 CIEParticleCreationTime::~CIEParticleCreationTime() {}
 #endif
 
-#endif
 CIEConstant::CIEConstant(int val) : mVal(val) {}
 
 CIEConstant::~CIEConstant() {}
@@ -386,11 +359,6 @@ CIEKeyframeEmitter::~CIEKeyframeEmitter() {}
 
 bool CIEKeyframeEmitter::GetValue(int frame, int& valOut) const {
   if (mPercent == 0) {
-#if RSTL_CORRUPTION
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-    valOut = mKeys[emitterTime];
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int emitterTime = CParticleGlobals::GetEmitterTime();
@@ -409,7 +377,6 @@ bool CIEKeyframeEmitter::GetValue(int frame, int& valOut) const {
     int emitterTime =
         GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
     valOut = mKeys[emitterTime];
-#endif
 #endif
     return false;
   } else {
@@ -524,21 +491,6 @@ bool CIERealToInt::GetValue(int frame, int& valOut) const {
 }
 
 bool CIEGetCumulativeParticleCount::GetValue(int frame, int& valOut) const {
-#if RSTL_CORRUPTION
-  CParticleGlobals::SParticleSystem* system = CParticleGlobals::GetCurrentParticleSystem();
-  FourCC type = system == nullptr ? 'NULL' : system->mType;
-  switch (type) {
-  case 'PART':
-    valOut = static_cast< CElementGen* >(system->mSystem)->GetCumulativeParticleCount();
-    break;
-  case 'ELSC':
-    valOut = static_cast< CParticleElectric* >(system->mSystem)->GetCumulativeParticleCount();
-    break;
-  default:
-    valOut = 0;
-    break;
-  }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   valOut = CParticleGlobals::GetCurrentParticleSystem()->mSystem->GetCumulativeParticleCount();
@@ -558,7 +510,6 @@ bool CIEGetCumulativeParticleCount::GetValue(int frame, int& valOut) const {
   }
 #endif
 
-#endif
   return false;
 }
 

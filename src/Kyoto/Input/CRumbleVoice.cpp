@@ -161,18 +161,6 @@ ushort CRumbleVoice::GetFreeChannel() const {
 
 float CRumbleVoice::GetIntensity() const {
   float ret = mDeltas[0].mCurIntensity;
-#if RSTL_CORRUPTION
-  if (ret < mDeltas[1].mCurIntensity) {
-    ret = mDeltas[1].mCurIntensity;
-  }
-  if (ret < mDeltas[2].mCurIntensity) {
-    ret = mDeltas[2].mCurIntensity;
-  }
-
-  if (ret < mDeltas[3].mCurIntensity) {
-    ret = mDeltas[3].mCurIntensity;
-  }
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (int i = 1; i < 4; ++i) {
@@ -191,7 +179,6 @@ float CRumbleVoice::GetIntensity() const {
   if (ret < mDeltas[3].mCurIntensity) {
     ret = mDeltas[3].mCurIntensity;
   }
-#endif
 #endif
 
   if (ret > 2.f) {

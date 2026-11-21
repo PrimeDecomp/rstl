@@ -16,28 +16,6 @@
 
 #include "rstl/math.hpp"
 
-#if RSTL_CORRUPTION
-
-// Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
-static const CVector3f skOneVector(1.f, 1.f, 1.f);
-
-static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loopEnd) {
-  if (loop) {
-    if (frame >= loopEnd) {
-      frame -= loopStart;
-      frame = frame % (loopEnd - loopStart);
-      frame += loopStart;
-    }
-  } else {
-    frame = rstl::min_val(frame, loopEnd - 1);
-  }
-  return frame;
-}
-
-static inline int GetKeyframeTime(float value, float start, float rate) {
-  return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
-}
-#else
 #if !RSTL_PRIME1
 // Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
@@ -58,7 +36,6 @@ static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loop
 static inline int GetKeyframeTime(float value, float start, float rate) {
   return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
 }
-#endif
 #endif
 
 CCEConstant::CCEConstant(CRealElement* r, CRealElement* g, CRealElement* b, CRealElement* a)
@@ -182,9 +159,6 @@ bool CCEFadeEnd::GetValue(int frame, CColor& colorOut) const {
   colA.Get(ar, ag, ab, aa);
   colB.Get(br, bg, bb, ba);
 
-#if RSTL_CORRUPTION
-  float t = rstl::max_val(0.f, rstl::min_val((frameF - start) / (end - start), 1.f));
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float t = (frameF - start) / (end - start);
@@ -192,7 +166,6 @@ bool CCEFadeEnd::GetValue(int frame, CColor& colorOut) const {
   float t = rstl::max_val(0.f, rstl::min_val((frameF - start) / (end - start), 1.f));
 #endif
 
-#endif
   float nt = 1.f - t;
   colorOut = CColor(ar * nt + br * t, ag * nt + bg * t, ab * nt + bb * t, aa * nt + ba * t);
   return false;
@@ -277,11 +250,6 @@ CCEKeyframeEmitter::~CCEKeyframeEmitter() {}
 
 bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
   if (mPercent == 0) {
-#if RSTL_CORRUPTION
-    int emitterTime =
-        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
-    valOut = mKeys[emitterTime];
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int emitterTime = CParticleGlobals::GetEmitterTime();
@@ -300,7 +268,6 @@ bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
     int emitterTime =
         GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
     valOut = mKeys[emitterTime];
-#endif
 #endif
     return false;
   }

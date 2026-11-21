@@ -300,9 +300,6 @@ rstl::optional_object< rstl::ownership_transfer< IAnimReader > > CAnimTreeTimeSc
   return rstl::optional_object_null();
 }
 
-#if RSTL_CORRUPTION
-void CAnimTreeTimeScale::VSetPhase(float phase) { mChild->VSetPhase(phase); }
-#else
 void CAnimTreeTimeScale::VSetPhase(float phase) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -311,7 +308,6 @@ void CAnimTreeTimeScale::VSetPhase(float phase) {
   mChild->VSetPhase(phase);
 #endif
 }
-#endif
 
 CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) const {
   CCharAnimTime timeRem = mChild->GetTimeRemaining();
@@ -340,14 +336,10 @@ CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) con
 rstl::string CAnimTreeTimeScale::CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& node,
                                                      float scaleA, const CCharAnimTime& time,
                                                      float scaleB) {
-#if RSTL_CORRUPTION
-  return rstl::string_l("");
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::string("");
 #else
   return rstl::string_l("");
-#endif
 #endif
 }

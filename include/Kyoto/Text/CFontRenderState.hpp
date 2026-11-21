@@ -106,12 +106,6 @@ private:
   int mCurX;
   int mCurY;
   const CLineInstruction* mCurrentLineInst;
-#if RSTL_CORRUPTION
-  uint xe8_;
-  uint xec_;
-  rstl::vector< CTextColor > xf0_;
-  rstl::vector< bool > x100_;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint xe0_;
@@ -125,7 +119,6 @@ private:
   rstl::vector< bool > x100_;
 #endif
 
-#endif
   bool mLineInitialized;
   rstl::list< CSaveableState > mPushedStates;
 };

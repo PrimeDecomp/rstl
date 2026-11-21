@@ -31,9 +31,6 @@ RSTL_PRIME1_CONST CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, CInput
 }
 
 CCharLayoutNode::CCharLayoutNode(CInputStream& in)
-#if RSTL_CORRUPTION
-: mParent(in), mReferenceStanceOffset(in), mRotation(in), mLocalRotation(in), mConnectedParts(in) {}
-#else
 : mParent(in)
 , mReferenceStanceOffset(in)
 // TODO: verify that this Prime/Echoes difference is real
@@ -42,7 +39,6 @@ CCharLayoutNode::CCharLayoutNode(CInputStream& in)
 , mLocalRotation(in)
 #endif
 , mConnectedParts(in) {}
-#endif
 
 CCharLayoutInfo::CCharLayoutInfo(CInputStream& in)
 : mNodes(rstl::ownership_transfer< TSegIdMap< CCharLayoutNode > >(

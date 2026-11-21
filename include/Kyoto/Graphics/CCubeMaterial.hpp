@@ -101,9 +101,6 @@ public:
 #endif
   uint GetFlags() const { return CBasics::SwapBytes(*reinterpret_cast< const uint* >(GetData())); }
   bool IsFlagSet(const EStateFlags flag) const { return (GetFlags() & flag) != 0; }
-#if RSTL_CORRUPTION
-  uint GetTextureCount() const { return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]); }
-#else
   uint GetTextureCount() const {
 #if RSTL_PRIME1
     const uchar* data = GetData();
@@ -114,7 +111,6 @@ public:
     return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]);
 #endif
   }
-#endif
 
   uint GetVertexDesc() const {
 #if RSTL_CORRUPTION

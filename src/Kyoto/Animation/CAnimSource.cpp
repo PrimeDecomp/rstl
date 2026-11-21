@@ -180,25 +180,15 @@ CAnimSource::CAnimSource(CInputStream& in
 , mInterval(in)
 , mFrameCount(in.Get< uint >())
 , mRoot(in)
-#if RSTL_CORRUPTION
-, mSegmentChannels(in)
-#else
 #if !RSTL_PRIME1
 , mSegmentChannels(in)
-#endif
 #endif
 , mRotationChannels(in)
 , mOffsetChannels(in)
-#if RSTL_CORRUPTION
-, mScaleChannels(in)
-, mScales(in)
-, mScalesPerFrame(mScales.size() / mFrameCount)
-#else
 #if !RSTL_PRIME1
 , mScaleChannels(in)
 , mScales(in)
 , mScalesPerFrame(mScales.size() / mFrameCount)
-#endif
 #endif
 , mStorage(RotationAndOffsetStorage::CRotationAndOffsetVectors(in), mFrameCount)
 #if RSTL_CORRUPTION
@@ -217,9 +207,6 @@ CAnimSource::CAnimSource(CInputStream& in
 #endif
 #endif
   CalcAverageVelocity();
-#if RSTL_CORRUPTION
-  CCharAnimMemoryMetrics::AddToTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint totalSize = mRotationChannels.size() + (sizeof(CQuaternion) + sizeof(CVector3f)) + 1;
@@ -230,13 +217,9 @@ CAnimSource::CAnimSource(CInputStream& in
 #else
   CCharAnimMemoryMetrics::AddToTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
 #endif
-#endif
 }
 
 CAnimSource::~CAnimSource() {
-#if RSTL_CORRUPTION
-  CCharAnimMemoryMetrics::SubtractFromTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint totalSize = mRotationChannels.size() + (sizeof(CQuaternion) + sizeof(CVector3f)) + 1;
@@ -247,31 +230,20 @@ CAnimSource::~CAnimSource() {
 #else
   CCharAnimMemoryMetrics::SubtractFromTotalSize(GetSize(), CCharAnimMemoryMetrics::kASS_Two);
 #endif
-#endif
 }
 
-#if RSTL_CORRUPTION
-bool CAnimSource::HasRotation(const CSegId& seg) const {
-  return mRotationChannels[mSegmentChannels[seg.val()]] >= 0;
-}
-#else
 #if !RSTL_PRIME1
 bool CAnimSource::HasRotation(const CSegId& seg) const {
   return mRotationChannels[mSegmentChannels[seg.val()]] >= 0;
 }
 #endif
-#endif
 
 bool CAnimSource::HasOffset(const CSegId& seg) const {
-#if RSTL_CORRUPTION
-  return mOffsetChannels[mSegmentChannels[seg.val()]] >= 0;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return mOffsetChannels[mRotationChannels[seg.val()]] >= 0;
 #else
   return mOffsetChannels[mSegmentChannels[seg.val()]] >= 0;
-#endif
 #endif
 }
 
@@ -304,28 +276,20 @@ CVector3f CAnimSource::GetOffset(const CSegId& seg, const CCharAnimTime& animTim
 #else
   const float invTime = 1.f / interval;
 #endif
-#if RSTL_CORRUPTION
-  const uint frame = CCast::ToUint32(frameTime * invTime);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const uint frame = static_cast< uint >(frameTime * invTime);
 #else
   const uint frame = CCast::ToUint32(frameTime * invTime);
 #endif
-#endif
   float time = interval * frame;
   time = frameTime - time;
 
-#if RSTL_CORRUPTION
-  if (CMath::AbsF(time) < Real32::Epsilon()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (fabs(time) < Real32::Epsilon()) {
 #else
   if (CMath::AbsF(time) < Real32::Epsilon()) {
-#endif
 #endif
     time = 0.f;
   }
@@ -368,10 +332,6 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
 #else
   const float invTime = 1.f / interval;
 #endif
-#if RSTL_CORRUPTION
-  const int channel = mSegmentChannels[seg.val()];
-  if (channel >= 0 && HasRotation(seg)) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const int channel = mRotationChannels[seg.val()];
@@ -380,30 +340,21 @@ CQuaternion CAnimSource::GetRotation(const CSegId& seg, const CCharAnimTime& ani
   const int channel = mSegmentChannels[seg.val()];
   if (channel >= 0 && HasRotation(seg)) {
 #endif
-#endif
     const float frameTime = animTime.GetSeconds();
-#if RSTL_CORRUPTION
-    const uint frame = CCast::ToUint32(frameTime * invTime);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const uint frame = static_cast< uint >(frameTime * invTime);
 #else
     const uint frame = CCast::ToUint32(frameTime * invTime);
 #endif
-#endif
     float time = interval * frame;
     time = frameTime - time;
 
-#if RSTL_CORRUPTION
-    if (CMath::AbsF(time) < Real32::Epsilon()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (fabs(time) < Real32::Epsilon()) {
 #else
     if (CMath::AbsF(time) < Real32::Epsilon()) {
-#endif
 #endif
       time = 0.f;
     }

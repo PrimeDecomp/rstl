@@ -105,10 +105,6 @@ CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimRea
 void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
   CCharAnimTime remaining = dt;
   while (remaining > CCharAnimTime::ZeroFlat()) {
-#if RSTL_CORRUPTION
-    SAdvancementResults result = anim.VAdvanceView(remaining);
-    remaining = result.mRemTime;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     SAdvancementResults result = anim.AdvanceView(remaining);
@@ -116,7 +112,6 @@ void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
 #else
     SAdvancementResults result = anim.VAdvanceView(remaining);
     remaining = result.mRemTime;
-#endif
 #endif
   }
 }

@@ -22,13 +22,6 @@ class IController;
 
 class CRumbleGenerator {
 private:
-#if RSTL_CORRUPTION
-  CRumbleVoice mVoice;
-  float mPeriodTime;
-  float mOnTime;
-  EMotorState mCommand;
-  EIOPort mInputIndex;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static const EMotorState kStopAll[4];
@@ -47,13 +40,9 @@ private:
   EIOPort mInputIndex;
 #endif
 
-#endif
   bool mDisabled : 1;
 
 public:
-#if RSTL_CORRUPTION
-  CRumbleGenerator(EIOPort inputIndex);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CRumbleGenerator();
@@ -65,13 +54,8 @@ public:
 #endif
 #endif
 
-#endif
   ~CRumbleGenerator();
 
-#if RSTL_CORRUPTION
-  short Rumble(const SAdsrData& adsr, float, ERumblePriority prio);
-  void Stop(short id);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   short Rumble(const SAdsrData& adsr, float, ERumblePriority prio, EIOPort port);
@@ -87,7 +71,6 @@ public:
   void Stop(short id);
 #endif
 
-#endif
   void Update(float);
   void HardStopAll();
 #if RSTL_CORRUPTION

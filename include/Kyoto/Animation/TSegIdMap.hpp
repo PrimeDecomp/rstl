@@ -125,15 +125,11 @@ private:
 
 #endif
   T* mNodes;
-#if RSTL_CORRUPTION
-  CSegId mCurPrevBone;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   char mCurPrevBone;
 #else
   CSegId mCurPrevBone;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION
@@ -189,9 +185,6 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 #endif
 #endif
 , mNodes(nullptr)
-#if RSTL_CORRUPTION
-, mCurPrevBone(CSegId::Null()) {
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mCurPrevBone(0)
@@ -199,14 +192,9 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 , mCurPrevBone(CSegId::Null())
 #endif
 {
-#endif
   mNodes = reinterpret_cast< T* >(rs_new uchar[count * sizeof(T)]);
-#if RSTL_CORRUPTION
-  CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
-#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
-#endif
 #endif
 }
 
@@ -236,13 +224,8 @@ TSegIdMap< T >::~TSegIdMap() {
 #endif
 #endif
   }
-#if RSTL_CORRUPTION
-
-  CCharAnimMemoryMetrics::SubtractFromTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
-#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
-#endif
 #endif
   delete[] reinterpret_cast< char* >(mNodes);
 }
@@ -252,10 +235,6 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   T* node = &mNodes[mBoneCount];
   uchar rawId = id.val();
   new (node) T(value);
-#if RSTL_CORRUPTION
-  mIndirectionMap[rawId] = rstl::pair< CSegId, CSegId >(mCurPrevBone, CSegId(mBoneCount));
-  mCurPrevBone = id;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mIndirectionMap[rawId] = rstl::pair< char, char >(mCurPrevBone, mBoneCount);
@@ -265,7 +244,6 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   mCurPrevBone = id;
 #endif
 
-#endif
   ++mBoneCount;
 }
 

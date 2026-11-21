@@ -82,9 +82,6 @@ CSpawnSystemKeyframeData::GetSpawnedSystemsAtFrame(uint frame) {
 }
 
 void CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::LoadToken(CSimplePool* pool) {
-#if RSTL_CORRUPTION
-  mToken = pool->GetObj(SObjectTag(mType, mId));
-#else
   mToken = pool->GetObj(SObjectTag(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -93,6 +90,5 @@ void CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::LoadToken(CSimplePool* 
       mType,
 #endif
       mId));
-#endif
   mToken->Lock();
 }

@@ -45,12 +45,8 @@ public:
 #endif
 #endif
   CSoundPOINode(CInputStream& in);
-#if RSTL_CORRUPTION
-  ~CSoundPOINode() override;
-#else
 #if !RSTL_PRIME1
   ~CSoundPOINode() override;
-#endif
 #endif
 
   uint GetSoundId() const { return mSfxId; }
@@ -70,9 +66,6 @@ public:
 #endif
 
   static CSoundPOINode CopyNodeMinusStartTime(const CSoundPOINode& node,
-#if RSTL_CORRUPTION
-                                              const CCharAnimTime& startTime);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                                               const CCharAnimTime& startTime) {
@@ -83,7 +76,6 @@ public:
   }
 #else
                                               const CCharAnimTime& startTime);
-#endif
 #endif
 
 private:

@@ -138,14 +138,10 @@ void CRSFAudio::Play() {
     return;
   }
 
-#if RSTL_CORRUPTION
-  mDvdRequests = rstl::vector< rstl::auto_ptr< CDvdRequest > >();
-#else
 #if RSTL_PRIME1
   mDvdRequests.clear();
 #else
   mDvdRequests = rstl::vector< rstl::auto_ptr< CDvdRequest > >();
-#endif
 #endif
   mCurSamp = 0;
   g72x_init_state(&mLeftState);
@@ -161,13 +157,9 @@ void CRSFAudio::Play() {
   CAIInterruptManager::RunDMACallback(MixCallback);
 }
 
-#if RSTL_CORRUPTION
-void CRSFAudio::Stop() {
-#else
 void CRSFAudio::Stop() {
 #if IS_TARGET_PC
   const metaforce::AudioLockGuard lock;
-#endif
 #endif
   if (sPlayingAudio == this) {
     CAIInterruptManager::CancelDMACallback(MixCallback);
@@ -183,23 +175,6 @@ void CRSFAudio::MixCallback(IF_TARGET_PC(short* output, size_t frames, u32 rate,
 }
 #endif
 
-#if RSTL_CORRUPTION
-void CRSFAudio::DoMix() {
-  const ushort* aiStart = static_cast< const ushort* >(OSPhysicalToCached(AIGetDMAStartAddr()));
-  mCurBuf ^= 1;
-  uintptr_t buf =
-      reinterpret_cast< uintptr_t >(mCurBuf != 0 ? mDmaBufferB.get() : mDmaBufferA.get());
-
-  AIInitDMA(buf, 0x280);
-  u32 cookie = OSEnableInterrupts();
-  if (aiStart != 0) {
-    DCInvalidateRange(const_cast< ushort* >(aiStart), 0x280);
-  }
-
-  Decode(reinterpret_cast< ushort* >(buf), aiStart, 160);
-  DCFlushRange(reinterpret_cast< void* >(buf), 0x280);
-  OSRestoreInterrupts(cookie);
-#else
 void CRSFAudio::DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 channels)) {
 #if IS_TARGET_PC
   // RSF stores two 32 kHz G.721 channels, with two samples packed in each byte.
@@ -255,17 +230,12 @@ void CRSFAudio::DoMix(IF_TARGET_PC(short* output, size_t frames, u32 rate, u32 c
   DCFlushRange(reinterpret_cast< void* >(buf), 0x280);
   OSRestoreInterrupts(cookie);
 #endif
-#endif
 }
 
-#if RSTL_CORRUPTION
-static void MixToMono(ushort* data, int numSamples); // Guessed name
-#else
 #if !RSTL_PRIME1
 static void MixToMono(ushort* data, int numSamples); // Guessed name
 #elif RSTL_VERSION == RSTL_GM8E_02 || RSTL_VERSION == RSTL_GM8J_00
 void MixStereoToMono(short* buf, int numSamples);
-#endif
 #endif
 
 #if RSTL_CORRUPTION
@@ -331,25 +301,6 @@ void CRSFAudio::Decode(ushort* out, const ushort* in, const int numSamples) {
   }
 }
 
-#if RSTL_CORRUPTION
-static void MixToMono(ushort* data, int numSamples) {
-  short* samples = reinterpret_cast< short* >(data);
-  for (int i = 0; i < numSamples * 2; i += 2) {
-    int sample = (samples[0] + samples[1]) / 2;
-    short clamped;
-    if (sample < -32768) {
-      clamped = -32768;
-    } else if (sample > 32767) {
-      clamped = 32767;
-    } else {
-      clamped = sample;
-    }
-    samples[0] = clamped;
-    samples[1] = clamped;
-    samples += 2;
-  }
-}
-#else
 #if !RSTL_PRIME1
 static void MixToMono(ushort* data, int numSamples) {
   short* samples = reinterpret_cast< short* >(data);
@@ -384,7 +335,6 @@ void MixStereoToMono(short* buf, int numSamples) {
     buf[i + 1] = sample;
   }
 }
-#endif
 #endif
 
 void CRSFAudio::DecodeMonoAndMix(ushort* out, const ushort* in, int numSamples, int startSample,

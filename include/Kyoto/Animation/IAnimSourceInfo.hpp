@@ -35,16 +35,11 @@ public:
 
 #endif
   virtual CCharAnimTime GetAnimationDuration() const = 0;
-#if RSTL_CORRUPTION
-  // Guessed name: tests whether the source has scale keys.
-  virtual bool HasScaleData() const = 0;
-#else
 #if !RSTL_PRIME1
   // Guessed name: tests whether the source has scale keys.
   virtual bool HasScaleData() const = 0;
 #endif
 
-#endif
   virtual ~IAnimSourceInfo() {}
 };
 #if RSTL_CORRUPTION

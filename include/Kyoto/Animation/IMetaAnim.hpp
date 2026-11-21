@@ -61,14 +61,10 @@ public:
 private:
   bool mIsTime;
   CCharAnimTime mTime;
-#if RSTL_CORRUPTION
-  uint mNameHash;
-#else
 #if RSTL_PRIME1
   char mString[50];
 #else
   uint mNameHash;
-#endif
 #endif
 };
 #if RSTL_CORRUPTION
@@ -101,12 +97,8 @@ public:
   rstl::optional_object< CPreAdvanceIndicator > mRecursiveAdvance;
   rstl::optional_object< CPreAdvanceIndicator > mSingleAdvance;
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CMetaAnimTreeBuildOrders, 0x28)
-#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CMetaAnimTreeBuildOrders, 0x28)
-#endif
 #endif
 
 class IMetaAnim {

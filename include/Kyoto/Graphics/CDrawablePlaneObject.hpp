@@ -22,16 +22,12 @@ public:
   CDrawablePlaneObject(EDrawableType type, float closeDistance, float farDistance,
                        const CAABox& bounds, bool invertTest, const CPlane& plane, bool zOnly,
                        const void* data)
-#if RSTL_CORRUPTION
-  : CDrawable(type, 0, closeDistance, bounds, data, false)
-#else
   : CDrawable(type, 0, closeDistance, bounds, data
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
               , false
 #endif
               )
-#endif
   , mTargetBucket(0)
   , mFarDistance(farDistance)
   , mPlane(plane)

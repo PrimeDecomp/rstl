@@ -503,17 +503,12 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
     dispList += vertexStride * 3;
 #endif
     if (pType == GX_TRIANGLES) {
-#if RSTL_CORRUPTION
-      const ushort remaining = elementCount - 3;
-      for (int j = 0; j < remaining; j += 3) {
-#else
 #if RSTL_PRIME1
       elementCount -= 3;
 #else
       const ushort remaining = elementCount - 3;
 #endif
       for (int j = 0; j < IF_RSTL_PRIME1_ELSE(elementCount, remaining); j += 3) {
-#endif
         CGX::Begin(GX_LINESTRIP, GX_VTXFMT0, 4);
 #if RSTL_CORRUPTION
         if (sUseMatrixIndex) {
@@ -545,16 +540,12 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 #endif
       }
     } else if (pType == GX_TRIANGLESTRIP) {
-#if RSTL_CORRUPTION
-      const ushort remaining = elementCount - 3;
-#else
 #if RSTL_PRIME1
       elementCount -= 3;
 #else
       const ushort remaining = elementCount - 3;
 #endif
 
-#endif
       uint winding = 1;
 #if RSTL_CORRUPTION
       for (int j = 0; j < remaining; ++j) {
@@ -802,11 +793,6 @@ void CCubeModel::DrawAlphaSurfaces(const CModelFlags& flags) const {
   }
 }
 
-#if RSTL_CORRUPTION
-void CCubeModel::DrawFlat(int which) const {
-    SetArraysCurrent();
-
-#else
 #if RSTL_PRIME1
 void CCubeModel::DrawFlat(TModelPositions positions, TModelNormals normals,
                           ESurfaceSelection which) const
@@ -822,7 +808,6 @@ void CCubeModel::DrawFlat(int which) const
   }
 #else
   SetArraysCurrent();
-#endif
 #endif
   if (which != kSS_Sorted) {
     for (CCubeSurface surface = mFirstUnsorted; surface.IsValid();
@@ -859,9 +844,6 @@ void CCubeModel::Draw(const CModelFlags& flags) const {
   DrawSurfaces(flags);
 }
 
-#if RSTL_CORRUPTION
-void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const {
-#else
 #if RSTL_PRIME1
 void CCubeModel::Draw(TModelPositions positions, TModelNormals normals,
                       const CModelFlags& flags) const
@@ -870,19 +852,13 @@ void CCubeModel::Draw(u64 mask, const CModelFlags& flags) const
 #endif
 {
 
-#endif
   CCubeMaterial::KillCachedViewDepState();
-#if RSTL_CORRUPTION
-  SetArraysCurrent();
-  DrawSurfaces(mask, flags);
-#else
 #if RSTL_PRIME1
   SetSkinningArraysCurrent(positions, normals);
   DrawSurfaces(flags);
 #else
   SetArraysCurrent();
   DrawSurfaces(mask, flags);
-#endif
 #endif
 }
 
@@ -955,16 +931,11 @@ void CCubeModel::DrawNormal(IF_RSTL_PRIME1(TModelPositions positions, TModelNorm
   CGX::SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
   CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
   CGX::SetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_ONE, GX_LO_CLEAR);
-#if RSTL_CORRUPTION
-  CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
-  DrawFlat(which);
-#else
 #if RSTL_PRIME1
   DrawFlat(positions, normals, which);
 #else
   CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
   DrawFlat(which);
-#endif
 #endif
 }
 #if !RSTL_CORRUPTION

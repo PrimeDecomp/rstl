@@ -46,9 +46,6 @@ static rstl::reserved_vector< SSkinWeighting, 3 > StreamInSkinWeighting(CInputSt
 }
 
 CVirtualBone::CVirtualBone(CInputStream& in)
-#if RSTL_CORRUPTION
-: mWeights(StreamInSkinWeighting(in)), mVertexCount(in.ReadInt32()) {}
-#else
 : mWeights(StreamInSkinWeighting(in))
 #if RSTL_PRIME1
 , mVertexCount(in.ReadLong())
@@ -64,31 +61,11 @@ CVirtualBone::CVirtualBone(CInputStream& in)
 #if RSTL_PRIME1
 static ConstMtxPtr TransformToMtx(const CTransform4f& xf) { return xf.GetCStyleMatrix(); }
 #endif
-#endif
 
 #ifdef __MWERKS__
 void TransformFromMatrixDelta(register CTransform4f* xf, register const CMatrix3f* rot,
                               register const CVector3f* point) {
   asm volatile {
-#if RSTL_CORRUPTION
-    psq_l f3, CVector3f.mX(point), 0, 0;
-    psq_l f1, CMatrix3f.m02(rot), 1, 0;
-    psq_l f0, CMatrix3f.m00(rot), 0, 0;
-    ps_merge00 f1, f1, f3;
-    psq_l f2, CMatrix3f.m12(rot), 1, 0;
-    psq_st f0, CTransform4f.m00(xf), 0, 0;
-    psq_l f0, CMatrix3f.m10(rot), 0, 0;
-    ps_merge01 f2, f2, f3;
-    psq_st f1, CTransform4f.m02(xf), 0, 0;
-    psq_l f3, CVector3f.mZ(point), 1, 0;
-    psq_st f0, CTransform4f.m10(xf), 0, 0;
-    psq_l f1, CMatrix3f.m22(rot), 1, 0;
-    psq_st f2, CTransform4f.m12(xf), 0, 0;
-    psq_l f0, CMatrix3f.m20(rot), 0, 0;
-    ps_merge00 f1, f1, f3;
-    psq_st f0, CTransform4f.m20(xf), 0, 0;
-    psq_st f1, CTransform4f.m22(xf), 0, 0;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     psq_l f0, 0(point), 0, 0;
@@ -127,7 +104,6 @@ void TransformFromMatrixDelta(register CTransform4f* xf, register const CMatrix3
     psq_st f0, CTransform4f.m20(xf), 0, 0;
     psq_st f1, CTransform4f.m22(xf), 0, 0;
 #endif
-#endif
   }
 }
 #else
@@ -141,15 +117,6 @@ void Transform2FromMatrixData(register CTransform4f* xf, register const CMatrix3
                               register const CVector3f* point, register float weight0,
                               register const CMatrix3f* rotation1, register const CVector3f* point1,
                               register float weight1) {
-#if RSTL_CORRUPTION
-  asm volatile {
-    fmr f4, weight0;
-    psq_l f5, CVector3f.mX(point), 0, 0;
-    psq_l f1, CMatrix3f.m02(rot), 1, 0;
-    psq_l f3, CMatrix3f.m12(rot), 1, 0;
-    ps_merge00 f6, f4, f2;
-    psq_l f0, CMatrix3f.m00(rot), 0, 0;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   __asm__ {
@@ -168,45 +135,10 @@ void Transform2FromMatrixData(register CTransform4f* xf, register const CMatrix3
     ps_merge00 f6, f4, f2;
     psq_l f0, CMatrix3f.m00(rot), 0, 0;
 #endif
-#endif
     ps_merge00 f1, f1, f5;
     psq_l f2, CMatrix3f.m10(rot), 0, 0;
     ps_merge01 f3, f3, f5;
     psq_l f4, CMatrix3f.m20(rot), 0, 0;
-#if RSTL_CORRUPTION
-    ps_muls0 f0, f0, f6;
-    psq_l f5, CMatrix3f.m00(rotation1), 0, 0;
-    psq_l f7, CVector3f.mX(point1), 0, 0;
-    ps_muls0 f1, f1, f6;
-    psq_l f8, CMatrix3f.m02(rotation1), 1, 0;
-    ps_muls0 f2, f2, f6;
-    ps_madds1 f0, f5, f6, f0;
-    psq_l f10, CMatrix3f.m12(rotation1), 1, 0;
-    ps_merge00 f8, f8, f7;
-    psq_l f9, CMatrix3f.m10(rotation1), 0, 0;
-    psq_l f5, CVector3f.mZ(point), 1, 0;
-    ps_merge01 f10, f10, f7;
-    ps_madds1 f1, f8, f6, f1;
-    psq_st f0, CTransform4f.m00(xf), 0, 0;
-    psq_l f0, CMatrix3f.m22(rot), 1, 0;
-    ps_muls0 f3, f3, f6;
-    ps_madds1 f2, f9, f6, f2;
-    psq_l f8, CMatrix3f.m22(rotation1), 1, 0;
-    ps_merge00 f0, f0, f5;
-    psq_st f1, CTransform4f.m02(xf), 0, 0;
-    psq_l f1, CVector3f.mZ(point1), 1, 0;
-    ps_muls0 f4, f4, f6;
-    psq_l f5, CMatrix3f.m20(rotation1), 0, 0;
-    ps_madds1 f3, f10, f6, f3;
-    psq_st f2, CTransform4f.m10(xf), 0, 0;
-    ps_merge00 f8, f8, f1;
-    ps_muls0 f0, f0, f6;
-    ps_madds1 f4, f5, f6, f4;
-    psq_st f3, CTransform4f.m12(xf), 0, 0;
-    ps_madds1 f0, f8, f6, f0;
-    psq_st f4, CTransform4f.m20(xf), 0, 0;
-    psq_st f0, CTransform4f.m22(xf), 0, 0;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     ps_muls0 f0, f0, f7;
@@ -274,7 +206,6 @@ void Transform2FromMatrixData(register CTransform4f* xf, register const CMatrix3
     ps_madds1 f0, f8, f6, f0;
     psq_st f4, CTransform4f.m20(xf), 0, 0;
     psq_st f0, CTransform4f.m22(xf), 0, 0;
-#endif
 #endif
   }
 }
@@ -414,28 +345,6 @@ void CVirtualBone::BuildAccumulatedTransform(
 }
 
 // Guessed name
-#if RSTL_CORRUPTION
-static inline void CopyRow(float* dst, const float* src) {
-  *reinterpret_cast< double* >(dst) = *reinterpret_cast< const double* >(src);
-  dst[2] = src[2];
-}
-
-void CVirtualBone::BuildSkinningMatrices(const CTransform4f& xf, SSkinningMatrices& out,
-                                         bool uniformScale) const {
-  PSMTXConcat(CGraphics::GetGXModelView().GetCStyleMatrix(), xf.GetCStyleMatrix(), out.mPosition);
-  if (uniformScale) {
-    CopyRow(out.mNormal[0], out.mPosition[0]);
-    CopyRow(out.mNormal[1], out.mPosition[1]);
-    CopyRow(out.mNormal[2], out.mPosition[2]);
-  } else {
-    Mtx inverseTranspose;
-    PSMTXInvXpose(out.mPosition, inverseTranspose);
-    CopyRow(out.mNormal[0], inverseTranspose[0]);
-    CopyRow(out.mNormal[1], inverseTranspose[1]);
-    CopyRow(out.mNormal[2], inverseTranspose[2]);
-  }
-}
-#else
 #if RSTL_PRIME1
 void PSMTXROMultS16VecArrayGathered(ROMtx mtx, const ushort* in, volatile void* out,
                                     size_t pointCount);
@@ -756,4 +665,3 @@ void CVirtualBone::BuildSkinningMatrices(const CTransform4f& xf, SSkinningMatric
 #endif
 
 // clang-format on
-#endif

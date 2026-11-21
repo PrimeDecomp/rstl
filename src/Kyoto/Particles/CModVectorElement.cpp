@@ -44,9 +44,6 @@ CMVEGravity::CMVEGravity(CVectorElement* a) : mA(a) {}
 CMVEGravity::~CMVEGravity() { delete mA; }
 
 bool CMVEGravity::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f grav(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f grav(0.f, 0.f, 0.f);
@@ -54,7 +51,6 @@ bool CMVEGravity::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f grav(CVector3f::Zero());
 #endif
 
-#endif
   mA->GetValue(frame, grav);
   pVel += grav;
   return false;
@@ -69,9 +65,6 @@ CMVEWind::~CMVEWind() {
 }
 
 bool CMVEWind::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f wVel(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f wVel(0.f, 0.f, 0.f);
@@ -79,7 +72,6 @@ bool CMVEWind::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f wVel(CVector3f::Zero());
 #endif
 
-#endif
   mVelocity->GetValue(frame, wVel);
   CVector3f diff = wVel - pVel;
   float factor;
@@ -180,9 +172,6 @@ CMVEImplosion::~CMVEImplosion() {
 }
 
 bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f av(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -190,7 +179,6 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
   CVector3f av(CVector3f::Zero());
 #endif
 
-#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -212,9 +200,6 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
     return false;
   }
 
-#if RSTL_CORRUPTION
-  CVector3f dvs = (1.f / dvm) * dv;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -222,7 +207,6 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
-#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel += b * dvs;
@@ -241,9 +225,6 @@ CMVELinearImplosion::~CMVELinearImplosion() {
 }
 
 bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f av(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -251,7 +232,6 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
   CVector3f av(CVector3f::Zero());
 #endif
 
-#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -273,9 +253,6 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
     return false;
   }
 
-#if RSTL_CORRUPTION
-  CVector3f dvs = (1.f / dvm) * dv;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -283,7 +260,6 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
-#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel = b * dvs;
@@ -302,9 +278,6 @@ CMVEExponentialImplosion::~CMVEExponentialImplosion() {
 }
 
 bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f av(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -312,7 +285,6 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
   CVector3f av(CVector3f::Zero());
 #endif
 
-#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -334,9 +306,6 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
     return false;
   }
 
-#if RSTL_CORRUPTION
-  CVector3f dvs = (1.f / dvm) * dv;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -344,7 +313,6 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
-#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel += dvm * (b * dvs);
@@ -362,10 +330,6 @@ CMVESwirl::~CMVESwirl() {
 }
 
 bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
-#if RSTL_CORRUPTION
-  CVector3f a(CVector3f::Zero());
-  CVector3f b(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f a(0.f, 0.f, 0.f);
@@ -375,7 +339,6 @@ bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f b(CVector3f::Zero());
 #endif
 
-#endif
   mHelixPoint->GetValue(frame, a);
   mCurveBinormal->GetValue(frame, b);
 
@@ -412,9 +375,6 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
 , mRestitution(restitution)
 , mPlanePrecomputed(false)
 , mDieOnPenetrate(e)
-#if RSTL_CORRUPTION
-, mPlaneValidatedNormal(CVector3f::Zero())
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mPlaneValidatedNormal(0.f, 0.f, 0.f)
@@ -422,7 +382,6 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
 , mPlaneValidatedNormal(CVector3f::Zero())
 #endif
 
-#endif
 , mPlaneD(0.f) {
   if (planePoint && planeNormal && planePoint->IsFastConstant() && planeNormal->IsFastConstant()) {
     // Precompute Hesse normal form of plane (for penetration testing)
@@ -433,9 +392,6 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
     if (mPlaneValidatedNormal.MagSquared() > 0.f) {
       mPlaneValidatedNormal.Normalize();
     }
-#if RSTL_CORRUPTION
-    CVector3f a(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CVector3f a(0.f, 0.f, 0.f);
@@ -443,7 +399,6 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
     CVector3f a(CVector3f::Zero());
 #endif
 
-#endif
     planePoint->GetValue(0, a);
     mPlaneD = CVector3f::Dot(mPlaneValidatedNormal, a);
   }
@@ -462,9 +417,6 @@ bool CMVEBounce::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
     mPlaneNormal->GetValue(frame, mPlaneValidatedNormal);
     mPlaneValidatedNormal.Normalize();
 
-#if RSTL_CORRUPTION
-    CVector3f a(CVector3f::Zero());
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CVector3f a(0.f, 0.f, 0.f);
@@ -472,7 +424,6 @@ bool CMVEBounce::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
     CVector3f a(CVector3f::Zero());
 #endif
 
-#endif
     mPlanePoint->GetValue(frame, a);
 
     mPlaneD = CVector3f::Dot(mPlaneValidatedNormal, a);

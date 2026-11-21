@@ -64,12 +64,8 @@ public:
 
   pas::EAnimationState GetStateId() const { return mId; }
   bool HasAnims() const { return static_cast< uint >(mAnims.size()) != 0; }
-#if RSTL_CORRUPTION
-  int GetNumAnims() const { return mAnims.size(); }
-#else
 #if !RSTL_PRIME1
   int GetNumAnims() const { return mAnims.size(); }
-#endif
 #endif
 
   bool operator<(const CPASAnimState& rhs) const { return mId < rhs.mId; }
@@ -96,13 +92,9 @@ private:
   mutable rstl::vector< int > mSelectionCache;
 #endif
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CPASAnimState, 0x34)
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1 || RSTL_VERSION < RSTL_R3IJ
 CHECK_SIZEOF(CPASAnimState, 0x34)
-#endif
 #endif
 
 #endif // _CPASANIMSTATE

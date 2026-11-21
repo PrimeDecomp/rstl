@@ -300,15 +300,11 @@ float CAnimTreeTransition::VGetBlendingWeight() const {
 }
 
 CCharAnimTime CAnimTreeTransition::VGetTimeRemaining() const {
-#if RSTL_CORRUPTION
-  return rstl::max_val< const CCharAnimTime& >(mB->VGetTimeRemaining(), mTransDur - mTimeInTrans);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::max_val(mB->GetTimeRemaining(), mTransDur - mTimeInTrans);
 #else
   return rstl::max_val< const CCharAnimTime& >(mB->VGetTimeRemaining(), mTransDur - mTimeInTrans);
-#endif
 #endif
 }
 
