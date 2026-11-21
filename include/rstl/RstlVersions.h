@@ -245,8 +245,6 @@
 #define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_P2ME)
 // `lower_bound` declares `halfDist` before its loop.
 #define RSTL_LOWER_BOUND_HOISTED_HALF_DIST (!RSTL_PRIME1)
-// The plain `lower_bound` declares `halfDist` and `it` inside its loop.
-#define RSTL_LOWER_BOUND_LOOP_LOCALS (RSTL_CORRUPTION)
 // The comparator `lower_bound` follows the comparator `sort`, before `__sort3`.
 #define RSTL_LOWER_BOUND_CMP_BEFORE_SORT3 (RSTL_CORRUPTION)
 // `binary_find` and `equal_range` keep named `lower` / `found` locals.
