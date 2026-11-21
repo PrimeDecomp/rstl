@@ -111,6 +111,18 @@ bool CDisplayListReader::EnumerateTriangles(IDisplayListTriangleCallback& callba
 
     switch (primitive) {
     case GX_TRIANGLES: {
+#if RSTL_KYOTO_DISPLAY_LIST_STRIDE_LOCALS
+      int twoVertexStride;
+      const int stride = mVertexStride;
+      twoVertexStride = stride * 2;
+      int vertexOffset = offset;
+      for (int i = 0; i < count; i += 3, vertexOffset += stride * 3) {
+        const uchar* vertex = displayList + vertexOffset;
+        if (!callback.OnTriangle(*this, vertex, vertex + stride, vertex + twoVertexStride)) {
+          return false;
+        }
+      }
+#else
       int vertexOffset = offset;
       for (int i = 0; i < count; i += 3, vertexOffset += mVertexStride * 3) {
         const uchar* vertex = displayList + vertexOffset;
@@ -118,16 +130,30 @@ bool CDisplayListReader::EnumerateTriangles(IDisplayListTriangleCallback& callba
           return false;
         }
       }
+#endif
       break;
     }
     case GX_TRIANGLEFAN: {
+#if RSTL_KYOTO_DISPLAY_LIST_STRIDE_LOCALS
+      int previous;
+      int current;
+      const int stride = mVertexStride;
+      vertices = displayList + offset;
+      previous = offset + stride;
+      current = previous + stride;
+#else
       vertices = displayList + offset;
       int previous = offset + mVertexStride;
       int current = previous + mVertexStride;
+#endif
       for (int i = 2; i < count; ++i) {
         const int last = previous;
         previous = current;
+#if RSTL_KYOTO_DISPLAY_LIST_STRIDE_LOCALS
+        current += stride;
+#else
         current += mVertexStride;
+#endif
         if (!callback.OnTriangle(*this, vertices, displayList + last, displayList + previous)) {
           return false;
         }
