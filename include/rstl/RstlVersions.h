@@ -529,6 +529,12 @@
 #define RSTL_ECHOES_CONST const
 #define RSTL_PRIME1_INLINE
 #endif
+// The vector test Corruption calls `IsNormalizable` where Prime and Echoes call `CanBeNormalized`.
+#if RSTL_CORRUPTION
+#define RSTL_KYOTO_CAN_BE_NORMALIZED(v) (v).IsNormalizable()
+#else
+#define RSTL_KYOTO_CAN_BE_NORMALIZED(v) (v).CanBeNormalized()
+#endif
 // `const` by-value scalar parameters that Prime and Echoes declare and the prototype does not.
 #if RSTL_CORRUPTION
 #define RSTL_KYOTO_SCALAR_PARAM_CONST
