@@ -119,6 +119,8 @@ public:
   static void SetMangleMipmaps(bool v) { sMangleMips = v; }
   static const bool GetMangleMipmaps() { return sMangleMips; }
 
+  static uint GetTotalAllocatedMemory() { return sTotalAllocatedMemory; } // Guessed name
+
   static int sCurrentFrameCount;
   static int sTotalAllocatedMemory;
   static bool sMangleMips;
