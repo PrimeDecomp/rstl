@@ -304,7 +304,7 @@ public:
   static ECardResult SetStatusSync(EMemoryCardPort port, int fileNo, const CardStat& stat); // Guessed name
   static ECardResult FastDeleteFile(EMemoryCardPort port, int fileNo);
   static ECardResult FormatCard(EMemoryCardPort port);
-  static ECardResult MountSync(EMemoryCardPort port); // Guessed name
+  static ECardResult MountCardSync(EMemoryCardPort port); // Guessed name
   static ECardResult FormatSync(EMemoryCardPort port); // Guessed name
   static ECardResult DeleteNamedFile(EMemoryCardPort port, const rstl::string& name); // Guessed name
 

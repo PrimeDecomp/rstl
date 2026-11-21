@@ -40,10 +40,6 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
     }
   } else {
     CCharAnimTime newDt = mTimeScale->TimeScaleIntegral(origAccelTime, mTargetAccelTime);
-#if RSTL_CORRUPTION
-    SAdvancementResults res(CCharAnimTime(0.f),
-                            SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
     SAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -51,7 +47,6 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
                                                     , CQuaternion::NoRotation()
 #endif
                                                     ));
-#endif
     if (newDt.GreaterThanZero()) {
       res = mChild->AdvanceView(newDt);
     }

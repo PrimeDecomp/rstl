@@ -122,28 +122,16 @@ CAnimTreeTransition::VReverseSimplified() {
   return CAnimTreeTweenBase::VReverseSimplified();
 }
 
-#if RSTL_CORRUPTION
-rstl::pair< CCharAnimTime, SAdvancementDeltas >
-#else
 rstl::pair< CCharAnimTime, CAdvancementDeltas >
-#endif
 CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time) {
   IncAdvancementDepth();
   CDoubleChildAdvancementResult res = AdvanceViewBothChildren(time, mRunA, mLoopA);
   DecAdvancementDepth();
   const CCharAnimTime& trueAdvancement = res.GetTrueAdvancement();
   if (trueAdvancement.EqualsZero())
-#if RSTL_CORRUPTION
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
-#else
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
-#endif
         CCharAnimTime::ZeroFlat(),
-#if RSTL_CORRUPTION
-        SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
         CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#endif
 
   float oldWeight = GetBlendingWeight();
   mTimeInTrans += trueAdvancement;
@@ -160,28 +148,28 @@ CAnimTreeTransition::AdvanceViewForTransitionalPeriod(const CCharAnimTime& time)
 #endif
 
 #if RSTL_CORRUPTION
-  const SAdvancementDeltas& leftDeltas = res.GetLeftAdvancementDeltas();
-  const SAdvancementDeltas& rightDeltas = res.GetRightAdvancementDeltas();
+  const CAdvancementDeltas& leftDeltas = res.GetLeftAdvancementDeltas();
+  const CAdvancementDeltas& rightDeltas = res.GetRightAdvancementDeltas();
   switch (GetBlendRoot() & (kBlendRoot_Offset | kBlendRoot_Rotation)) {
   case kBlendRoot_Offset:
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
+    return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
 #else
   if (GetBlendRoot() & kBlendRoot_Offset)
     return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
 #endif
         trueAdvancement,
 #if RSTL_CORRUPTION
-        SAdvancementDeltas::InterpolateTranslationOnly(leftDeltas, rightDeltas, oldWeight, newWeight));
+        CAdvancementDeltas::InterpolateTranslationOnly(leftDeltas, rightDeltas, oldWeight, newWeight));
   case kBlendRoot_Rotation:
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
+    return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
         trueAdvancement,
-        SAdvancementDeltas::InterpolateRotationOnly(leftDeltas, rightDeltas, oldWeight, newWeight));
+        CAdvancementDeltas::InterpolateRotationOnly(leftDeltas, rightDeltas, oldWeight, newWeight));
   case kBlendRoot_Offset | kBlendRoot_Rotation:
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(
+    return rstl::pair< CCharAnimTime, CAdvancementDeltas >(
         trueAdvancement,
-        SAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
+        CAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
   default:
-    return rstl::pair< CCharAnimTime, SAdvancementDeltas >(trueAdvancement, rightDeltas);
+    return rstl::pair< CCharAnimTime, CAdvancementDeltas >(trueAdvancement, rightDeltas);
   }
 #else
         CAdvancementDeltas::Interpolate(leftDeltas, rightDeltas, oldWeight, newWeight));
@@ -201,21 +189,13 @@ SAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time)
     if (ShouldCullTree())
       mCullSelector = 1;
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-#if RSTL_CORRUPTION
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
                                CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 
-#endif
   }
   if (!mInitialized)
     mInitialized = true;
   if (mTimeInTrans + time < mTransDur) {
-#if RSTL_CORRUPTION
-    rstl::pair< CCharAnimTime, SAdvancementDeltas > res = AdvanceViewForTransitionalPeriod(time);
-#else
     rstl::pair< CCharAnimTime, CAdvancementDeltas > res = AdvanceViewForTransitionalPeriod(time);
-#endif
     return SAdvancementResults(time - res.first, res.second);
 
   }
@@ -227,8 +207,8 @@ SAdvancementResults CAnimTreeTransition::VAdvanceView(const CCharAnimTime& time)
 
 #if RSTL_CORRUPTION
   CCharAnimTime transTimeRem = mTransDur - mTimeInTrans;
-  rstl::pair< CCharAnimTime, SAdvancementDeltas > res(
-      CCharAnimTime(0.f), SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+  rstl::pair< CCharAnimTime, CAdvancementDeltas > res(
+      CCharAnimTime(0.f), CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 #endif
   if (transTimeRem.GreaterThanZero()) {
     res = AdvanceViewForTransitionalPeriod(transTimeRem);
@@ -250,7 +230,7 @@ CAnimTreeTransition::VGetAdvancementResults(const CCharAnimTime& time,
     SAdvancementResults a = mLoopA ? mA->VGetAdvancementResults(time, startOffset)
                                  : SAdvancementResults(
                                        CCharAnimTime::ZeroFlat(),
-                                       SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                                       CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
     SAdvancementResults b = mB->VGetAdvancementResults(time, startOffset);
     float inverseDuration = 1.f / mTransDur.GetSeconds();
     float startWeight = inverseDuration * startOffset.GetSeconds();
@@ -259,15 +239,15 @@ CAnimTreeTransition::VGetAdvancementResults(const CCharAnimTime& time,
     case kBlendRoot_Offset:
       return SAdvancementResults(
           b.mRemTime,
-          SAdvancementDeltas::InterpolateTranslationOnly(a.mDeltas, b.mDeltas, startWeight, endWeight));
+          CAdvancementDeltas::InterpolateTranslationOnly(a.mDeltas, b.mDeltas, startWeight, endWeight));
     case kBlendRoot_Rotation:
       return SAdvancementResults(
           b.mRemTime,
-          SAdvancementDeltas::InterpolateRotationOnly(a.mDeltas, b.mDeltas, startWeight, endWeight));
+          CAdvancementDeltas::InterpolateRotationOnly(a.mDeltas, b.mDeltas, startWeight, endWeight));
     case kBlendRoot_Offset | kBlendRoot_Rotation:
       return SAdvancementResults(
           b.mRemTime,
-          SAdvancementDeltas::Interpolate(a.mDeltas, b.mDeltas, startWeight, endWeight));
+          CAdvancementDeltas::Interpolate(a.mDeltas, b.mDeltas, startWeight, endWeight));
     }
   }
   return mB->VGetAdvancementResults(time, startOffset);

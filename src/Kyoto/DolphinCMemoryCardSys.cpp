@@ -1136,11 +1136,7 @@ ECardResult CMemoryCardSys::GetResultCode(int port) {
   return static_cast< ECardResult >(CARDGetResultCode(port));
 }
 
-#if RSTL_CORRUPTION
-ECardResult CMemoryCardSys::MountSync(EMemoryCardPort port) {
-#else
 ECardResult CMemoryCardSys::MountCardSync(EMemoryCardPort port) {
-#endif
   return static_cast< ECardResult >(CARDMount(port, AllocCardWorkArea(port), nullptr));
 }
 

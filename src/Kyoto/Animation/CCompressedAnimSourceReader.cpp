@@ -193,11 +193,11 @@ SAdvancementResults CCompressedAnimSourceReader::VAdvanceView(const CCharAnimTim
     mPassedAssetSoundCount = 0;
     mPassedAssetCount = 0;
     return SAdvancementResults(time,
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   CSegStatement prior;
   GetSegStatement(prior, CSegId(0));
@@ -223,7 +223,7 @@ SAdvancementResults CCompressedAnimSourceReader::VAdvanceView(const CCharAnimTim
     const CQuaternion nextInverse = nextRotation.BuildInverted();
     offset = nextInverse.Transform(offset);
   }
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
+  return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 }
 
 CCharAnimTime CCompressedAnimSourceReader::VGetTimeRemaining() const {
@@ -253,7 +253,7 @@ bool CCompressedAnimSourceReader::VSupportsReverseView() const { return false; }
 
 SAdvancementResults CCompressedAnimSourceReader::VReverseView(const CCharAnimTime& time) {
   return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                             SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                             CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
 }
 
 void CCompressedAnimSourceReader::VSetPhase(float phase) {
@@ -278,11 +278,11 @@ CCompressedAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& time,
   const CCharAnimTime& duration = mSource->GetAnimationDuration();
   if (priorTime >= duration) {
     return SAdvancementResults(time,
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   SeekDecodeTime(priorTime);
   CSegStatement prior;
@@ -306,7 +306,7 @@ CCompressedAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& time,
     offset = nextInverse.Transform(offset);
   }
   SeekDecodeTime(mCurTime);
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
+  return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 }
 
 void CCompressedAnimSourceReader::VGetSegStatementSet(const CSegIdList& list,
