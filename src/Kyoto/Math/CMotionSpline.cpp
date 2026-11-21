@@ -246,9 +246,9 @@ void CMotionSpline::GetSurroundingPoints(int index,
             break;
           case kST_RoundedCatmullRom: {
             CVector3f first = mControlPoints[count - 2] - mControlPoints[count - 1];
-            first = first.IsSafelyNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+            first = rs_can_normalize(first) ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
             CVector3f second = mControlPoints[count - 3] - mControlPoints[count - 2];
-            second = second.IsSafelyNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+            second = rs_can_normalize(second) ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
             points.push_back(mControlPoints[count - 1] - 1.5f * first + 0.5f * second);
             break;
           }
@@ -276,9 +276,9 @@ void CMotionSpline::GetSurroundingPoints(int index,
         break;
       case kST_RoundedCatmullRom: {
         CVector3f first = mControlPoints[1] - mControlPoints[0];
-        first = first.IsSafelyNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+        first = rs_can_normalize(first) ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
         CVector3f second = mControlPoints[2] - mControlPoints[1];
-        second = second.IsSafelyNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+        second = rs_can_normalize(second) ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
         points.push_back(mControlPoints[0] - 1.5f * first + 0.5f * second);
         break;
       }
@@ -321,27 +321,27 @@ float CMotionSpline::CalculateRoundedCatmullRomLength(int index) const {
   rstl::reserved_vector< CVector3f, 4 > points;
   GetSurroundingPoints(index, points);
   const CVector3f span = points[2] - points[1];
-  if (!span.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(span)) {
     return 0.f;
   }
 
   CVector3f previous = points[0] - points[1];
-  if (!previous.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(previous)) {
     previous = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f firstTangent = span.AsNormalized() - previous.AsNormalized();
-  if (firstTangent.IsSafelyNormalizable()) {
+  if (rs_can_normalize(firstTangent)) {
     firstTangent.Normalize();
   } else {
     firstTangent = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f next = points[3] - points[2];
-  if (!next.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(next)) {
     next = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f reverseSpan = -span;
   CVector3f secondTangent = next.AsNormalized() - reverseSpan.AsNormalized();
-  if (secondTangent.IsSafelyNormalizable()) {
+  if (rs_can_normalize(secondTangent)) {
     secondTangent.Normalize();
   } else {
     secondTangent = CVector3f(0.f, 1.f, 0.f);
@@ -749,7 +749,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (direction.IsSafelyNormalizable()) {
+    if (rs_can_normalize(direction)) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -830,7 +830,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
       const float length = t * span + mKnotDistances[i];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (offset.IsSafelyNormalizable()) {
+      if (rs_can_normalize(offset)) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
@@ -867,7 +867,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (direction.IsSafelyNormalizable()) {
+    if (rs_can_normalize(direction)) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -907,7 +907,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       forwardDirection = (first - previous) + (second - first);
     }
-    if (forwardDirection.IsSafelyNormalizable()) {
+    if (rs_can_normalize(forwardDirection)) {
       forwardDirection.Normalize();
     }
     if (i < knots.size() - 2) {
@@ -926,7 +926,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       backwardDirection = (second - next) + (first - second);
     }
-    if (backwardDirection.IsSafelyNormalizable()) {
+    if (rs_can_normalize(backwardDirection)) {
       backwardDirection.Normalize();
     }
     const float firstProjection = CVector3f::Dot(position - first, forwardDirection);
@@ -958,7 +958,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       const float length = t * span + mKnotDistances[i * 3];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (offset.IsSafelyNormalizable()) {
+      if (rs_can_normalize(offset)) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
@@ -1030,7 +1030,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     if (mClosedLoop && distance > 0.5f * mLength) {
       tangent = mControlPoints[0] - mControlPoints[1];
     }
-    if (tangent.IsSafelyNormalizable()) {
+    if (rs_can_normalize(tangent)) {
       tangent.Normalize();
     } else {
       tangent = CVector3f::Forward();
@@ -1065,7 +1065,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     }
     }
   }
-  if (tangent.IsSafelyNormalizable()) {
+  if (rs_can_normalize(tangent)) {
     tangent.Normalize();
   } else {
     tangent = CVector3f::Forward();

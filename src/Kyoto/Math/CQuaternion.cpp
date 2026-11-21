@@ -304,7 +304,7 @@ CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVecto
     if (CVector3f::Dot(fromUnit, toUnit) > 0.f) {
       return NoRotation();
     }
-    if (cross.IsSafelyNormalizable()) {
+    if (rs_can_normalize(cross)) {
       return CQuaternion(0.f, cross.AsNormalized());
     }
     return NoRotation();

@@ -282,7 +282,7 @@ CVECircleCluster::CVECircleCluster(CVectorElement* circleOffset, CVectorElement*
 
   circleNormal->GetValue(0, normal);
   tmp = normal;
-  if (normal.IsSafelyNormalizable()) {
+  if (rs_can_normalize(normal)) {
     normal = normal.AsNormalized();
   } else {
     normal = CVector3f::Up();

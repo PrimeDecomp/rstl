@@ -282,28 +282,28 @@ CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVect
   }
 
   const CVector3f span = c - b;
-  if (!span.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.IsSafelyNormalizable()) {
+  if (rs_can_normalize(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.IsSafelyNormalizable()) {
+  if (rs_can_normalize(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -317,28 +317,28 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
                                                    const CVector3f& c, const CVector3f& d,
                                                    float t) {
   const CVector3f span = c - b;
-  if (!span.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.IsSafelyNormalizable()) {
+  if (rs_can_normalize(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.IsSafelyNormalizable()) {
+  if (!rs_can_normalize(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.IsSafelyNormalizable()) {
+  if (rs_can_normalize(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);

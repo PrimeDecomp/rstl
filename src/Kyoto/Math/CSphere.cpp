@@ -11,7 +11,7 @@ CUnitVector3f CSphere::GetSurfaceNormal(const CVector3f& vec) const {
 #if !RSTL_PRIME1
 CVector3f CSphere::GetSurfacePoint(const CVector3f& vec) const {
   const CVector3f delta = vec - mCenter;
-  if (delta.IsSafelyNormalizable()) {
+  if (rs_can_normalize(delta)) {
     return mCenter + delta.AsNormalized() * mRadius;
   }
   return mCenter;

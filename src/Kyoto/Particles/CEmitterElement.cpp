@@ -55,11 +55,11 @@ bool CVESphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f normVec1 = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100));
-  normVec1 = (normVec1.IsSafelyNormalizable() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
+  normVec1 = (rs_can_normalize(normVec1) ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
   pPos = origin + (normVec1 * radius);
 
   CVector3f offset = (pPos - origin);
-  CVector3f direction = offset.IsSafelyNormalizable() ? offset.AsNormalized() : offset;
+  CVector3f direction = rs_can_normalize(offset) ? offset.AsNormalized() : offset;
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * direction;
   return false;
@@ -95,7 +95,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
                             CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100));
   dir *= 0.01f;
-  if (dir.IsSafelyNormalizable()) {
+  if (rs_can_normalize(dir)) {
     dir.Normalize();
   }
   if (!mOnSurface) {
@@ -112,7 +112,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   dir = xf * dir;
 
   pPos = origin + dir;
-  pVel = dir.IsSafelyNormalizable() ? dir.AsNormalized() : dir;
+  pVel = rs_can_normalize(dir) ? dir.AsNormalized() : dir;
   pVel *= mag;
   return false;
 }
@@ -146,7 +146,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f dir = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100));
-  bool canNormalize = dir.IsSafelyNormalizable();
+  bool canNormalize = rs_can_normalize(dir);
   dir *= 0.01f;
   if (canNormalize) {
     dir.Normalize();
@@ -165,7 +165,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   dir = xf * dir;
 
   pPos = origin + dir;
-  pVel = dir.IsSafelyNormalizable() ? dir.AsNormalized() : dir;
+  pVel = rs_can_normalize(dir) ? dir.AsNormalized() : dir;
   pVel *= mag;
   return false;
 }

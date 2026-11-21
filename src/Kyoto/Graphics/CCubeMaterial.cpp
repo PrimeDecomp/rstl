@@ -3616,7 +3616,7 @@ void CCubeMaterial::EnsureViewDepStateCached(const CCubeSurface* surface) {
 #endif
 
 #endif
-  if (right.IsSafelyNormalizable()) {
+  if (rs_can_normalize(right)) {
     right.Normalize();
   } else {
 #if !RSTL_PRIME1
