@@ -1,5 +1,3 @@
-#include "rstl/RstlVersions.h"
-#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Audio/AudioEffect.hpp"
 #include "Kyoto/Audio/AEffEditor.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -337,4 +335,4 @@ void AudioEffect::setParameterAutomated(long index, float value) {
   if (mAudioMaster != nullptr)
     mAudioMaster(&mEffect, kAM_Automate, index, 0, nullptr, value);
 }
-#endif
+

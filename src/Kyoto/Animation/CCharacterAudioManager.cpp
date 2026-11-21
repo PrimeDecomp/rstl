@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_GAME_HEADERS
 #include "Kyoto/Animation/CCharacterAudioManager.hpp"
 
 #include "Kyoto/CAssetIdList.hpp"
@@ -162,3 +164,4 @@ bool CCharacterAudioManager::HasLoopingSound(CAssetId sound, int index) const {
   }
   return false;
 }
+#endif

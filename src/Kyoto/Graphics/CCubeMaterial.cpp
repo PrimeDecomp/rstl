@@ -42,7 +42,7 @@
 #include "Kyoto/Basics/CCast.hpp"
 #endif
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_PROTO_GAME_HEADERS
 #include "Corruption/MetaRender/CCubeRenderer.hpp"
 #else
 #include "rstl/math.hpp"

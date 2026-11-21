@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_GAME_HEADERS
 #define RS_TTOKEN_FILE "TToken.H"
 
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -90,3 +92,4 @@ CCECharacterFactory::CreateCharacter(TLockedToken< CCECharacterFactory > factory
 const CCECharacterInfo& CCECharacterFactory::GetCharacterInfo() const { return **mCharInfo; }
 
 CCECharacterFactory::~CCECharacterFactory() {}
+#endif

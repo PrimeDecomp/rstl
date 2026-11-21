@@ -21,7 +21,7 @@
 #include "Kyoto/IObjectStore.hpp"
 #endif
 #include "Kyoto/Math/CAABox.hpp"
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_PROTO_GAME_HEADERS
 
 #include "Corruption/MetroidPrime/CJointCollisionDescription.hpp"
 #endif

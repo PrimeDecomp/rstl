@@ -547,6 +547,8 @@
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
 // FMOD audio (and its SDK headers) is compiled only where the headers are available.
 #define RSTL_KYOTO_FMOD_AUDIO (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype game's own headers (Corruption/...) are available.
+#define RSTL_KYOTO_PROTO_GAME_HEADERS (RSTL_VERSION == RSTL_G2MEAB)
 // The system font bitmap is generated from the prototype's executable (Kyoto/Text/SystemFont.inc).
 #define RSTL_KYOTO_SYSTEM_FONT_DATA (RSTL_VERSION == RSTL_G2MEAB)
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
