@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
 #include "Kyoto/Audio/CAudioSampleDescription.hpp"
 
 #include "Kyoto/IObjectStore.hpp"
@@ -118,3 +120,4 @@ CAudioSampleDescription::BuildDistanceRolloffPoints(float minimum, float maximum
   }
   return points;
 }
+#endif

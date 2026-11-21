@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
 #include "Kyoto/Animation/CCompressedAnimSourceReader.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
@@ -533,3 +535,4 @@ void CCompressedAnimSourceReader::SetDecodeGQR6() {
   register uint value = 0x0f070f07;
   __asm__ { mtspr 918, value }
 }
+#endif
