@@ -5,11 +5,9 @@
 #else
 #include "rstl/RstlVersions.h"
 #endif
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CAllFormatsAnimSource.hpp"
 
-#if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "Kyoto/Animation/CAnimSourceReader.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Animation/CCompressedAnimSourceReader.hpp"

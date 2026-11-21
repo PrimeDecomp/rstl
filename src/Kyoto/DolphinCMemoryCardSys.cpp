@@ -1,12 +1,10 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/CMemoryCardSys.hpp"
 #if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #endif
 
-#if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
-#endif
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/CCrc32.hpp"
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"

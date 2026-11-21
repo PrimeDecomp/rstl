@@ -1,7 +1,7 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/Assert.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Audio/CAudioManager.hpp"
-#include "Kyoto/Alloc/Assert.hpp"
 #endif
 #include "Kyoto/Audio/DolphinCRSFAudio.hpp"
 #if !RSTL_CORRUPTION

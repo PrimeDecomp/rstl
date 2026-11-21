@@ -3,11 +3,10 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
 #endif
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 
-#if RSTL_CORRUPTION
-#include "Kyoto/Alloc/Assert.hpp"
-#else
+#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CVector2i.hpp"
 
 #endif
