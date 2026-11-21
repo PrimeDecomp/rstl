@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Animation/CAssetSoundPOINode.hpp"
 
 #include "Kyoto/Audio/CSoundEvaluator.hpp"
@@ -38,3 +40,4 @@ CAssetSoundPOINode CAssetSoundPOINode::CopyNodeMinusStartTime(const CAssetSoundP
                             node.GetSegId(), node.GetSoundAsset(), node.GetValueA(),
                             node.GetValueB(), node.mEvaluatorA, node.mEvaluatorB);
 }
+#endif

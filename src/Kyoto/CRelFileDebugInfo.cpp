@@ -1,4 +1,6 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
+#include "rstl/RstlVersions.h"
 #include "Kyoto/CRelFileDebugInfo.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -60,3 +62,4 @@ CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(TRelFileDebugAddress address
   }
   return nullptr;
 }
+#endif

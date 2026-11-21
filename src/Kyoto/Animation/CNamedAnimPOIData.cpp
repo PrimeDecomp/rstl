@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Animation/CNamedAnimPOIData.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -29,3 +31,4 @@ CNamedAnimPOIData CNamedAnimPOIData::MakeKey(int type, const rstl::string& name)
   return CNamedAnimPOIData(type, name, rstl::vector< SParticleEntry >(),
                            rstl::vector< SAssetSoundEntry >());
 }
+#endif

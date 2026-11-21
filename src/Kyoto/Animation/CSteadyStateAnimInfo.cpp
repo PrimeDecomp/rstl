@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Animation/CSteadyStateAnimInfo.hpp"
 
 
@@ -24,3 +26,4 @@ CCharAnimTime CSteadyStateAnimInfo::GetDurationFromIndex(int index) const {
   }
   return mDuration;
 }
+#endif

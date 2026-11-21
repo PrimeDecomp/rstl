@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 
 #include "Kyoto/Animation/CAnimPOIDatabase.hpp"
@@ -23,3 +25,4 @@ IObjectStore& CAnimSysContext::GetObjectStore() const { return mStore; }
 const rstl::rc_ptr< IAnimPOIDatabase >& CAnimSysContext::GetPOIDatabase() const {
   return mPOIDatabase;
 }
+#endif

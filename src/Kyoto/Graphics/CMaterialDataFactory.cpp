@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Graphics/CMaterialDataFactory.hpp"
 
 const void* CMaterialDataFactory::ParseIntegerChunk(const void* const& data, uchar* integers) {
@@ -196,4 +198,4 @@ CMaterialDataFactory::BuildMaterialRecords(const void* data) {
   }
   return materials;
 }
-
+#endif
