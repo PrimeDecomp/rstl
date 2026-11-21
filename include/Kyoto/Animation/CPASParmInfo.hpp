@@ -1,15 +1,24 @@
 #ifndef _CPASPARMINFO
 #define _CPASPARMINFO
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CPASAnimParm.hpp"
+#if !RSTL_CORRUPTION
 
 #include "rstl/RstlVersions.h"
 #include "rstl/vector.hpp"
+#endif
 #include "rstl/construct.hpp"
 
+#if !RSTL_CORRUPTION
 class CInputStream;
+#endif
 
+#if RSTL_CORRUPTION
+
+class CInputStream;
+#endif
 class CPASParmInfo {
 public:
   enum EWeightFunction {
@@ -35,8 +44,15 @@ private:
   CPASAnimParm::UParmValue mMin;
   CPASAnimParm::UParmValue mMax;
 };
+#if !RSTL_CORRUPTION
 CHECK_SIZEOF(CPASParmInfo, 0x14)
+#endif
 
+#if RSTL_CORRUPTION
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPASParmInfo)
+    }
+#else
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CPASParmInfo)
@@ -52,5 +68,11 @@ template <> struct vector_copy_construction_policy< CPASParmInfo > {
 };
 } // namespace rstl
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CPASParmInfo, 0x14)
+
+
+#endif
 #endif // _CPASPARMINFO

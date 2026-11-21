@@ -1,8 +1,13 @@
 #ifndef _CPARTICLEGEN
 #define _CPARTICLEGEN
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
+#endif
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
 #include "Kyoto/Math/CAABox.hpp"
@@ -14,16 +19,21 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
 
+#if !RSTL_CORRUPTION
 class CAABox;
 class CColor;
 class CLight;
 class CTransform4f;
 class CVector3f;
+#endif
 
 class CWarp;
 
 class CParticleGen {
 public:
+#if RSTL_CORRUPTION
+  CParticleGen() : mDrawFlags(0) {}
+#else
 #if !RSTL_PRIME1
   CParticleGen()
   : mDrawFlags(0)
@@ -33,6 +43,7 @@ public:
   {}
 #endif
 
+#endif
   virtual ~CParticleGen() = 0;
   virtual const bool Update(double) = 0;
   virtual void Render() = 0;
@@ -45,11 +56,16 @@ public:
   virtual void SetParticleEmission(bool emission) = 0;
   virtual void SetModulationColor(const CColor& col) = 0;
   virtual void SetGeneratorRate(float rate) {}
+#if RSTL_CORRUPTION
+  // Names of the draw-flag methods are hypotheses based on the sDrawFlags/sDrawMask Wii exports.
+  virtual void SetDrawFlags(uint flags) { mDrawFlags = flags; }
+#else
 #if !RSTL_PRIME1
   // Names of the draw-flag methods are hypotheses based on the sDrawFlags/sDrawMask Wii exports.
   virtual void SetDrawFlags(uint flags) { mDrawFlags = flags; }
 #endif
 
+#endif
   virtual const CTransform4f& GetOrientation() const = 0;
   virtual const CVector3f& GetTranslation() const = 0;
   virtual const CTransform4f& GetGlobalOrientation() const = 0;
@@ -58,6 +74,12 @@ public:
   virtual bool GetParticleEmission() const = 0;
   virtual const CColor& GetModulationColor() const = 0;
   virtual float GetGeneratorRate() const { return 1.f; }
+#if RSTL_CORRUPTION
+  virtual int GetEmitterTime() const = 0;
+  virtual uint GetDrawFlags() const { return mDrawFlags; }
+  virtual bool ShouldDraw() const;
+  virtual int GetSystemCount() const = 0;
+#else
 #if !RSTL_PRIME1
   virtual int GetEmitterTime() const = 0;
   virtual uint GetDrawFlags() const { return mDrawFlags; }
@@ -65,6 +87,7 @@ public:
   virtual int GetSystemCount() const = 0;
 #endif
 
+#endif
   virtual bool IsSystemDeletable() const = 0;
   virtual rstl::optional_object< CAABox > GetBounds() const = 0;
   virtual int GetParticleCount() const = 0;
@@ -74,6 +97,10 @@ public:
   virtual void AddModifier(CWarp*);
   virtual uint Get4CharId() const = 0;
 
+#if RSTL_CORRUPTION
+  static uint sDrawFlags;
+  static uint sDrawMask;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static FourCC ResType() { return 'PART'; }
@@ -81,9 +108,15 @@ public:
   static uint sDrawFlags;
   static uint sDrawMask;
 #endif
+#endif
 
 protected:
   rstl::list< CWarp* > mModifiersList;
+#if RSTL_CORRUPTION
+
+private:
+  uint mDrawFlags;
+#else
 #if !RSTL_PRIME1
 private:
   uint mDrawFlags;
@@ -92,10 +125,19 @@ private:
 #endif
 #endif
 
+#endif
 };
 
 inline CParticleGen::~CParticleGen() {}
 
+#if RSTL_CORRUPTION
+inline bool CParticleGen::ShouldDraw() const {
+  const uint mask = sDrawMask;
+  const uint flags = sDrawFlags;
+  const uint drawFlags = GetDrawFlags();
+  return (drawFlags & mask) == flags;
+}
+#else
 #if !RSTL_PRIME1
 inline bool CParticleGen::ShouldDraw() const {
   const uint mask = sDrawMask;
@@ -103,6 +145,7 @@ inline bool CParticleGen::ShouldDraw() const {
   const uint drawFlags = GetDrawFlags();
   return (drawFlags & mask) == flags;
 }
+#endif
 #endif
 
 #endif // _CPARTICLEGEN

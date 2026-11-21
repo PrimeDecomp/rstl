@@ -1,25 +1,43 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
+#define RSTL_INLINE_SWAP
+#endif
 #include "Kyoto/Particles/CElementGen.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
+#endif
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#else
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CGameDebug.hpp"
 #endif
 
 #include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Basics/CStopwatch.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/CRandom16.hpp"
+#endif
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CLight.hpp"
+#endif
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CTevCombiners.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
+#endif
 #include "Kyoto/Math/CRelAngle.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
+#endif
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
@@ -27,21 +45,34 @@
 #include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Particles/CParticleSortedSystem.hpp"
+#else
 #include "Kyoto/Particles/CSortedParticleSystem.hpp"
 
+#endif
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Particles/CWarp.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 
+#endif
 #include "rstl/algorithm.hpp"
 #include "rstl/math.hpp"
 #include "rstl/single_ptr.hpp"
 
+#if RSTL_CORRUPTION
+#include "alloca.h"
+#include <string.h>
+
+#else
 #include <rstl/alloca.hpp>
 #include "math.h"
+#endif
 #include "dolphin/gx.h"
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #ifdef __MWERKS__
 #define frsqrte(x) static_cast< float >(__frsqrte(x))
@@ -54,7 +85,14 @@ extern "C" float frsqrte(float);
 #else // RSTL_PRIME1
 #define INVERSE_SQRT(x) CMath::FastInvSqrtF(x)
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+
+// Guessed names for the TU-local scale default and initialization guard.
+static const CVector3f skOneVector(1.f, 1.f, 1.f);
+static const double skTickTime = 1.0 / 60.0;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 // NOTE: This is a hack, trying to figure out what causes the wack GX codegen in
@@ -75,7 +113,13 @@ extern "C" float frsqrte(float);
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
 static const double skTickTime = 1.0 / 60.0;
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+ushort CElementGen::sSeed = 99;
+int CElementGen::sParticleAliveCount;
+int CElementGen::sParticleSystemAliveCount;
+#else
 #if !RSTL_PRIME1
 ushort CElementGen::sSeed = 99;
 #endif
@@ -88,18 +132,33 @@ bool CElementGen::sMoveRedToAlphaBuffer;
 bool CElementGen::sEnableAlphaModulation;
 #endif
 
+#endif
 bool CElementGen::sSubtractBlend;
+#if RSTL_CORRUPTION
+bool CElementGen::sDisableRendering;
+bool CElementGen::sLogSlowWarmup = true;
+#else
 #if RSTL_PRIME1
 double CElementGen::kTickTime = 1 / 60.0;
 ushort CElementGen::sSeed = 99;
 #endif
 
-static bool sStaticListInitialized;
+#endif
+static bool sStaticListInitialized; // Guessed name
+#if RSTL_CORRUPTION
+bool CElementGen::sMoveRedToAlphaBuffer;
+#endif
 
 // Guessed name, correlated with Prime's back-to-front particle ordering.
 struct CParticleListItemViewPointComp {
   bool operator()(const CElementGen::CParticleListItem& a,
                   const CElementGen::CParticleListItem& b) const {
+#if RSTL_CORRUPTION
+    if (a.mViewPoint.GetY() > b.mViewPoint.GetY()) {
+      return true;
+    }
+    return false;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return a.mViewPoint.GetY() > b.mViewPoint.GetY() ? true : false;
@@ -108,6 +167,7 @@ struct CParticleListItemViewPointComp {
       return true;
     }
     return false;
+#endif
 #endif
   }
 };
@@ -117,6 +177,12 @@ struct CParticleListItemViewPointComp {
 struct CTexturedParticleListItemViewPointComp {
   bool operator()(const CElementGen::CTexturedParticleListItem& a,
                   const CElementGen::CTexturedParticleListItem& b) const {
+#if RSTL_CORRUPTION
+    if (a.mViewPoint.GetY() > b.mViewPoint.GetY()) {
+      return true;
+    }
+    return false;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return a.mViewPoint.GetY() > b.mViewPoint.GetY() ? true : false;
@@ -125,6 +191,7 @@ struct CTexturedParticleListItemViewPointComp {
       return true;
     }
     return false;
+#endif
 #endif
   }
 };
@@ -144,8 +211,14 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mRandomSeed(sSeed)
 , mGeneratorRate(1.f)
 , mTranslation(CVector3f::Zero())
+#if RSTL_CORRUPTION
+, mTranslationVelocity(CVector3f::Zero())
+#endif
 , mGlobalTranslation(CVector3f::Zero())
 , mPOFS(CVector3f::Zero())
+#if RSTL_CORRUPTION
+, mGlobalScale(skOneVector)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mGlobalScale(1.f, 1.f, 1.f)
@@ -153,8 +226,12 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mGlobalScale(skOneVector)
 #endif
 
+#endif
 , mGlobalScaleTransform(CTransform4f::Identity())
 , mGlobalScaleTransformInverse(CTransform4f::Identity())
+#if RSTL_CORRUPTION
+, mLocalScale(skOneVector)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mLocalScale(1.f, 1.f, 1.f)
@@ -162,6 +239,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mLocalScale(skOneVector)
 #endif
 
+#endif
 , mLocalScaleTransform(CTransform4f::Identity())
 , mLocalScaleTransformInverse(CTransform4f::Identity())
 , mOrientation(CTransform4f::Identity())
@@ -173,18 +251,31 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mTranslationDirty(false)
 , mZTest(true)
 , mORNT(false)
+#if RSTL_CORRUPTION
+, mMBLR(false)
+#else
 #if !RSTL_PRIME1
 , mMBLR(false)
 #endif
 
+#endif
 , mWarmedUp(false)
 , mModelsUseLights(false)
 , mEnableOPTS(flags & kOSF_Two)
+#if RSTL_CORRUPTION
+, mEnableDynamicBounds((flags & kOSF_DisableBounds) == 0)
+, mEnableFixedBounds(false)
+#else
 #if RSTL_PARTICLE_BOUNDS_MODES
 , mEnableDynamicBounds((flags & kOSF_DisableBounds) == 0)
 , mEnableFixedBounds(false)
 #endif
+#endif
 , mEnableADV(false)
+#if RSTL_CORRUPTION
+, mMBSP(1)
+, mBackupLightActive(GX_LIGHT_NULL)
+#else
 #if !RSTL_PRIME1
 , mMBSP(1)
 #endif
@@ -193,6 +284,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mBackupLightActive(false)
 #else
 , mBackupLightActive(GX_LIGHT_NULL)
+#endif
 #endif
 , mRandState(mRandomSeed)
 , mSSPO(CVector3f::Zero())
@@ -211,6 +303,16 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 , mFalloffType(kFT_Linear)
 , mLFOR(1.f)
 , mLSLA(45.f)
+#if RSTL_CORRUPTION
+, mModuColor(0xffffffff) {
+  SetDrawFlags(mLoadedGenDesc->mDFLG);
+  CGlobalRandom random(mRandState);
+  CParticleGlobals::SParticleSystem system('PART', this);
+  if (mLoadedGenDesc->mSEED) {
+    int seed;
+    mLoadedGenDesc->mSEED->GetValue(mCurFrame, seed);
+    mRandomSeed = seed;
+#else
 , mModuColor(0xFFFFFFFF) {
 #if !RSTL_PRIME1
   SetDrawFlags(mLoadedGenDesc->mDFLG);
@@ -230,14 +332,26 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mLoadedGenDesc->mSEED->GetValue(mCurFrame, seedVal);
 #endif
     mRandomSeed = seedVal;
+#endif
   }
   mRandState.SetSeed(mRandomSeed);
+#if RSTL_CORRUPTION
+  ++sParticleSystemAliveCount;
+
+#else
   ++mParticleSystemAliveCount;
+#endif
   mLIT_ = mLoadedGenDesc->mLIT_;
+#if !RSTL_CORRUPTION
   mAAPH = mLoadedGenDesc->mAAPH;
+#endif
   mZBUF = mLoadedGenDesc->mZBUF;
   mORNT = mLoadedGenDesc->mORNT;
   mMBLR = mORNT ? false : mLoadedGenDesc->mMBLR;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mMBSP && mMBLR) {
+    mLoadedGenDesc->mMBSP->GetValue(mCurFrame, mMBSP);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* mbsp = mLoadedGenDesc->mMBSP) {
@@ -246,8 +360,15 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   if (mLoadedGenDesc->mMBSP && mMBLR) {
     mLoadedGenDesc->mMBSP->GetValue(mCurFrame, mMBSP);
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  int velocitySourceCount = 0;
+  if (mLoadedGenDesc->mVEL1) {
+    mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL1;
+    mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD1;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int idx = 0;
@@ -261,7 +382,13 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL1;
     mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD1;
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mVEL2) {
+    mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL2;
+    mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD2;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CModVectorElement* vel2 = mLoadedGenDesc->mVEL2) {
@@ -273,7 +400,13 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL2;
     mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD2;
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mVEL3) {
+    mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL3;
+    mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD3;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CModVectorElement* vel3 = mLoadedGenDesc->mVEL3) {
@@ -285,7 +418,13 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL3;
     mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD3;
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mVEL4) {
+    mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL4;
+    mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD4;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CModVectorElement* vel4 = mLoadedGenDesc->mVEL4) {
@@ -297,7 +436,12 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mVELSources[velocitySourceCount] = mLoadedGenDesc->mVEL4;
     mHasVMD[velocitySourceCount++] = mLoadedGenDesc->mVMD4;
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  for (int i = velocitySourceCount; i < 4; ++i) {
+    mVELSources[i] = nullptr;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (; idx < 4; ++idx) {
@@ -306,10 +450,15 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   for (int i = velocitySourceCount; i < 4; ++i) {
     mVELSources[i] = nullptr;
 #endif
+#endif
   }
 
   if (mLoadedGenDesc->mADV1 || mLoadedGenDesc->mADV2 || mLoadedGenDesc->mADV3 ||
       mLoadedGenDesc->mADV4 || mLoadedGenDesc->mADV5 || mLoadedGenDesc->mADV6 ||
+#if RSTL_CORRUPTION
+      mLoadedGenDesc->mADV7 || mLoadedGenDesc->mADV8 || mLoadedGenDesc->mADV9 ||
+      mLoadedGenDesc->mVAV1 || mLoadedGenDesc->mVAV2 || mLoadedGenDesc->mVAV3) {
+#else
       mLoadedGenDesc->mADV7 || mLoadedGenDesc->mADV8
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -319,6 +468,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
       || mLoadedGenDesc->mVAV3
 #endif
   ) {
+#endif
     mEnableADV = true;
   }
 
@@ -327,6 +477,10 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   }
 
   mCSSD = 0;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mCSSD) {
+    mLoadedGenDesc->mCSSD->GetValue(0, mCSSD);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* cssd = mLoadedGenDesc->mCSSD) {
@@ -335,9 +489,14 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   if (mLoadedGenDesc->mCSSD) {
     mLoadedGenDesc->mCSSD->GetValue(0, mCSSD);
 #endif
+#endif
   }
 
   mPISY = 16;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mPISY) {
+    mLoadedGenDesc->mPISY->GetValue(0, mPISY);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* pisy = mLoadedGenDesc->mPISY) {
@@ -347,12 +506,17 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     mLoadedGenDesc->mPISY->GetValue(0, mPISY);
 #endif
 
+#endif
     if (mPISY <= 0) {
       mPISY = 1;
     }
   }
 
   mSISY = 16;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mSISY) {
+    mLoadedGenDesc->mSISY->GetValue(0, mSISY);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* sisy = mLoadedGenDesc->mSISY) {
@@ -361,9 +525,14 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   if (mLoadedGenDesc->mSISY) {
     mLoadedGenDesc->mSISY->GetValue(0, mSISY);
 #endif
+#endif
   }
 
   mSSSD = 0;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mSSSD) {
+    mLoadedGenDesc->mSSSD->GetValue(0, mSSSD);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* sssd = mLoadedGenDesc->mSSSD) {
@@ -371,6 +540,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 #else
   if (mLoadedGenDesc->mSSSD) {
     mLoadedGenDesc->mSSSD->GetValue(0, mSSSD);
+#endif
 #endif
   }
 
@@ -382,6 +552,10 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   }
 
   mSESD = 0;
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mSESD) {
+    mLoadedGenDesc->mSESD->GetValue(0, mSESD);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* sesd = mLoadedGenDesc->mSESD) {
@@ -389,6 +563,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 #else
   if (mLoadedGenDesc->mSESD) {
     mLoadedGenDesc->mSESD->GetValue(0, mSESD);
+#endif
 #endif
   }
 
@@ -405,6 +580,10 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
       mTranslationDirty = true;
     }
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mPSLT) {
+    mLoadedGenDesc->mPSLT->GetValue(0, mPSLT);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* pslt = mLoadedGenDesc->mPSLT) {
@@ -413,9 +592,18 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   if (mLoadedGenDesc->mPSLT) {
     mLoadedGenDesc->mPSLT->GetValue(0, mPSLT);
 #endif
+#endif
   } else {
+#if RSTL_CORRUPTION
+    mPSLT = 0x7fffff;
+#else
     mPSLT = 0x7FFFFF;
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mMAXP) {
+    mLoadedGenDesc->mMAXP->GetValue(mCurFrame, mMAXP);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (CIntElement* maxp = mLoadedGenDesc->mMAXP) {
@@ -424,15 +612,30 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   if (mLoadedGenDesc->mMAXP) {
     mLoadedGenDesc->mMAXP->GetValue(mCurFrame, mMAXP);
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  int initialCapacity = mMAXP;
+  if (initialCapacity > 256) {
+    initialCapacity = 256;
+#else
   int count = mMAXP;
   if (count > 256) {
     count = 256;
+#endif
   }
+#if RSTL_CORRUPTION
+  mParticles.reserve(initialCapacity);
+#else
   mParticles.reserve(count);
 
+#endif
   if (mEnableADV) {
+#if RSTL_CORRUPTION
+    mAdvValues.assign(initialCapacity);
+#else
     mAdvValues.assign(count);
+#endif
   }
 
   if (mOrientType == kMOT_One) {
@@ -443,9 +646,15 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   mFXLL = mLoadedGenDesc->mFXLL;
 
   if (mLoadedGenDesc->mLTYP) {
+#if RSTL_CORRUPTION
+    int lightType = 0;
+    mLoadedGenDesc->mLTYP->GetValue(mCurFrame, lightType);
+    switch (LightType(lightType)) {
+#else
     int ltypVal = 0;
     mLoadedGenDesc->mLTYP->GetValue(mCurFrame, ltypVal);
     switch (LightType(ltypVal)) {
+#endif
     case kLT_None:
       mLightType = kLT_None;
       break;
@@ -463,9 +672,15 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
       break;
     }
     if (mLoadedGenDesc->mLFOT) {
+#if RSTL_CORRUPTION
+      int falloff = 1;
+      mLoadedGenDesc->mLFOT->GetValue(mCurFrame, falloff);
+      switch (EFalloffType(falloff)) {
+#else
       int lfotVal = 1;
       mLoadedGenDesc->mLFOT->GetValue(mCurFrame, lfotVal);
       switch (static_cast< EFalloffType >(lfotVal)) {
+#endif
       case kFT_Constant:
         mFalloffType = kFT_Constant;
         break;
@@ -480,12 +695,26 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
         break;
       }
     }
+#if RSTL_CORRUPTION
+    if (mLightType != kLT_None) {
+      UpdateLightParameters();
+    }
+#else
 #if !RSTL_PRIME1
     if (mLightType != kLT_None) {
       UpdateLightParameters();
     }
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mEnableDynamicBounds) {
+    mEnableFixedBounds = mLoadedGenDesc->mFXBR != nullptr;
+    if (mEnableFixedBounds) {
+      mEnableDynamicBounds = false;
+    }
+  }
+#else
 #if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableDynamicBounds) {
     mEnableFixedBounds = mLoadedGenDesc->mFXBR != nullptr;
@@ -494,13 +723,22 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
     }
   }
 #endif
+#endif
 }
 
 CElementGen::~CElementGen() {
+#if RSTL_CORRUPTION
+  --sParticleSystemAliveCount;
+  sParticleAliveCount -= mParticles.size();
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    delete (*it);
+#else
   --mParticleSystemAliveCount;
   mParticleAliveCount -= mParticles.size();
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     delete *it;
+#endif
   }
 }
 
@@ -508,8 +746,14 @@ void CElementGen::Initialize() {
   if (sStaticListInitialized) {
     return;
   }
+#if RSTL_CORRUPTION
+  rs_debugger_printf("Initialize - Static Particle List - ");
+  sParticleAliveCount = 0;
+  sParticleSystemAliveCount = 0;
+#else
   mParticleAliveCount = 0;
   mParticleSystemAliveCount = 0;
+#endif
   sStaticListInitialized = true;
 }
 
@@ -517,6 +761,21 @@ void CElementGen::ShutDown() { sStaticListInitialized = false; }
 
 void CElementGen::SetTranslation(const CVector3f& translation) {
   mTranslation = translation;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    CParticleGen* child = (*it);
+    switch (child->Get4CharId()) {
+    case 'ELSC':
+      child->SetTranslation(translation + mSEPO);
+      break;
+    case 'SWHC':
+      child->SetTranslation(translation + mSSPO);
+      // The original also applies the unoffset translation to swooshes.
+    default:
+      child->SetTranslation(translation);
+      break;
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* ch = *it;
 // TODO: verify that this Prime/Echoes difference is real
@@ -539,20 +798,31 @@ void CElementGen::SetTranslation(const CVector3f& translation) {
       ch->SetTranslation(translation);
       break;
 #endif
+#endif
     }
   }
 }
 
 void CElementGen::SetGlobalTranslation(const CVector3f& translation) {
   mGlobalTranslation = translation;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetGlobalTranslation(translation);
   }
 }
 
 void CElementGen::SetModulationColor(const CColor& color) {
   mModuColor = color;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetModulationColor(color);
   }
 }
@@ -561,6 +831,17 @@ const CColor& CElementGen::GetModulationColor() const { return mModuColor; }
 
 void CElementGen::SetGlobalScale(const CVector3f& scale) {
   mGlobalScale = scale;
+#if RSTL_CORRUPTION
+  if (close_enough(mGlobalScale.GetX(), 0.f, 0.0001f)) {
+    mGlobalScale.SetX(0.0001f * CMath::Sign(mGlobalScale.GetX()));
+  }
+  if (close_enough(mGlobalScale.GetY(), 0.f, 0.0001f)) {
+    mGlobalScale.SetY(0.0001f * CMath::Sign(mGlobalScale.GetY()));
+  }
+  if (close_enough(mGlobalScale.GetZ(), 0.f, 0.0001f)) {
+    mGlobalScale.SetZ(0.0001f * CMath::Sign(mGlobalScale.GetZ()));
+  }
+#else
 #if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   if (close_enough(mGlobalScale.GetX(), 0.f, 0.0001f)) {
     mGlobalScale.SetX(0.0001f * CMath::Sign(mGlobalScale.GetX()));
@@ -573,17 +854,34 @@ void CElementGen::SetGlobalScale(const CVector3f& scale) {
   }
 #endif
 
+#endif
   mGlobalScaleTransform =
       CTransform4f::Scale(mGlobalScale.GetX(), mGlobalScale.GetY(), mGlobalScale.GetZ());
   mGlobalScaleTransformInverse = CTransform4f::Scale(
       1.f / mGlobalScale.GetX(), 1.f / mGlobalScale.GetY(), 1.f / mGlobalScale.GetZ());
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetGlobalScale(scale);
   }
 }
 
 void CElementGen::SetLocalScale(const CVector3f& scale) {
   mLocalScale = scale;
+#if RSTL_CORRUPTION
+  if (close_enough(mLocalScale.GetX(), 0.f, 0.0001f)) {
+    mLocalScale.SetX(0.0001f * CMath::Sign(mLocalScale.GetX()));
+  }
+  if (close_enough(mLocalScale.GetY(), 0.f, 0.0001f)) {
+    mLocalScale.SetY(0.0001f * CMath::Sign(mLocalScale.GetY()));
+  }
+  if (close_enough(mLocalScale.GetZ(), 0.f, 0.0001f)) {
+    mLocalScale.SetZ(0.0001f * CMath::Sign(mLocalScale.GetZ()));
+  }
+#else
 #if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   if (close_enough(mLocalScale.GetX(), 0.f, 0.0001f)) {
     mLocalScale.SetX(0.0001f * CMath::Sign(mLocalScale.GetX()));
@@ -596,11 +894,17 @@ void CElementGen::SetLocalScale(const CVector3f& scale) {
   }
 #endif
 
+#endif
   mLocalScaleTransform =
       CTransform4f::Scale(mLocalScale.GetX(), mLocalScale.GetY(), mLocalScale.GetZ());
   mLocalScaleTransformInverse = CTransform4f::Scale(
       1.f / mLocalScale.GetX(), 1.f / mLocalScale.GetY(), 1.f / mLocalScale.GetZ());
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetLocalScale(scale);
   }
 }
@@ -608,24 +912,52 @@ void CElementGen::SetLocalScale(const CVector3f& scale) {
 void CElementGen::SetOrientation(const CTransform4f& orientation) {
   mOrientation = orientation;
   mOrientationInverse = mOrientation.GetQuickInverse().BuildMatrix3f();
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetOrientation(orientation);
   }
 }
 
 void CElementGen::SetGlobalOrientation(const CTransform4f& orientation) {
   mGlobalOrientation.SetRotation(orientation);
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetGlobalOrientation(mGlobalOrientation);
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::SetGlobalOrientAndTrans(const CTransform4f& transform) {
+  SetGlobalOrientation(transform);
+  SetGlobalTranslation(transform.GetTranslation());
+}
+
+void CElementGen::SetEmitterVelocity(const CVector3f& velocity) {
+  mPreviousTranslation = rstl::optional_object< CVector3f >();
+  mTranslationVelocity = velocity;
+#else
 void CElementGen::SetGlobalOrientAndTrans(const CTransform4f& xf) {
   SetGlobalOrientation(xf);
   SetGlobalTranslation(xf.GetTranslation());
+#endif
 }
 
 const bool CElementGen::Update(double dt) {
+#if RSTL_CORRUPTION
+  if (dt > FLT_EPSILON) {
+    if (mPreviousTranslation.valid()) {
+      const float inverseTime = 1.f / static_cast< float >(dt);
+      mTranslationVelocity = inverseTime * (mTranslation - *mPreviousTranslation);
+      mTranslationVelocity *= 1.f / 60.f;
+#else
   CParticleGlobals::SParticleSystem thisSystem('PART', this);
   if (mLoadedGenDesc->mPSWT && !mWarmedUp) {
     int pswt = 0;
@@ -637,7 +969,30 @@ const bool CElementGen::Update(double dt) {
     InternalUpdate(skTickTime * pswt);
 #endif
     mWarmedUp = true;
+#endif
   }
+#if RSTL_CORRUPTION
+    mPreviousTranslation = mTranslation;
+  }
+  CParticleGlobals::SParticleSystem system('PART', this);
+  if (mLoadedGenDesc->mPSWT && !mWarmedUp) {
+    int warmUpFrames = 0;
+    mLoadedGenDesc->mPSWT->GetValue(mCurFrame, warmUpFrames);
+    CStopwatch stopwatch;
+    InternalUpdate(skTickTime * warmUpFrames);
+    mWarmedUp = true;
+    if (sLogSlowWarmup) {
+      const int micros = stopwatch.GetElapsedMicros();
+      if (micros >= 250) {
+        const TToken< CGenDescription >& description = mGenDesc;
+        RS_WARNING_DEBUGGER_PRINT(
+            "BUG THIS! Warmup on particle system %s for %d ticks; took %d us.\n",
+            description.GetTag().id.ToHexString().c_str(), warmUpFrames, micros);
+      }
+    }
+  }
+  return InternalUpdate(dt);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   const bool ret = InternalUpdate(dt);
@@ -646,12 +1001,28 @@ const bool CElementGen::Update(double dt) {
 #else
   return InternalUpdate(dt);
 #endif
+#endif
 }
 
 bool CElementGen::InternalUpdate(double dt) {
+#if RSTL_CORRUPTION
+  CStopwatch stopwatch;
+  CGlobalRandom random(mRandState);
+#else
   CStopwatch sw;
   CGlobalRandom gr(mRandState);
+#endif
   int frameUpdateCount = 0;
+#if RSTL_CORRUPTION
+  double time = mCurFrame * skTickTime;
+  const double tolerance = skTickTime / 1000.0;
+  double scaledDt;
+  if (close_enough(dt, skTickTime, tolerance)) {
+    scaledDt = skTickTime;
+  } else {
+    scaledDt = dt;
+  }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   double t = mCurFrame * kTickTime;
@@ -667,14 +1038,28 @@ bool CElementGen::InternalUpdate(double dt) {
   }
 #endif
 
+#endif
   CParticleGlobals::SetEmitterTime(mCurFrame);
 
   if (mLoadedGenDesc->mPSTS) {
+#if RSTL_CORRUPTION
+    float timeScale = 1.f;
+    mLoadedGenDesc->mPSTS->GetValue(mCurFrame, timeScale);
+    scaledDt *= timeScale;
+    scaledDt = rstl::max_val(0.0, scaledDt);
+#else
     float psts = 1.0f;
     mLoadedGenDesc->mPSTS->GetValue(mCurFrame, psts);
     dt1 *= psts;
     dt1 = rstl::max_val(0.0, dt1);
+#endif
   }
+#if RSTL_CORRUPTION
+  mCurSeconds += scaledDt;
+  if (mMBLR && dt > 0.0 && mLoadedGenDesc->mMBSP) {
+    mLoadedGenDesc->mMBSP->GetValue(mCurFrame, mMBSP);
+  }
+#else
   mCurSeconds += dt1;
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -689,7 +1074,14 @@ bool CElementGen::InternalUpdate(double dt) {
     mLoadedGenDesc->mMBSP->GetValue(mCurFrame, mMBSP);
   }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+  while (time < mCurSeconds && !close_enough(time, mCurSeconds, tolerance)) {
+    mAabbMin = CVector3f(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+    mAabbMax = CVector3f(-3.4028235e38f, -3.4028235e38f, -3.4028235e38f);
+    mMaxSize = 0.f;
+#else
   while (t < mCurSeconds && !close_enough(t, mCurSeconds
 #if !RSTL_PRIME1
                                           ,
@@ -706,16 +1098,28 @@ bool CElementGen::InternalUpdate(double dt) {
 #endif
     mMaxSize = 0.0f;
 
+#endif
     CParticleGlobals::SetEmitterTime(mCurFrame);
     UpdateExistingParticles();
     CParticleGlobals::SetParticleLifetime(mPSLT);
 
     if (mCurFrame < mPSLT && mParticleEmission) {
+#if RSTL_CORRUPTION
+      float generationRate = 0.f;
+      if (mLoadedGenDesc->mGRTE->GetValue(mCurFrame, generationRate)) {
+#else
       float grte = 0.0f;
       if (mLoadedGenDesc->mGRTE->GetValue(mCurFrame, grte)) {
+#endif
         mParticles.clear();
         return true;
       }
+#if RSTL_CORRUPTION
+      generationRate = rstl::max_val(0.f, generationRate * mGeneratorRate);
+      mGeneratorRemainder += generationRate;
+      const int count = static_cast< int >(static_cast< float >(floor(mGeneratorRemainder)));
+      mGeneratorRemainder -= static_cast< float >(count);
+#else
       grte = rstl::max_val(0.0f, grte * mGeneratorRate);
       mGeneratorRemainder += grte;
 // TODO: verify that this Prime/Echoes difference is real
@@ -726,10 +1130,15 @@ bool CElementGen::InternalUpdate(double dt) {
 #endif
       mGeneratorRemainder -= static_cast< float >(genCount);
 
+#endif
       if (mLoadedGenDesc->mMAXP) {
         mLoadedGenDesc->mMAXP->GetValue(mCurFrame, mMAXP);
       }
+#if RSTL_CORRUPTION
+      CreateNewParticles(count, mTranslationVelocity);
+#else
       CreateNewParticles(genCount);
+#endif
     }
 
     if (mTranslationDirty) {
@@ -739,22 +1148,35 @@ bool CElementGen::InternalUpdate(double dt) {
     if (mLightType != kLT_None) {
       UpdateLightParameters();
     }
+#if RSTL_CORRUPTION
+    UpdateChildParticleSystems(skTickTime);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     UpdateChildParticleSystems(kTickTime);
 #else
     UpdateChildParticleSystems(skTickTime);
 #endif
+#endif
     ++frameUpdateCount;
+#if RSTL_CORRUPTION
+    time += skTickTime;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     t += kTickTime;
 #else
     t += skTickTime;
 #endif
+#endif
     ++mCurFrame;
   }
 
+#if RSTL_CORRUPTION
+  if (close_enough(time, mCurSeconds, tolerance)) {
+    mCurSeconds = time;
+    mTimeDeltaScale = 1.f;
+#else
   if (close_enough(t, mCurSeconds
 #if !RSTL_PRIME1
                    ,
@@ -763,7 +1185,12 @@ bool CElementGen::InternalUpdate(double dt) {
                    )) {
     mCurSeconds = t;
     mTimeDeltaScale = 1.0f;
+#endif
   } else {
+#if RSTL_CORRUPTION
+    UpdateChildParticleSystems(scaledDt - frameUpdateCount * skTickTime);
+    mTimeDeltaScale = 1.f - static_cast< float >((time - mCurSeconds) / skTickTime);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     UpdateChildParticleSystems(dt1 - (double)frameUpdateCount * kTickTime);
@@ -772,7 +1199,23 @@ bool CElementGen::InternalUpdate(double dt) {
     UpdateChildParticleSystems(dt1 - frameUpdateCount * skTickTime);
     mTimeDeltaScale = 1.0f - static_cast< float >((t - mCurSeconds) / skTickTime);
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mEnableFixedBounds) {
+    float radius = 0.f;
+    if (mLoadedGenDesc->mFXBR) {
+      mLoadedGenDesc->mFXBR->GetValue(mCurFrame, radius);
+    }
+    CVector3f offset = CVector3f::Zero();
+    if (mLoadedGenDesc->mFXBO) {
+      mLoadedGenDesc->mFXBO->GetValue(mCurFrame, offset);
+    }
+    offset = mOrientation.Rotate(offset) +
+             (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation + mPOFS;
+    AccumulateBounds(offset, 2.f * radius);
+  }
+#else
 #if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableFixedBounds) {
     float radius = 0.f;
@@ -789,8 +1232,13 @@ bool CElementGen::InternalUpdate(double dt) {
   }
 #endif
 
+#endif
   BuildParticleSystemBounds();
+#if RSTL_CORRUPTION
+  mUpdateTime = stopwatch.GetElapsedTime();
+#else
   mUpdateTime = sw.GetElapsedTime();
+#endif
   return false;
 }
 
@@ -810,6 +1258,13 @@ void CElementGen::UpdateLightParameters() {
 }
 
 void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleFrame) {
+#if RSTL_CORRUPTION
+  float* parameters = mAdvValues[particleIndex].mValues;
+  CParticleGlobals::SetParticleAccessParameters(parameters);
+  if (mLoadedGenDesc->mVAV1) {
+    mLoadedGenDesc->mVAV1->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters));
+  }
+#else
   float* params = mAdvValues[particleIndex].mValues;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -820,47 +1275,109 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
     mLoadedGenDesc->mVAV1->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params));
   }
 #endif
+#endif
   if (mLoadedGenDesc->mADV1) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV1->GetValue(particleFrame, parameters[0]);
+#else
     mLoadedGenDesc->mADV1->GetValue(particleFrame, params[0]);
+#endif
   }
   if (mLoadedGenDesc->mADV2) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV2->GetValue(particleFrame, parameters[1]);
+#else
     mLoadedGenDesc->mADV2->GetValue(particleFrame, params[1]);
+#endif
   }
   if (mLoadedGenDesc->mADV3) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV3->GetValue(particleFrame, parameters[2]);
+#else
     mLoadedGenDesc->mADV3->GetValue(particleFrame, params[2]);
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mVAV2) {
+    mLoadedGenDesc->mVAV2->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters + 3));
+  }
+#else
 #if !RSTL_PRIME1
   if (mLoadedGenDesc->mVAV2) {
     mLoadedGenDesc->mVAV2->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params + 3));
   }
 #endif
+#endif
   if (mLoadedGenDesc->mADV4) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV4->GetValue(particleFrame, parameters[3]);
+#else
     mLoadedGenDesc->mADV4->GetValue(particleFrame, params[3]);
+#endif
   }
   if (mLoadedGenDesc->mADV5) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV5->GetValue(particleFrame, parameters[4]);
+#else
     mLoadedGenDesc->mADV5->GetValue(particleFrame, params[4]);
+#endif
   }
   if (mLoadedGenDesc->mADV6) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV6->GetValue(particleFrame, parameters[5]);
+#else
     mLoadedGenDesc->mADV6->GetValue(particleFrame, params[5]);
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mVAV3) {
+    mLoadedGenDesc->mVAV3->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters + 6));
+  }
+#else
 #if !RSTL_PRIME1
   if (mLoadedGenDesc->mVAV3) {
     mLoadedGenDesc->mVAV3->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params + 6));
   }
 #endif
+#endif
   if (mLoadedGenDesc->mADV7) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV7->GetValue(particleFrame, parameters[6]);
+#else
     mLoadedGenDesc->mADV7->GetValue(particleFrame, params[6]);
+#endif
   }
   if (mLoadedGenDesc->mADV8) {
+#if RSTL_CORRUPTION
+    mLoadedGenDesc->mADV8->GetValue(particleFrame, parameters[7]);
+#else
     mLoadedGenDesc->mADV8->GetValue(particleFrame, params[7]);
+#endif
   }
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mADV9) {
+    mLoadedGenDesc->mADV9->GetValue(particleFrame, parameters[8]);
+  }
+#else
 #if !RSTL_PRIME1
   if (mLoadedGenDesc->mADV9) {
     mLoadedGenDesc->mADV9->GetValue(particleFrame, params[8]);
   }
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+bool CElementGen::UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle,
+                                       const CVector3f& scaledTranslation) {
+  bool expired;
+  if (mHasVMD[sourceIndex]) {
+    CVector3f localVelocity = mOrientationInverse * particle.mVel;
+    CVector3f localPosition = mOrientationInverse * (particle.mPos - scaledTranslation);
+    expired = mVELSources[sourceIndex]->GetValue(particleFrame, localVelocity, localPosition);
+    particle.mVel = mOrientation.Rotate(localVelocity);
+    particle.mPos = mOrientation.Rotate(localPosition) + scaledTranslation;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
 bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particle) {
@@ -885,10 +1402,19 @@ bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particl
 #else
     particle.mPos = mOrientation.Rotate(localPos) + scaledTranslation;
 #endif
+#endif
   } else {
+#if RSTL_CORRUPTION
+    expired = mVELSources[sourceIndex]->GetValue(particleFrame, particle.mVel, particle.mPos);
+#else
     reset = mVELSources[velIdx]->GetValue(frame, particle.mVel, particle.mPos);
+#endif
   }
+#if RSTL_CORRUPTION
+  if (expired) {
+#else
   if (reset) {
+#endif
     particle.mEndFrame = -1;
     return true;
   }
@@ -896,9 +1422,19 @@ bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particl
 }
 
 void CElementGen::UpdateExistingParticles() {
+#if RSTL_CORRUPTION
+  rstl::vector< CParticle >::iterator it = mParticles.begin();
+#else
   AUTO(it, mParticles.begin());
+#endif
   mActiveParticleCount = 0;
   CParticleGlobals::SetEmitterTime(mCurFrame);
+#if RSTL_CORRUPTION
+  CParticleGlobals::SetParticleAccessParameters(nullptr);
+  const CVector3f scaledTranslation =
+      (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
+
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CParticleGlobals::mParticleAccessParameters = NULL;
@@ -909,15 +1445,24 @@ void CElementGen::UpdateExistingParticles() {
   const CVector3f scaledTranslation =
       (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
 #endif
+#endif
   while (it != mParticles.end()) {
     if (it->mEndFrame < mCurFrame) {
+#if RSTL_CORRUPTION
+      --sParticleAliveCount;
+#else
       --mParticleAliveCount;
+#endif
       if (it + 1 == mParticles.end()) {
+#if RSTL_CORRUPTION
+        mParticles.pop_back();
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         --mParticles.mCount;
 #else
         mParticles.pop_back();
+#endif
 #endif
         break;
       }
@@ -928,6 +1473,12 @@ void CElementGen::UpdateExistingParticles() {
       if (mEnableADV) {
         mAdvValues[mActiveParticleCount] = mAdvValues[mParticles.size() - 1];
       }
+#if RSTL_CORRUPTION
+      mParticles.pop_back();
+      if (it != mParticles.end() && it->mEndFrame < mCurFrame) {
+        continue;
+      }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       --mParticles.mCount;
@@ -942,15 +1493,20 @@ void CElementGen::UpdateExistingParticles() {
         continue;
       }
 #endif
+#endif
     }
     it->mPrevPos = it->mPos;
     it->mPos += it->mVel;
     int particleFrame = mCurFrame - it->mStartFrame;
+#if RSTL_CORRUPTION
+    CParticleGlobals::SetCurrentParticle(&*it);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CParticleGlobals::mCurrentParticle = &*it;
 #else
     CParticleGlobals::SetCurrentParticle(&*it);
+#endif
 #endif
     CParticleGlobals::SetParticleLifetime(it->mEndFrame - it->mStartFrame);
     CParticleGlobals::UpdateParticleLifetimeTweenValues(particleFrame);
@@ -959,38 +1515,58 @@ void CElementGen::UpdateExistingParticles() {
     }
     ++mActiveParticleCount;
     if (mVELSources[0]) {
+#if RSTL_CORRUPTION
+      UpdateVelocitySource(0, particleFrame, *it, scaledTranslation);
+#else
       UpdateVelocitySource(0, particleFrame, *it
 #if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                            ,
                            scaledTranslation
 #endif
       );
+#endif
       if (mVELSources[1]) {
+#if RSTL_CORRUPTION
+        UpdateVelocitySource(1, particleFrame, *it, scaledTranslation);
+#else
         UpdateVelocitySource(1, particleFrame, *it
 #if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                              ,
                              scaledTranslation
 #endif
         );
+#endif
         if (mVELSources[2]) {
+#if RSTL_CORRUPTION
+          UpdateVelocitySource(2, particleFrame, *it, scaledTranslation);
+#else
           UpdateVelocitySource(2, particleFrame, *it
 #if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                                ,
                                scaledTranslation
 #endif
           );
+#endif
           if (mVELSources[3]) {
+#if RSTL_CORRUPTION
+            UpdateVelocitySource(3, particleFrame, *it, scaledTranslation);
+#else
             UpdateVelocitySource(3, particleFrame, *it
 #if RSTL_PARTICLE_VELOCITY_SCALED_TRANSLATION
                                  ,
                                  scaledTranslation
 #endif
             );
+#endif
           }
         }
       }
     }
     if (mLINE) {
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mLENG) {
+        mLoadedGenDesc->mLENG->GetValue(particleFrame, it->mLineLengthOrSize);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* leng = mLoadedGenDesc->mLENG) {
@@ -999,7 +1575,12 @@ void CElementGen::UpdateExistingParticles() {
       if (mLoadedGenDesc->mLENG) {
         mLoadedGenDesc->mLENG->GetValue(particleFrame, it->mLineLengthOrSize);
 #endif
+#endif
       }
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mWIDT) {
+        mLoadedGenDesc->mWIDT->GetValue(particleFrame, it->mLineWidthOrRota);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* widt = mLoadedGenDesc->mWIDT) {
@@ -1008,8 +1589,13 @@ void CElementGen::UpdateExistingParticles() {
       if (mLoadedGenDesc->mWIDT) {
         mLoadedGenDesc->mWIDT->GetValue(particleFrame, it->mLineWidthOrRota);
 #endif
+#endif
       }
     } else {
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mROTA) {
+        mLoadedGenDesc->mROTA->GetValue(particleFrame, it->mLineWidthOrRota);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* rota = mLoadedGenDesc->mROTA) {
@@ -1018,7 +1604,12 @@ void CElementGen::UpdateExistingParticles() {
       if (mLoadedGenDesc->mROTA) {
         mLoadedGenDesc->mROTA->GetValue(particleFrame, it->mLineWidthOrRota);
 #endif
+#endif
       }
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mSIZE) {
+        mLoadedGenDesc->mSIZE->GetValue(particleFrame, it->mLineLengthOrSize);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* size = mLoadedGenDesc->mSIZE) {
@@ -1027,8 +1618,13 @@ void CElementGen::UpdateExistingParticles() {
       if (mLoadedGenDesc->mSIZE) {
         mLoadedGenDesc->mSIZE->GetValue(particleFrame, it->mLineLengthOrSize);
 #endif
+#endif
       }
     }
+#if RSTL_CORRUPTION
+    if (mLoadedGenDesc->mCOLR) {
+      mLoadedGenDesc->mCOLR->GetValue(particleFrame, it->mColor);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (CColorElement* colr = mLoadedGenDesc->mCOLR) {
@@ -1037,7 +1633,13 @@ void CElementGen::UpdateExistingParticles() {
     if (mLoadedGenDesc->mCOLR) {
       mLoadedGenDesc->mCOLR->GetValue(particleFrame, it->mColor);
 #endif
+#endif
     }
+#if RSTL_CORRUPTION
+    if (mEnableDynamicBounds) {
+      AccumulateBounds(it->mPos, it->mLineLengthOrSize);
+    }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PARTICLE_BOUNDS_MODES
     AccumulateBounds(it->mPos, it->mLineLengthOrSize);
@@ -1046,10 +1648,15 @@ void CElementGen::UpdateExistingParticles() {
       AccumulateBounds(it->mPos, it->mLineLengthOrSize);
     }
 #endif
+#endif
     ++it;
   }
 
   if (mParticles.size() > 0) {
+#if RSTL_CORRUPTION
+    for (rstl::list< CWarp* >::iterator it = mModifiersList.begin(), end = mModifiersList.end();
+         it != end; ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     rstl::list< CWarp* >::iterator it = mModifiersList.begin();
@@ -1059,7 +1666,14 @@ void CElementGen::UpdateExistingParticles() {
     for (rstl::list< CWarp* >::iterator it = mModifiersList.begin(), end = mModifiersList.end();
          it != end; ++it) {
 #endif
+#endif
       if ((*it)->UpdateWarp()) {
+#if RSTL_CORRUPTION
+        CParticle& first = mParticles.front();
+        (*it)->ModifyParticles(mParticles.size(), sizeof(CParticle), &first.mEndFrame,
+                               &first.mPrevPos, &first.mPos, &first.mVel, &first.mColor,
+                               &first.mLineLengthOrSize, &first.mLineWidthOrRota);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         CParticle* base = mParticles.data();
@@ -1072,18 +1686,30 @@ void CElementGen::UpdateExistingParticles() {
                                &first.mPrevPos, &first.mPos, &first.mVel, &first.mColor,
                                &first.mLineLengthOrSize, &first.mLineWidthOrRota);
 #endif
+#endif
       }
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       ++it;
+#endif
 #endif
     }
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::CreateNewParticles(int count, const CVector3f& emitterVelocity) {
+#else
 void CElementGen::CreateNewParticles(int count) {
+#endif
   if (!sStaticListInitialized) {
     Initialize();
   }
+#if RSTL_CORRUPTION
+  int newCount = count;
+  if (mParticles.size() >= mMAXP) {
+    return;
+#else
   int genCount = count;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1094,7 +1720,15 @@ void CElementGen::CreateNewParticles(int count) {
     if (genCount + mParticles.size() > mMAXP) {
       genCount = mMAXP - mParticles.size();
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+  if (newCount + mParticles.size() > mMAXP) {
+    newCount = mMAXP - mParticles.size();
+  }
+  if (newCount + sParticleAliveCount > 0x1000) {
+    newCount = 0x1000 - sParticleAliveCount;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (genCount + mParticles.size() > mMAXP) {
@@ -1103,7 +1737,14 @@ void CElementGen::CreateNewParticles(int count) {
 #endif
   if (genCount + mParticleAliveCount > 0xa00) {
     genCount = 0xa00 - mParticleAliveCount;
+#endif
   }
+#if RSTL_CORRUPTION
+  CGlobalRandom random(mRandState);
+  mParticles.reserve(newCount + mParticles.size());
+  if (mEnableADV && mAdvValues.capacity() < newCount + mParticles.size()) {
+    mAdvValues.reserve(rstl::min_val(mMAXP, (newCount + mAdvValues.capacity()) * 2));
+#else
 
   CGlobalRandom gr(mRandState);
   mParticles.reserve(genCount + mParticles.size());
@@ -1116,15 +1757,25 @@ void CElementGen::CreateNewParticles(int count) {
 #else
     mAdvValues.reserve(rstl::min_val(mMAXP, (genCount + mAdvValues.capacity()) * 2));
 #endif
+#endif
     while (mAdvValues.size() < mAdvValues.capacity()) {
+#if RSTL_CORRUPTION
+      mAdvValues.push_back(CAdvancedValues());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mAdvValues.push_back(CAdvancedValues());
 #else
       mAdvValues.push_back_unsafe(CAdvancedValues());
 #endif
+#endif
     }
   }
+#if RSTL_CORRUPTION
+  CParticleGlobals::SetParticleAccessParameters(nullptr);
+  const CVector3f scaledTranslation =
+      (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CParticleGlobals::mParticleAccessParameters = NULL;
@@ -1135,9 +1786,19 @@ void CElementGen::CreateNewParticles(int count) {
   const CVector3f scaledTranslation =
       (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation;
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+  const CVector3f velocityStep = (1.f / count) * emitterVelocity;
+#else
   for (int i = 0; i < genCount; ++i) {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+  for (int i = 0; i < newCount; ++i) {
+    mParticles.push_back_unsafe(CParticle());
+    const int particleIndex = mParticles.size() - 1;
+#else
 #if RSTL_PRIME1
     // TODO: The x1c_vel values somehow get frsp'd, despite being
     // floats from CVector3f::Zero and being stored as floats in CParticle.
@@ -1152,12 +1813,16 @@ void CElementGen::CreateNewParticles(int count) {
     const int particleIndex = mParticles.size() - 1;
 #endif
 
+#endif
     if (mOrientType == kMOT_One) {
       mParentMatrices[particleIndex] = mOrientation.BuildMatrix3f();
     }
 
     CParticle& particle = mParticles[particleIndex];
     particle.mStartFrame = mCurFrame;
+#if RSTL_CORRUPTION
+      CParticleGlobals::SetParticleLifetime(1);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (CIntElement* ltme = mLoadedGenDesc->mLTME) {
@@ -1169,7 +1834,11 @@ void CElementGen::CreateNewParticles(int count) {
       CParticleGlobals::SetParticleLifetime(1);
 #endif
 
+#endif
     CParticleGlobals::UpdateParticleLifetimeTweenValues(0);
+#if RSTL_CORRUPTION
+      CParticleGlobals::SetCurrentParticle(&particle);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CParticleGlobals::mCurrentParticle = &particle;
@@ -1177,16 +1846,38 @@ void CElementGen::CreateNewParticles(int count) {
       CParticleGlobals::SetCurrentParticle(&particle);
 #endif
 
+#endif
     if (mEnableADV) {
       UpdateAdvanceAccessParameters(particleIndex, 0);
     }
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mLTME) {
+        mLoadedGenDesc->mLTME->GetValue(0, particle.mEndFrame);
+      }
+#else
 #if !RSTL_PRIME1
       if (mLoadedGenDesc->mLTME) {
         mLoadedGenDesc->mLTME->GetValue(0, particle.mEndFrame);
       }
 #endif
 
+#endif
     particle.mEndFrame += mCurFrame;
+#if RSTL_CORRUPTION
+    float inheritedVelocity = 0.f;
+    if (mLoadedGenDesc->mISVF) {
+      mLoadedGenDesc->mISVF->GetValue(0, inheritedVelocity);
+    }
+    float velocityOffset = 0.f;
+    if (mLoadedGenDesc->mSVEO) {
+      mLoadedGenDesc->mSVEO->GetValue(0, velocityOffset);
+    }
+    velocityOffset *= -1.f;
+      if (mLoadedGenDesc->mEMTR) {
+        mLoadedGenDesc->mEMTR->GetValue(mCurFrame, particle.mPos, particle.mVel);
+      particle.mPos += i * (velocityOffset * velocityStep);
+      particle.mVel += inheritedVelocity * emitterVelocity;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     if (CColorElement* colr = mLoadedGenDesc->mCOLR) {
@@ -1206,7 +1897,12 @@ void CElementGen::CreateNewParticles(int count) {
           mOrientation.Rotate(particle.mPos) +
           (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation + mPOFS;
       particle.mVel = mOrientation.Rotate(particle.mVel);
+#endif
     } else {
+#if RSTL_CORRUPTION
+      particle.mPos = i * (velocityOffset * velocityStep);
+      particle.mVel = inheritedVelocity * emitterVelocity;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       const CVector3f& compPos =
@@ -1218,9 +1914,22 @@ void CElementGen::CreateNewParticles(int count) {
 #endif
 
       particle.mVel = CVector3f::Zero();
+#endif
     }
-
+#if RSTL_CORRUPTION
+    particle.mPos = mOrientation.Rotate(particle.mPos) +
+                    (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mTranslation +
+                    mPOFS;
+    particle.mVel = mOrientation.Rotate(particle.mVel);
+#endif
     particle.mPrevPos = particle.mPos;
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mCOLR) {
+        mLoadedGenDesc->mCOLR->GetValue(0, particle.mColor);
+      } else {
+      particle.mColor = CColor(0xffffffff);
+      }
+#else
 #if !RSTL_PRIME1
       if (mLoadedGenDesc->mCOLR) {
         mLoadedGenDesc->mCOLR->GetValue(0, particle.mColor);
@@ -1229,7 +1938,12 @@ void CElementGen::CreateNewParticles(int count) {
       }
 #endif
 
+#endif
     if (mLINE) {
+#if RSTL_CORRUPTION
+        if (mLoadedGenDesc->mLENG) {
+          mLoadedGenDesc->mLENG->GetValue(0, particle.mLineLengthOrSize);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* leng = mLoadedGenDesc->mLENG) {
@@ -1238,9 +1952,14 @@ void CElementGen::CreateNewParticles(int count) {
         if (mLoadedGenDesc->mLENG) {
           mLoadedGenDesc->mLENG->GetValue(0, particle.mLineLengthOrSize);
 #endif
+#endif
       } else {
         particle.mLineLengthOrSize = 1.f;
       }
+#if RSTL_CORRUPTION
+        if (mLoadedGenDesc->mWIDT) {
+          mLoadedGenDesc->mWIDT->GetValue(0, particle.mLineWidthOrRota);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* widt = mLoadedGenDesc->mWIDT) {
@@ -1249,10 +1968,15 @@ void CElementGen::CreateNewParticles(int count) {
         if (mLoadedGenDesc->mWIDT) {
           mLoadedGenDesc->mWIDT->GetValue(0, particle.mLineWidthOrRota);
 #endif
+#endif
       } else {
         particle.mLineWidthOrRota = 1.f;
       }
     } else {
+#if RSTL_CORRUPTION
+        if (mLoadedGenDesc->mROTA) {
+          mLoadedGenDesc->mROTA->GetValue(0, particle.mLineWidthOrRota);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* rota = mLoadedGenDesc->mROTA) {
@@ -1261,9 +1985,14 @@ void CElementGen::CreateNewParticles(int count) {
         if (mLoadedGenDesc->mROTA) {
           mLoadedGenDesc->mROTA->GetValue(0, particle.mLineWidthOrRota);
 #endif
+#endif
       } else {
         particle.mLineWidthOrRota = 0.f;
       }
+#if RSTL_CORRUPTION
+        if (mLoadedGenDesc->mSIZE) {
+          mLoadedGenDesc->mSIZE->GetValue(0, particle.mLineLengthOrSize);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       if (CRealElement* size = mLoadedGenDesc->mSIZE) {
@@ -1272,10 +2001,32 @@ void CElementGen::CreateNewParticles(int count) {
         if (mLoadedGenDesc->mSIZE) {
           mLoadedGenDesc->mSIZE->GetValue(0, particle.mLineLengthOrSize);
 #endif
+#endif
       } else {
         particle.mLineLengthOrSize = 0.1f;
       }
     }
+#if RSTL_CORRUPTION
+      if (mLoadedGenDesc->mVMPC) {
+        if (mVELSources[0]) {
+        UpdateVelocitySource(0, 0, particle, scaledTranslation);
+          if (mVELSources[1]) {
+          UpdateVelocitySource(1, 0, particle, scaledTranslation);
+            if (mVELSources[2]) {
+            UpdateVelocitySource(2, 0, particle, scaledTranslation);
+              if (mVELSources[3]) {
+              UpdateVelocitySource(3, 0, particle, scaledTranslation);
+              }
+            }
+          }
+        }
+      }
+      ++mCumulativeParticles;
+      if (particle.mEndFrame == -1) {
+        mParticles.pop_back();
+      } else {
+        if (mEnableDynamicBounds) {
+#else
 #if !RSTL_PRIME1
       if (mLoadedGenDesc->mVMPC) {
         if (mVELSources[0]) {
@@ -1322,7 +2073,13 @@ void CElementGen::CreateNewParticles(int count) {
 #endif
 #endif
 
+#endif
     AccumulateBounds(particle.mPos, particle.mLineLengthOrSize);
+#if RSTL_CORRUPTION
+        }
+      ++sParticleAliveCount;
+        ++mActiveParticleCount;
+#else
 #if RSTL_PARTICLE_BOUNDS_MODES
         }
 #endif
@@ -1368,11 +2125,113 @@ void CElementGen::UpdatePSTranslationAndOrientation() {
     if (mLoadedGenDesc->mSEPO) {
       mLoadedGenDesc->mSEPO->GetValue(mCurFrame, mSEPO);
 #endif
+#endif
     }
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::UpdatePSTranslationAndOrientation() {
+  CGlobalRandom random(mRandState);
+  if (mPSLT >= mCurFrame) {
+    if (mLoadedGenDesc->mPOFS) {
+      mLoadedGenDesc->mPOFS->GetValue(mCurFrame, mPOFS);
+    }
+    if (mLoadedGenDesc->mSSPO) {
+      mLoadedGenDesc->mSSPO->GetValue(mCurFrame, mSSPO);
+    }
+    if (mLoadedGenDesc->mSEPO) {
+      mLoadedGenDesc->mSEPO->GetValue(mCurFrame, mSEPO);
+    }
+  }
+}
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+CParticleGen* CElementGen::ConstructChildParticleSystem(
+    const CToken& description, uint type, short seed, EOptionalSystemFlags flags,
+    bool modelsUseLights, bool emission, const CVector3f& translation,
+    const CTransform4f& orientation, const CVector3f& globalTranslation,
+    const CTransform4f& globalOrientation, const CVector3f& globalScale,
+    const CColor& modulationColor, const CVector3f& localScale) {
+  CParticleGen* child;
+  const bool optsEnabled = (flags & kOSF_Two) != 0;
+  switch (type) {
+  case 'PART': {
+    const short backupSeed = sSeed;
+    if (seed != 0) {
+      sSeed = seed;
+    }
+    TLockedToken< CGenDescription > particleDescription(description);
+    const bool descOpts = particleDescription->mOPTS;
+    if (optsEnabled && descOpts) {
+      return nullptr;
+    }
+    CElementGen* particles = rs_new_line(1332) CElementGen(particleDescription, kMOT_Normal, flags);
+    particles->SetLeaveLightsEnabledForModelRender(modelsUseLights);
+    child = particles;
+    sSeed = backupSeed;
+    break;
+  }
+  case 'SWHC': {
+    TToken< CSwooshDescription > swooshDescription(description);
+    child = rs_new_line(1342) CParticleSwoosh(swooshDescription, 0);
+    break;
+  }
+  case 'ELSC': {
+    const short backupSeed = CParticleElectric::GetGlobalSeed();
+    if (seed != 0) {
+      CParticleElectric::SetGlobalSeed(seed);
+    }
+    TToken< CElectricDescription > electricDescription(description);
+    child = rs_new_line(1354) CParticleElectric(electricDescription);
+    CParticleElectric::SetGlobalSeed(backupSeed);
+    break;
+  }
+  case 'SPSC': {
+    const short backupSeed = CParticleSpawnSystem::GetGlobalSeed();
+    if (seed != 0) {
+      CParticleSpawnSystem::SetGlobalSeed(seed);
+    }
+    TToken< CSpawnSystemDescription > spawnDescription(description);
+    child = rs_new_line(1368) CParticleSpawnSystem(spawnDescription, flags, modelsUseLights);
+    CParticleSpawnSystem::SetGlobalSeed(backupSeed);
+    break;
+  }
+  case 'SRSC': {
+    const short backupSeed = CParticleSortedSystem::GetGlobalSeed();
+    if (seed != 0) {
+      CParticleSortedSystem::SetGlobalSeed(seed);
+    }
+    TToken< CSortedParticleSystemDescription > spawnDescription(description);
+    child = rs_new_line(1382) CParticleSortedSystem(spawnDescription, flags, modelsUseLights);
+    CParticleSortedSystem::SetGlobalSeed(backupSeed);
+    break;
+  }
+  default:
+    gpfnWarningPrintf("Unsupported spawned particle asset type %d\n", type);
+    return nullptr;
+  }
+
+  if (child) {
+    if (child->Get4CharId() == 'SPSC') {
+      CParticleSpawnSystem* spawnSystem = static_cast< CParticleSpawnSystem* >(child);
+      spawnSystem->ForceSetTranslation(translation);
+      spawnSystem->ForceSetOrientation(orientation);
+      spawnSystem->ForceSetGlobalTranslation(globalTranslation);
+      spawnSystem->ForceSetGlobalOrientation(globalOrientation);
+    } else {
+      child->SetGlobalTranslation(globalTranslation);
+      child->SetGlobalOrientation(globalOrientation);
+      child->SetTranslation(translation);
+      child->SetOrientation(orientation);
+    }
+    child->SetGlobalScale(globalScale);
+    child->SetLocalScale(localScale);
+    child->SetParticleEmission(emission);
+    child->SetModulationColor(modulationColor);
+  }
+#else
 #if RSTL_PRIME1
 CElementGen* CElementGen::ConstructChildParticleSystem(TToken< CGenDescription > desc) const {
   CElementGen* child = rs_new CElementGen(desc, kMOT_Normal, mEnableOPTS ? kOSF_Two : kOSF_One);
@@ -1488,9 +2347,30 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
   }
 #endif
 
+#endif
   return child;
 }
 
+#if RSTL_CORRUPTION
+CParticleGen* CElementGen::ConstructChildParticleSystem(const CToken& description, uint type,
+                                                        ushort seed) const {
+  const int boundsFlags = mEnableDynamicBounds ? kOSF_One : kOSF_DisableBounds;
+  const int optsFlags = mEnableOPTS ? kOSF_Two : kOSF_One;
+  const EOptionalSystemFlags flags = EOptionalSystemFlags(optsFlags | boundsFlags);
+  CParticleGen* child = ConstructChildParticleSystem(
+      description, type, seed, flags, mModelsUseLights, mParticleEmission, mTranslation,
+      mOrientation, mGlobalTranslation, mGlobalOrientation, mGlobalScale, mModuColor, mLocalScale);
+  if (child) {
+    switch (child->Get4CharId()) {
+    case 'PART':
+      memcpy(static_cast< CElementGen* >(child)->mExternalVars, mExternalVars,
+             sizeof(mExternalVars));
+      break;
+}
+  }
+  return child;
+}
+#else
 #if !RSTL_PRIME1
 CParticleGen* CElementGen::ConstructChildParticleSystem(const CToken& description, uint type,
                                                         ushort seed) const {
@@ -1506,8 +2386,15 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(const CToken& descriptio
       mOrientation, mGlobalTranslation, mGlobalOrientation, mGlobalScale, mModuColor, mLocalScale);
 }
 #endif
+#endif
 
 void CElementGen::UpdateChildParticleSystems(double dt) {
+#if RSTL_CORRUPTION
+  if (close_enough(dt, 0.0, 1e-7)) {
+    return;
+  }
+  CGlobalRandom random(mRandState);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (close_enough(dt, 0.0, 1e-7)) {
@@ -1518,9 +2405,15 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
   if (!close_enough(dt, 0.0, 1e-7)) {
     CGlobalRandom gr(mRandState);
 #endif
+#endif
 
   // ICTS - child particle systems spawned at CSSD frame
   if (mLoadedGenDesc->mICTS && mPrevFrame != mCurFrame && mCurFrame == mCSSD) {
+#if RSTL_CORRUPTION
+    int count = 1;
+    if (mLoadedGenDesc->mNCSY) {
+      mLoadedGenDesc->mNCSY->GetValue(mCurFrame, count);
+#else
     int ncsyVal = 1;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1530,40 +2423,68 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
     if (mLoadedGenDesc->mNCSY) {
       mLoadedGenDesc->mNCSY->GetValue(mCurFrame, ncsyVal);
 #endif
+#endif
     }
+#if RSTL_CORRUPTION
+    mActivePartChildren.reserve(count + mActivePartChildren.size());
+    for (int i = 0; i < count; ++i) {
+      TLockedToken< CGenDescription > description = mLoadedGenDesc->mICTS->GetToken();
+      const bool descOpts = description->mOPTS;
+      if (mEnableOPTS && descOpts) {
+#else
     mActivePartChildren.reserve(ncsyVal + mActivePartChildren.size());
     for (int i = 0; i < ncsyVal; ++i) {
       TLockedToken< CGenDescription > icsToken = mLoadedGenDesc->mICTS->GetToken();
       RSTL_ECHOES_CONST bool descOPTS = icsToken->mOPTS;
       if (mEnableOPTS && descOPTS) {
+#endif
         break;
       }
+#if RSTL_CORRUPTION
+      mActivePartChildren.push_back(ConstructChildParticleSystem(description, 'PART', sSeed));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mActivePartChildren.push_back(ConstructChildParticleSystem(icsToken));
 #else
       mActivePartChildren.push_back_unsafe(ConstructChildParticleSystem(icsToken, 'PART', sSeed));
 #endif
+#endif
     }
   }
 
   // IITS - child particle systems spawned periodically
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mIITS && mPrevFrame != mCurFrame && mCurFrame < mPSLT && mParticleEmission == true &&
+      mCurFrame >= mSISY && (mCurFrame - mSISY) % mPISY == 0) {
+    TLockedToken< CGenDescription > description = mLoadedGenDesc->mIITS->GetToken();
+    const bool descOpts = description->mOPTS;
+    if (!(mEnableOPTS && descOpts)) {
+#else
   if (mLoadedGenDesc->mIITS && mPrevFrame != mCurFrame && mCurFrame < mPSLT &&
       mParticleEmission == true && mCurFrame >= mSISY && (mCurFrame - mSISY) % mPISY == 0) {
     TLockedToken< CGenDescription > iitsToken = mLoadedGenDesc->mIITS->GetToken();
     RSTL_ECHOES_CONST bool iitsOPTS = iitsToken->mOPTS;
     if (!(mEnableOPTS && iitsOPTS)) {
+#endif
       mActivePartChildren.reserve(mActivePartChildren.size() + 1);
+#if RSTL_CORRUPTION
+      mActivePartChildren.push_back(ConstructChildParticleSystem(description, 'PART', sSeed));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mActivePartChildren.push_back(ConstructChildParticleSystem(iitsToken));
 #else
       mActivePartChildren.push_back_unsafe(ConstructChildParticleSystem(iitsToken, 'PART', sSeed));
 #endif
+#endif
     }
   }
 
   // KSSM - spawn system keyframe data
+#if RSTL_CORRUPTION
+    if (mLoadedGenDesc->mKSSM && mPrevFrame != mCurFrame && mCurFrame < mPSLT) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mLoadedGenDesc->mKSSM.get() != nullptr && mPrevFrame != mCurFrame && mCurFrame < mPSLT) {
@@ -1571,15 +2492,29 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
 #else
     if (mLoadedGenDesc->mKSSM && mPrevFrame != mCurFrame && mCurFrame < mPSLT) {
 #endif
+#endif
     rstl::vector< CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo >& spawns =
         mLoadedGenDesc->mKSSM->GetSpawnedSystemsAtFrame(mCurFrame);
+#if RSTL_CORRUPTION
+    if (!spawns.empty()) {
+      ushort backupSeed = sSeed;
+#else
 #if !RSTL_PRIME1
       if (spawns.size() != 0) {
         const ushort backupSeed = sSeed;
 #endif
 
+#endif
     mActivePartChildren.reserve(spawns.size() + mActivePartChildren.size());
     for (int i = 0; i < spawns.size(); ++i) {
+#if RSTL_CORRUPTION
+          const CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo& info = spawns[i];
+          const ushort seed = backupSeed + i + mCurFrame;
+          CParticleGen* child =
+              ConstructChildParticleSystem(*info.GetToken(), info.GetType(), seed);
+          if (child) {
+          mActivePartChildren.push_back(child);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       TLockedToken< CGenDescription > kssmToken = *spawns[i].GetToken();
@@ -1594,13 +2529,17 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
           if (child) {
             mActivePartChildren.push_back_unsafe(child);
 #endif
+#endif
       }
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       sSeed = backupSeed + i;
       mActivePartChildren.push_back(ConstructChildParticleSystem(kssmToken));
 #endif
+#endif
     }
     sSeed = backupSeed;
+#if !RSTL_CORRUPTION
   }
 #if !RSTL_PRIME1
     }
@@ -1631,36 +2570,71 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
 #else
       mActivePartChildren.push_back_unsafe(ConstructChildParticleSystem(idtsToken, 'PART', sSeed));
 #endif
+#endif
     }
   }
 
   // SSWH - swoosh child particle system
+#if RSTL_CORRUPTION
+  if (mCurFrame == mPSLT && mPrevFrame != mCurFrame && mLoadedGenDesc->mIDTS) {
+    int count = 1;
+    if (mLoadedGenDesc->mNDSY) {
+      mLoadedGenDesc->mNDSY->GetValue(0, count);
+    }
+    mActivePartChildren.reserve(count + mActivePartChildren.size());
+    for (int i = 0; i < count; ++i) {
+      TLockedToken< CGenDescription > description = mLoadedGenDesc->mIDTS->GetToken();
+      const bool descOpts = description->mOPTS;
+      if (mEnableOPTS && descOpts) {
+        break;
+      }
+      mActivePartChildren.push_back(ConstructChildParticleSystem(description, 'PART', sSeed));
+    }
+  }
+#else
   if (mLoadedGenDesc->mSSWH && mPrevFrame != mCurFrame && mCurFrame == mSSSD) {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+  if (mLoadedGenDesc->mSSWH && mPrevFrame != mCurFrame && mCurFrame == mSSSD) {
+    CParticleGen* swoosh = rs_new_line(1571) CParticleSwoosh(*mLoadedGenDesc->mSSWH, 0);
+#else
 #if RSTL_PRIME1
     CParticleSwoosh* swoosh = rs_new CParticleSwoosh(*mLoadedGenDesc->mSSWH, 0);
 #else
       CParticleGen* swoosh = rs_new CParticleSwoosh(*mLoadedGenDesc->mSSWH, 0);
 #endif
 
+#endif
     swoosh->SetGlobalTranslation(mGlobalTranslation);
     swoosh->SetGlobalScale(mGlobalScale);
     swoosh->SetLocalScale(mLocalScale);
     swoosh->SetTranslation(mTranslation + mSSPO);
     swoosh->SetOrientation(mOrientation);
+#if RSTL_CORRUPTION
+    swoosh->SetParticleEmission(mParticleEmission);
+#else
     const bool emission = mParticleEmission;
     swoosh->SetParticleEmission(emission);
+#endif
     mActivePartChildren.reserve(mActivePartChildren.size() + 1);
+#if RSTL_CORRUPTION
+    mActivePartChildren.push_back(swoosh);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mActivePartChildren.push_back(swoosh);
 #else
       mActivePartChildren.push_back_unsafe(swoosh);
 #endif
+#endif
   }
 
   // SELC - electric child particle system
   if (mLoadedGenDesc->mSELC && mPrevFrame != mCurFrame && mCurFrame == mSESD) {
+#if RSTL_CORRUPTION
+    CParticleGen* electric = rs_new_line(1590) CParticleElectric(*mLoadedGenDesc->mSELC);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CParticleElectric* electric = rs_new CParticleElectric(*mLoadedGenDesc->mSELC);
@@ -1668,11 +2642,15 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
       CParticleGen* electric = rs_new CParticleElectric(*mLoadedGenDesc->mSELC);
 #endif
 
+#endif
     electric->SetGlobalTranslation(mGlobalTranslation);
     electric->SetGlobalScale(mGlobalScale);
     electric->SetLocalScale(mLocalScale);
     electric->SetTranslation(mTranslation + mSEPO);
     electric->SetOrientation(mOrientation);
+#if RSTL_CORRUPTION
+    electric->SetParticleEmission(mParticleEmission);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     electric->SetParticleEmission(mParticleEmission);
@@ -1681,17 +2659,26 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
       electric->SetParticleEmission(emission);
 #endif
 
+#endif
     mActivePartChildren.reserve(mActivePartChildren.size() + 1);
+#if RSTL_CORRUPTION
+    mActivePartChildren.push_back(electric);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mActivePartChildren.push_back(electric);
 #else
       mActivePartChildren.push_back_unsafe(electric);
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+#else
   // Update all child particle systems
   AUTO(it, mActivePartChildren.begin());
+#endif
   while (it != mActivePartChildren.end()) {
     CParticleGen* child = *it;
     child->Update(dt);
@@ -1704,32 +2691,58 @@ void CElementGen::UpdateChildParticleSystems(double dt) {
   }
 
   mPrevFrame = mCurFrame;
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
   }
+#endif
 #endif
 }
 
 void CElementGen::SetParticleEmission(bool emission) {
+#if RSTL_CORRUPTION
+  if (mParticleEmission != emission && emission) {
+    mPreviousTranslation.clear();
+  }
+#endif
   mParticleEmission = emission;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->SetParticleEmission(emission);
   }
 }
 
 void CElementGen::ForceParticleCreation(int count) {
+#if RSTL_CORRUPTION
+  CParticleGlobals::SParticleSystem system('PART', this);
+#else
   CParticleGlobals::SParticleSystem thisSystem('PART', this);
+#endif
   CParticleGlobals::SetEmitterTime(mCurFrame);
+#if RSTL_CORRUPTION
+  CreateNewParticles(count, mTranslationVelocity);
+#else
   CreateNewParticles(count);
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   CParticleGlobals::SetCurrentParticleSystem(thisSystem.mPrev);
 #endif
+#endif
 }
 
 void CElementGen::EndLifetime() {
   mPSLT = 0;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    CParticleGen* child = (*it);
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
+#endif
     if (child->Get4CharId() == 'PART') {
       static_cast< CElementGen* >(child)->EndLifetime();
     } else {
@@ -1739,24 +2752,43 @@ void CElementGen::EndLifetime() {
 }
 
 void CElementGen::DestroyParticles() {
+#if RSTL_CORRUPTION
+  sParticleAliveCount -= mParticles.size();
+#else
   mParticleAliveCount -= mParticles.size();
 
+#endif
   mParticles.clear();
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+#else
 #if RSTL_PRIME1
   if (mOrientType == kMOT_One) {
     mParentMatrices.clear();
   }
 #endif
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
     (*it)->DestroyParticles();
   }
+#if RSTL_CORRUPTION
+  mActiveParticleCount = 0;
+  mRecursiveParticleCount = GetParticleCountAllInternal();
+#else
 #if !RSTL_PRIME1
   mActiveParticleCount = 0;
   mRecursiveParticleCount = GetParticleCountAllInternal();
 #endif
+#endif
 }
 
 bool CElementGen::IsSystemDeletable() const {
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin(),
+                                                     end = mActivePartChildren.end();
+       it != end; ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
@@ -1766,6 +2798,7 @@ bool CElementGen::IsSystemDeletable() const {
        ++it) {
 #endif
 
+#endif
     if (!(*it)->IsSystemDeletable()) {
       return false;
     }
@@ -1777,13 +2810,30 @@ bool CElementGen::IsSystemDeletable() const {
 }
 
 void CElementGen::Render() {
+#if RSTL_CORRUPTION
+  CGraphics::CAlphaContextsGuard alphaGuard;
+  if (sDisableRendering) {
+    return;
+  }
+  CStopwatch stopwatch;
+#else
 #if RSTL_PRIME1
   if (!DEBUG_TOOLS_GET_BOOL(kDO_RenderParticles, true)) {
     return;
   }
 #endif
   CStopwatch timer;
+#endif
   mBackupLightActive = CGraphics::GetLightMask();
+#if RSTL_CORRUPTION
+  CGraphics::SetLightingMode(0);
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    CParticleGen* child = *it;
+    if (child->ShouldDraw()) {
+      child->Render();
+    }
+#else
   CGraphics::DisableAllLights();
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -1795,20 +2845,48 @@ void CElementGen::Render() {
       child->Render();
     }
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  CParticleGlobals::SParticleSystem system('PART', this);
+  if (mParticles.size() > 0 && ShouldDraw()) {
+#else
   CParticleGlobals::SParticleSystem sys('PART', this);
   if (mParticles.size() > 0
 #if !RSTL_PRIME1
       && ShouldDraw()
 #endif
   ) {
+#endif
     if (mLoadedGenDesc->mPMDL || mLoadedGenDesc->mPMUS) {
       RenderModels();
     }
     if (mLINE) {
       RenderLines();
     } else {
+#if RSTL_CORRUPTION
+      bool zeroSize = false;
+      if (mLoadedGenDesc->mSIZE && mLoadedGenDesc->mSIZE->IsConstant()) {
+        CGlobalRandom random(mRandState);
+        float size = 1.f;
+        mLoadedGenDesc->mSIZE->GetValue(0, size);
+        if (size == 0.f) {
+          size = 1.f;
+          mLoadedGenDesc->mSIZE->GetValue(1, size);
+          if (size == 0.f) {
+            zeroSize = true;
+          }
+        }
+      }
+      if (!zeroSize && mLoadedGenDesc->mRDOP) {
+        if (IsIndirectTextured()) {
+          RenderParticlesIndirectTexture();
+        } else {
+          RenderParticles();
+        }
+      }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       RenderParticles();
@@ -1838,15 +2916,151 @@ void CElementGen::Render() {
         }
       }
 #endif
+#endif
     }
   }
+#if RSTL_CORRUPTION
+  mRenderTime = stopwatch.GetElapsedTime();
+#else
   mRenderTime = timer.GetElapsedTime();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
   CParticleGlobals::SetCurrentParticleSystem(sys.mPrev);
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderBasicParticlesNoRotTS(const CTransform4f& xf) const {
+  for (int i = 0; i < mParticles.size(); ++i) {
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos = xf * particle.mPos;
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+    float x = viewPos.GetX() + halfSize;
+    const float y = viewPos.GetY();
+    float z = viewPos.GetZ() + halfSize;
+    const uint color = particle.mColor.GetColor_u32();
+
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0202);
+
+    x -= particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0002);
+
+    z -= particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0000);
+
+    x += particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0200);
+  }
+}
+
+void CElementGen::RenderBasicParticlesRotTS(const CTransform4f& xf) const {
+  for (int i = 0; i < mParticles.size(); ++i) {
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos = xf * particle.mPos;
+    const float x = viewPos.GetX();
+    const float y = viewPos.GetY();
+    const float z = viewPos.GetZ();
+    const uint color = particle.mColor.GetColor_u32();
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+    const float theta = particle.mLineWidthOrRota * (M_PIF / 180.f);
+    const float sinT = CMath::FastSinR(theta) * halfSize;
+    const float cosT = CMath::FastCosR(theta) * halfSize;
+    const float sinPlusCos = sinT + cosT;
+    const float sinMinusCos = sinT - cosT;
+
+    GXPosition3f32(x + sinPlusCos, y, z - sinMinusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0202);
+
+    GXPosition3f32(x + sinMinusCos, y, z + sinPlusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0002);
+
+    GXPosition3f32(x - sinPlusCos, y, z + sinMinusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0000);
+
+    GXPosition3f32(x - sinMinusCos, y, z - sinPlusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0200);
+  }
+}
+
+void CElementGen::RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) const {
+  for (int i = 0; i < mParticles.size(); ++i) {
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos =
+        xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+    float x = viewPos.GetX() + halfSize;
+    const float y = viewPos.GetY();
+    float z = viewPos.GetZ() + halfSize;
+    const uint color = particle.mColor.GetColor_u32();
+
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0202);
+
+    x -= particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0002);
+
+    z -= particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0000);
+
+    x += particle.mLineLengthOrSize;
+    GXPosition3f32(x, y, z);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0200);
+  }
+}
+
+void CElementGen::RenderBasicParticlesRotNoTS(const CTransform4f& xf) const {
+  for (int i = 0; i < mParticles.size(); ++i) {
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos =
+        xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
+    const float x = viewPos.GetX();
+    const float y = viewPos.GetY();
+    const float z = viewPos.GetZ();
+    const uint color = particle.mColor.GetColor_u32();
+    const float halfSize = particle.mLineLengthOrSize * 0.5f;
+    const float theta = particle.mLineWidthOrRota * (M_PIF / 180.f);
+    const float sinT = CMath::FastSinR(theta) * halfSize;
+    const float cosT = CMath::FastCosR(theta) * halfSize;
+    const float sinPlusCos = sinT + cosT;
+    const float sinMinusCos = sinT - cosT;
+
+    GXPosition3f32(x + sinPlusCos, y, z - sinMinusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0202);
+
+    GXPosition3f32(x + sinMinusCos, y, z + sinPlusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0002);
+
+    GXPosition3f32(x - sinPlusCos, y, z + sinMinusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0000);
+
+    GXPosition3f32(x - sinMinusCos, y, z - sinPlusCos);
+    GXColor1u32(color);
+    GXTexCoord1s16(0x0200);
+  }
+}
+#else
 #if !RSTL_PRIME1
 void CElementGen::RenderBasicParticlesNoRotTS(const CTransform4f& xf) const {
   for (int i = 0; i < mParticles.size(); ++i) {
@@ -1978,14 +3192,25 @@ void CElementGen::RenderBasicParticlesRotNoTS(const CTransform4f& xf) const {
   }
 }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CElementGen::RenderBasicParticlesNoRotTS(const CTransform4f& xf) {
 #else
 void CElementGen::RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const {
 #endif
+#endif
   for (int i = 0; i < mParticles.size(); ++i) {
+#if RSTL_CORRUPTION
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos = xf * particle.mPos;
+    const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+#else
 #if RSTL_PRIME1
     CParticle& particle = mParticles[i];
     CVector3f viewPos = xf * particle.mPos;
@@ -1998,11 +3223,16 @@ void CElementGen::RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) c
     const float halfSize = 0.5f * particle.mLineLengthOrSize;
 #endif
 
+#endif
     float x = viewPos.GetX() + halfSize;
+#if RSTL_CORRUPTION
+    const float y = viewPos.GetY();
+#else
 #if RSTL_PRIME1
     float y = viewPos.GetY();
 #else
     const float y = viewPos.GetY();
+#endif
 #endif
     float z = viewPos.GetZ() + halfSize;
 
@@ -2027,13 +3257,31 @@ void CElementGen::RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) c
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CElementGen::RenderBasicParticlesRotTS(const CTransform4f& xf) {
 #else
 void CElementGen::RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const {
 #endif
+#endif
   for (int i = 0; i < mParticles.size(); ++i) {
+#if RSTL_CORRUPTION
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos = xf * particle.mPos;
+    const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+    const float theta = particle.mLineWidthOrRota * (M_PIF / 180.f);
+    const float sinT = CMath::FastSinR(theta) * halfSize;
+    const float cosT = CMath::FastCosR(theta) * halfSize;
+    const float sinPlusCos = sinT + cosT;
+    const float sinMinusCos = sinT - cosT;
+    const float x = viewPos.GetX();
+    const float y = viewPos.GetY();
+    const float z = viewPos.GetZ();
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CParticle& particle = mParticles[i];
@@ -2063,6 +3311,7 @@ void CElementGen::RenderBasicParticlesRotTSModulated(const CTransform4f& xf) con
     const float y = viewPos.GetY();
     const float z = viewPos.GetZ();
 #endif
+#endif
 
     GXPosition3f32(x + sinPlusCos, y, z - sinMinusCos);
     GXColor1u32(color);
@@ -2082,16 +3331,29 @@ void CElementGen::RenderBasicParticlesRotTSModulated(const CTransform4f& xf) con
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CElementGen::RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) {
 #else
 void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const {
 #endif
+#endif
   for (int i = 0; i < mParticles.size(); ++i) {
+#if RSTL_CORRUPTION
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos =
+#else
     RSTL_ECHOES_CONST CParticle& particle = mParticles[i];
     RSTL_ECHOES_CONST CVector3f viewPos =
+#endif
         xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
+#if RSTL_CORRUPTION
+    const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float halfSize = 0.5f * particle.mLineLengthOrSize;
@@ -2100,8 +3362,13 @@ void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf)
     const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
     const float halfSize = 0.5f * particle.mLineLengthOrSize;
 #endif
+#endif
     float x = viewPos.GetX() + halfSize;
+#if RSTL_CORRUPTION
+    const float y = viewPos.GetY();
+#else
     RSTL_ECHOES_CONST float y = viewPos.GetY();
+#endif
     float z = viewPos.GetZ() + halfSize;
 
     GXPosition3f32(x, y, z);
@@ -2125,16 +3392,37 @@ void CElementGen::RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf)
   }
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CElementGen::RenderBasicParticlesRotNoTS(const CTransform4f& xf) {
 #else
 void CElementGen::RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const {
 #endif
+#endif
   for (int i = 0; i < mParticles.size(); ++i) {
+#if RSTL_CORRUPTION
+    const CParticle& particle = mParticles[i];
+    const CVector3f viewPos =
+#else
     RSTL_ECHOES_CONST CParticle& particle = mParticles[i];
     RSTL_ECHOES_CONST CVector3f viewPos =
+#endif
         xf * ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
+#if RSTL_CORRUPTION
+    const uint color = CColor::Modulate(mModuColor, particle.mColor).GetColor_u32();
+    const float halfSize = 0.5f * particle.mLineLengthOrSize;
+    const float theta = particle.mLineWidthOrRota * (M_PIF / 180.f);
+    const float sinT = CMath::FastSinR(theta) * halfSize;
+    const float cosT = CMath::FastCosR(theta) * halfSize;
+    const float sinPlusCos = sinT + cosT;
+    const float sinMinusCos = sinT - cosT;
+    const float x = viewPos.GetX();
+    const float y = viewPos.GetY();
+    const float z = viewPos.GetZ();
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float halfSize = 0.5f * particle.mLineLengthOrSize;
@@ -2159,6 +3447,7 @@ void CElementGen::RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) c
     const float y = viewPos.GetY();
     const float z = viewPos.GetZ();
 #endif
+#endif
 
     GXPosition3f32(x + sinPlusCos, y, z - sinMinusCos);
     GXColor1u32(color);
@@ -2178,6 +3467,24 @@ void CElementGen::RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) c
   }
 }
 
+#if RSTL_CORRUPTION
+// Guessed name; shared by the ordinary and batched particle renderers.
+static CTevCombiners::CTevPass sParticleModulatePass(
+    CTevCombiners::ColorPass(CTevCombiners::kCS_Zero, CTevCombiners::kCS_RasterColor,
+                             CTevCombiners::kCS_TextureColor, CTevCombiners::kCS_Zero),
+    CTevCombiners::AlphaPass(CTevCombiners::kAS_Zero, CTevCombiners::kAS_RasterAlpha,
+                             CTevCombiners::kAS_TextureAlpha, CTevCombiners::kAS_Zero));
+
+// Guessed name
+static inline void SetParticleTevScale(CTevCombiners::ETevScale scale) {
+  if (scale == CTevCombiners::kTS_Scale1) {
+    CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
+  } else {
+    sParticleModulatePass.SetColorScale(scale);
+    CGraphics::SetTevOp(kTS_Stage0, sParticleModulatePass);
+  }
+}
+#else
 #if !RSTL_PRIME1
 // Guessed name; shared by the ordinary and batched particle renderers.
 static CTevCombiners::CTevPass sParticleModulatePass(
@@ -2196,7 +3503,55 @@ static inline void SetParticleTevScale(CTevCombiners::ETevScale scale) {
   }
 }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+void CElementGen::SetParticleBlendMode(int mode) {
+  if (mode == 1) {
+    CGraphics::DisableAlphaUpdate(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (!mode) {
+    CGraphics::DisableAlphaUpdate(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 2) {
+    CGraphics::DisableAlphaUpdate(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_One, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 3) {
+    CGraphics::DisableDestinationAlpha(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_One, kBF_One, kLO_Clear);
+  } else if (mode == 4) {
+    CGraphics::EnableDestinationAlpha(0, 255);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 5) {
+    CGraphics::EnableDestinationAlpha(0, 128);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 6) {
+    CGraphics::EnableDestinationAlpha(0, 64);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 7) {
+    CGraphics::DisableDestinationAlpha(0);
+    CGraphics::SetBlendMode(kBM_None, kBF_One, kBF_Zero, kLO_Clear);
+  } else if (mode == 8) {
+    CGraphics::EnableDestinationAlpha(0, 255);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 9) {
+    CGraphics::EnableDestinationAlpha(0, 128);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 10) {
+    CGraphics::EnableDestinationAlpha(0, 64);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  }
+  if (mode == 2) {
+    CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
+  } else {
+    CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
+      }
+    }
+
+void CElementGen::RenderParticles() {
+  CGraphics::CAlphaContextsGuard alphaGuard;
+  CGlobalRandom gr(mRandState);
+#else
 void CElementGen::RenderParticles() {
 #if !RSTL_PRIME1
   bool noRota;
@@ -2221,6 +3576,7 @@ void CElementGen::RenderParticles() {
     }
   }
 #endif
+#endif
 
   CGraphics::SetCullMode(kCM_None);
 
@@ -2240,6 +3596,9 @@ void CElementGen::RenderParticles() {
     CGraphics::SetModelMatrix(systemModelMatrix);
   }
 
+#if RSTL_CORRUPTION
+  bool constUVs = true;
+#else
   CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
 
 #if RSTL_PRIME1
@@ -2248,18 +3607,23 @@ void CElementGen::RenderParticles() {
   constUVs = true;
 #endif
 
+#endif
   SUVElementSet uvs;
   uvs.xMin = 0.f;
   uvs.xMax = 1.f;
   uvs.yMin = 0.f;
   uvs.yMax = 1.f;
 
+#if RSTL_CORRUPTION
+  bool noRota = mLoadedGenDesc->mROTA == nullptr;
+#else
 #if RSTL_PRIME1
   bool noRota = mLoadedGenDesc->mROTA == nullptr;
 #else
   noRota = mLoadedGenDesc->mROTA == nullptr;
 #endif
 
+#endif
   if (mLoadedGenDesc->mROTA != nullptr && mLoadedGenDesc->mROTA->IsConstant()) {
     float value = 1.f;
     mLoadedGenDesc->mROTA->GetValue(0, value);
@@ -2277,6 +3641,28 @@ void CElementGen::RenderParticles() {
     TToken< CTexture > tex = mLoadedGenDesc->mTEXR->GetValueTexture(partFrame);
     tex->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
 
+#if RSTL_CORRUPTION
+    if (mLoadedGenDesc->mXTAD) {
+      int value = 1;
+      CTevCombiners::ETevScale scale = CTevCombiners::kTS_Scale1;
+      mLoadedGenDesc->mXTAD->GetValue(mCurFrame, value);
+      switch (value) {
+      case 2:
+        scale = CTevCombiners::kTS_Scale2;
+        break;
+      case 4:
+        scale = CTevCombiners::kTS_Scale4;
+        break;
+      }
+      if (scale == CTevCombiners::kTS_Scale1) {
+        CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
+      } else {
+        SetParticleTevScale(scale);
+      }
+    } else {
+      CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
+    }
+#else
 #if RSTL_PRIME1
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
 
@@ -2312,24 +3698,44 @@ void CElementGen::RenderParticles() {
       CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
     }
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
     mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+#endif
     constUVs = mLoadedGenDesc->mTEXR->HasConstantUV();
+#if RSTL_CORRUPTION
+    if (constUVs) {
+      mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+    }
+#endif
   } else {
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvPassthru);
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
     CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  static const GXVtxDescList skVtxDescList[] = {
+#else
   static const GXVtxDescList sVtxDescList[] = {
+#endif
       {GX_VA_POS, GX_DIRECT},
       {GX_VA_CLR0, GX_DIRECT},
       {GX_VA_TEX0, GX_DIRECT},
       {GX_VA_NULL, GX_NONE},
   };
+#if !RSTL_CORRUPTION
   CGX::SetVtxDescv(sVtxDescList);
+#endif
 
+#if RSTL_CORRUPTION
+  int blendMode = 0;
+  mLoadedGenDesc->mPBDM->GetValue(mCurFrame, blendMode);
+#else
 #if RSTL_PRIME1
   GXTevStageID nextStage;
   if (hasModuColor) {
@@ -2377,29 +3783,64 @@ void CElementGen::RenderParticles() {
     CGraphics::SetDepthWriteMode(mZTest, kE_LEqual, false);
     CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
   } else {
+#endif
     CGraphics::SetDepthWriteMode(mZTest, kE_LEqual, mZBUF);
+#if RSTL_CORRUPTION
+  CGX::SetVtxDescv(skVtxDescList);
+  if (sSubtractBlend) {
+    CGX::SetBlendMode(GX_BM_SUBTRACT, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+  } else {
+    SetParticleBlendMode(blendMode);
+#else
     CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+#endif
   }
 
+#if RSTL_CORRUPTION
+  CGX::SetNumTevStages(1);
+#else
   CGX::SetNumTevStages(static_cast< uchar >(nextStage));
+#endif
   CGX::SetNumTexGens(1);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+#if RSTL_CORRUPTION
+  CGX::SetNumChans(1);
+  CGraphics::SetLightingModeAndColor(3, CColor(0u));
+#else
 #if !RSTL_PRIME1
   CGX::SetNumChans(1);
   CGX::SetChanAmbColor(CGX::Channel0, CColor::ToGX(0u));
 #endif
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
 
+#if RSTL_CORRUPTION
+  CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+#else
   GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
   GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+#endif
   if (constUVs) {
+#if RSTL_CORRUPTION
+    CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_S8, 1);
+#else
     GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_S8, 1);
+#endif
   } else {
+#if RSTL_CORRUPTION
+    CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+#else
     GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+#endif
   }
 
+#if RSTL_CORRUPTION
+  int particleCount = mParticles.size();
+  int mbspVal = rstl::max_val(1, mMBSP);
+#else
 #if RSTL_PRIME1
   int particleCount = mParticles.size();
   int mbspVal = rstl::max_val(1, mMBSP);
@@ -2410,6 +3851,7 @@ void CElementGen::RenderParticles() {
     mbspVal = mMBSP;
   }
 #endif
+#endif
 
   if (!mMBLR) {
     CGX::Begin(GX_QUADS, GX_VTXFMT6, static_cast< ushort >(particleCount * 4));
@@ -2418,23 +3860,42 @@ void CElementGen::RenderParticles() {
   }
 
   bool noTS = !close_enough(mTimeDeltaScale, 1.f, 0.00001f);
+#if RSTL_CORRUPTION
+  CParticleListItem* sortItems = nullptr;
+  rstl::single_ptr< CParticleListItem > heapItems;
+#else
 #if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleListItem* sortItems = nullptr;
   rstl::single_ptr< CParticleListItem > heapItems;
 #endif
 
+#endif
   bool SORT = mLoadedGenDesc->mSORT;
+#if !RSTL_CORRUPTION
 #if !RSTL_PARTICLE_ELEMENT_GEN_RETAIL
   CParticleListItem* sortItems = nullptr;
 #endif
+#endif
 
   if (SORT) {
+#if RSTL_CORRUPTION
+    if (particleCount <= 128) {
+#else
 #if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     if (particleCount <= 128)
 #endif
     {
+#endif
       sortItems =
           static_cast< CParticleListItem* >(alloca(particleCount * sizeof(CParticleListItem)));
+#if RSTL_CORRUPTION
+    } else {
+      sortItems = static_cast< CParticleListItem* >(CMemory::Alloc(
+          particleCount * sizeof(CParticleListItem), IAllocator::kHI_None, IAllocator::kSC_Unk1,
+          IAllocator::kTP_Heap, CCallStack(-1, "CElementGen.cpp(2722) : ", gkUnknownType)));
+      heapItems = sortItems;
+    }
+#else
     }
 #if RSTL_PARTICLE_ELEMENT_GEN_RETAIL
     else {
@@ -2442,6 +3903,7 @@ void CElementGen::RenderParticles() {
           CMemory::Alloc(particleCount * sizeof(CParticleListItem)));
       heapItems = sortItems;
     }
+#endif
 #endif
     for (int i = 0; i < particleCount; ++i) {
       CParticle& particle = mParticles[i];
@@ -2457,6 +3919,24 @@ void CElementGen::RenderParticles() {
 
   if (!mMBLR) {
     if (!SORT && constUVs && !mORNT) {
+#if RSTL_CORRUPTION
+      if (hasModuColor) {
+        if (noRota) {
+          if (noTS) {
+            RenderBasicParticlesNoRotNoTSModulated(systemCameraCopy);
+          } else {
+            RenderBasicParticlesNoRotTSModulated(systemCameraCopy);
+          }
+        } else {
+          if (noTS) {
+            RenderBasicParticlesRotNoTSModulated(systemCameraCopy);
+          } else {
+            RenderBasicParticlesRotTSModulated(systemCameraCopy);
+          }
+        }
+
+      } else {
+#else
 #if !RSTL_PRIME1
       if (hasModuColor) {
         if (noRota) {
@@ -2475,6 +3955,7 @@ void CElementGen::RenderParticles() {
       } else
 #endif
       {
+#endif
         if (noRota) {
           if (noTS) {
             RenderBasicParticlesNoRotNoTS(systemCameraCopy);
@@ -2491,17 +3972,30 @@ void CElementGen::RenderParticles() {
       }
     } else if (!mORNT) {
       for (int i = 0; i < particleCount; ++i) {
+#if RSTL_CORRUPTION
+        int particleIdx = SORT ? sortItems[i].mPartIdx : i;
+        CParticle& particle = mParticles[particleIdx];
+#else
         CParticle& particle = SORT ? mParticles[sortItems[i].mPartIdx] : mParticles[i];
+#endif
         CVector3f viewPoint =
             systemCameraCopy *
             ((particle.mPos - particle.mPrevPos) * mTimeDeltaScale + particle.mPrevPos);
 
+#if RSTL_CORRUPTION
+        uint color = CColor::Modulate(particle.mColor, mModuColor).GetColor_u32();
+#else
         uint color = IF_RSTL_PRIME1_ELSE(particle.mColor, CColor::Modulate(particle.mColor, mModuColor)).GetColor_u32();
+#endif
 
         if (!constUVs) {
           int partFrame = mCurFrame - particle.mStartFrame - 1;
           CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
           CParticleGlobals::UpdateParticleLifetimeTweenValues(partFrame);
+#if RSTL_CORRUPTION
+          CParticleGlobals::SetCurrentParticle(&particle);
+          CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(particleIdx));
+#endif
           mLoadedGenDesc->mTEXR->GetValueUV(partFrame, uvs);
 
           if (noRota) {
@@ -2539,27 +4033,48 @@ void CElementGen::RenderParticles() {
             float negSinPlusCos = -sinT + cosT;
             float negCosMinusSin = -cosT - sinT;
 
+#if RSTL_CORRUPTION
+            float vpX = viewPoint.GetX();
+            float vpY = viewPoint.GetY();
+            float vpZ = viewPoint.GetZ();
+#else
             GXPosition3f32(sinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            cosMinusSin + viewPoint.GetZ());
+#endif
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(sinPlusCos + vpX, vpY, cosMinusSin + vpZ);
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(sinMinusCos + vpX, vpY, sinPlusCos + vpZ);
+#else
             GXPosition3f32(sinMinusCos + viewPoint.GetX(), viewPoint.GetY(),
                            sinPlusCos + viewPoint.GetZ());
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(vpX - sinPlusCos, vpY, vpZ - cosMinusSin);
+#else
             GXPosition3f32(viewPoint.GetX() - sinPlusCos, viewPoint.GetY(),
                            viewPoint.GetZ() - cosMinusSin);
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ);
+#else
             GXPosition3f32(negSinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            negCosMinusSin + viewPoint.GetZ());
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMin);
           }
@@ -2618,56 +4133,95 @@ void CElementGen::RenderParticles() {
       }
     } else {
       // ORNT
+#if RSTL_CORRUPTION
+      CVector3f fwd = systemViewCopy.GetForward();
+      CVector3f origin = systemViewCopy.GetTranslation();
+#else
       const CVector3f fwd = systemViewCopy.GetForward();
       const CVector3f origin = systemViewCopy.GetTranslation();
 
+#endif
       float canBeNormEps = FLT_EPSILON;
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       CVector3f dir = CVector3f::Zero();
       CVector3f right = CVector3f::Zero();
 #endif
+#endif
 
       for (int i = 0; i < particleCount; ++i) {
+#if RSTL_CORRUPTION
+        int particleIdx = SORT ? sortItems[i].mPartIdx : i;
+        CParticle* particle = &mParticles[particleIdx];
+#else
         CParticle* particle = SORT ? &mParticles[sortItems[i].mPartIdx] : &mParticles[i];
+#endif
 
+#if RSTL_CORRUPTION
+        uint color = CColor::Modulate(particle->mColor, mModuColor).GetColor_u32();
+        CVector3f dir = CVector3f::Zero();
+#else
 #if !RSTL_PRIME1
         uint color = CColor::Modulate(particle->mColor, mModuColor).GetColor_u32();
         CVector3f dir = CVector3f::Zero();
 #endif
 
+#endif
         CVector3f pos =
             (particle->mPos - particle->mPrevPos) * mTimeDeltaScale + particle->mPrevPos;
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
         uint color = particle->mColor.GetColor_u32();
 #endif
 
+#endif
         float rota = mLoadedGenDesc->mROTA == nullptr ? 1.f : particle->mLineWidthOrRota;
         float velMagSq = particle->mVel.MagSquared();
 
         if (velMagSq > canBeNormEps) {
+#if RSTL_CORRUPTION
+          dir = particle->mVel * CMath::FastInvSqrtF(velMagSq);
+#else
           dir = particle->mVel * INVERSE_SQRT(velMagSq);
+#endif
         } else {
           const CVector3f& dv = particle->mPos - particle->mPrevPos;
           float dMagSq = dv.MagSquared();
           if (dMagSq > canBeNormEps) {
+#if RSTL_CORRUPTION
+            dir = dv * CMath::FastInvSqrtF(dMagSq);
+#else
             dir = dv * INVERSE_SQRT(dMagSq);
+#endif
           } else {
+#if RSTL_CORRUPTION
+            dir = CVector3f::Up();
+#else
             dir = IF_RSTL_PRIME1_ELSE(CVector3f(0.f, 0.f, 1.f), CVector3f::Up());
+#endif
           }
         }
 
         CVector3f fore = dir * particle->mLineLengthOrSize;
 
+#if RSTL_CORRUPTION
+        CVector3f right;
+#else
 #if !RSTL_PRIME1
         CVector3f right;
 #endif
 
+#endif
         if (mLoadedGenDesc->mRSOP) {
           right = CVector3f::Cross(dir, fwd);
           float crMagSq = right.MagSquared();
 
           if (crMagSq > canBeNormEps) {
+#if RSTL_CORRUPTION
+            float invMag = CMath::FastInvSqrtF(crMagSq);
+#else
             float invMag = INVERSE_SQRT(crMagSq);
+#endif
             float width = particle->mLineLengthOrSize * rota;
             right *= width * invMag;
           } else {
@@ -2675,7 +4229,11 @@ void CElementGen::RenderParticles() {
             float cr2MagSq = right.MagSquared();
 
             if (cr2MagSq > canBeNormEps) {
+#if RSTL_CORRUPTION
+              float invMag = CMath::FastInvSqrtF(cr2MagSq);
+#else
               float invMag = INVERSE_SQRT(cr2MagSq);
+#endif
               float width = particle->mLineLengthOrSize * rota;
               right *= width * invMag;
             }
@@ -2684,63 +4242,107 @@ void CElementGen::RenderParticles() {
           right = CVector3f::Cross(fore, fwd) * rota;
         }
 
+#if RSTL_CORRUPTION
+        const CVector3f& vertex = pos;
+#else
 #if !RSTL_PRIME1
         const CVector3f& vertex = pos;
 #endif
 
+#endif
         if (!constUVs) {
           int partFrame = mCurFrame - particle->mStartFrame - 1;
           CParticleGlobals::SetParticleLifetime(particle->mEndFrame - particle->mStartFrame);
           CParticleGlobals::UpdateParticleLifetimeTweenValues(partFrame);
+#if RSTL_CORRUPTION
+          CParticleGlobals::SetCurrentParticle(particle);
+          CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(particleIdx));
+#endif
           mLoadedGenDesc->mTEXR->GetValueUV(partFrame, uvs);
 
+#if RSTL_CORRUPTION
+          pos += 0.5f * right;
+          pos += 0.5f * fore;
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           pos += right * 0.5f;
           pos += fore * 0.5f;
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
           pos -= fore;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
           pos -= right;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
           pos += fore;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord2f32(uvs.xMax, uvs.yMin);
         } else {
+#if RSTL_CORRUPTION
+          pos += 0.5f * right;
+          pos += 0.5f * fore;
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           pos += right * 0.5f;
           pos += fore * 0.5f;
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord1s16(0x0202);
 
           pos -= fore;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord1s16(0x0002);
 
           pos -= right;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord1s16(0x0000);
 
           pos += fore;
+#if RSTL_CORRUPTION
+          GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
           GXPositionVector3f(pos);
 
+#endif
           GXColor1u32(color);
           GXTexCoord1s16(0x0200);
         }
@@ -2754,8 +4356,13 @@ void CElementGen::RenderParticles() {
 
       CVector3f mbspVec = (particle->mPos - particle->mPrevPos) * mbspFac;
       CVector3f vec = (particle->mPos - particle->mPrevPos) * mTimeDeltaScale + particle->mPrevPos;
+#if !RSTL_CORRUPTION
       CColor col = IF_RSTL_PRIME1_ELSE(particle->mColor, CColor::Modulate(particle->mColor, mModuColor));
+#endif
 
+#if RSTL_CORRUPTION
+      CColor col = CColor::Modulate(particle->mColor, mModuColor);
+#endif
       col.SetAlpha(col.GetAlpha() * mbspFac);
       uint color = col.GetColor_u32();
 
@@ -2763,6 +4370,10 @@ void CElementGen::RenderParticles() {
         int partFrame = mCurFrame - particle->mStartFrame - 1;
         CParticleGlobals::SetParticleLifetime(particle->mEndFrame - particle->mStartFrame);
         CParticleGlobals::UpdateParticleLifetimeTweenValues(partFrame);
+#if RSTL_CORRUPTION
+        CParticleGlobals::SetCurrentParticle(particle);
+        CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(i));
+#endif
         mLoadedGenDesc->mTEXR->GetValueUV(partFrame, uvs);
 
         if (noRota) {
@@ -2808,27 +4419,48 @@ void CElementGen::RenderParticles() {
             float sinMinusCos = sinT - cosT;
             float cosMinusSin = cosT - sinT;
 
+#if RSTL_CORRUPTION
+            float vpX = viewPoint.GetX();
+            float vpY = viewPoint.GetY();
+            float vpZ = viewPoint.GetZ();
+#else
             GXPosition3f32(sinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            cosMinusSin + viewPoint.GetZ());
+#endif
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(sinPlusCos + vpX, vpY, cosMinusSin + vpZ);
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMax);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(sinMinusCos + vpX, vpY, sinPlusCos + vpZ);
+#else
             GXPosition3f32(sinMinusCos + viewPoint.GetX(), viewPoint.GetY(),
                            sinPlusCos + viewPoint.GetZ());
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMax);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(vpX - sinPlusCos, vpY, vpZ - cosMinusSin);
+#else
             GXPosition3f32(viewPoint.GetX() - sinPlusCos, viewPoint.GetY(),
                            viewPoint.GetZ() - cosMinusSin);
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMin, uvs.yMin);
 
+#if RSTL_CORRUPTION
+            GXPosition3f32(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ);
+#else
             GXPosition3f32(negSinPlusCos + viewPoint.GetX(), viewPoint.GetY(),
                            negCosMinusSin + viewPoint.GetZ());
 
+#endif
             GXColor1u32(color);
             GXTexCoord2f32(uvs.xMax, uvs.yMin);
           }
@@ -2897,6 +4529,7 @@ void CElementGen::RenderParticles() {
   }
 
   CGX::End();
+#if !RSTL_CORRUPTION
   if (modulateAlpha) {
     GXSetTevSwapMode(static_cast< GXTevStageID >(nextStage - 1), GX_TEV_SWAP0, GX_TEV_SWAP0);
   }
@@ -2905,10 +4538,19 @@ void CElementGen::RenderParticles() {
     GXSetAlphaUpdate(GX_TRUE);
   }
 #endif
+#endif
   CGraphics::SetCullMode(kCM_Front);
   CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int count,
+                                              const CVector3f* globalTranslation,
+                                              const CTransform4f* globalOrientation,
+                                              const CVector3f* globalScale,
+                                              const CTransform4f* localScale) {
+  CGraphics::CAlphaContextsGuard alphaGuard;
+#else
 void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int count
 #if !RSTL_PRIME1
                                               ,
@@ -2918,10 +4560,21 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
                                               const CTransform4f* localScale
 #endif
 ) {
+#endif
   CTransform4f viewCopy(CGraphics::GetViewMatrix());
   CTransform4f systemModelMatrix(viewCopy);
   systemModelMatrix.SetTranslation(CVector3f::Zero());
   CTransform4f systemCameraCopy(systemModelMatrix.GetQuickInverse());
+#if RSTL_CORRUPTION
+  if (globalOrientation) {
+    systemCameraCopy *= *globalOrientation;
+  }
+  systemModelMatrix =
+      (globalTranslation ? CTransform4f::Translate(*globalTranslation) : CTransform4f::Identity()) *
+      (globalScale ? CTransform4f::Scale(*globalScale) : CTransform4f::Identity()) *
+      systemModelMatrix * (localScale ? *localScale : CTransform4f::Identity());
+  const CTransform4f orientedModelMatrix(systemModelMatrix * systemCameraCopy);
+#else
 #if !RSTL_PRIME1
   if (globalOrientation) {
     systemCameraCopy *= *globalOrientation;
@@ -2932,14 +4585,18 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       systemModelMatrix * (localScale ? *localScale : CTransform4f::Identity());
   const CTransform4f orientedModelMatrix(systemModelMatrix * systemCameraCopy);
 #endif
+#endif
 
   CGraphics::SetModelMatrix(systemModelMatrix);
   CGraphics::SetCullMode(kCM_None);
   CGraphics::SetDepthWriteMode(true, kE_LEqual, false);
+#if !RSTL_CORRUPTION
   CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
+#endif
   CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
   CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
 
+#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const bool modulateAlpha = sMoveRedToAlphaBuffer;
@@ -2948,7 +4605,12 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
   const bool modulateAlpha = sEnableAlphaModulation;
 #endif
 
+#endif
   for (int i = 0; i < count; ++i) {
+#if RSTL_CORRUPTION
+    gens[i]->mLoadedGenDesc->mTEXR->GetValueTexture(0)->Load(static_cast< GXTexMapID >(i),
+                                                             CTexture::kCM_Repeat);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const TLockedToken< CTexture >& tex = gens[i]->mLoadedGenDesc->mTEXR->GetValueTexture(0);
@@ -2957,20 +4619,33 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     gens[i]->mLoadedGenDesc->mTEXR->GetValueTexture(0)->Load(static_cast< GXTexMapID >(i),
                                                              CTexture::kCM_Repeat);
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+
+  static const GXVtxDescList skVtxDescList[] = {
+#else
   static const GXVtxDescList sVtxDescList[] = {
+#endif
       {GX_VA_POS, GX_DIRECT},
       {GX_VA_CLR0, GX_DIRECT},
       {GX_VA_TEX0, GX_DIRECT},
       {GX_VA_NULL, GX_NONE},
   };
+#if RSTL_CORRUPTION
+  CGX::SetVtxDescv(skVtxDescList);
+#else
   CGX::SetVtxDescv(sVtxDescList);
 #if RSTL_PRIME1
   int activeCount;
 #endif
   int nStages = 1;
 
+#endif
   CGX::SetNumChans(1);
+#if RSTL_CORRUPTION
+  CGX::SetNumTevStages(1);
+#else
 
   GXTevStageID stage = GX_TEVSTAGE0;
   if (modulateAlpha) {
@@ -2988,22 +4663,63 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
   }
 #endif
   CGX::SetNumTevStages(nStages);
+#endif
   CGX::SetNumTexGens(1);
+#if RSTL_CORRUPTION
+  CGraphics::SetLightingMode(3);
+#else
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
+#if RSTL_CORRUPTION
+  CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+  CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+#else
 
   GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
   GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
   GXSetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+#endif
 
   int totalParticles = 0;
+#if RSTL_CORRUPTION
+  CTevCombiners::ETevScale scales[8];
+  int blendModes[8];
+  rstl::reserved_vector< CColor, 8 > colors;
+#else
 #if !RSTL_PRIME1
   CTevCombiners::ETevScale scales[8];
   rstl::reserved_vector< CColor, 8 > colors;
 #endif
 
+#endif
   for (int i = 0; i < count; ++i) {
+#if RSTL_CORRUPTION
+    CElementGen* gen = gens[i];
+    totalParticles += gen->GetParticleCount();
+    const CGenDescription* desc = gen->mLoadedGenDesc;
+    if (desc->mXTAD) {
+      int scale = 1;
+      desc->mXTAD->GetValue(gen->GetEmitterTime(), scale);
+      switch (scale) {
+      case 2:
+        scales[i] = CTevCombiners::kTS_Scale2;
+        break;
+      case 4:
+        scales[i] = CTevCombiners::kTS_Scale4;
+        break;
+      default:
+        scales[i] = CTevCombiners::kTS_Scale1;
+        break;
+      }
+    } else {
+      scales[i] = CTevCombiners::kTS_Scale1;
+    }
+    desc->mPBDM->GetValue(gen->GetEmitterTime(), blendModes[i]);
+    colors.push_back(gen->GetModulationColor());
+#else
 #if RSTL_PRIME1
     totalParticles += gens[i]->GetParticleCount();
 #else
@@ -3029,10 +4745,14 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     }
     colors.push_back(gen->GetModulationColor());
 #endif
+#endif
   }
 
   CTexturedParticleListItem* sortItems = static_cast< CTexturedParticleListItem* >(
       alloca(totalParticles * sizeof(CTexturedParticleListItem)));
+#if RSTL_CORRUPTION
+  int activeCount = 0;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   activeCount = 0;
@@ -3040,20 +4760,30 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
   int activeCount = 0;
 #endif
 
+#endif
   for (int i = 0; i < count; ++i) {
     CElementGen* gen = gens[i];
+#if RSTL_CORRUPTION
+    const int numParticles = gen->GetParticleCount();
+    const float timeDelta = gen->mTimeDeltaScale;
+    for (int j = 0; j < numParticles; ++j) {
+      CParticle& particle = gen->mParticles[j];
+#else
     const int numParts = gen->GetParticleCount();
     const float timeDelta = gen->GetTimeDeltaScale();
     for (int j = 0; j < numParts; ++j) {
       CParticle& particle = gen->mParticles[static_cast< uint >(j)];
+#endif
       if (particle.mEndFrame == -1) {
         continue;
       }
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
       // ?
       sortItems[activeCount].mViewPoint = systemCameraCopy * particle.mPos;
 
       // TODO: this should be the constructor
+#endif
 #endif
       sortItems[activeCount].mViewPoint =
           systemCameraCopy * ((particle.mPos - particle.mPrevPos) * timeDelta + particle.mPrevPos);
@@ -3065,10 +4795,23 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
 
   rstl::sort(sortItems, sortItems + activeCount, CTexturedParticleListItemViewPointComp());
 
+#if RSTL_CORRUPTION
+  uint lastMap = -1;
+#else
   ushort lastMap = 0xFFFF;
+#endif
   CElementGen* gen = nullptr;
   CGenDescription* genDesc = nullptr;
   int emitterTime = 0;
+#if RSTL_CORRUPTION
+  bool packedUV = false;
+  int lastScale = -1;
+  bool oriented = false;
+  CColor modulationColor = CColor::White();
+  const CVector3f cameraPosition = viewCopy.GetTranslation();
+  const CVector3f cameraForward = viewCopy.GetForward();
+  SUVElementSet uvs;
+#else
 #if !RSTL_PRIME1
   bool packedUV = false;
   int lastScale = -1;
@@ -3083,14 +4826,23 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
   float cosMinusSin;
   float sinPlusCos;
 #endif
+#endif
 
   for (int i = 0; i < activeCount; ++i) {
     const CTexturedParticleListItem& item = sortItems[i];
+#if RSTL_CORRUPTION
+    int map = item.mTexMapIdx;
+#else
     const ushort map = item.mTexMapIdx;
 
+#endif
     if (lastMap != map) {
       gen = gens[map];
       emitterTime = gen->GetEmitterTime();
+#if RSTL_CORRUPTION
+      genDesc = gen->mLoadedGenDesc;
+      SetParticleBlendMode(blendModes[i]);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CGenDescription* desc = gens[map]->mLoadedGenDesc;
@@ -3108,8 +4860,27 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         CGX::SetTevOrder(stage, GX_TEXCOORD0, static_cast< GXTexMapID >(map), GX_COLOR_NULL);
       }
 
+#endif
       CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, static_cast< GXTexMapID >(map), GX_COLOR0A0);
       lastMap = map;
+#if RSTL_CORRUPTION
+      if (lastScale != scales[map]) {
+        lastScale = scales[map];
+        if (scales[map] == CTevCombiners::kTS_Scale1) {
+          CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
+        } else {
+          SetParticleTevScale(scales[map]);
+        }
+      }
+      if (genDesc->mORNT && !oriented) {
+        oriented = true;
+        CGraphics::SetModelMatrix(orientedModelMatrix);
+      } else if (oriented) {
+        oriented = false;
+        CGraphics::SetModelMatrix(systemModelMatrix);
+      }
+      modulationColor = colors[map];
+#else
 #if !RSTL_PRIME1
       if (lastScale != scales[map]) {
         lastScale = scales[map];
@@ -3128,13 +4899,25 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       }
       modulationColor = colors[map];
 #endif
+#endif
     }
     CParticle& particle = gen->mParticles[item.mPartIdx];
     const int elapsed = emitterTime - particle.mStartFrame - 1;
 
     CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
     CParticleGlobals::UpdateParticleLifetimeTweenValues(elapsed);
+#if RSTL_CORRUPTION
+    CParticleGlobals::SetCurrentParticle(&particle);
+    CParticleGlobals::SetParticleAccessParameters(gen->GetParticleAdditionalData(item.mPartIdx));
+#endif
 
+#if RSTL_CORRUPTION
+    if (!oriented) {
+      if (packedUV) {
+        packedUV = false;
+        CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+      }
+#else
 #if !RSTL_PRIME1
     if (!oriented) {
       if (packedUV) {
@@ -3143,7 +4926,17 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       }
 #endif
 
+#endif
     genDesc->mTEXR->GetValueUV(elapsed, uvs);
+#if RSTL_CORRUPTION
+      const uint color = CColor::Modulate(particle.mColor, modulationColor).GetColor_u32();
+      CGX::Begin(GX_QUADS, GX_VTXFMT6, 4);
+      const float halfSize = 0.5f * particle.mLineLengthOrSize;
+      const float theta = particle.mLineWidthOrRota * (M_PIF / 180.f);
+      const float sinT = halfSize * CMath::FastSinR(theta);
+      const float cosT = halfSize * CMath::FastCosR(theta);
+      const CVector3f& viewPoint = item.mViewPoint;
+#else
 #if !RSTL_PRIME1
       const uint color = CColor::Modulate(particle.mColor, modulationColor).GetColor_u32();
       CGX::Begin(GX_QUADS, GX_VTXFMT6, 4);
@@ -3153,7 +4946,35 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       const float cosT = halfSize * CMath::FastCosR(theta);
       const CVector3f& viewPoint = item.mViewPoint;
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+      GXPosition3f32(viewPoint.GetX() + (sinT + cosT), viewPoint.GetY(),
+                     viewPoint.GetZ() + (cosT - sinT));
+      GXColor1u32(color);
+      GXTexCoord2f32(uvs.xMax, uvs.yMax);
+      GXPosition3f32(viewPoint.GetX() + (sinT - cosT), viewPoint.GetY(),
+                     viewPoint.GetZ() + (sinT + cosT));
+      GXColor1u32(color);
+      GXTexCoord2f32(uvs.xMin, uvs.yMax);
+      GXPosition3f32(viewPoint.GetX() - (sinT + cosT), viewPoint.GetY(),
+                     viewPoint.GetZ() - (cosT - sinT));
+      GXColor1u32(color);
+      GXTexCoord2f32(uvs.xMin, uvs.yMin);
+      GXPosition3f32(viewPoint.GetX() + (-sinT + cosT), viewPoint.GetY(),
+                     viewPoint.GetZ() + (-cosT - sinT));
+      GXColor1u32(color);
+      GXTexCoord2f32(uvs.xMax, uvs.yMin);
+      CGX::End();
+    } else {
+      const uint color = CColor::Modulate(particle.mColor, modulationColor).GetColor_u32();
+      const bool constantUV = genDesc->mTEXR && genDesc->mTEXR->HasConstantUV();
+      if (constantUV && !packedUV) {
+        packedUV = true;
+        CGX::SetVtxAttrFmt(GX_VTXFMT6, GX_VA_TEX0, GX_TEX_ST, GX_S8, 1);
+      }
+      int particleIdx = item.mPartIdx;
+#else
 #if !RSTL_PRIME1
       GXPosition3f32(viewPoint.GetX() + (sinT + cosT), viewPoint.GetY(),
                      viewPoint.GetZ() + (cosT - sinT));
@@ -3181,8 +5002,46 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       }
 #endif
 
+#endif
     CGX::Begin(GX_QUADS, GX_VTXFMT6, 4);
 
+#if RSTL_CORRUPTION
+      CVector3f direction = CVector3f::Zero();
+      const CVector3f travel = particle.mPos - particle.mPrevPos;
+      CVector3f position = travel * gen->mTimeDeltaScale + particle.mPrevPos;
+      const float widthFactor = !gen->mLoadedGenDesc->mROTA ? 1.f : particle.mLineWidthOrRota;
+      const CVector3f& velocity = particle.mVel;
+      float magnitudeSquared = velocity.MagSquared();
+      if (magnitudeSquared > FLT_EPSILON) {
+        direction = CMath::FastInvSqrtF(magnitudeSquared) * velocity;
+      } else {
+        const CVector3f& delta = particle.mPos - particle.mPrevPos;
+        magnitudeSquared = delta.MagSquared();
+        if (magnitudeSquared > FLT_EPSILON) {
+          direction = CMath::FastInvSqrtF(magnitudeSquared) * delta;
+        } else {
+          direction = CVector3f::Up();
+        }
+      }
+      const CVector3f length = particle.mLineLengthOrSize * direction;
+      CVector3f width;
+      if (gen->mLoadedGenDesc->mRSOP) {
+        width = CVector3f::Cross(direction, cameraForward);
+        magnitudeSquared = width.MagSquared();
+        if (magnitudeSquared > FLT_EPSILON) {
+          width *= particle.mLineLengthOrSize * widthFactor * CMath::FastInvSqrtF(magnitudeSquared);
+        } else {
+          width = CVector3f::Cross(direction, (cameraPosition - particle.mPos).AsNormalized());
+          magnitudeSquared = width.MagSquared();
+          if (magnitudeSquared > FLT_EPSILON) {
+            width *=
+                particle.mLineLengthOrSize * widthFactor * CMath::FastInvSqrtF(magnitudeSquared);
+          }
+        }
+      } else {
+        width = widthFactor * CVector3f::Cross(length, cameraForward);
+      }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float halfSize = 0.5f * particle.mLineLengthOrSize;
@@ -3227,7 +5086,21 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         width = widthFactor * CVector3f::Cross(length, cameraForward);
       }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+      const CVector3f& vertex = position;
+      if (!constantUV) {
+        const int frame = gen->GetEmitterTime() - particle.mStartFrame - 1;
+        CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
+        CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+        CParticleGlobals::SetCurrentParticle(&particle);
+        CParticleGlobals::SetParticleAccessParameters(gen->GetParticleAdditionalData(particleIdx));
+        gen->mLoadedGenDesc->mTEXR->GetValueUV(frame, uvs);
+        position += 0.5f * width;
+        position += 0.5f * length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     sinPlusCos = sinT + cosT;
@@ -3250,8 +5123,13 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
 #endif
 
+#endif
     GXColor1u32(color);
     GXTexCoord2f32(uvs.xMax, uvs.yMax);
+#if RSTL_CORRUPTION
+        position -= length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     GXPosition3f32(sinMinusCos + item.mViewPoint.GetX(), item.mViewPoint.GetY(),
@@ -3261,8 +5139,13 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
 #endif
 
+#endif
     GXColor1u32(color);
     GXTexCoord2f32(uvs.xMin, uvs.yMax);
+#if RSTL_CORRUPTION
+        position -= width;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     GXPosition3f32(item.mViewPoint.GetX() - sinPlusCos, item.mViewPoint.GetY(),
@@ -3272,8 +5155,13 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
 #endif
 
+#endif
     GXColor1u32(color);
     GXTexCoord2f32(uvs.xMin, uvs.yMin);
+#if RSTL_CORRUPTION
+        position += length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     GXPosition3f32(negSinPlusCos + item.mViewPoint.GetX(), item.mViewPoint.GetY(),
@@ -3283,8 +5171,30 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
         GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
 #endif
 
+#endif
     GXColor1u32(color);
     GXTexCoord2f32(uvs.xMax, uvs.yMin);
+#if RSTL_CORRUPTION
+      } else {
+        position += 0.5f * width;
+        position += 0.5f * length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+        GXColor1u32(color);
+        GXTexCoord1s16(0x0202);
+        position -= length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+        GXColor1u32(color);
+        GXTexCoord1s16(0x0002);
+        position -= width;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+        GXColor1u32(color);
+        GXTexCoord1s16(0x0000);
+        position += length;
+        GXPosition3f32(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+        GXColor1u32(color);
+        GXTexCoord1s16(0x0200);
+      }
+#else
 #if !RSTL_PRIME1
       } else {
         position += 0.5f * width;
@@ -3307,12 +5217,18 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
       }
 #endif
 
+#endif
     CGX::End();
   }
+#if RSTL_CORRUPTION
+  }
+#else
 #if !RSTL_PRIME1
   }
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
   if (modulateAlpha) {
     GXSetTevSwapMode(stage, GX_TEV_SWAP0, GX_TEV_SWAP0);
   }
@@ -3321,11 +5237,17 @@ void CElementGen::RenderParticlesFlameThrower(CElementGen* const* gens, int coun
     GXSetAlphaUpdate(GX_TRUE);
   }
 #endif
+#endif
   CGraphics::SetCullMode(kCM_Front);
   CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
 }
 
 void CElementGen::RenderParticlesIndirectTexture() {
+#if RSTL_CORRUPTION
+  CGraphics::CAlphaContextsGuard alphaGuard;
+  CGlobalRandom gr(mRandState);
+  CGraphics::DisableAlphaUpdate(0);
+#else
 #if !RSTL_PRIME1
   CGlobalRandom gr(mRandState);
   if (sMoveRedToAlphaBuffer) {
@@ -3333,6 +5255,7 @@ void CElementGen::RenderParticlesIndirectTexture() {
   }
 #endif
 
+#endif
   CTransform4f systemViewCopy(CGraphics::GetViewMatrix());
   systemViewCopy.SetTranslation(CVector3f::Zero());
   CTransform4f systemCameraCopy(systemViewCopy.GetQuickInverse() * mGlobalOrientation);
@@ -3340,6 +5263,12 @@ void CElementGen::RenderParticlesIndirectTexture() {
                    systemViewCopy * mLocalScaleTransform;
   CGraphics::SetModelMatrix(systemViewCopy);
 
+#if RSTL_CORRUPTION
+  int blendMode = 0;
+  mLoadedGenDesc->mPBDM->GetValue(mCurFrame, blendMode);
+  CGX::SetZMode(mZTest, GX_LEQUAL, mZBUF);
+  SetParticleBlendMode(blendMode);
+#else
   CGX::SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
 
   if (mAAPH) {
@@ -3349,6 +5278,7 @@ void CElementGen::RenderParticlesIndirectTexture() {
     CGX::SetZMode(true, GX_LEQUAL, mZBUF);
     CGX::SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
   }
+#endif
 
   SUVElementSet uvs;
   uvs.xMin = 0.f;
@@ -3367,8 +5297,15 @@ void CElementGen::RenderParticlesIndirectTexture() {
   CTexture* cachedTex = *texToken;
 
   bool constTexr = mLoadedGenDesc->mTEXR->HasConstantTexture();
+#if !RSTL_CORRUPTION
   mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+#endif
   bool constUVs = mLoadedGenDesc->mTEXR->HasConstantUV();
+#if RSTL_CORRUPTION
+  if (constUVs) {
+    mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+  }
+#endif
 
   TToken< CTexture > indTexToken =
       mLoadedGenDesc->mTIND->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
@@ -3377,7 +5314,13 @@ void CElementGen::RenderParticlesIndirectTexture() {
 
   bool constIndTexr = mLoadedGenDesc->mTIND->HasConstantTexture();
   bool constIndUVs = mLoadedGenDesc->mTIND->HasConstantUV();
+#if RSTL_CORRUPTION
+  if (constIndUVs) {
+#endif
   mLoadedGenDesc->mTIND->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvsInd);
+#if RSTL_CORRUPTION
+  }
+#endif
 
   CGX::SetNumTexGens(3);
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
@@ -3417,8 +5360,12 @@ void CElementGen::RenderParticlesIndirectTexture() {
 
   CGX::SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
   CGX::SetNumChans(1);
+#if RSTL_CORRUPTION
+  CGraphics::SetLightingMode(3);
+#else
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
 
   CParticleListItem* sortItems = nullptr;
   int particleCount = mParticles.size();
@@ -3435,12 +5382,17 @@ void CElementGen::RenderParticlesIndirectTexture() {
       sortItems[i].mPartIdx = static_cast< ushort >(i);
     }
 
+#if RSTL_CORRUPTION
+    static CParticleListItemViewPointComp sComp;
+    rstl::sort(sortItems, sortItems + particleCount, sComp);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
     rstl::sort(sortItems, sortItems + particleCount, CParticleListItemViewPointComp());
 #else
     static CParticleListItemViewPointComp sComp;
     rstl::sort(sortItems, sortItems + particleCount, sComp);
+#endif
 #endif
   }
 
@@ -3451,6 +5403,17 @@ void CElementGen::RenderParticlesIndirectTexture() {
   CGX::SetVtxDescv(skIndVtxDescList);
 
   for (int i = 0; i < particleCount; ++i) {
+#if RSTL_CORRUPTION
+    int particleIdx = SORT ? sortItems[i].mPartIdx : i;
+    CParticle* particle = &mParticles[particleIdx];
+    const CVector3f viewPoint =
+        systemCameraCopy *
+        ((particle->mPos - particle->mPrevPos) * mTimeDeltaScale + particle->mPrevPos);
+
+    float vpX = viewPoint.GetX();
+    float vpY = viewPoint.GetY();
+    float vpZ = viewPoint.GetZ();
+#else
     CParticle* particle = SORT ? &mParticles[sortItems[i].mPartIdx] : &mParticles[i];
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
@@ -3469,6 +5432,7 @@ void CElementGen::RenderParticlesIndirectTexture() {
     float vpX = viewPoint.GetX();
     float vpY = viewPoint.GetY();
     float vpZ = viewPoint.GetZ();
+#endif
 #endif
 
     if (!constTexr) {
@@ -3489,10 +5453,63 @@ void CElementGen::RenderParticlesIndirectTexture() {
       }
     }
 
+#if RSTL_CORRUPTION
+    if (!constUVs || !constIndUVs) {
+      int partFrame = mCurFrame - particle->mStartFrame - 1;
+      CParticleGlobals::SetParticleLifetime(particle->mEndFrame - particle->mStartFrame);
+      CParticleGlobals::UpdateParticleLifetimeTweenValues(partFrame);
+      CParticleGlobals::SetCurrentParticle(particle);
+      CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(particleIdx));
+#endif
     if (!constUVs) {
+#if RSTL_CORRUPTION
+        mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - particle->mStartFrame, uvs);
+      }
+      if (!constIndUVs) {
+        mLoadedGenDesc->mTIND->GetValueUV(mCurFrame - particle->mStartFrame, uvsInd);
+      }
+#else
       mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[i].mStartFrame, uvs);
+#endif
     }
 
+#if RSTL_CORRUPTION
+    float sinPlusCos;
+    float cosMinusSin;
+    const float halfSize = 0.5f * particle->mLineLengthOrSize;
+    const float theta = particle->mLineWidthOrRota * (M_PIF / 180.f);
+    const float sinT = halfSize * CMath::FastSinR(theta);
+    const float cosT = halfSize * CMath::FastCosR(theta);
+    cosMinusSin = cosT - sinT;
+    sinPlusCos = sinT + cosT;
+    const float sinMinusCos = sinT - cosT;
+    const float negSinPlusCos = -sinT + cosT;
+    const float negCosMinusSin = -cosT - sinT;
+    CGraphics::CClippedScreenQuad clipRect = CGraphics::ClipScreenQuadFromMS(
+        CVector3f(sinPlusCos + vpX, vpY, cosMinusSin + vpZ),
+        CVector3f(sinMinusCos + vpX, vpY, sinPlusCos + vpZ),
+        CVector3f(vpX - sinPlusCos, vpY, vpZ - cosMinusSin),
+        CVector3f(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ), kTexelFormat_RGB565);
+    if (!clipRect.IsValid()) {
+      continue;
+    }
+    const int indScale = mLoadedGenDesc->mINDM ? 1 : 0;
+    void* const dest = CGraphics::GetDolphinSpareBuffer();
+    GXSetTexCopySrc(static_cast< u16 >(clipRect.GetX()), static_cast< u16 >(clipRect.GetY()),
+                    static_cast< u16 >(clipRect.GetWidth()),
+                    static_cast< u16 >(clipRect.GetHeight()));
+    GXSetTexCopyDst(clipRect.GetTexWidth() >> indScale, clipRect.GetHeight() >> indScale,
+                    GX_TF_RGB565, indScale ? GX_TRUE : GX_FALSE);
+
+      int bufSize = CGraphics::GetSpareBufferSize();
+    size_t texBufSize =
+        GXGetTexBufferSize(clipRect.GetTexWidth() >> indScale,
+                           clipRect.GetHeight() >> indScale, GX_TF_RGB565, GX_FALSE, 0);
+    if (texBufSize > bufSize) {
+      gpfnWarningPrintf("Ind particle %d by %d too big - not drawn.\n", clipRect.GetWidth(),
+                        clipRect.GetHeight());
+      continue;
+#else
     if (!constIndUVs) {
       mLoadedGenDesc->mTIND->GetValueUV(mCurFrame - mParticles[i].mStartFrame, uvsInd);
     }
@@ -3652,7 +5669,48 @@ void CElementGen::RenderParticlesIndirectTexture() {
                            GX_TF_RGB565, GX_FALSE, 0) > bufSize) {
       continue;
 #endif
+#endif
       }
+#if RSTL_CORRUPTION
+    bool useVideoFilter = CGraphics::GetUseVideoFilter();
+    CGraphics::SetUseVideoFilter(false);
+    GXCopyTex(dest, GX_FALSE);
+    CGraphics::SetUseVideoFilter(useVideoFilter);
+    GXPixModeSync();
+
+    CGraphics::LoadDolphinSpareTexture(clipRect.GetTexWidth() >> indScale,
+                                       clipRect.GetHeight() >> indScale, GX_TF_RGB565, NULL,
+                                      CGraphics::kSpareBufferTexMapID, GX_NEAR);
+
+    uint color = particle->mColor.GetColor_u32();
+    CGX::Begin(GX_QUADS, GX_VTXFMT0, 4);
+
+    GXPosition3f32(sinPlusCos + vpX, vpY, cosMinusSin + vpZ);
+    GXColor1u32(color);
+    GXTexCoord2f32(uvs.xMax, uvs.yMax);
+    GXTexCoord2f32(clipRect.GetTexCoord(0).GetX(), clipRect.GetTexCoord(0).GetY());
+    GXTexCoord2f32(uvsInd.xMax, uvsInd.yMax);
+
+    GXPosition3f32(sinMinusCos + vpX, vpY, sinPlusCos + vpZ);
+    GXColor1u32(color);
+    GXTexCoord2f32(uvs.xMin, uvs.yMax);
+    GXTexCoord2f32(clipRect.GetTexCoord(1).GetX(), clipRect.GetTexCoord(1).GetY());
+    GXTexCoord2f32(uvsInd.xMin, uvsInd.yMax);
+
+    GXPosition3f32(vpX - sinPlusCos, vpY, vpZ - cosMinusSin);
+    GXColor1u32(color);
+    GXTexCoord2f32(uvs.xMin, uvs.yMin);
+    GXTexCoord2f32(clipRect.GetTexCoord(2).GetX(), clipRect.GetTexCoord(2).GetY());
+    GXTexCoord2f32(uvsInd.xMin, uvsInd.yMin);
+
+    GXPosition3f32(negSinPlusCos + vpX, vpY, negCosMinusSin + vpZ);
+    GXColor1u32(color);
+    GXTexCoord2f32(uvs.xMax, uvs.yMin);
+    GXTexCoord2f32(clipRect.GetTexCoord(3).GetX(), clipRect.GetTexCoord(3).GetY());
+    GXTexCoord2f32(uvsInd.xMax, uvsInd.yMin);
+
+    CGX::End();
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     }
@@ -3696,25 +5754,36 @@ void CElementGen::RenderParticlesIndirectTexture() {
 
     CGX::End();
 #endif
+#endif
   }
 
   CGX::SetNumIndStages(0);
   CGX::SetTevDirect(GX_TEVSTAGE1);
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
   if (sMoveRedToAlphaBuffer) {
     GXSetAlphaUpdate(GX_TRUE);
   }
 #endif
+#endif
 }
 
 void CElementGen::RenderLines() {
+#if RSTL_CORRUPTION
+  CGraphics::CAlphaContextsGuard alphaGuard;
+#else
 #if RSTL_PRIME1
   bool hasModuColor = mModuColor.GetColor_u32() != 0xFFFFFFFF;
 #endif
 
+#endif
   CGlobalRandom gr(mRandState);
+#if RSTL_CORRUPTION
+  const bool hasModuColor = mModuColor.GetColor_u32() != 0xffffffff;
+#else
 #if !RSTL_PRIME1
   const bool hasModuColor = mModuColor.GetColor_u32() != 0xffffffff;
+#endif
 #endif
 
   CTransform4f systemViewPointMatrix(CGraphics::GetViewMatrix());
@@ -3723,6 +5792,12 @@ void CElementGen::RenderLines() {
   systemViewPointMatrix = CTransform4f::Translate(mGlobalTranslation) * mGlobalScaleTransform *
                           systemViewPointMatrix * mLocalScaleTransform;
   CGraphics::SetModelMatrix(systemViewPointMatrix);
+#if RSTL_CORRUPTION
+  int blendMode = 0;
+  mLoadedGenDesc->mPBDM->GetValue(mCurFrame, blendMode);
+  CGraphics::SetDepthWriteMode(mZTest, kE_LEqual, mZBUF);
+  SetParticleBlendMode(blendMode);
+#else
 
   CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
 
@@ -3733,6 +5808,7 @@ void CElementGen::RenderLines() {
     CGraphics::SetDepthWriteMode(true, kE_LEqual, true);
     CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
   }
+#endif
 
   bool constUVs = true;
   SUVElementSet uvs;
@@ -3744,6 +5820,10 @@ void CElementGen::RenderLines() {
   const bool widtConst = mLoadedGenDesc->mWIDT != nullptr && mLoadedGenDesc->mWIDT->IsConstant();
 
   if (mLoadedGenDesc->mTEXR != nullptr) {
+#if RSTL_CORRUPTION
+    TToken< CTexture > tex =
+        mLoadedGenDesc->mTEXR->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int partFrame = mCurFrame - mParticles[0].mStartFrame;
@@ -3753,6 +5833,7 @@ void CElementGen::RenderLines() {
         mLoadedGenDesc->mTEXR->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
 #endif
 
+#endif
     tex->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
 
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
@@ -3764,15 +5845,34 @@ void CElementGen::RenderLines() {
           CTevCombiners::AlphaPass(CTevCombiners::kAS_Zero, CTevCombiners::kAS_PreviousAlpha,
                                    CTevCombiners::kAS_RasterAlpha, CTevCombiners::kAS_Zero));
       CGraphics::SetTevOp(kTS_Stage1, ModulatePreviousTEVWithRasColor);
+#if RSTL_CORRUPTION
+      CGX::SetNumTevStages(2);
+#endif
     } else {
       CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
+#if RSTL_CORRUPTION
+      CGX::SetNumTevStages(1);
+#endif
     }
 
+#if RSTL_CORRUPTION
+    CGX::SetNumTexGens(1);
+#else
     mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+#endif
     constUVs = mLoadedGenDesc->mTEXR->HasConstantUV();
+#if RSTL_CORRUPTION
+    if (constUVs) {
+      mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, uvs);
+    }
+#endif
   } else {
     CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvPassthru);
     CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
+#if RSTL_CORRUPTION
+    CGX::SetNumTevStages(1);
+    CGX::SetNumTexGens(0);
+#endif
   }
 
   static const GXVtxDescList skDescList[] = {
@@ -3792,11 +5892,16 @@ void CElementGen::RenderLines() {
   } else {
     CGX::SetNumChans(1);
   }
+#if RSTL_CORRUPTION
+  CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP0, GX_COLOR0A0);
+  CGraphics::SetLightingMode(3);
+#else
 
   CGX::SetNumTexGens(1);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
 
   if (widtConst) {
@@ -3815,13 +5920,24 @@ void CElementGen::RenderLines() {
     CParticle& particle = mParticles[i];
 
     if (!constUVs) {
+#if RSTL_CORRUPTION
+      int partFrame = mCurFrame - particle.mStartFrame - 1;
+      CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
+      CParticleGlobals::UpdateParticleLifetimeTweenValues(partFrame);
+      CParticleGlobals::SetCurrentParticle(&particle);
+      CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(i));
+#endif
       mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - particle.mStartFrame, uvs);
     }
 
     CVector3f direction = particle.mPos - particle.mPrevPos;
 
     if (mFXLL) {
+#if RSTL_CORRUPTION
+      const float magnitude = direction.Magnitude();
+#else
       RSTL_ECHOES_CONST float magnitude = direction.Magnitude();
+#endif
       if (magnitude > 0.f) {
         direction *= 1.f / magnitude;
       }
@@ -3832,8 +5948,12 @@ void CElementGen::RenderLines() {
         systemCameraMatrix * (particle.mPos + particle.mLineLengthOrSize * direction);
 
     if (widtConst) {
+#if RSTL_CORRUPTION
+      const uint color = particle.mColor.GetColor_u32();
+#else
       RSTL_ECHOES_CONST uint color = particle.mColor.GetColor_u32();
 
+#endif
       GXPosition3f32(p1[0], p1[1], p1[2]);
       GXColor1u32(color);
       GXTexCoord2f32(uvs.xMin, uvs.yMin);
@@ -3849,8 +5969,12 @@ void CElementGen::RenderLines() {
       }
       CGX::SetLineWidth(CCast::ToUint8(6.f * lineWidth), GX_TO_ZERO);
       CGX::Begin(GX_LINES, GX_VTXFMT0, 2);
+#if RSTL_CORRUPTION
+      const uint color = particle.mColor.GetColor_u32();
+#else
       RSTL_ECHOES_CONST uint color = particle.mColor.GetColor_u32();
 
+#endif
       GXPosition3f32(p1[0], p1[1], p1[2]);
       GXColor1u32(color);
       GXTexCoord2f32(uvs.xMin, uvs.yMin);
@@ -3868,6 +5992,364 @@ void CElementGen::RenderLines() {
   CGraphics::SetLineWidth(1.f, kTO_Zero);
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::BeginModelRender(SModelRenderState& state) {
+  CGraphics::DisableAlphaUpdate(0);
+  if (mModelsUseLights) {
+    CGraphics::SetLightState(mBackupLightActive);
+    CGraphics::SetLightingMode(1);
+  } else {
+    CGraphics::SetLightingMode(0);
+  }
+  if (!mLoadedGenDesc->mPMUS) {
+    return;
+  }
+  if (mLoadedGenDesc->mPMAB) {
+    CGraphics::SetDepthWriteMode(true, kE_LEqual, false);
+      CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+      CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
+  } else {
+    CGraphics::SetDepthWriteMode(true, kE_LEqual, mZBUF);
+
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+    CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
+  }
+
+  CGraphics::SetCullMode(kCM_None);
+
+  if (mLoadedGenDesc->mTEXR != nullptr) {
+    TToken< CTexture > texture =
+        mLoadedGenDesc->mTEXR->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
+    texture->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
+
+    CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvModulate);
+      CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
+    state.mConstantUV = mLoadedGenDesc->mTEXR->HasConstantUV();
+    if (state.mConstantUV) {
+      mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, state.mUV);
+    }
+  } else {
+    CGraphics::SetTevOp(kTS_Stage0, CGraphics::kEnvPassthru);
+    CGraphics::SetTevOp(kTS_Stage1, CGraphics::kEnvPassthru);
+  }
+}
+
+void CElementGen::BeginIndirectModelRender(SModelRenderState& state) {
+  CGraphics::DisableAlphaUpdate(0);
+  CGraphics::SetCullMode(kCM_None);
+  CGX::SetZMode(mZTest, GX_LEQUAL, mZBUF);
+  SetParticleBlendMode(state.mBlendMode);
+
+  TToken< CTexture > texture =
+      mLoadedGenDesc->mTEXR->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
+  texture->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
+  state.mConstantUV = mLoadedGenDesc->mTEXR->HasConstantUV();
+  if (state.mConstantUV) {
+    mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - mParticles[0].mStartFrame, state.mUV);
+  }
+  TToken< CTexture > indirectTexture =
+      mLoadedGenDesc->mTIND->GetValueTexture(mCurFrame - mParticles[0].mStartFrame);
+  indirectTexture->Load(GX_TEXMAP2, CTexture::kCM_Repeat);
+  state.mConstantIndirectUV = mLoadedGenDesc->mTIND->HasConstantUV();
+  if (state.mConstantIndirectUV) {
+  mLoadedGenDesc->mTIND->GetValueUV(mCurFrame - mParticles[0].mStartFrame, state.mIndirectUV);
+  }
+
+  CGX::SetNumTexGens(3);
+  CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
+  CGX::SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY, false, GX_PTIDENTITY);
+  CGX::SetTexCoordGen(GX_TEXCOORD2, GX_TG_MTX2x4, GX_TG_TEX2, GX_IDENTITY, false, GX_PTIDENTITY);
+  float indirectMatrix[2][3] = {{0.5f, 0.f, 0.f}, {0.f, 0.5f, 0.f}};
+  GXSetIndTexMtx(GX_ITM_0, indirectMatrix, 1);
+  GXSetIndTexOrder(GX_INDTEXSTAGE0, GX_TEXCOORD2, GX_TEXMAP2);
+  CGX::SetTevIndirect(GX_TEVSTAGE1, GX_INDTEXSTAGE0, GX_ITF_8, GX_ITB_STU, GX_ITM_0, GX_ITW_OFF,
+                      GX_ITW_OFF, false, false, GX_ITBA_OFF);
+  CGX::SetNumIndStages(1);
+  CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+  CGX::SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD1, CGraphics::kSpareBufferTexMapID, GX_COLOR0A0);
+  CGX::SetNumTevStages(2);
+  CGX::SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_8_8);
+  CGX::SetTevKAlphaSel(GX_TEVSTAGE1, GX_TEV_KASEL_8_8);
+  if (!mLoadedGenDesc->mCIND) {
+    CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_ZERO);
+    CGX::SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_CPREV);
+  } else {
+    CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+    CGX::SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_CPREV, GX_CC_ZERO);
+  }
+  CGX::SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_KONST, GX_CA_ZERO);
+  CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
+  CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE1);
+  CGX::SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_APREV, GX_CA_RASA, GX_CA_ZERO);
+  CGX::SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+  CGraphics::SetLightingMode(3);
+  static const GXVtxDescList skDescList[] = {
+      {GX_VA_POS, GX_DIRECT},  {GX_VA_CLR0, GX_DIRECT}, {GX_VA_TEX0, GX_DIRECT},
+      {GX_VA_TEX1, GX_DIRECT}, {GX_VA_TEX2, GX_DIRECT}, {GX_VA_NULL, GX_NONE},
+  };
+  CGX::SetVtxDescv(skDescList);
+}
+
+void CElementGen::RenderModelParticle(SModelRenderState& state, const CColor& color,
+                                      const CParticle& particle) {
+  if (mLoadedGenDesc->mPMUS) {
+    SUVElementSet& uvs = state.mUV;
+    if (!state.mConstantUV) {
+      const int frame = mCurFrame - particle.mStartFrame - 1;
+      CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
+      CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+      CParticleGlobals::SetCurrentParticle(const_cast< CParticle* >(&particle));
+      CParticleGlobals::SetParticleAccessParameters(
+          GetParticleAdditionalData(&particle - mParticles.data()));
+      mLoadedGenDesc->mTEXR->GetValueUV(frame, uvs);
+    }
+      CGraphics::StreamBegin(kP_Quads);
+      CGraphics::StreamColor(color.GetColor_u32());
+
+      CGraphics::StreamTexcoord(uvs.xMax, uvs.yMax);
+      CGraphics::StreamVertex(0.5f, 0.f, 0.5f);
+      CGraphics::StreamTexcoord(uvs.xMin, uvs.yMax);
+      CGraphics::StreamVertex(-0.5f, 0.f, 0.5f);
+      CGraphics::StreamTexcoord(uvs.xMin, uvs.yMin);
+      CGraphics::StreamVertex(-0.5f, 0.f, -0.5f);
+      CGraphics::StreamTexcoord(uvs.xMax, uvs.yMin);
+      CGraphics::StreamVertex(0.5f, 0.f, -0.5f);
+      CGraphics::StreamEnd();
+  } else {
+    CModel* model = mLoadedGenDesc->mPMDL->GetObject();
+    CGraphics::DisableDestinationAlpha(0);
+    if (sSubtractBlend) {
+      model->Draw(CModelFlags::AlphaBlended(0.5f));
+    } else if (mLoadedGenDesc->mPMAB) {
+      model->Draw(CModelFlags::Additive(color));
+    } else if (color.GetAlpha() == 1.f) {
+      model->Draw(CModelFlags(CModelFlags::kT_One, color));
+    } else {
+      model->Draw(CModelFlags(CModelFlags::kT_Blend, color));
+    }
+  }
+}
+
+void CElementGen::RenderIndirectModelParticle(SModelRenderState& state, const CColor& color,
+                                              const CParticle& particle) {
+  SUVElementSet& uvs = state.mUV;
+  SUVElementSet& indirectUVs = state.mIndirectUV;
+  if (!state.mConstantUV || !state.mConstantIndirectUV) {
+    const int frame = mCurFrame - particle.mStartFrame - 1;
+    CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
+    CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+    CParticleGlobals::SetCurrentParticle(const_cast< CParticle* >(&particle));
+    CParticleGlobals::SetParticleAccessParameters(
+        GetParticleAdditionalData(&particle - mParticles.data()));
+  if (!state.mConstantUV) {
+    mLoadedGenDesc->mTEXR->GetValueUV(mCurFrame - particle.mStartFrame, uvs);
+  }
+  if (!state.mConstantIndirectUV) {
+    mLoadedGenDesc->mTIND->GetValueUV(mCurFrame - particle.mStartFrame, indirectUVs);
+    }
+  }
+
+  CGraphics::CClippedScreenQuad clip = CGraphics::ClipScreenQuadFromMS(
+      CVector3f(0.5f, 0.f, 0.5f), CVector3f(-0.5f, 0.f, 0.5f), CVector3f(-0.5f, 0.f, -0.5f),
+      CVector3f(0.5f, 0.f, -0.5f), kTexelFormat_RGB565);
+  if (!clip.IsValid()) {
+    return;
+  }
+  const int halfSize = mLoadedGenDesc->mINDM ? 1 : 0;
+  void* const dest = CGraphics::GetDolphinSpareBuffer();
+  GXSetTexCopySrc(clip.GetX(), clip.GetY(), clip.GetWidth(), clip.GetHeight());
+  GXSetTexCopyDst(clip.GetTexWidth() >> halfSize, clip.GetHeight() >> halfSize, GX_TF_RGB565,
+                  halfSize != 0 ? GX_TRUE : GX_FALSE);
+  int bufferSize = CGraphics::GetSpareBufferSize();
+  const size_t textureSize = GXGetTexBufferSize(
+      clip.GetTexWidth() >> halfSize, clip.GetHeight() >> halfSize, GX_TF_RGB565, false, 0);
+  if (textureSize > bufferSize) {
+    gpfnWarningPrintf("Ind particle %d by %d too big - not drawn.\n", clip.GetWidth(), clip.GetHeight());
+    return;
+  }
+  bool useVideoFilter = CGraphics::GetUseVideoFilter();
+  CGraphics::SetUseVideoFilter(false);
+  GXCopyTex(dest, GX_FALSE);
+  CGraphics::SetUseVideoFilter(useVideoFilter);
+  GXPixModeSync();
+  CGraphics::LoadDolphinSpareTexture(clip.GetTexWidth() >> halfSize, clip.GetHeight() >> halfSize,
+                                     GX_TF_RGB565, nullptr, CGraphics::kSpareBufferTexMapID,
+                                     GX_NEAR);
+
+  const uint packedColor = color.GetColor_u32();
+  CGX::Begin(GX_QUADS, GX_VTXFMT0, 4);
+  GXPosition3f32(0.5f, 0.f, 0.5f);
+  GXColor1u32(packedColor);
+  GXTexCoord2f32(uvs.xMax, uvs.yMax);
+  GXTexCoord2f32(clip.GetTexCoord(0).GetX(), clip.GetTexCoord(0).GetY());
+  GXTexCoord2f32(indirectUVs.xMax, indirectUVs.yMax);
+  GXPosition3f32(-0.5f, 0.f, 0.5f);
+  GXColor1u32(packedColor);
+  GXTexCoord2f32(uvs.xMin, uvs.yMax);
+  GXTexCoord2f32(clip.GetTexCoord(1).GetX(), clip.GetTexCoord(1).GetY());
+  GXTexCoord2f32(indirectUVs.xMin, indirectUVs.yMax);
+  GXPosition3f32(-0.5f, 0.f, -0.5f);
+  GXColor1u32(packedColor);
+  GXTexCoord2f32(uvs.xMin, uvs.yMin);
+  GXTexCoord2f32(clip.GetTexCoord(2).GetX(), clip.GetTexCoord(2).GetY());
+  GXTexCoord2f32(indirectUVs.xMin, indirectUVs.yMin);
+  GXPosition3f32(0.5f, 0.f, -0.5f);
+  GXColor1u32(packedColor);
+  GXTexCoord2f32(uvs.xMax, uvs.yMin);
+  GXTexCoord2f32(clip.GetTexCoord(3).GetX(), clip.GetTexCoord(3).GetY());
+  GXTexCoord2f32(indirectUVs.xMax, indirectUVs.yMin);
+  CGX::End();
+}
+
+void CElementGen::EndModelRender(const SModelRenderState& state) {
+  if (mModelsUseLights) {
+    CGraphics::SetLightingMode(0);
+  }
+
+  CGraphics::SetCullMode(kCM_Front);
+  CTevCombiners::ResetStates();
+  CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
+}
+
+void CElementGen::EndIndirectModelRender(const SModelRenderState& state) {
+  CGraphics::SetCullMode(kCM_Front);
+  CGX::SetNumIndStages(0);
+  CGX::SetTevDirect(GX_TEVSTAGE1);
+}
+
+void CElementGen::RenderModels() {
+  CGraphics::CAlphaContextsGuard alphaGuard;
+  CGlobalRandom gr(mRandState);
+  CParticleGlobals::SetParticleAccessParameters(nullptr);
+  SModelRenderState state;
+  state.mConstantUV = true;
+  state.mConstantIndirectUV = true;
+  state.mBlendMode = 0;
+  mLoadedGenDesc->mPBDM->GetValue(mCurFrame, state.mBlendMode);
+  state.mUV.xMax = 1.f;
+  state.mUV.yMax = 1.f;
+  state.mUV.xMin = 0.f;
+  state.mUV.yMin = 0.f;
+  state.mIndirectUV.xMax = 1.f;
+  state.mIndirectUV.yMax = 1.f;
+  state.mIndirectUV.xMin = 0.f;
+  state.mIndirectUV.yMin = 0.f;
+  if (!IsIndirectTextured()) {
+    BeginModelRender(state);
+  } else {
+    if (!mLoadedGenDesc->mPMUS) {
+      return;
+    }
+    BeginIndirectModelRender(state);
+  }
+
+  CVector3f offset(CVector3f::Zero());
+  CTransform4f orientation(CTransform4f::Identity());
+  if (!mLoadedGenDesc->mPMOO) {
+    orientation = mOrientation;
+  }
+  orientation = orientation * mGlobalOrientation;
+  const bool constantRotation =
+      mLoadedGenDesc->mPMRT != nullptr && mLoadedGenDesc->mPMRT->IsFastConstant();
+  const CVector3f translation =
+      (mGlobalScaleTransformInverse * mLocalScaleTransformInverse) * mGlobalTranslation;
+  CTransform4f rotation(CTransform4f::Identity());
+  if (constantRotation) {
+    CVector3f angles(CVector3f::Zero());
+    mLoadedGenDesc->mPMRT->GetValue(mCurFrame, angles);
+    rotation = CTransform4f::RotateZ(CRelAngle::FromDegrees(angles.GetZ()));
+    rotation.RotateLocalY(CRelAngle::FromDegrees(angles.GetY()));
+    rotation.RotateLocalX(CRelAngle::FromDegrees(angles.GetX()));
+  }
+  rotation = orientation * rotation;
+  CParticleGlobals::SetEmitterTime(mCurFrame);
+
+  CParticleListItem* sortItems = nullptr;
+  CColor color = mModuColor;
+  bool sorted = mLoadedGenDesc->mSORT;
+  if (sorted) {
+    CTransform4f view(CGraphics::GetViewMatrix());
+    view.SetTranslation(CVector3f::Zero());
+    CTransform4f camera(view.GetQuickInverse() * mGlobalOrientation);
+    const int count = mParticles.size();
+    sortItems = static_cast< CParticleListItem* >(alloca(count * sizeof(CParticleListItem)));
+    for (int i = 0; i < count; ++i) {
+      const CParticle& particle = mParticles[i];
+      sortItems[i].mViewPoint =
+          camera * (mTimeDeltaScale * (particle.mPos - particle.mPrevPos) + particle.mPrevPos);
+      sortItems[i].mPartIdx = static_cast< ushort >(i);
+    }
+    static CParticleListItemViewPointComp comparator;
+    rstl::sort(sortItems, sortItems + count, comparator);
+  }
+
+  for (int i = 0; i < mParticles.size(); ++i) {
+    const int index = sorted ? sortItems[i].mPartIdx : i;
+    CParticle& particle = mParticles[index];
+    if (particle.mEndFrame == -1) {
+      continue;
+    }
+    int frame = mCurFrame - particle.mStartFrame - 1;
+    CParticleGlobals::SetParticleLifetime(particle.mEndFrame - particle.mStartFrame);
+    CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+    CParticleGlobals::SetCurrentParticle(&particle);
+    CParticleGlobals::SetParticleAccessParameters(GetParticleAdditionalData(index));
+    if (mLoadedGenDesc->mPMOP != nullptr) {
+      mLoadedGenDesc->mPMOP->GetValue(frame, offset);
+    }
+
+    CTransform4f transform = CTransform4f::Translate(
+        translation +
+        mGlobalOrientation.Rotate(mTimeDeltaScale * (particle.mPos - particle.mPrevPos) +
+                                  particle.mPrevPos));
+    if (mOrientType == kMOT_One) {
+      CTransform4f parent(mParentMatrices[index], CVector3f::Zero());
+      transform.AddTranslation((orientation * parent) * offset);
+      transform *= parent;
+    } else {
+      transform.AddTranslation(orientation * offset);
+    }
+    if (mLoadedGenDesc->mPMOV != nullptr) {
+      CVector3f direction(CVector3f::Zero());
+      mLoadedGenDesc->mPMOV->GetValue(frame, direction);
+      transform *= CTransform4f::LookAt(CVector3f::Zero(), direction, CVector3f::Up());
+    }
+    if (constantRotation) {
+      transform *= rotation;
+    } else if (mLoadedGenDesc->mPMRT != nullptr) {
+      CVector3f angles(CVector3f::Zero());
+      mLoadedGenDesc->mPMRT->GetValue(frame, angles);
+      rotation = CTransform4f::RotateZ(CRelAngle::FromDegrees(angles.GetZ()));
+      rotation.RotateLocalY(CRelAngle::FromDegrees(angles.GetY()));
+      rotation.RotateLocalX(CRelAngle::FromDegrees(angles.GetX()));
+      transform *= orientation * rotation;
+    } else {
+      transform *= rotation;
+    }
+    if (mLoadedGenDesc->mPMSC != nullptr) {
+      CVector3f scale(CVector3f::Zero());
+      mLoadedGenDesc->mPMSC->GetValue(frame, scale);
+      transform *= CTransform4f::Scale(scale.GetX(), scale.GetY(), scale.GetZ());
+    }
+    if (mLoadedGenDesc->mPMCL != nullptr) {
+      mLoadedGenDesc->mPMCL->GetValue(frame, color);
+      color = CColor::Modulate(color, mModuColor);
+    }
+    CGraphics::SetModelMatrix(mGlobalScaleTransform * transform * mLocalScaleTransform);
+    if (!IsIndirectTextured()) {
+      RenderModelParticle(state, color, particle);
+    } else {
+      RenderIndirectModelParticle(state, color, particle);
+    }
+  }
+
+  if (!IsIndirectTextured()) {
+    EndModelRender(state);
+  } else {
+    EndIndirectModelRender(state);
+  }
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 void CElementGen::RenderModels() {
@@ -4502,11 +6984,20 @@ void CElementGen::RenderModels() {
   }
 }
 #endif
+#endif
 
 int CElementGen::GetParticleCountAll() const { return mRecursiveParticleCount; }
 
 int CElementGen::GetParticleCountAllInternal() const {
   int count = mActiveParticleCount;
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    CParticleGen* child = (*it);
+    count += child->Get4CharId() == 'PART'
+                 ? static_cast< CElementGen* >(child)->GetParticleCountAll()
+                 : child->GetParticleCount();
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
 #if RSTL_PRIME1
@@ -4518,10 +7009,21 @@ int CElementGen::GetParticleCountAllInternal() const {
                  ? static_cast< CElementGen* >(child)->GetParticleCountAll()
                  : child->GetParticleCount();
 #endif
+#endif
   }
   return count;
 }
 
+#if RSTL_CORRUPTION
+int CElementGen::GetSystemCount() const {
+  int count = static_cast< int >(mActiveParticleCount) > 0;
+  for (rstl::vector< CParticleGen* >::const_iterator it = mActivePartChildren.begin(),
+                                                     end = mActivePartChildren.end();
+       it != end; ++it) {
+    count += (*it)->GetSystemCount();
+  }
+  return count;
+#else
 int CElementGen::GetSystemCount() RSTL_ECHOES_CONST {
 #if RSTL_PRIME1
   int ret = static_cast< int >(mActiveParticleCount) > 0;
@@ -4543,12 +7045,20 @@ int CElementGen::GetSystemCount() RSTL_ECHOES_CONST {
   }
   return count;
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+void CElementGen::AccumulateBounds(const CVector3f& position, float size) {
+  const float x = position.GetX();
+  const float y = position.GetY();
+  const float z = position.GetZ();
+#else
 void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
   RSTL_ECHOES_CONST float x = pos.GetX();
   RSTL_ECHOES_CONST float y = pos.GetY();
   RSTL_ECHOES_CONST float z = pos.GetZ();
+#endif
   if (x > mAabbMax.GetX()) {
     mAabbMax.SetX(x);
   }
@@ -4575,11 +7085,17 @@ void CElementGen::AccumulateBounds(const CVector3f& pos, float size) {
 void CElementGen::BuildParticleSystemBounds() {
   CAABox childBounds = CAABox::MakeMaxInvertedBox();
   bool accumulated = false;
+#if RSTL_CORRUPTION
+  if (mEnableDynamicBounds) {
+    for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+         it != mActivePartChildren.end(); ++it) {
+#else
 #if RSTL_PARTICLE_BOUNDS_MODES
   if (mEnableDynamicBounds)
 #endif
   {
     for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
+#endif
       rstl::optional_object< CAABox > bounds = (*it)->GetBounds();
       if (bounds) {
         accumulated = true;
@@ -4592,6 +7108,13 @@ void CElementGen::BuildParticleSystemBounds() {
 
   mRecursiveParticleCount = GetParticleCountAllInternal();
 
+#if RSTL_CORRUPTION
+  if ((mEnableDynamicBounds && GetParticleCount() > 0) || mEnableFixedBounds) {
+    const float halfSize = mMaxSize / 2.f;
+    const CVector3f extent =
+        CVector3f::ByElementMultiply(CVector3f(halfSize, halfSize, halfSize), mGlobalScale);
+    const CAABox box = CAABox(mAabbMin, mAabbMax)
+#else
   if (
 #if !RSTL_PARTICLE_BOUNDS_MODES
       GetParticleCount() > 0
@@ -4613,9 +7136,12 @@ void CElementGen::BuildParticleSystemBounds() {
     const
 #endif
         CAABox transformed = CAABox(mAabbMin, mAabbMax)
+#endif
             .GetTransformedAABox((mGlobalScaleTransform * mGlobalOrientation) *
                                  mLocalScaleTransform);
+#if !RSTL_CORRUPTION
     const CAABox box = transformed;
+#endif
     mSystemBounds = CAABox(box.GetMinPoint() + mGlobalTranslation - extent,
                            box.GetMaxPoint() + mGlobalTranslation + extent);
   } else {
@@ -4635,15 +7161,23 @@ rstl::optional_object< CAABox > CElementGen::GetBounds() const {
   return rstl::optional_object< CAABox >(mSystemBounds);
 }
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 int CElementGen::GetEmitterTime() const { return mCurFrame; }
 #endif
 
+#endif
 bool CElementGen::SystemHasLight() const { return mLightType != kLT_None; }
 
 CLight CElementGen::GetLight() const {
   switch (mLightType) {
   case kLT_Directional: {
+#if RSTL_CORRUPTION
+    const CColor color(
+        rstl::min_val(1.f, mLINT * mLCLR.GetRed()), rstl::min_val(1.f, mLINT * mLCLR.GetGreen()),
+        rstl::min_val(1.f, mLINT * mLCLR.GetBlue()), rstl::min_val(1.f, mLINT * mLCLR.GetAlpha()));
+    return CLight::BuildDirectional(mLDIR.AsNormalized(), color);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float r = mLCLR.GetRed();
@@ -4658,8 +7192,20 @@ CLight CElementGen::GetLight() const {
         rstl::min_val(1.f, mLINT * mLCLR.GetBlue()), rstl::min_val(1.f, mLINT * mLCLR.GetAlpha()));
     return CLight::BuildDirectional(mLDIR.AsNormalized(), color);
 #endif
+#endif
   }
   case kLT_Spot: {
+#if RSTL_CORRUPTION
+    const CColor color(
+        rstl::min_val(1.f, mLINT * mLCLR.GetRed()), rstl::min_val(1.f, mLINT * mLCLR.GetGreen()),
+        rstl::min_val(1.f, mLINT * mLCLR.GetBlue()), rstl::min_val(1.f, mLINT * mLCLR.GetAlpha()));
+    CLight light = CLight::BuildSpot(mLOFF, mLDIR.AsNormalized(), color, mLSLA);
+    const float quadratic = mFalloffType == kFT_Quadratic ? mLFOR : 0.f;
+    const float linear = mFalloffType == kFT_Linear ? mLFOR : 0.f;
+    const float constant = mFalloffType == kFT_Constant ? 1.f : 0.f;
+    light.SetAttenuation(constant, linear, quadratic);
+    return light;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float r = mLCLR.GetRed();
@@ -4684,8 +7230,16 @@ CLight CElementGen::GetLight() const {
     light.SetAttenuation(constant, linear, quadratic);
     return light;
 #endif
+#endif
   }
   default: {
+#if RSTL_CORRUPTION
+    const float quadratic = mFalloffType == kFT_Quadratic ? mLFOR : 0.f;
+    const float linear = mFalloffType == kFT_Linear ? mLFOR : 0.f;
+    const float constant = mFalloffType == kFT_Constant ? 1.f : 0.f;
+    return CLight::BuildCustom(mLOFF, CVector3f::Right(), mLCLR, constant, linear, quadratic, mLINT,
+                               0.f, 0.f);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     float quad = mFalloffType == kFT_Quadratic ? mLFOR : 0.f;
@@ -4700,10 +7254,22 @@ CLight CElementGen::GetLight() const {
     return CLight::BuildCustom(mLOFF, CVector3f::Right(), mLCLR, constant, linear, quadratic, mLINT,
                                0.f, 0.f);
 #endif
+#endif
   }
   }
 }
 
+#if RSTL_CORRUPTION
+float CElementGen::GetGenerationRate() {
+  float rate = 0.f;
+  if (mLoadedGenDesc->mGRTE->GetValue(mCurFrame, rate)) {
+    return 0.f;
+  } else {
+    rate = rstl::max_val(0.f, rate * mGeneratorRate);
+    return rate;
+  }
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 // Preserve the retained zero literal before GetLight; this helper is stripped.
@@ -4719,11 +7285,18 @@ float CElementGen::GetGenerationRate() {
   }
 }
 #endif
+#endif
 
 void CElementGen::SetGeneratorRate(float rate) {
   mGeneratorRate = rstl::max_val(rate, 0.f);
+#if RSTL_CORRUPTION
+  for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
+       it != mActivePartChildren.end(); ++it) {
+    CParticleGen* child = (*it);
+#else
   for (AUTO(it, mActivePartChildren.begin()); it != mActivePartChildren.end(); ++it) {
     CParticleGen* child = *it;
+#endif
     if (child->Get4CharId() == 'PART') {
       child->SetGeneratorRate(mGeneratorRate);
     }
@@ -4731,20 +7304,31 @@ void CElementGen::SetGeneratorRate(float rate) {
 }
 float CElementGen::GetGeneratorRate() const { return mGeneratorRate; }
 
+#if RSTL_CORRUPTION
+int CElementGen::GetNumSpawnedParticleSystems() const { return mActivePartChildren.size(); }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 uint CElementGen::Get4CharId() const { return 'PART'; }
 #else
 int CElementGen::GetNumSpawnedParticleSystems() const { return mActivePartChildren.size(); }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CParticleGen* CElementGen::SpawnedParticleSystem(int index) { return mActivePartChildren[index]; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 int CElementGen::GetNumActiveChildParticles() const { return mActivePartChildren.size(); }
 #else
 CParticleGen* CElementGen::SpawnedParticleSystem(int index) { return mActivePartChildren[index]; }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+void CElementGen::SetExternalParam(uint index, float value) { mExternalVars[index] = value; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CParticleGen* CElementGen::GetActiveChildParticle(int index) const {
@@ -4755,6 +7339,7 @@ void CElementGen::SetExternalVar(int index, float val) { mExternalVars[index] = 
 #else
 void CElementGen::SetExternalParam(uint index, float value) { mExternalVars[index] = value; }
 #endif
+#endif
 
 float CElementGen::GetExternalVar(int index) const { return mExternalVars[index]; }
 
@@ -4762,6 +7347,21 @@ bool CElementGen::IsIndirectTextured() const {
   return mLoadedGenDesc->mTEXR != nullptr && mLoadedGenDesc->mTIND != nullptr;
 }
 
+#if RSTL_CORRUPTION
+const CElementGen::CAdvancedValues* CElementGen::GetParticleAdditionalData(uint index) const {
+  return mEnableADV ? &mAdvValues[index] : nullptr;
+}
+
+float* CElementGen::GetParticleAdditionalData(uint index) {
+  return mEnableADV ? mAdvValues[index].mValues : nullptr;
+}
+
+uint CElementGen::Get4CharId() const { return 'PART'; }
+
+const CVector3f& CElementGen::GetGlobalScale() const { return mGlobalScale; }
+
+const CTransform4f& CElementGen::GetOrientation() const { return mOrientation; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool CElementGen::GetParticleEmission() const { return mParticleEmission; }
@@ -4780,4 +7380,5 @@ const CVector3f& CElementGen::GetGlobalTranslation() const { return mGlobalTrans
 const CElementGen::CAdvancedValues* CElementGen::GetParticleAdditionalData(uint index) const {
   return mEnableADV ? &mAdvValues[index] : nullptr;
 }
+#endif
 #endif

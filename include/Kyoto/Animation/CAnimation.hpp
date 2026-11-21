@@ -1,12 +1,23 @@
 #ifndef _CANIMATION
 #define _CANIMATION
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/IMetaAnim.hpp"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/rc_ptr.hpp"
 #include "rstl/string.hpp"
 
+#if RSTL_CORRUPTION
+
+
+class IMetaAnim;
+#endif
 class CInputStream;
 
 class CAnimation {
@@ -19,8 +30,12 @@ private:
   rstl::string mName;
   rstl::rc_ptr< IMetaAnim > mAnim;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CAnimation, 0x18)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CAnimation, 0x18)
+#endif
 #endif
 
 #endif // _CANIMATION

@@ -1,14 +1,30 @@
 #ifndef _CSOUNDPOINODE
 #define _CSOUNDPOINODE
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CPOINode.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
+#endif
 
 class CSoundPOINode : public CPOINode {
 public:
+#if RSTL_CORRUPTION
+  CSoundPOINode(uint nameHash = -1, EPOIType type = kPT_Sound,
+                const CCharAnimTime& time = CCharAnimTime(), int index = -1,
+                const bool unique = false, float weight = 1.f, int charIdx = -1, int flags = 0,
+                int unk2C = CPOINode::skDefaultUnk2C, const CSegId& segId = CSegId(), int sfxId = 0,
+                float fallOff = 0.f, float maxDist = 0.f, ushort pitchStart = 0,
+                ushort pitchEnd = 0, float pitchDuration = 0.f);
+#else
 #if RSTL_PRIME1
   CSoundPOINode(const rstl::string name = "", const EPOIType type = kPT_Sound,
                 const CCharAnimTime& time = CCharAnimTime(), const int index = -1,
@@ -27,22 +43,36 @@ public:
                 const CSegId& segId = CSegId(0), ushort pitchStart = 0, ushort pitchEnd = 0,
                 float pitchDuration = 0.f);
 #endif
+#endif
   CSoundPOINode(CInputStream& in);
+#if RSTL_CORRUPTION
+  ~CSoundPOINode() override;
+#else
 #if !RSTL_PRIME1
   ~CSoundPOINode() override;
+#endif
 #endif
 
   uint GetSoundId() const { return mSfxId; }
   float GetFallOff() const { return mFalloff; }
   float GetMaxDistance() const { return mMaxDist; }
+#if RSTL_CORRUPTION
+  ushort GetPitchStart() const { return mPitchStart; }
+  ushort GetPitchEnd() const { return mPitchEnd; }
+  float GetPitchDuration() const { return mPitchDuration; }
+#else
 #if !RSTL_PRIME1
   const CSegId& GetLocator() const { return mSegId; }
   const ushort GetPitchStart() const { return mPitchStart; }
   const ushort GetPitchEnd() const { return mPitchEnd; }
   float GetPitchDuration() const { return mPitchDuration; }
 #endif
+#endif
 
   static CSoundPOINode CopyNodeMinusStartTime(const CSoundPOINode& node,
+#if RSTL_CORRUPTION
+                                              const CCharAnimTime& startTime);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
                                               const CCharAnimTime& startTime) {
@@ -54,23 +84,34 @@ public:
 #else
                                               const CCharAnimTime& startTime);
 #endif
+#endif
 
 private:
   uint mSfxId;
   float mFalloff;
   float mMaxDist;
+#if RSTL_CORRUPTION
+  ushort mPitchStart;
+  ushort mPitchEnd;
+  float mPitchDuration;
+#else
 #if !RSTL_PRIME1
   CSegId mSegId;
   ushort mPitchStart;
   ushort mPitchEnd;
   float mPitchDuration;
 #endif
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CSoundPOINode, 0x48)
+#else
 #if RSTL_PRIME1
 inline CSoundPOINode::CSoundPOINode(CInputStream& in)
 : CPOINode(in), mSfxId(in.ReadInt32()), mFalloff(in.Get< float >()), mMaxDist(in.Get< float >()) {}
 #else
 CHECK_CHILD_SIZEOF(CSoundPOINode, CPOINode, 0x18)
+#endif
 #endif
 
 #endif // _CSOUNDPOINODE

@@ -1,8 +1,14 @@
 #ifndef _CPARTICLEELECTRIC
 #define _CPARTICLEELECTRIC
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Particles/CParticleGen.hpp"
 
 #include "Kyoto/CRandom16.hpp"
@@ -23,6 +29,10 @@ struct SUVElementSet;
 
 class CParticleElectric : public CParticleGen {
 public:
+#if RSTL_CORRUPTION
+  static FourCC ResType() { return 'ELSC'; }
+
+#endif
   explicit CParticleElectric(TToken< CElectricDescription > desc);
 
   ~CParticleElectric() override;
@@ -34,13 +44,21 @@ public:
   void SetGlobalTranslation(const CVector3f& translation) override;
   void SetGlobalScale(const CVector3f& scale) override;
   void SetLocalScale(const CVector3f& scale) override;
+#if RSTL_CORRUPTION
+  void SetParticleEmission(bool emission) override;
+#else
   void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
+#endif
   void SetModulationColor(const CColor& col) override;
+#if RSTL_CORRUPTION
+  void SetGeneratorRate(float rate) override;
+#else
 #if !RSTL_PRIME1
   void SetGeneratorRate(float rate) override;
 #endif
 
+#endif
   const CTransform4f& GetOrientation() const override;
   const CVector3f& GetTranslation() const override;
   const CTransform4f& GetGlobalOrientation() const override;
@@ -49,12 +67,18 @@ public:
 
   bool GetParticleEmission() const override { return mEmitting; }
   const CColor& GetModulationColor() const override;
+#if RSTL_CORRUPTION
+  float GetGeneratorRate() const override;
+  int GetEmitterTime() const override;
+  int GetSystemCount() const override;
+#else
 #if !RSTL_PRIME1
   float GetGeneratorRate() const override;
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
 #endif
 
+#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;
@@ -62,8 +86,13 @@ public:
   CLight GetLight() const override;
   void DestroyParticles() override;
   uint Get4CharId() const override;
+#if RSTL_CORRUPTION
+
+  int GetCumulativeParticleCount() const { return mCumulativeParticles; }
+#else
 #if !RSTL_PRIME1
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
+#endif
 #endif
 
   class CLineManager {
@@ -96,15 +125,28 @@ public:
     uint mEndFrame;
     int mGPSMIdx;
     int mEPSMIdx;
+#if RSTL_CORRUPTION
+    CVector3f mInitialPos;
+    CVector3f mInitialVel;
+    CVector3f mFinalPos;
+    CVector3f mFinalVel;
+#else
 #if !RSTL_PRIME1
     CVector3f mInitialPos;
     CVector3f mInitialVel;
     CVector3f mFinalPos;
     CVector3f mFinalVel;
 #endif
+#endif
 
   public:
     CParticleElectricManager(uint idx, uint slif, uint startFrame);
+#if RSTL_CORRUPTION
+    const CVector3f& GetInitialPos() const { return mInitialPos; }
+    const CVector3f& GetInitialVel() const { return mInitialVel; }
+    const CVector3f& GetFinalPos() const { return mFinalPos; }
+    const CVector3f& GetFinalVel() const { return mFinalVel; }
+#else
 #if !RSTL_PRIME1
     const CVector3f& GetInitialPos() const { return mInitialPos; }
     const CVector3f& GetInitialVel() const { return mInitialVel; }
@@ -112,19 +154,30 @@ public:
     const CVector3f& GetFinalVel() const { return mFinalVel; }
 #endif
 
+#endif
   };
 
   void ForceParticleCreation(int count);
+#if RSTL_CORRUPTION
+  void ReseedRandom(uint seed); // Guessed name
+#endif
   void SetOverrideIPos(const CVector3f& vec) { mOverrideIPos = vec; }
   void SetOverrideIVel(const CVector3f& vec) { mOverrideIVel = vec; }
   void SetOverrideFPos(const CVector3f& vec) { mOverrideFPos = vec; }
   void SetOverrideFVel(const CVector3f& vec) { mOverrideFVel = vec; }
   static void SetGlobalSeed(ushort seed) { sSeed = seed; }
+#if RSTL_CORRUPTION
+  static ushort GetGlobalSeed() { return sSeed; }
+#else
 #if !RSTL_PRIME1
   static ushort GetGlobalSeed() { return sSeed; }
 #endif
+#endif
 
 private:
+#if RSTL_CORRUPTION
+  static void SetLineBlendMode(int mode); // Guessed name
+#endif
   void SetupLineGXMaterial();
   void DrawLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
                      const CColor& color);
@@ -145,6 +198,9 @@ private:
   TLockedToken< CElectricDescription > mElecDesc;
   int mCurrentFrame;
   int mLIFE;
+#if RSTL_CORRUPTION
+  int mBLDM;
+#endif
   double mCurTime;
   CVector3f mTranslation;
   CTransform4f mOrientation;
@@ -154,6 +210,9 @@ private:
   CVector3f mGlobalScale;
   CVector3f mLocalScale;
   CTransform4f mCachedXf;
+#if RSTL_CORRUPTION
+  float x130_;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float x128_;
@@ -161,9 +220,13 @@ private:
   float x130_;
 #endif
 
+#endif
   float mRenderTime;
   CVector3f mMinBounds;
   CVector3f mMaxBounds;
+#if RSTL_CORRUPTION
+  float x150_;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float x148_;
@@ -171,19 +234,27 @@ private:
   float x150_;
 #endif
 
+#endif
   CRandom16 mRandState;
   int mSSEG;
   int mSCNT;
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   int x158_;
 #endif
 
+#endif
   float mGenRem;
+#if RSTL_CORRUPTION
+  float mGeneratorRate;
+  int mCumulativeParticles;
+#else
 #if !RSTL_PRIME1
   float mGeneratorRate;
   int mCumulativeParticles;
 #endif
 
+#endif
   CAABox mSystemBounds;
   rstl::optional_object< CVector3f > mOverrideIPos;
   rstl::optional_object< CVector3f > mOverrideIVel;
@@ -206,17 +277,31 @@ private:
   bool mHaveSSWH : 1;
   bool mHaveLWD : 1;
   bool mTransformDirty : 1;
+#if RSTL_CORRUPTION
+  bool mTranslationDirty : 1;
+  bool mOrientationDirty : 1;
+  bool mGlobalScaleDirty : 1;
+  bool mLocalScaleDirty : 1;
+#else
 #if !RSTL_PRIME1
   bool mTranslationDirty : 1;
   bool mOrientationDirty : 1;
   bool mGlobalScaleDirty : 1;
   bool mLocalScaleDirty : 1;
 #endif
+#endif
 
   static ushort sSeed;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CParticleElectric, 0x460)
+NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager, 0x40)
+NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, 0x48)
+#else
 CHECK_SIZEOF(CParticleElectric, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x440 : 0x458) : 0x460)
+#endif
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 inline const CColor& CParticleElectric::GetModulationColor() const { return mModuColor; }
 
@@ -237,4 +322,5 @@ NESTED_CHECK_SIZEOF(CParticleElectric, CLineManager,
                     (RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ) ? 0x3c : 0x40)
 NESTED_CHECK_SIZEOF(CParticleElectric, CParticleElectricManager, RSTL_PRIME1 ? 0x18 : 0x48)
 
+#endif
 #endif // _CPARTICLEELECTRIC

@@ -1,6 +1,10 @@
 #ifndef _CUVELEMENT
 #define _CUVELEMENT
+#include "rstl/RstlVersions.h"
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/Particles/IElement.hpp"
@@ -41,4 +45,27 @@ public:
   bool HasConstantUV() const override { return false; }
 };
 
+#if RSTL_CORRUPTION
+// Guessed name
+class CUVETEXP : public CUVElement {
+  TLockedToken< CTexture > mTex;
+  int mTileW;
+  int mTileH;
+  int mTiles;
+  CRealElement* mTileSelection;
+  rstl::vector< SUVElementSet > mUvElems;
+
+public:
+  CUVETEXP(TToken< CTexture > tex, CIntElement* tileW, CIntElement* tileH,
+           CRealElement* tileSelection);
+  ~CUVETEXP() override;
+  TLockedToken< CTexture > GetValueTexture(int frame) const override;
+  void GetValueUV(int frame, SUVElementSet& valOut) const override;
+  bool HasConstantTexture() const override;
+  bool HasConstantUV() const override;
+};
+CHECK_SIZEOF(CUVETEXP, 0x30)
+
+
+#endif
 #endif // _CUVELEMENT

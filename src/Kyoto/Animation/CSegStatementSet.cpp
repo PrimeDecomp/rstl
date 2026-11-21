@@ -1,14 +1,29 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CSegStatementSet.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSegIdList.hpp"
 #include "Kyoto/Animation/CSegStatement.hpp"
+#endif
 
 #include "dolphin/os/OSCache.h"
 
+#if !RSTL_CORRUPTION
 namespace {
 const int kSegmentCount = 100;
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+
+namespace {
+const int kSegmentCount = 150;
+const int kSegmentSetSize = kSegmentCount * sizeof(CSegStatement);
+const int kCacheSlotCount = 2;
+int sFreeSegments = (1 << kCacheSlotCount) - 1;
+#else
 #if RSTL_PRIME1
 enum { kSegmentSetSize = kSegmentCount * sizeof(CSegStatement) };
 volatile int sFreeSegments = 31;
@@ -17,9 +32,26 @@ const int kSegmentSetSize = kSegmentCount * sizeof(CSegStatement);
 const int kCacheSlotCount = 3;
 int sFreeSegments = (1 << kCacheSlotCount) - 1;
 #endif
+#endif
 
 inline void* AllocateSegment() {
   LCQueueWait(0);
+#if RSTL_CORRUPTION
+  if (sFreeSegments) {
+    for (uint i = 0; i < kCacheSlotCount; ++i) {
+      if ((sFreeSegments & (1 << i)) != 0) {
+        sFreeSegments ^= 1 << i;
+        char* base = static_cast< char* >(LCGetBase());
+        base += i * kSegmentSetSize;
+        return base;
+      }
+    }
+  }
+
+  return CMemory::Alloc(kSegmentSetSize, IAllocator::kHI_None, IAllocator::kSC_Unk1,
+                        IAllocator::kTP_Heap,
+                        CCallStack(-1, "CSegStatementSet.cpp(213) : ", gkUnknownType));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const int freeMask = sFreeSegments;
@@ -59,9 +91,13 @@ inline void* AllocateSegment() {
   }
 #endif
   return CMemory::Alloc(kSegmentSetSize);
+#endif
 }
 
 inline void FreeSegment(CSegStatement* seg) {
+#if RSTL_CORRUPTION
+  char* base = static_cast< char* >(LCGetBase());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #ifdef __MWERKS__
@@ -73,12 +109,17 @@ inline void FreeSegment(CSegStatement* seg) {
 #else
   char* base = static_cast< char* >(LCGetBase());
 #endif
+#endif
   char* ptr = reinterpret_cast< char* >(seg);
+#if RSTL_CORRUPTION
+  if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (ptr >= base && ptr < base + 5 * kSegmentSetSize) {
 #else
   if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
+#endif
 #endif
     int index = (ptr - base) / kSegmentSetSize;
     sFreeSegments |= 1 << index;
@@ -95,6 +136,7 @@ CSegStatementSet::CSegStatementSet(void* storage)
   }
 }
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
                            const CSegStatementSet& set, float weight) {
@@ -114,7 +156,7 @@ void CSegStatementSet::Add(const CSegIdList& list, const CCharLayoutInfo& info,
 }
 #endif
 
+#endif
 CStackSegStatementSet::CStackSegStatementSet() : CSegStatementSet(AllocateSegment()) {}
 
 CStackSegStatementSet::~CStackSegStatementSet() { FreeSegment(mSegData); }
-

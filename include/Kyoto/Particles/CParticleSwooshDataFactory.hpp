@@ -1,28 +1,47 @@
 #ifndef _CPARTICLESWOOSHDATAFACTORY
 #define _CPARTICLESWOOSHDATAFACTORY
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
+#endif
 #include "Kyoto/CFactoryMgr.hpp"
 
+#if !RSTL_CORRUPTION
 class CInputStream;
+#endif
 
+#if RSTL_CORRUPTION
+
+class CInputStream;
+#endif
 class CSimplePool;
 class CSwooshDescription;
 
 class CParticleSwooshDataFactory {
 public:
   static CSwooshDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool);
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 private:
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+private:
+#endif
   static CSwooshDescription* CreateGeneratorDescription(CInputStream& in, CSimplePool* pool);
   static bool CreateWPSM(CSwooshDescription* desc, CInputStream& in, CSimplePool* pool);
 };
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FParticleSwooshDataFactory(const SObjectTag& tag,
+                                            const rstl::auto_ptr< uchar >& buffer, int size,
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn
 FParticleSwooshDataFactory(const SObjectTag& tag, CInputStream& in,
+#endif
                            const CVParamTransfer& transfer);
 
 #endif

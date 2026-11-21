@@ -1,5 +1,6 @@
 #ifndef _CGAMESPLINEDESC
 #define _CGAMESPLINEDESC
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CMayaSpline.hpp"
@@ -8,9 +9,14 @@
 // Class name corroborated by the Echoes Wii CScriptEffect constructor export.
 class CGameSplineDesc {
 public:
+#if RSTL_CORRUPTION
+  CGameSplineDesc(const SLdrSpline& spline, CMotionSpline::ESplineType type, float duration,
+                  bool closedLoop);
+#else
   CGameSplineDesc(const SLdrSpline& spline, CMotionSpline::ESplineType type, const float duration,
                   const bool closedLoop)
   : mSpline(spline), mType(type), mDuration(duration), mClosedLoop(closedLoop) {}
+#endif
   ~CGameSplineDesc() {}
 
   const SLdrSpline& GetSpline() const { return mSpline; }

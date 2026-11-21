@@ -1,15 +1,36 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CMath.hpp"
+#endif
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Math/CMath.hpp"
+#endif
 #include "Kyoto/Math/CQuaternion.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "rstl/math.hpp"
 #include "rstl/vector.hpp"
 #if !RSTL_PRIME1
 #include "math.h"
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/math.hpp"
+
+#include <math.h>
+
+// Guessed name; stands in for a stripped function that read quaternion lists.
+
+const float CAnimMathUtils::kInterpolationThreshold = 0.0001f;
+bool CAnimMathUtils::sUseFastSlerp; // Guessed name.
+#else
 const float CAnimMathUtils::kInterpolationThreshold = 0.0001f;
 #if !RSTL_PRIME1
 bool CAnimMathUtils::sUseFastSlerp; // Guessed name.
@@ -19,15 +40,28 @@ rstl::vector< CQuaternion > LoadQuaternions(CInputStream& in) {
   return rstl::vector< CQuaternion >(in);
 }
 #endif
+#endif
 
 CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& end, float t) {
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   if (t <= 0.00001f)
     return start;
   if (t >= 0.99999f)
     return end;
 #endif
+#endif
   const float dot = CQuaternion::Dot(start, end);
+#if RSTL_CORRUPTION
+  if (dot < -0.9999999f) {
+    RS_VERIFY_FAILURE(39, "false", "false",
+                      "CAnimMathUtils::Slerp: Quaternions are nearly/exactly opposite.")
+    return t < 0.5f ? start : end;
+  }
+
+  if (sUseFastSlerp) {
+    if (dot >= 0.866f) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (dot >= 1.f)
@@ -41,9 +75,13 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
   if (sUseFastSlerp) {
     if (dot >= 0.866f) {
 #endif
+#endif
     const float scalar = start.GetScalar() + t * (end.GetScalar() - start.GetScalar());
     const CVector3f vector = start.GetVector() + t * (end.GetVector() - start.GetVector());
     const float invMag = CMath::InvSqrtF(scalar * scalar + vector.MagSquared());
+#if RSTL_CORRUPTION
+      return CQuaternion(scalar * invMag, invMag * vector);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     return CQuaternion(invMag * scalar, invMag * vector);
@@ -58,7 +96,47 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
 #else
       return CQuaternion(scalar * invMag, invMag * vector);
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+
+    const double angle = acosf(dot);
+    const double sineAngle = sin(angle);
+    const double a = sin(angle * (1.f - t));
+    const double b = sin(angle * t);
+    const double invSine = 1.0 / sineAngle;
+    const float aScale = a * invSine;
+    const float bScale = b * invSine;
+    return CQuaternion(aScale * start.GetScalar() + bScale * end.GetScalar(),
+                       aScale * start.GetVector() + bScale * end.GetVector());
+  }
+
+  double startW = start.GetScalar();
+  double startX = start.AxisX();
+  double startY = start.AxisY();
+  double startZ = start.AxisZ();
+  const double endW = end.GetScalar();
+  const double endX = end.AxisX();
+  const double endY = end.AxisY();
+  const double endZ = end.AxisZ();
+  const double product = startW * endW + startX * endX + startY * endY + startZ * endZ;
+  const double angle = acos(rstl::min_val(product, 1.0));
+  const double sineAngle = sin(angle);
+  if (sineAngle < 1e-99) {
+    return start;
+  }
+
+  const double a = sin(angle * (1.f - t));
+  const double b = sin(angle * t);
+  const double invSine = 1.0 / sineAngle;
+  const double bScale = b * invSine;
+  const double aScale = a * invSine;
+  startW = startW * aScale + endW * bScale;
+  startX = startX * aScale + endX * bScale;
+  startY = startY * aScale + endY * bScale;
+  startZ = startZ * aScale + endZ * bScale;
+  return CQuaternion(startW, startX, startY, startZ);
+#else
 #if !RSTL_PRIME1
     const double angle = acosf(dot);
     const double sineAngle = sin(angle);
@@ -97,10 +175,10 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
   z = z * aScale + endZ * bScale;
   return CQuaternion(w, x, y, z);
 #endif
+#endif
 }
 
 CQuaternion CAnimMathUtils::SlerpLocal(const CQuaternion& start, const CQuaternion& end, float t) {
   return CQuaternion::Dot(start, end) >= 0.f ? Slerp(start, end, t)
                                           : Slerp(start, end.BuildEquivalent(), t);
 }
-

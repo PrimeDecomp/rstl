@@ -1,8 +1,16 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Math/CSpline.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
+
+
+#else
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CRelAngle.hpp"
 #include "Kyoto/Math/CUnitVector3f.hpp"
+#endif
 
 CSpline::CSpline(float duration, uint flags, const CMayaSpline& positionTimeSpline,
                  const CMayaSpline& lookAtTimeSpline, CMotionSpline::ESplineType positionType,
@@ -28,16 +36,29 @@ void CSpline::Initialise(const rstl::vector< CVector3f >& positions,
                          const rstl::vector< CVector3f >& lookAtPoints) {
   mPositionSpline.Initialise(positions);
   mLookAtSpline.Initialise(lookAtPoints);
+#if RSTL_CORRUPTION
+  if (positions.size() != orientations.size())
+    RS_VERIFY_FAILURE(69, "false", "false",
+                      "Number of motion knots != number of orientations in "
+                      "CSpline::Initialise()")
+#endif
   mOrientations.clear();
   mOrientations.reserve(orientations.size());
   for (int i = 0; i < orientations.size(); ++i) {
+#if RSTL_CORRUPTION
+    mOrientations.push_back(orientations[i]);
+#else
     mOrientations.push_back_unsafe(orientations[i]);
+#endif
   }
 }
 
+#if !RSTL_CORRUPTION
 float CSpline::GetLength() const { return mPositionSpline.GetLength(); }
 
+#endif
 float CSpline::GetDuration() const { return mDuration; }
+#if !RSTL_CORRUPTION
 
 CQuaternion CSpline::GetOrientationByTime(float time) const {
   if (mPositionSpline.GetKnotCount() == 0) {
@@ -92,11 +113,13 @@ CQuaternion CSpline::GetOrientationByLength(float distance) const {
   }
   return CQuaternion::Slerp(first, mOrientations[end], t);
 }
+#endif
 
 CVector3f CSpline::GetPositionByTime(float time) const {
   CVector3f position = CVector3f::Zero();
   if (mPositionSpline.GetControlPointCount() != 0) {
     position = mPositionSpline.GetPositionByTime(mDuration * mPositionTimeSpline.EvaluateAt(time));
+#if !RSTL_CORRUPTION
   }
   return position;
 }
@@ -105,6 +128,7 @@ CVector3f CSpline::GetPositionByLength(float distance) const {
   CVector3f position = CVector3f::Zero();
   if (mPositionSpline.GetKnotCount() >= 1) {
     position = mPositionSpline.GetPositionByLength(distance);
+#endif
   }
   return position;
 }
@@ -123,6 +147,7 @@ CVector3f CSpline::GetLookAtByTime(float time) const {
   return position;
 }
 
+#if !RSTL_CORRUPTION
 CVector3f CSpline::GetLookAtByLength(float distance) const {
   CVector3f position = CVector3f::Zero();
   if ((mFlags & kF_UsePositionForLookAt) && mPositionSpline.GetKnotCount() >= 1) {
@@ -141,6 +166,7 @@ float CSpline::ValidateLength(float distance) const {
   return mPositionSpline.ValidateLength(distance);
 }
 
+#endif
 CMotionSpline& CSpline::PositionSpline() { return mPositionSpline; }
 
 const CMotionSpline& CSpline::GetPositionSpline() const { return mPositionSpline; }
@@ -148,6 +174,7 @@ const CMotionSpline& CSpline::GetPositionSpline() const { return mPositionSpline
 CMayaSpline& CSpline::PositionTimeSpline() { return mPositionTimeSpline; }
 
 uint CSpline::GetPositionKnotCount() const { return mPositionSpline.GetKnotCount(); }
+#if !RSTL_CORRUPTION
 
 CMotionSpline& CSpline::LookAtSpline() { return mLookAtSpline; }
 
@@ -156,4 +183,4 @@ const CMotionSpline& CSpline::GetLookAtSpline() const { return mLookAtSpline; }
 CMayaSpline& CSpline::LookAtTimeSpline() { return mLookAtTimeSpline; }
 
 uint CSpline::GetLookAtKnotCount() const { return mLookAtSpline.GetKnotCount(); }
-
+#endif

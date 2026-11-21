@@ -1,9 +1,13 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 inline CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeInfo(
     CInputStream& in)
@@ -12,6 +16,7 @@ inline CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeI
 , x8_(in.Get< uint >())
 , xc_(in.Get< uint >())
 , mToken() {}
+#endif
 #endif
 
 CSpawnSystemKeyframeData::CSpawnSystemKeyframeData(CInputStream& in)
@@ -30,6 +35,18 @@ void CSpawnSystemKeyframeData::LoadAllSpawnedSystemTokens(CSimplePool* pool) {
   }
 }
 
+#if RSTL_CORRUPTION
+CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeInfo(CInputStream& in)
+: mId(in)
+, mType(in.Get< uint >())
+, xc_(in.Get< uint >())
+, x10_(in.Get< uint >())
+, mToken() {
+  if (mType == 0) {
+    mType = 'PART';
+  }
+}
+#else
 #if !RSTL_PRIME1
 CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeInfo(CInputStream& in)
 : mId(in.Get< uint >())
@@ -42,11 +59,16 @@ CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::CSpawnSystemKeyframeInfo(CIn
   }
 }
 #endif
+#endif
 
 rstl::vector< CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo >&
 CSpawnSystemKeyframeData::GetSpawnedSystemsAtFrame(uint frame) {
+#if RSTL_CORRUPTION
+  static rstl::vector< CSpawnSystemKeyframeInfo > emptyList;
+#else
   static rstl::vector< CSpawnSystemKeyframeInfo > emptyList =
       rstl::vector< CSpawnSystemKeyframeInfo >();
+#endif
   if (frame >= mEndFrame) {
     return emptyList;
   }
@@ -60,6 +82,9 @@ CSpawnSystemKeyframeData::GetSpawnedSystemsAtFrame(uint frame) {
 }
 
 void CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::LoadToken(CSimplePool* pool) {
+#if RSTL_CORRUPTION
+  mToken = pool->GetObj(SObjectTag(mType, mId));
+#else
   mToken = pool->GetObj(SObjectTag(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -68,6 +93,6 @@ void CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo::LoadToken(CSimplePool* 
       mType,
 #endif
       mId));
+#endif
   mToken->Lock();
 }
-

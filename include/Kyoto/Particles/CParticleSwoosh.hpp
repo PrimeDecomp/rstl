@@ -1,7 +1,10 @@
 #ifndef _CPARTICLESWOOSH
 #define _CPARTICLESWOOSH
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/CRandom16.hpp"
@@ -14,24 +17,41 @@
 #include "Kyoto/TToken.hpp"
 #include "rstl/vector.hpp"
 // TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CParticleDatabase.hpp"
 #endif
 #include "dolphin/gx/GXEnum.h"
+#endif
 
 class CSwooshDescription;
 class CTexture;
+#if RSTL_CORRUPTION
+
+#include "dolphin/gx/GXEnum.h"
+#endif
 
 class CParticleSwoosh : public CParticleGen {
   friend class CParticleElectric;
 
 public:
+#if RSTL_CORRUPTION
+  static FourCC ResType() { return 'SWHC'; }
+#else
   struct SSwooshData {
+#endif
     // Prime-derived record layout; internal field names remain cross-game hypotheses.
+#if RSTL_CORRUPTION
+  struct SSwooshData {
+#endif
     SSwooshData(const CVector3f& translation = CVector3f::Zero(),
                 const CVector3f& offset = CVector3f::Zero(), float irot = 0.f, float rotm = 0.f,
+#if RSTL_CORRUPTION
+                int startFrame = 0, bool active = false,
+#else
                 int startFrame = 0, RSTL_ECHOES_CONST bool active = false,
 
+#endif
                 const CTransform4f& orient = CTransform4f::Identity(),
                 const CVector3f& velocity = CVector3f::Zero(), float leftRadius = 0.f,
                 float rightRadius = 0.f, const CColor& color = CColor(0.f, 0.f, 0.f, 0.f))
@@ -44,6 +64,9 @@ public:
     , mInitialRot(irot)
     , mRotm(rotm)
     , mOrientation(orient)
+#if RSTL_CORRUPTION
+    , mColor(color)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     , mColor(CColor(color))
@@ -51,6 +74,7 @@ public:
     , mColor(color)
 #endif
 
+#endif
     , mStartFrame(startFrame)
     , mVelocity(velocity) {}
 
@@ -96,11 +120,16 @@ public:
   const CVector3f& GetGlobalScale() const override;
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
+#if RSTL_CORRUPTION
+  int GetEmitterTime() const override;
+  int GetSystemCount() const override;
+#else
 #if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
 #endif
 
+#endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
   int GetParticleCount() const override;
@@ -109,23 +138,33 @@ public:
   void DestroyParticles() override;
   uint Get4CharId() const override;
 
+#if RSTL_CORRUPTION
+  void UpdateAllBounds(); // Guessed name
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static int GetAliveParticleSystemCount();
 #else
   // Recomputes the bounds from every active swoosh; name is a hypothesis.
-  void UpdateAllBounds();
+  void UpdateAllBounds(); // Guessed name
+#endif
 #endif
 
   void SetWarmUp() { mForceOneUpdate = true; }
+#if RSTL_CORRUPTION
+  int GetCurrentParticle() const { return mCurParticle; } // Guessed name
+#else
 #if RSTL_PRIME1
   void SetRenderGaps(bool gaps) { mRenderGaps = gaps; }
 #endif
 
+#endif
   const int GetSwooshCount() const { return mSwooshes.size(); }
+#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetCurParticle() const { return mCurParticle; }
+#endif
 #endif
   const rstl::vector< SSwooshData >& GetSwooshes() const { return mSwooshes; }
 
@@ -150,6 +189,10 @@ private:
   double mCurTime;
   CVector3f mTranslation;
   CTransform4f mOrientation;
+#if RSTL_CORRUPTION
+  CTransform4f mRotation;        // Guessed name
+  CTransform4f mBaseOrientation; // Guessed name
+#endif
   CTransform4f mInvOrientation;
   CVector3f mGlobalTranslation;
   CTransform4f mGlobalOrientation;
@@ -173,6 +216,11 @@ private:
   float mRenderTime; // Guessed name
 
   float mTSPNFloat;
+#if RSTL_CORRUPTION
+  float mXROT;
+  float mYROT;
+  float mZROT;
+#endif
   bool mEmitting : 1;
   bool mAALP : 1;
   bool mForceOneUpdate : 1;
@@ -197,8 +245,12 @@ private:
   static uint mSwooshAliveCount;
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CParticleSwoosh, 0x288)
+#else
 CHECK_SIZEOF(CParticleSwoosh, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x200 : 0x210) : 0x218)
 
+#endif
 NESTED_CHECK_SIZEOF(CParticleSwoosh, SSwooshData, 0x80)
 
 #endif // _CPARTICLESWOOSH

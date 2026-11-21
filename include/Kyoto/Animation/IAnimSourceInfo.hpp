@@ -1,10 +1,17 @@
 #ifndef _IANIMSOURCEINFO
 #define _IANIMSOURCEINFO
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "rstl/vector.hpp"
 
@@ -13,9 +20,11 @@ class CInt32POINode;
 class CParticlePOINode;
 class CSoundPOINode;
 #endif
+#endif
 
 class IAnimSourceInfo {
 public:
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   virtual bool HasPOIData() const = 0;
   virtual const rstl::vector< CBoolPOINode >& GetBoolPOIStream() const = 0;
@@ -24,15 +33,25 @@ public:
   virtual const rstl::vector< CSoundPOINode >& GetSoundPOIStream() const = 0;
 #endif
 
+#endif
   virtual CCharAnimTime GetAnimationDuration() const = 0;
+#if RSTL_CORRUPTION
+  // Guessed name: tests whether the source has scale keys.
+  virtual bool HasScaleData() const = 0;
+#else
 #if !RSTL_PRIME1
   // Guessed name: tests whether the source has scale keys.
   virtual bool HasScaleData() const = 0;
 #endif
 
+#endif
   virtual ~IAnimSourceInfo() {}
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(IAnimSourceInfo, 0x4)
+#else
 DECLARE_FULL_SIZE_FOR(IAnimSourceInfo, 0x4)
 CHECK_SIZEOF(IAnimSourceInfo, IAnimSourceInfo_FULL_SIZE)
+#endif
 
 #endif // _IANIMSOURCEINFO

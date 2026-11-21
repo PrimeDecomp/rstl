@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CMetaAnimPhaseBlend.hpp"
 #include "Kyoto/Animation/CAnimTreeBlend.hpp"
 #include "Kyoto/Animation/CAnimTreeTimeScale.hpp"
@@ -36,10 +39,19 @@ CMetaAnimPhaseBlend::VGetAnimationTree(const CAnimSysContext& animSys,
   rstl::ncrc_ptr< CAnimTreeNode > scaledA = rs_new_line(83) CAnimTreeTimeScale(
       a, scaleA,
       CAnimTreeTimeScale::CreatePrimitiveName(a, scaleA, CCharAnimTime::Infinity(), -1.f));
+#if RSTL_CORRUPTION
+  rstl::ncrc_ptr< CAnimTreeNode > scaledB = rs_new_line(87) CAnimTreeTimeScale(
+#else
   rstl::ncrc_ptr< CAnimTreeNode > scaledB = rs_new CAnimTreeTimeScale(
+#endif
       b, scaleB,
       CAnimTreeTimeScale::CreatePrimitiveName(b, scaleB, CCharAnimTime::Infinity(), -1.f));
+#if RSTL_CORRUPTION
+  return rs_new_line(93)
+      CAnimTreeBlend(mCharacterSpaceBlend, scaledA, scaledB, mBlend,
+#else
   return rs_new CAnimTreeBlend(mCharacterSpaceBlend, scaledA, scaledB, mBlend,
+#endif
                                CAnimTreeBlend::CreatePrimitiveName(scaledA, scaledB, mBlend));
 }
 
@@ -52,6 +64,9 @@ void CMetaAnimPhaseBlend::WriteAnimData(COutputStream& out) const {
   mAnimA->PutTo(out);
   mAnimB->PutTo(out);
   out.WriteReal32(mBlend);
+#if RSTL_CORRUPTION
+  out.WriteChar(bool(mCharacterSpaceBlend));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   out.WriteChar(bool(mCharacterSpaceBlend));
@@ -62,5 +77,5 @@ void CMetaAnimPhaseBlend::WriteAnimData(COutputStream& out) const {
   out.WriteChar(bool(mCharacterSpaceBlend));
 #endif
 #endif
+#endif
 }
-

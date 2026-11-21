@@ -1,6 +1,9 @@
 #ifndef _CPARTICLEGLOBALS
 #define _CPARTICLEGLOBALS
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
 #include "rstl/types.h"
 
@@ -9,6 +12,12 @@
 
 class CParticleGlobals {
 public:
+#if RSTL_CORRUPTION
+  // G2ME01 pushes this on the stack for the duration of a system update and restores the
+  // previous system when it goes out of scope.
+  struct SParticleSystem;
+  friend struct SParticleSystem;
+#else
 #if !RSTL_PRIME1
   // G2ME01 pushes this on the stack for the duration of a system update and restores the
   // previous system when it goes out of scope.
@@ -16,7 +25,12 @@ public:
   friend struct SParticleSystem;
 #endif
 
+#endif
   struct SParticleSystem {
+#if RSTL_CORRUPTION
+    SParticleSystem(FourCC type, CParticleGen* system)
+    : mType(type), mSystem(system), mPrev(mCurrentParticleSystem) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     FourCC mType;
@@ -30,8 +44,16 @@ public:
     : mType(type)
     , mSystem(system)
     , mPrev(mCurrentParticleSystem) {
+#endif
       mCurrentParticleSystem = this;
     }
+#if RSTL_CORRUPTION
+    ~SParticleSystem() { mCurrentParticleSystem = mPrev; }
+
+    FourCC mType;
+    CParticleGen* mSystem;
+    SParticleSystem* mPrev;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_R3IJ
@@ -45,6 +67,7 @@ public:
     SParticleSystem* mPrev;
 #endif
 
+#endif
   };
 
   static void SetEmitterTime(int time);
@@ -63,6 +86,12 @@ public:
   static CElementGen::CParticle* GetCurrentParticle() { return mCurrentParticle; }
   static float* GetParticleAccessParameters() { return mParticleAccessParameters; }
   static SParticleSystem* GetCurrentParticleSystem() { return mCurrentParticleSystem; }
+#if RSTL_CORRUPTION
+  static void SetCurrentParticle(CElementGen::CParticle* particle) { mCurrentParticle = particle; }
+  static void SetParticleAccessParameters(float* parameters) {
+    mParticleAccessParameters = parameters;
+  }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static void SetCurrentParticleSystem(SParticleSystem* system) { mCurrentParticleSystem = system; }
@@ -72,7 +101,11 @@ public:
     mParticleAccessParameters = parameters;
   }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+private:
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 public:
@@ -80,6 +113,7 @@ public:
 private:
 #endif
 
+#endif
   static int mParticleLifetime;
   static float mParticleLifetimeReal;
   static int mEmitterTime;

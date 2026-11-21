@@ -1,7 +1,10 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CDisplayListReader.hpp"
 
 #include "Kyoto/Basics/CBasics.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
+#endif
 
 #include "string.h"
 
@@ -101,33 +104,64 @@ bool CDisplayListReader::EnumerateTriangles(IDisplayListTriangleCallback& callba
     if (primitive == GX_NOP) {
       continue;
     }
+#if RSTL_CORRUPTION
+    const int count = ReadDisplayListShort(displayList + offset);
+#else
 #if RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT
     typedef ushort VertexCount;
 #else
     typedef int VertexCount;
 #endif
     const VertexCount count = ReadDisplayListShort(displayList + offset);
+#endif
     offset += 2;
 
     switch (primitive) {
     case GX_TRIANGLES: {
+#if RSTL_CORRUPTION
+      int twoVertexStride;
+      const int stride = mVertexStride;
+      twoVertexStride = stride * 2;
+#endif
       int vertexOffset = offset;
+#if RSTL_CORRUPTION
+      for (int i = 0; i < count; i += 3, vertexOffset += stride * 3) {
+#else
       for (int i = 0; i < count; i += 3, vertexOffset += mVertexStride * 3) {
+#endif
         const uchar* vertex = displayList + vertexOffset;
+#if RSTL_CORRUPTION
+        if (!callback.OnTriangle(*this, vertex, vertex + stride, vertex + twoVertexStride)) {
+#else
         if (!callback.OnTriangle(*this, vertex, vertex + mVertexStride, vertex + mVertexStride * 2)) {
+#endif
           return false;
         }
       }
       break;
     }
     case GX_TRIANGLEFAN: {
+#if RSTL_CORRUPTION
+      int previous;
+      int current;
+      const int stride = mVertexStride;
+#endif
       vertices = displayList + offset;
+#if RSTL_CORRUPTION
+      previous = offset + stride;
+      current = previous + stride;
+#else
       int previous = offset + mVertexStride;
       int current = previous + mVertexStride;
+#endif
       for (int i = 2; i < count; ++i) {
         const int last = previous;
         previous = current;
+#if RSTL_CORRUPTION
+        current += stride;
+#else
         current += mVertexStride;
+#endif
         if (!callback.OnTriangle(*this, vertices, displayList + last, displayList + previous)) {
           return false;
         }
@@ -158,4 +192,3 @@ bool CDisplayListReader::EnumerateTriangles(IDisplayListTriangleCallback& callba
   }
   return true;
 }
-

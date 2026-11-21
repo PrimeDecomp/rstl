@@ -1,8 +1,14 @@
 #ifndef _CTEXTRENDERBUFFER
 #define _CTEXTRENDERBUFFER
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Graphics/CColor.hpp"
 
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
@@ -10,7 +16,9 @@
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CTextColor.hpp"
+#endif
 #include "rstl/auto_ptr.hpp"
 
 #include "rstl/pair.hpp"
@@ -40,6 +48,26 @@ public:
     signed char mIndex;
   };
 
+#if RSTL_CORRUPTION
+  struct SFontPalette {
+    SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
+                 const rstl::auto_ptr< CGraphicsPalette >& palette1,
+                 const rstl::auto_ptr< CGraphicsPalette >& palette2,
+                 const rstl::auto_ptr< CGraphicsPalette >& palette3)
+    : mMode(mode)
+    , mPalette0(palette0)
+    , mPalette1(palette1)
+    , mPalette2(palette2)
+    , mPalette3(palette3) {}
+
+    EFontMode mMode;
+    ushort mColors[4];
+    rstl::auto_ptr< CGraphicsPalette > mPalette0;
+    rstl::auto_ptr< CGraphicsPalette > mPalette1;
+    rstl::auto_ptr< CGraphicsPalette > mPalette2;
+    rstl::auto_ptr< CGraphicsPalette > mPalette3;
+  };
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   struct SFontPalette {
     SFontPalette(EFontMode mode, const rstl::auto_ptr< CGraphicsPalette >& palette0,
@@ -65,8 +93,12 @@ public:
     rstl::auto_ptr< CGraphicsPalette > mPalette3;
   };
 #endif
+#endif
 
   explicit CTextRenderBuffer(EMode mode);
+#if RSTL_CORRUPTION
+  void AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode);
+#else
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -85,19 +117,29 @@ public:
 #else
   void AddPaletteChange(const CGraphicsPalette& palette);
 #endif
+#endif
   void AddCharacter(const CVector2i& offset, short chr, uint color);
-
+#if RSTL_CORRUPTION
+  void AddFontChange(const TToken< CRasterFont >& font);
+#endif
   void AddImage(const CVector2i& offset, const CFontImageDef& image);
 
   void* GetOutStream();
   size_t GetCurLen();
   void SetMode(EMode mode);
   void Render(const CColor& color, float time) const;
+#if RSTL_CORRUPTION
+  int GetNumPrimitives() const { return mPrimitiveOffsets.size(); }
+#else
   int GetNumPrimitives() const { return mPrimOffsets.size(); }
 
+#endif
   Primitive GetPrimitive(int index) const;
   void SetPrimitive(const Primitive& prim, int index);
-// TODO: verify that this Prime/Echoes difference is real
+  // Guessed name. Returns cached bounds, rebuilding them when dirty.
+#if RSTL_CORRUPTION
+  const rstl::pair< CVector2i, CVector2i >& GetTextBounds();
+#else
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   const rstl::pair< CVector2i, CVector2i >& AccumulateTextBounds();
@@ -109,9 +151,18 @@ public:
   // Guessed name. Returns cached bounds, rebuilding them when dirty.
   const rstl::pair< CVector2i, CVector2i >& GetTextBounds();
 #endif
+#endif
 
 private:
   void VerifyBuffer();
+#if RSTL_CORRUPTION
+  void AccumulateTextBounds();
+  void GetNextAvailablePalette() const;
+  int GetMatchingPaletteIndex(EFontMode mode, const CGraphicsPalette& palette) const;
+  // Guessed name for the mode/layer palette expansion helper.
+  static void GeneratePalette(EFontMode mode, int layer, CGraphicsPalette& dest,
+                              const CGraphicsPalette& source);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -125,27 +176,44 @@ private:
   static void GeneratePalette(EFontMode mode, int layer, CGraphicsPalette& dest,
                               const CGraphicsPalette& source);
 #endif
+#endif
 
   EMode mMode;
   rstl::vector< TToken< CRasterFont > > mFonts;
   rstl::vector< CFontImageDef > mImages;
+#if RSTL_CORRUPTION
+  rstl::vector< int > mPrimitiveOffsets;
+#else
   rstl::vector< int > mPrimOffsets;
 
+#endif
   rstl::vector< signed char > mBytecode;
   uint mBlobSize;
+#if RSTL_CORRUPTION
+  uint mCurrentBytecodeOffset;
+#else
   uint mCurBytecodeOffset;
 
+#endif
   mutable char mActiveFont;
   mutable char mActivePalette;
   mutable char mQueuedFont;
   mutable char mQueuedPalette;
+#if RSTL_CORRUPTION
+  mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mutable rstl::reserved_vector< SFontPalette, 64 > mPalettes;
 #else
   mutable rstl::reserved_vector< rstl::auto_ptr< CGraphicsPalette >, 64 > mPalettes;
 #endif
 
+#endif
   mutable int mNextPalette;
+#if RSTL_CORRUPTION
+  rstl::pair< CVector2i, CVector2i > mTextBounds;
+  bool mTextBoundsDirty;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -158,13 +226,22 @@ private:
 #endif
   bool mBoundsDirty;
 #endif
+#endif
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CTextRenderBuffer, 0xb6c)
+#else
 CHECK_SIZEOF(CTextRenderBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xb6c : 0x258))
 
+#endif
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, Primitive, 0x10)
+#if RSTL_CORRUPTION
+NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)
+#endif
 #endif
 
 #endif // _CTEXTRENDERBUFFER

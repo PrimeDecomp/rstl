@@ -1,13 +1,20 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinnedModel.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/macros.hpp"
+#endif
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/Alloc/CCircularBuffer.hpp"
+#endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
 #include "Kyoto/Animation/CSkinRules.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CVertexMorphEffect.hpp"
 #include "Kyoto/CFrameDelayedKiller.hpp"
+#endif
 #include "Kyoto/Graphics/CCubeMaterial.hpp"
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
@@ -16,15 +23,22 @@
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Graphics/DolphinGPUMemory.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Platform.h"
+#endif
 
+#if !RSTL_CORRUPTION
 #include "dolphin/base/PPCArch.h"
+#endif
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
+#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
+#endif
 
+#if !RSTL_CORRUPTION
 #if IS_TARGET_PC
 #define GET_POSITION_VIEW(ptr) GetPositionView(ptr)
 #define GET_NORMAL_VIEW(ptr) GetNormalView(ptr)
@@ -32,7 +46,9 @@
 #define GET_POSITION_VIEW(ptr) (ptr)
 #define GET_NORMAL_VIEW(ptr) (ptr)
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
 #if RSTL_VERSION >= RSTL_GM8P_00 && RSTL_VERSION != RSTL_GM8J_00
 #define HAS_SKINNING_DATA_SIZE 1
 #define SKINNING_DATA_SIZE sStaticSkinningDataSize
@@ -40,10 +56,182 @@
 #define HAS_SKINNING_DATA_SIZE 0
 #define SKINNING_DATA_SIZE sizeof(sStaticSkinningData)
 #endif
+#endif
 
 CSkinnedModel::TPointGenFunc CSkinnedModel::sPointGen;
 void* CSkinnedModel::sPointGenData;
 
+#if RSTL_CORRUPTION
+namespace {
+// Guessed name
+class CMatrixPoolGuard {
+public:
+  explicit CMatrixPoolGuard(bool active) : mActive(active) {}
+
+  ~CMatrixPoolGuard() {
+    if (mActive) {
+      GPUMemory::ReleaseAllocation();
+    }
+  }
+
+private:
+  bool mActive;
+};
+
+// Guessed names for the target's surface-drawing functors.
+struct SDrawSurfaceFlat {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface) const;
+};
+
+struct SDrawWireframe {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawSurface {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawFlat {
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+};
+
+struct SDrawMasked {
+  explicit SDrawMasked(u64 mask) : mMask(mask) {}
+
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+
+  u64 mMask;
+};
+
+struct SDrawFlatMasked {
+  explicit SDrawFlatMasked(u64 mask) : mMask(mask) {}
+
+  void operator()(const CCubeModel& model, const CCubeSurface& surface,
+                  const CModelFlags& flags) const;
+
+  u64 mMask;
+};
+// Guessed name
+inline bool IsSurfaceVisible(CCubeSurface surface,
+                             const SSkinningWorkspace& workspace) {
+  const uchar bit = surface.GetDrawMaskBitIndex();
+  if (bit == 0xff) {
+    return true;
+  }
+  const rstl::reserved_vector< uint, 256 >& visibility = workspace.mVisibility;
+  if (visibility.empty()) {
+    return true;
+  }
+  return (visibility[bit >> 5] & (1u << (bit & 31))) != 0;
+}
+} // namespace
+
+template < class TDraw >
+void CSkinnedModel::DolphinDrawInternal(const SSkinningWorkspace& workspace, uint drawFlags,
+                                        const CModelFlags& flags, const TDraw& draw) const {
+  CTransform4f saved(CGraphics::GetModelMatrix());
+  int currentBank = -1;
+  mModel->PreDrawModel(flags);
+  const CCubeModel* model = mModel->GetModelInstance();
+  if (model == nullptr || !model->TryLockTextures()) {
+    return;
+  }
+
+  CCubeSurface surfaces[] = {model->GetNormalSurfaces(), model->GetAlphaSurfaces()};
+  model->SetArraysCurrent();
+  CMatrixPoolGuard guard(workspace.mMatrices == nullptr);
+  SSkinningMatrices* matrices = workspace.mMatrices;
+  if (matrices == nullptr) {
+    matrices = static_cast< SSkinningMatrices* >(
+        GPUMemory::EnsureAllocation(workspace.mBoneCount * sizeof(SSkinningMatrices)));
+    BuildSkinningMatrices(workspace.mTransforms, matrices, workspace.mUniformScale,
+                          workspace.mBoneIndices, workspace.mBoneCount);
+  }
+  CGX::SetArray(GX_POS_MTX_ARRAY, matrices, sizeof(SSkinningMatrices));
+  CGX::SetArray(GX_NRM_MTX_ARRAY, matrices->mNormal, sizeof(SSkinningMatrices));
+
+  for (int i = 0; i < sizeof(surfaces) / sizeof(surfaces[0]); ++i) {
+    if (!(drawFlags & kDF_Unsorted) && i == 0) {
+      continue;
+    }
+    if (!(drawFlags & kDF_Sorted) && i == 1) {
+      continue;
+    }
+      for (CCubeSurface surface = surfaces[i]; surface.IsValid();
+           surface = surface.GetNextSurface()) {
+      if (IsSurfaceVisible(surface, workspace)) {
+        LoadMatrixBank(currentBank, surface.GetMatrixBank(), workspace.mBoneRemap);
+        draw(*model, surface, flags);
+      }
+    }
+  }
+
+  GXSetCurrentMtx(GX_PNMTX0);
+  const int extraCoord = CCubeMaterial::GetExtraTexCoord();
+  if (extraCoord != GX_TEXCOORD_NULL) {
+    CGX::SetTexCoordGen(static_cast< GXTexCoordID >(extraCoord), GX_TG_MTX3x4, GX_TG_POS,
+                        static_cast< GXTexMtx >(0), GX_FALSE,
+                        static_cast< GXPTTexMtx >(CCubeMaterial::GetExtraPostTexMtx()));
+    CCubeMaterial::ResetExtraTexCoord();
+  }
+  CGraphics::SetModelMatrix(saved);
+  if (!(drawFlags & kDF_Flat)) {
+    CCubeMaterial::EnsureTevsDirect();
+  }
+}
+
+CSkinnedModelState::CSkinnedModelState(int boneCount, bool transient,
+                                       const rstl::vector< uchar >* boneIndices)
+: mWorkspace(transient ? nullptr
+                       : static_cast< CTransform4f* >(CMemory::Alloc(
+                             boneCount * sizeof(CTransform4f), IAllocator::kHI_None,
+                             IAllocator::kSC_Unk1, IAllocator::kTP_Heap,
+                             CCallStack(-1, "DolphinCSkinnedModel.cpp(56) : ", gkUnknownType))),
+             boneCount, transient) {
+  if (mWorkspace.mTransient) {
+    const uint transformSize = (boneCount * sizeof(CTransform4f) + 31) & ~31;
+    const uint matrixSize = (boneCount * sizeof(SSkinningMatrices) + 31) & ~31;
+    void* data = GPUMemory::EnsureAllocation(transformSize + matrixSize);
+    mWorkspace.mTransforms = static_cast< CTransform4f* >(data);
+    mWorkspace.mMatrices =
+        reinterpret_cast< SSkinningMatrices* >(static_cast< uchar* >(data) + transformSize);
+  }
+  if (boneIndices != nullptr) {
+    mWorkspace.mBoneRemap.resize(256, 0xff);
+    for (int i = 0; i < boneIndices->size(); ++i) {
+      const uchar bone = (*boneIndices)[i];
+      mWorkspace.mBoneRemap[bone] = i;
+      mWorkspace.mBoneIndices.push_back(bone);
+    }
+  }
+}
+
+CSkinnedModelState::CSkinnedModelState(const CSkinnedModelState& other)
+: mWorkspace(other.mWorkspace) {
+  other.mWorkspace.mOwned = false;
+}
+
+CSkinnedModelState::~CSkinnedModelState() {
+  if (mWorkspace.mOwned) {
+    if (mWorkspace.mTransient) {
+      DCFlushRange(mWorkspace.mTransforms,
+                   (mWorkspace.mBoneCount * sizeof(CTransform4f) + 31) & ~31);
+      GPUMemory::ReleaseAllocation();
+    } else {
+      CMemory::Free(mWorkspace.mTransforms);
+    }
+  }
+}
+
+CSkinnedModel::CSkinnedModel(const TLockedToken< CModel >& model,
+                             const TLockedToken< CSkinRules >& skinRules,
+                             const TLockedToken< CCharLayoutInfo >& layoutInfo)
+: mModel(model), mSkinRules(skinRules), mLayoutInfo(layoutInfo) {}
+#else
 #if RSTL_PRIME1
 struct SSkinnedAllocation {
   SSkinnedAllocation(void* ptr, int w1, ushort w2) : mPtr(ptr), mUnk1(w1), mUnk2(w2) {}
@@ -153,7 +341,7 @@ CSkinnedModel::CSkinnedModel(const CSkinnedModel& other)
 
 #if !RSTL_PRIME1
 namespace {
-// Descriptive name for the scoped release of a temporary GX matrix allocation.
+// Guessed name
 class CMatrixPoolGuard {
 public:
   explicit CMatrixPoolGuard(bool active) : mActive(active) {}
@@ -307,15 +495,168 @@ CSkinnedModel::CSkinnedModel(const TLockedToken< CModel >& model,
                              const TLockedToken< CCharLayoutInfo >& layoutInfo)
 : mModel(model), mSkinRules(skinRules), mLayoutInfo(layoutInfo) {}
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CSkinnedModel::~CSkinnedModel() {}
+
+CSkinnedModelState CSkinnedModel::MakeStorage(bool transient, uint drawFlags) const {
+  const rstl::vector< uchar >* boneIndices = nullptr;
+  if (drawFlags & kDF_Unsorted) {
+    if (!(drawFlags & kDF_Sorted)) {
+      boneIndices = &mSkinRules->GetUnsortedBoneIndices();
+    }
+  } else if (drawFlags & kDF_Sorted) {
+    boneIndices = &mSkinRules->GetSortedBoneIndices();
+  }
+  return CSkinnedModelState(boneIndices ? boneIndices->size() : mSkinRules->GetNumVirtualBones(),
+                            transient, boneIndices);
+#else
 CSkinnedModel::~CSkinnedModel() {
 #if RSTL_PRIME1
   Skinning::DelSkinnedRef();
 #else
 
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+CSkinnedModelState CSkinnedModel::MakeDefaultStorage() const {
+  return MakeStorage(false, kDF_Unsorted | kDF_Sorted);
+}
+
+void CSkinnedModel::StoreCalculation(CSkinnedModelState& state,
+                                     const CPoseAsTransforms_Linear* pose,
+                                     const CModelFlags* flags) const {
+  SSkinningWorkspace& workspace = state.mWorkspace;
+  const int count = workspace.mBoneCount;
+  CTransform4f* transforms = workspace.mTransforms;
+  bool uniformScale = false;
+  if (pose == nullptr) {
+    for (int i = 0; i < count; ++i) {
+      *transforms = CTransform4f::Identity();
+      ++transforms;
+    }
+  } else {
+    mSkinRules->BuildAccumulatedTransforms(
+        *pose, transforms, count,
+        !workspace.mBoneIndices.empty() ? workspace.mBoneIndices.data() : nullptr);
+    if (!pose->HasScale() && pose->HasUniformScale()) {
+      uniformScale = true;
+    }
+  }
+  workspace.mUniformScale = uniformScale;
+  if (workspace.mMatrices != nullptr) {
+    BuildSkinningMatrices(workspace.mTransforms, workspace.mMatrices, workspace.mUniformScale,
+                          workspace.mBoneIndices, workspace.mBoneCount);
+  }
+  if (sPointGen != nullptr && mSkinRules->GetNumPoints() != 0) {
+    sPointGen(*this, workspace, sPointGenData);
+  }
+  workspace.mVisibility.clear();
+  if (pose != nullptr) {
+    const rstl::vector< uint >& visibility = pose->GetVisibility();
+    if (visibility.empty() && flags != nullptr &&
+        (flags->GetEnabledVisibility() != 0 || flags->GetDisabledVisibility() != 0)) {
+      workspace.mVisibility.resize_uninitialized(1);
+      workspace.mVisibility[0] = ~0u;
+    } else {
+      workspace.mVisibility.resize_uninitialized(visibility.size());
+      uint* out = workspace.mVisibility.data();
+      for (int i = 0; i < visibility.size(); ++i, ++out) {
+        *out = visibility[i];
+      }
+    }
+    if (flags != nullptr && workspace.mVisibility.size() > 0) {
+      workspace.mVisibility[0] |= flags->GetEnabledVisibility();
+      workspace.mVisibility[0] &= ~flags->GetDisabledVisibility();
+    }
+  }
+}
+
+void CSkinnedModel::Draw(const CPoseAsTransforms_Linear* pose, const CModelFlags& flags) const {
+  CSkinnedModelState state(MakeStorage(true, kDF_Unsorted | kDF_Sorted));
+  StoreCalculation(state, pose, &flags);
+  DrawFromState(state, flags);
+}
+
+void CSkinnedModel::Draw(const CPoseAsTransforms_Linear* pose, TDrawFunc callback,
+                         void* context) const {
+  CSkinnedModelState state(MakeStorage(true, kDF_Unsorted | kDF_Sorted));
+  StoreCalculation(state, pose);
+  callback(state.GetWorkspace(), context);
+}
+
+void CSkinnedModel::DolphinDrawWithFlags(const CPoseAsTransforms_Linear* pose, uint drawFlags,
+                                         const CModelFlags& flags) const {
+  CSkinnedModelState state(MakeStorage(true, drawFlags));
+  StoreCalculation(state, pose, &flags);
+  DolphinDrawFromWorkspace(state.GetWorkspace(), drawFlags, flags);
+}
+
+void CSkinnedModel::DolphinDrawFromWorkspace(const SSkinningWorkspace& workspace, uint drawFlags,
+                                             const CModelFlags& flags) const {
+  if (CCubeModel::IsDrawingWireframe()) {
+    DolphinDrawInternal(workspace, drawFlags, flags, SDrawWireframe());
+  } else if (drawFlags & kDF_Flat) {
+    DolphinDrawInternal(workspace, drawFlags, flags, SDrawFlat());
+  } else {
+    DolphinDrawInternal(workspace, drawFlags, flags, SDrawSurface());
+  }
+}
+
+void CSkinnedModel::DolphinDrawFromWorkspace(const SSkinningWorkspace& workspace, uint drawFlags,
+                                             const CModelFlags& flags, u64 mask) const {
+  if (drawFlags & kDF_Flat) {
+    DolphinDrawInternal(workspace, drawFlags, flags, SDrawFlatMasked(mask));
+  } else {
+    DolphinDrawInternal(workspace, drawFlags, flags, SDrawMasked(mask));
+  }
+}
+
+void CSkinnedModel::DrawFromState(const CSkinnedModelState& state, const CModelFlags& flags) const {
+  DolphinDrawFromWorkspace(state.GetWorkspace(), kDF_Unsorted | kDF_Sorted, flags);
+}
+
+void CSkinnedModel::LoadMatrixBank(int& currentBank, int bank,
+                                   const rstl::reserved_vector< uchar, 256 >& boneRemap) const {
+  if (bank != currentBank) {
+    mSkinRules->LoadMatrixBank(bank, !boneRemap.empty() ? boneRemap.data() : nullptr);
+    currentBank = bank;
+  }
+}
+
+void CSkinnedModel::BuildSkinningMatrices(const CTransform4f* transforms,
+                                          SSkinningMatrices* matrices, const bool uniformScale,
+                                          const rstl::reserved_vector< uchar, 256 >& boneIndices,
+                                          int boneCount) const {
+  const rstl::vector< CVirtualBone >& bones = mSkinRules->GetVirtualBones();
+  const int selectedCount = boneIndices.size();
+  if (boneCount == selectedCount) {
+  SSkinningMatrices* matrix = matrices;
+    const uchar* bone = boneIndices.data();
+  const CTransform4f* transform = transforms;
+    for (int i = 0; i < selectedCount; ++matrix, ++bone, ++transform, ++i) {
+      bones[*bone].BuildSkinningMatrices(*transform, *matrix, uniformScale);
+      DCFlushRange(matrix, sizeof(SSkinningMatrices));
+    }
+  } else {
+    const CTransform4f* transform = transforms;
+    SSkinningMatrices* matrix = matrices;
+  for (rstl::vector< CVirtualBone >::const_iterator it = bones.begin(); it != bones.end();
+       ++it, ++matrix, ++transform) {
+    it->BuildSkinningMatrices(*transform, *matrix, uniformScale);
+    DCFlushRange(matrix, sizeof(SSkinningMatrices));
+    }
+  }
+}
+
+void CSkinnedModel::SetPointGeneratorFunc(void* context, TPointGenFunc callback) {
+  sPointGen = callback;
+  sPointGenData = context;
+}
+#else
 #if RSTL_PRIME1
 void CSkinnedModel::Construct() {
   Skinning::AddSkinnedRef();
@@ -666,9 +1007,85 @@ void CSkinnedModel::SetPointGeneratorFunc(void* context, TPointGenFunc callback)
   sPointGenData = context;
 }
 #endif
+#endif
 
 void CSkinnedModel::ClearPointGeneratorFunc() { sPointGen = nullptr; }
 
+#if RSTL_CORRUPTION
+CVector3f CSkinnedModel::GetSkinnedPosition(const SSkinningWorkspace& workspace, int vertex) const {
+  const CTransform4f* transforms = workspace.mTransforms;
+  const int bone = mSkinRules->GetVertexToBoneMap()[vertex];
+  return transforms[bone] * reinterpret_cast< const CVector3f* >(mModel->GetPositions())[vertex];
+}
+
+CVector3f CSkinnedModel::GetSkinnedNormal(const SSkinningWorkspace& workspace, int vertex) const {
+  const int bone = mSkinRules->GetVertexToBoneMap()[vertex];
+  const CVector3f& normal = reinterpret_cast< const CVector3f* >(mModel->GetNormals())[vertex];
+  const CTransform4f& transform = workspace.mTransforms[bone];
+  if (workspace.mUniformScale) {
+    return CUnitVector3f(transform.Rotate(normal));
+  }
+  return CUnitVector3f(transform.GetInverse().TransposeRotate(normal));
+}
+
+bool CSkinnedModel::HasUnsortedSurfaces() const {
+  return !mSkinRules->GetUnsortedBoneIndices().empty();
+}
+
+bool CSkinnedModel::HasSortedSurfaces() const {
+  return !mSkinRules->GetSortedBoneIndices().empty();
+}
+
+void CSkinnedModel::DrawUnsorted(const CPoseAsTransforms_Linear* pose,
+                                 const CModelFlags& flags) const {
+  DolphinDrawWithFlags(pose, kDF_Unsorted, flags);
+}
+
+void CSkinnedModel::DrawSorted(const CPoseAsTransforms_Linear* pose,
+                               const CModelFlags& flags) const {
+  DolphinDrawWithFlags(pose, kDF_Sorted, flags);
+}
+
+namespace {
+inline void SDrawSurfaceFlat::operator()(const CCubeModel& model,
+                                         const CCubeSurface& surface) const {
+  const CMaterialDataFactory::SMaterial& material = model.GetMaterial(surface);
+  CGX::SetVtxDescv_Compressed(material.mHeader.mVertexDesc);
+  CGX::CallDisplayList(surface.GetDisplayList(), surface.GetDisplayListSize());
+}
+
+inline void SDrawWireframe::operator()(const CCubeModel& model, const CCubeSurface& surface,
+                                       const CModelFlags& flags) const {
+  model.DrawSurfaceWireframe(surface);
+}
+
+inline void SDrawSurface::operator()(const CCubeModel& model, const CCubeSurface& surface,
+                                     const CModelFlags& flags) const {
+  model.DrawSurface(surface, flags);
+}
+
+inline void SDrawFlat::operator()(const CCubeModel& model, const CCubeSurface& surface,
+                                  const CModelFlags& flags) const {
+  SDrawSurfaceFlat()(model, surface);
+}
+
+inline void SDrawMasked::operator()(const CCubeModel& model, const CCubeSurface& surface,
+                                    const CModelFlags& flags) const {
+  const CMaterialDataFactory::SMaterial& material = model.GetMaterial(surface);
+  if (material.mHeader.mCollisionFlags & mMask) {
+    model.DrawSurface(surface, flags);
+  }
+}
+
+inline void SDrawFlatMasked::operator()(const CCubeModel& model, const CCubeSurface& surface,
+                                        const CModelFlags& flags) const {
+  const CMaterialDataFactory::SMaterial& material = model.GetMaterial(surface);
+  if (material.mHeader.mCollisionFlags & mMask) {
+    SDrawFlat()(model, surface, flags);
+  }
+}
+} // namespace
+#else
 #if RSTL_PRIME1
 float* CSkinnedModel::AllocateNewWorkspace(float** nrmOut) {
   const CSkinRules* skinRules = *mSkinRules;
@@ -742,4 +1159,5 @@ inline void SDrawFlatMasked::operator()(const CCubeModel& model, const CCubeSurf
   }
 }
 } // namespace
+#endif
 #endif

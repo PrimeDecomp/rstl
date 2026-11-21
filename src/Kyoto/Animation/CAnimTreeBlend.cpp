@@ -1,19 +1,30 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimTreeBlend.hpp"
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeBlend::VClone() const {
+#if RSTL_CORRUPTION
+  return rs_new_line(36) CAnimTreeBlend(CharacterSpaceBlend(), Cast(mA->Clone()), Cast(mB->Clone()),
+#else
   return rs_new CAnimTreeBlend(CharacterSpaceBlend(), Cast(mA->Clone()), Cast(mB->Clone()),
+#endif
                                mBlendWeight, mName);
 }
 
 float CAnimTreeBlend::VGetBlendingWeight() const { return mBlendWeight; }
 
 CCharAnimTime CAnimTreeBlend::VGetTimeRemaining() const {
+#if RSTL_CORRUPTION
+  return rstl::max_val< const CCharAnimTime& >(mA->VGetTimeRemaining(), mB->VGetTimeRemaining());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::max_val(mA->GetTimeRemaining(), mB->GetTimeRemaining());
 #else
   return rstl::max_val< const CCharAnimTime& >(mA->VGetTimeRemaining(), mB->VGetTimeRemaining());
+#endif
 #endif
 }
 
@@ -24,17 +35,34 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
   CVector3f offsetB = infoB.GetOffset();
   CCharAnimTime durationA = infoA.GetDuration();
   CCharAnimTime durationB = infoB.GetDuration();
+#if RSTL_CORRUPTION
+  CVector3f offset(0.f, 0.f, 0.f);
+#else
   CVector3f offset;
+#endif
   if (durationA < durationB) {
+#if RSTL_CORRUPTION
+    const float scale = durationB / durationA;
+#else
     RSTL_ECHOES_CONST float scale = durationB / durationA;
+#endif
     offset = offsetA * scale * mBlendWeight + offsetB * (1.f - mBlendWeight);
   } else if (durationB < durationA) {
+#if RSTL_CORRUPTION
+    const float scale = durationA / durationB;
+#else
     RSTL_ECHOES_CONST float scale = durationA / durationB;
+#endif
     offset = offsetA * mBlendWeight + offsetB * scale * (1.f - mBlendWeight);
   } else {
     offset = offsetA + offsetB;
   }
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+  return CSteadyStateAnimInfo(
+      infoB.IsLooping(),
+      rstl::max_val< const CCharAnimTime& >(infoA.GetDuration(), infoB.GetDuration()), offset);
+#else
 #if RSTL_PRIME1
   return CSteadyStateAnimInfo(infoB.IsLooping(),
                               rstl::max_val(infoA.GetDuration(), infoB.GetDuration()), offset);
@@ -42,6 +70,7 @@ CSteadyStateAnimInfo CAnimTreeBlend::VGetSteadyStateAnimInfo() const {
   return CSteadyStateAnimInfo(
       infoB.IsLooping(),
       rstl::max_val< const CCharAnimTime& >(infoA.GetDuration(), infoB.GetDuration()), offset);
+#endif
 #endif
 }
 
@@ -57,17 +86,21 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 
   IncAdvancementDepth();
   SAdvancementResults resA = mA->AdvanceView(time);
+#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasA = resA.GetAdvancementDeltas();
 #endif
 #endif
+#endif
   SAdvancementResults resB = mB->AdvanceView(time);
+#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8E_02
   const CAdvancementDeltas& deltasB = resB.GetAdvancementDeltas();
+#endif
 #endif
 #endif
   DecAdvancementDepth();
@@ -78,6 +111,23 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
       mCullSelector = 2;
   }
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+  const CCharAnimTime remainder =
+      rstl::max_val< const CCharAnimTime& >(resA.GetRemainder(), resB.GetRemainder());
+  const SAdvancementDeltas& deltasA = resA.mDeltas;
+  const SAdvancementDeltas& deltasB = resB.mDeltas;
+  switch (GetBlendRoot() & (kBlendRoot_Offset | kBlendRoot_Rotation)) {
+  case kBlendRoot_Offset:
+    return SAdvancementResults(
+        remainder, SAdvancementDeltas::BlendTranslationOnly(deltasA, deltasB, GetBlendingWeight()));
+  case kBlendRoot_Rotation:
+    return SAdvancementResults(
+        remainder, SAdvancementDeltas::BlendRotationOnly(deltasA, deltasB, GetBlendingWeight()));
+  case kBlendRoot_Offset | kBlendRoot_Rotation:
+    return SAdvancementResults(
+        remainder, SAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
+  default:
+#else
 #if RSTL_PRIME1
   CCharAnimTime remainder = rstl::max_val(resA.GetRemainder(), resB.GetRemainder());
 #else
@@ -98,6 +148,9 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
     return SAdvancementResults(remainder,
                                CAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
 
+#endif
   return resB;
 }
-
+#if RSTL_CORRUPTION
+}
+#endif

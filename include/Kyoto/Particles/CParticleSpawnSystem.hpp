@@ -1,5 +1,6 @@
 #ifndef _CPARTICLESPAWNSYSTEM
 #define _CPARTICLESPAWNSYSTEM
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "rstl/types.h"
@@ -13,12 +14,20 @@ class CSpawnSystemDescription;
 // Constructor signature from the Echoes Wii SEL export; runtime layout is target-derived.
 class CParticleSpawnSystem : public CParticleGen {
 public:
+#if RSTL_CORRUPTION
+  static FourCC ResType() { return 'SPSC'; }
+
+#endif
   CParticleSpawnSystem(TToken< CSpawnSystemDescription > desc,
                        CElementGen::EOptionalSystemFlags flags, bool modelsUseLights);
   // CParticleGen
   ~CParticleSpawnSystem() override;
 
+#if RSTL_CORRUPTION
+  bool Update(double dt) override;
+#else
   const bool Update(double dt) override;
+#endif
   void Render() override;
   void SetOrientation(const CTransform4f& orientation) override;
   void SetTranslation(const CVector3f& translation) override;
@@ -35,9 +44,14 @@ public:
   const CVector3f& GetGlobalScale() const override;
   bool GetParticleEmission() const override;
   const CColor& GetModulationColor() const override;
+#if RSTL_CORRUPTION
+  int GetEmitterTime() const override;
+  int GetSystemCount() const override;
+#else
 #if !RSTL_PRIME1
   int GetEmitterTime() const override;
   int GetSystemCount() const override;
+#endif
 #endif
   bool IsSystemDeletable() const override;
   rstl::optional_object< CAABox > GetBounds() const override;
@@ -88,10 +102,14 @@ private:
   double mCurSeconds;
   int mLifetime;
   int mParticleCount;
+#if RSTL_CORRUPTION
+  CElementGen::EOptionalSystemFlags mOptionalFlags;
+#else
 #if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
   CElementGen::EOptionalSystemFlags mOptionalFlags;
 #else
   bool mEnableOPTS : 1;
+#endif
 #endif
   bool mModelsUseLights : 1;
   bool mParticleEmission : 1;
@@ -120,6 +138,10 @@ private:
   bool mVelocitySourceLocal[2];
   CModVectorElement* mVelocitySources[2];
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CParticleSpawnSystem, 0x220)
+#else
 CHECK_SIZEOF(CParticleSpawnSystem, RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS ? 0x220 : 0x218)
+#endif
 
 #endif // _CPARTICLESPAWNSYSTEM

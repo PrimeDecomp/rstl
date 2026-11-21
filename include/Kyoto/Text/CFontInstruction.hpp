@@ -1,12 +1,19 @@
 #ifndef _CFONTINSTRUCTION
 #define _CFONTINSTRUCTION
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 
+#if !RSTL_CORRUPTION
 class CFontInstruction : public CInstruction {
 public:
 // TODO: verify that this Prime/Echoes difference is real
@@ -14,20 +21,37 @@ public:
   explicit
 #endif
   CFontInstruction(const TToken< CRasterFont >& font) : mFont(font) { mFont.Lock(); }
+#endif
 
   // CInstruction
+#if RSTL_CORRUPTION
+class CFontInstruction : public CInstruction {
+public:
+  explicit CFontInstruction(const TToken< CRasterFont >& font) : mFont(font) { mFont.Lock(); }
+#else
   void Invoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buf) const override;
   void GetAssets(rstl::vector< CToken >& assetsOut) const override;
+#endif
 
+#if RSTL_CORRUPTION
+  // CInstruction
+  void Invoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
+  void PageInvoke(CFontRenderState& state, CTextRenderBuffer* buffer) const override;
+  void GetAssets(rstl::vector< CToken >& assets) const override;
+#endif
   uint GetAssetCount() const override;
 
 private:
   TToken< CRasterFont > mFont;
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CFontInstruction, 0xc)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CFontInstruction, 0xc)
+#endif
 #endif
 
 #endif // _CFONTINSTRUCTION

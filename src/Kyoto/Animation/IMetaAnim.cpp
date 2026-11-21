@@ -1,14 +1,22 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/IMetaAnim.hpp"
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 
 #include "Kyoto/Animation/CBoolPOINode.hpp"
+#endif
 #include "Kyoto/Streams/COutputStream.hpp"
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "string.h"
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 bool CPreAdvanceIndicator::IsTime() const { return mIsTime; }
 
@@ -17,6 +25,7 @@ const CCharAnimTime& CPreAdvanceIndicator::GetTime() const { return mTime; }
 bool CPreAdvanceIndicator::IsString() const { return !IsTime(); }
 
 const char* CPreAdvanceIndicator::GetString() const { return mString; }
+#endif
 #endif
 
 CMetaAnimTreeBuildOrders CMetaAnimTreeBuildOrders::NoSpecialOrders() {
@@ -56,11 +65,16 @@ void IMetaAnim::PutTo(COutputStream& out) const {
   WriteAnimData(out);
 }
 
+#if RSTL_CORRUPTION
+CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimReader&) {
+#else
 CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimReader& anim) {
+#endif
   if (ind.IsTime()) {
     return ind.GetTime();
   }
 
+#if !RSTL_CORRUPTION
   CBoolPOINode nodes[64];
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -84,12 +98,17 @@ CCharAnimTime IMetaAnim::GetTime(const CPreAdvanceIndicator& ind, const IAnimRea
     }
 
   }
+#endif
   return CCharAnimTime::ZeroFlat();
 }
 
 void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
   CCharAnimTime remaining = dt;
   while (remaining > CCharAnimTime::ZeroFlat()) {
+#if RSTL_CORRUPTION
+    SAdvancementResults result = anim.VAdvanceView(remaining);
+    remaining = result.mRemTime;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     SAdvancementResults result = anim.AdvanceView(remaining);
@@ -98,6 +117,6 @@ void IMetaAnim::AdvanceAnim(IAnimReader& anim, const CCharAnimTime& dt) {
     SAdvancementResults result = anim.VAdvanceView(remaining);
     remaining = result.mRemTime;
 #endif
+#endif
   }
 }
-

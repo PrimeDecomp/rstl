@@ -1,8 +1,17 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimTreeTimeScale.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Animation/CAssetPOINode.hpp"
+#include "Kyoto/Animation/CAssetSoundPOINode.hpp"
+#endif
 #include "Kyoto/Animation/CBoolPOINode.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CInt32POINode.hpp"
+#endif
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
 
@@ -30,6 +39,10 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
     }
   } else {
     CCharAnimTime newDt = mTimeScale->TimeScaleIntegral(origAccelTime, mTargetAccelTime);
+#if RSTL_CORRUPTION
+    SAdvancementResults res(CCharAnimTime(0.f),
+                            SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     SAdvancementResults res(CCharAnimTime(0.f), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -37,6 +50,7 @@ SAdvancementResults CAnimTreeTimeScale::VAdvanceView(const CCharAnimTime& dt) {
                                                     , CQuaternion::NoRotation()
 #endif
                                                     ));
+#endif
     if (newDt.GreaterThanZero()) {
       res = mChild->AdvanceView(newDt);
     }
@@ -58,13 +72,24 @@ CCharAnimTime CAnimTreeTimeScale::VGetTimeRemaining() const {
 
 CSteadyStateAnimInfo CAnimTreeTimeScale::VGetSteadyStateAnimInfo() const {
   CSteadyStateAnimInfo info = mChild->GetSteadyStateAnimInfo();
+#if !RSTL_CORRUPTION
   CCharAnimTime originalDuration = info.GetDuration();
+#endif
   if (mTargetAccelTime == CCharAnimTime::Infinity()) {
     const CCharAnimTime duration =
+#if RSTL_CORRUPTION
+        mTimeScale->FindUpperLimit(CCharAnimTime::ZeroFlat(), info.GetDuration());
+#else
         mTimeScale->FindUpperLimit(CCharAnimTime::ZeroFlat(), originalDuration);
+#endif
     return CSteadyStateAnimInfo(info.IsLooping(), duration, info.GetOffset());
   } else {
+#if RSTL_CORRUPTION
+    CCharAnimTime time =
+        mCurAccelTime.GreaterThanZero()
+#else
     CCharAnimTime time = mCurAccelTime.GreaterThanZero()
+#endif
             ? mTimeScale->TimeScaleIntegral(CCharAnimTime::ZeroFlat(), mCurAccelTime)
             : CCharAnimTime::ZeroFlat();
     CCharAnimTime remaining = GetTimeRemaining();
@@ -74,14 +99,24 @@ CSteadyStateAnimInfo CAnimTreeTimeScale::VGetSteadyStateAnimInfo() const {
 }
 
 rstl::ownership_transfer< IAnimReader > CAnimTreeTimeScale::VClone() const {
+#if RSTL_CORRUPTION
+  return rs_new_line(139) CAnimTreeTimeScale(Cast(mChild->Clone()), mTimeScale->Clone(),
+                                             mCurAccelTime, mTargetAccelTime, mInitialTime, mName);
+#else
   return rs_new CAnimTreeTimeScale(Cast(mChild->Clone()), mTimeScale->Clone(), mCurAccelTime,
                                    mTargetAccelTime, mInitialTime, mName);
+#endif
 }
 
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeTimeScale::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > child = mChild->GetBestUnblendedChild();
   if (child) {
+#if RSTL_CORRUPTION
+    return rs_new_line(154)
+        CAnimTreeTimeScale(Cast(child->Clone()), mTimeScale->Clone(), mCurAccelTime,
+#else
     return rs_new CAnimTreeTimeScale(Cast(child->Clone()), mTimeScale->Clone(), mCurAccelTime,
+#endif
                                      mTargetAccelTime, mInitialTime, mName);
   }
   return child;
@@ -90,18 +125,32 @@ rstl::rc_ptr< CAnimTreeNode > CAnimTreeTimeScale::VGetBestUnblendedChild() const
 CAnimTreeEffectiveContribution CAnimTreeTimeScale::VGetContributionOfHighestInfluence() const {
   CAnimTreeEffectiveContribution contribution = mChild->GetContributionOfHighestInfluence();
   float weight = contribution.GetContributionWeight();
+#if !RSTL_CORRUPTION
   rstl::string name = contribution.GetPrimitiveName();
+#endif
   CSteadyStateAnimInfo info = GetSteadyStateAnimInfo();
   CCharAnimTime time = GetTimeRemaining();
+#if RSTL_CORRUPTION
+  return CAnimTreeEffectiveContribution(weight, contribution.GetPrimitive(), info, time);
+#else
   return CAnimTreeEffectiveContribution(weight, name, info, time,
                                         contribution.GetAnimDatabaseIndex());
+#endif
 }
 
 uint CAnimTreeTimeScale::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
+#if RSTL_CORRUPTION
+                                         uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+#else
                                          uint capacity, uint iterator, int additive) const {
+#endif
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
+#if RSTL_CORRUPTION
+  const uint ret = mChild->GetBoolPOIList(useTime, listOut, capacity, iterator, mask);
+#else
   const uint ret = mChild->GetBoolPOIList(useTime, listOut, capacity, iterator, additive);
+#endif
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -111,10 +160,18 @@ uint CAnimTreeTimeScale::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode
   return ret;
 }
 
+#if RSTL_CORRUPTION
+uint CAnimTreeTimeScale::VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
+                                             uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+#else
 uint CAnimTreeTimeScale::VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut,
                                           uint capacity, uint iterator, int additive) const {
+#endif
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
+#if RSTL_CORRUPTION
+  const uint ret = mChild->GetParticlePOIList(useTime, listOut, capacity, iterator, mask);
+#else
   const uint ret = mChild->GetInt32POIList(useTime, listOut, capacity, iterator, additive);
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
@@ -130,6 +187,7 @@ uint CAnimTreeTimeScale::VGetParticlePOIList(const CCharAnimTime& time, CParticl
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
   const uint ret = mChild->GetParticlePOIList(useTime, listOut, capacity, iterator, additive);
+#endif
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -140,10 +198,18 @@ uint CAnimTreeTimeScale::VGetParticlePOIList(const CCharAnimTime& time, CParticl
 }
 
 uint CAnimTreeTimeScale::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut,
+#if RSTL_CORRUPTION
+                                          uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+#else
                                           uint capacity, uint iterator, int additive) const {
+#endif
   const CCharAnimTime useTime =
       time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
+#if RSTL_CORRUPTION
+  const uint ret = mChild->GetSoundPOIList(useTime, listOut, capacity, iterator, mask);
+#else
   const uint ret = mChild->GetSoundPOIList(useTime, listOut, capacity, iterator, additive);
+#endif
   if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
     for (uint i = 0; i < ret; ++i) {
       CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
@@ -153,6 +219,18 @@ uint CAnimTreeTimeScale::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINo
   return ret;
 }
 
+#if RSTL_CORRUPTION
+uint CAnimTreeTimeScale::VGetAssetSoundPOIList(const CCharAnimTime& time,
+                                               CAssetSoundPOINode* listOut, uint capacity,
+                                               uint iterator, const CSegIdMaskMap& mask) const {
+  const CCharAnimTime useTime =
+      time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
+  const uint ret = mChild->GetAssetSoundPOIList(useTime, listOut, capacity, iterator, mask);
+  if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
+    for (uint i = 0; i < ret; ++i) {
+      CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
+      listOut[i + iterator].SetTime(realTime);
+#else
 bool CAnimTreeTimeScale::VGetBoolPOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -167,7 +245,9 @@ bool CAnimTreeTimeScale::VGetBoolPOIState(
 #else
   return mChild->VGetBoolPOIState(name);
 #endif
+#endif
 }
+#if !RSTL_CORRUPTION
 s32 CAnimTreeTimeScale::VGetInt32POIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -182,29 +262,65 @@ s32 CAnimTreeTimeScale::VGetInt32POIState(
 #else
   return mChild->VGetInt32POIState(name);
 #endif
+#endif
 }
+#if RSTL_CORRUPTION
+  return ret;
+}
+#else
 CParticleData::EParentedMode CAnimTreeTimeScale::VGetParticlePOIState(
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+uint CAnimTreeTimeScale::VGetAssetPOIList(const CCharAnimTime& time, CAssetPOINode* listOut,
+                                          uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+  const CCharAnimTime useTime =
+      time == CCharAnimTime::Infinity() ? mChild->GetTimeRemaining() : GetRealLifeTime(time);
+  const uint ret = mChild->GetAssetPOIList(useTime, listOut, capacity, iterator, mask);
+  if (mTargetAccelTime > CCharAnimTime::ZeroFlat()) {
+    for (uint i = 0; i < ret; ++i) {
+      CCharAnimTime realTime = GetRealLifeTime(listOut[i].GetTime());
+      listOut[i + iterator].SetTime(realTime);
+    }
+  }
+  return ret;
+}
+#else
 #if RSTL_PRIME1
     const char* name
 #else
     uint name
 #endif
     ) const {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+bool CAnimTreeTimeScale::VGetBoolPOIState(uint nameHash) const {
+  return mChild->VGetBoolPOIState(nameHash);
+}
+
+CParticleData::EParentedMode CAnimTreeTimeScale::VGetParticlePOIState(uint nameHash) const {
+  return mChild->VGetParticlePOIState(nameHash);
+#else
 #if RSTL_PRIME1
   return mChild->GetParticlePOIState(name);
 #else
   return mChild->VGetParticlePOIState(name);
+#endif
 #endif
 }
 
 rstl::optional_object< rstl::ownership_transfer< IAnimReader > > CAnimTreeTimeScale::VSimplified() {
   rstl::optional_object< rstl::ownership_transfer< IAnimReader > > simp = mChild->Simplified();
   if (simp) {
+#if RSTL_CORRUPTION
+    return rstl::ownership_transfer< IAnimReader >(rs_new_line(393) CAnimTreeTimeScale(
+        Cast(*simp), mTimeScale->Clone(), mCurAccelTime, mTargetAccelTime, mInitialTime, mName));
+#else
     return rstl::ownership_transfer< IAnimReader >(
         rs_new CAnimTreeTimeScale(Cast(*simp), mTimeScale->Clone(), mCurAccelTime,
                                   mTargetAccelTime, mInitialTime, mName));
+#endif
   }
   if (mCurAccelTime == mTargetAccelTime) {
     return mChild->Clone();
@@ -212,6 +328,9 @@ rstl::optional_object< rstl::ownership_transfer< IAnimReader > > CAnimTreeTimeSc
   return rstl::optional_object_null();
 }
 
+#if RSTL_CORRUPTION
+void CAnimTreeTimeScale::VSetPhase(float phase) { mChild->VSetPhase(phase); }
+#else
 void CAnimTreeTimeScale::VSetPhase(float phase) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -220,6 +339,7 @@ void CAnimTreeTimeScale::VSetPhase(float phase) {
   mChild->VSetPhase(phase);
 #endif
 }
+#endif
 
 CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) const {
   CCharAnimTime timeRem = mChild->GetTimeRemaining();
@@ -234,7 +354,11 @@ CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) con
         CCharAnimTime upper = mTimeScale->FindUpperLimit(mCurAccelTime, ret);
         return upper - mCurAccelTime;
       } else {
+#if RSTL_CORRUPTION
+        return accelRemaining + (ret - integral);
+#else
         return integral + (ret - integral);
+#endif
       }
     }
   }
@@ -244,10 +368,14 @@ CCharAnimTime CAnimTreeTimeScale::GetRealLifeTime(const CCharAnimTime& time) con
 rstl::string CAnimTreeTimeScale::CreatePrimitiveName(const rstl::ncrc_ptr< CAnimTreeNode >& node,
                                                      float scaleA, const CCharAnimTime& time,
                                                      float scaleB) {
+#if RSTL_CORRUPTION
+  return rstl::string_l("");
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   return rstl::string("");
 #else
   return rstl::string_l("");
+#endif
 #endif
 }

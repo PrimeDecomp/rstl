@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CBoolPOINode.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
@@ -7,6 +10,12 @@ CBoolPOINode::CBoolPOINode(CInputStream& in) : CPOINode(in), mVal(in.ReadBool())
 
 CBoolPOINode CBoolPOINode::CopyNodeMinusStartTime(const CBoolPOINode& node,
                                                   const CCharAnimTime& startTime) {
+#if RSTL_CORRUPTION
+  return CBoolPOINode(node.GetNameHash(), node.GetPoiType(), node.GetTime() - startTime,
+                      node.GetIndex(), node.GetSaveState(), node.GetWeight(),
+                      node.GetCharacterIndex(), node.GetFlags(), node.GetUnk2C(), node.GetSegId(),
+                      node.GetValue());
+#else
   return CBoolPOINode(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -16,5 +25,5 @@ CBoolPOINode CBoolPOINode::CopyNodeMinusStartTime(const CBoolPOINode& node,
 #endif
       node.GetPoiType(), node.GetTime() - startTime, node.GetIndex(), node.GetSaveState(),
       node.GetWeight(), node.GetCharacterIndex(), node.GetFlags(), node.GetValue());
+#endif
 }
-

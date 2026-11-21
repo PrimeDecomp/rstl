@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CEmitterElement.hpp"
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"
@@ -7,12 +10,23 @@
 
 #include "Kyoto/Math/CVector3f.hpp"
 
+#if RSTL_CORRUPTION
+
+
+// Guessed name
+static CVector3f sUnitVector(1.f, 1.f, 1.f);
+
+// Guessed name
+static void GetConeVelocity(float xRange, float yRange, float coneCos, float coneSin,
+                            const CVector3f& pos, const CVector3f& vel, CVector3f& velOut);
+#else
 #if !RSTL_PRIME1
 static CVector3f sUnitVector(1.f, 1.f, 1.f);
 
 // Guessed name
 static void GetConeVelocity(float xRange, float yRange, float coneCos, float coneSin,
                             const CVector3f& pos, const CVector3f& vel, CVector3f& velOut);
+#endif
 #endif
 
 CEESimpleEmitter::CEESimpleEmitter(CVectorElement* pos, CVectorElement* vel)
@@ -52,16 +66,76 @@ bool CVESphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f normVec1 = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100));
+#if RSTL_CORRUPTION
+  normVec1 = (normVec1.IsNormalizable() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
+#else
   normVec1 = (normVec1.CanBeNormalized() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
+#endif
   pPos = origin + (normVec1 * radius);
 
   CVector3f offset = (pPos - origin);
+#if RSTL_CORRUPTION
+  CVector3f direction = offset.IsNormalizable() ? offset.AsNormalized() : offset;
+#else
   CVector3f direction = offset.CanBeNormalized() ? offset.AsNormalized() : offset;
+#endif
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * direction;
   return false;
 }
 
+#if RSTL_CORRUPTION
+CVEEllipsoid::CVEEllipsoid(CVectorElement* origin, CVectorElement* radii, CVectorElement* rotation,
+                           CRealElement* velocityMag, bool onSurface)
+: mOrigin(origin)
+, mRadii(radii)
+, mRotation(rotation)
+, mVelocityMag(velocityMag)
+, mOnSurface(onSurface) {}
+
+CVEEllipsoid::~CVEEllipsoid() {
+  delete mOrigin;
+  delete mRadii;
+  delete mRotation;
+  delete mVelocityMag;
+}
+
+bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
+  CVector3f origin = CVector3f::Zero();
+  CVector3f radii = CVector3f::Zero();
+  CVector3f rotation = CVector3f::Zero();
+  float mag = 0.f;
+  mOrigin->GetValue(frame, origin);
+  mRadii->GetValue(frame, radii);
+  mRotation->GetValue(frame, rotation);
+  mVelocityMag->GetValue(frame, mag);
+
+  CVector3f dir = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
+                            CRandom16::GetRandomNumber()->Range(-100, 100),
+                            CRandom16::GetRandomNumber()->Range(-100, 100));
+  dir *= 0.01f;
+  if (dir.IsNormalizable()) {
+    dir.Normalize();
+  }
+  if (!mOnSurface) {
+    radii[kDX] = CRandom16::GetRandomNumber()->Range(0.f, radii[kDX]);
+    radii[kDY] = CRandom16::GetRandomNumber()->Range(0.f, radii[kDY]);
+    radii[kDZ] = CRandom16::GetRandomNumber()->Range(0.f, radii[kDZ]);
+  }
+  dir = dir * radii;
+
+  CTransform4f xf = CTransform4f::Identity();
+  xf = CTransform4f::RotateZ(CRelAngle::FromDegrees(rotation.GetZ()));
+  xf.RotateLocalY(CRelAngle::FromDegrees(rotation.GetY()));
+  xf.RotateLocalX(CRelAngle::FromDegrees(rotation.GetX()));
+  dir = xf * dir;
+
+  pPos = origin + dir;
+  pVel = dir.IsNormalizable() ? dir.AsNormalized() : dir;
+  pVel *= mag;
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CVEEllipsoid::CVEEllipsoid(CVectorElement* origin, CVectorElement* radii, CVectorElement* rotation,
                            CRealElement* velocityMag, bool onSurface)
@@ -115,6 +189,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   return false;
 }
 #endif
+#endif
 
 CVEAngleSphere::CVEAngleSphere(CVectorElement* origin, CRealElement* radius,
                                CRealElement* velocityMag, CRealElement* angleXBias,
@@ -165,6 +240,10 @@ bool CVEAngleSphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const
 
   CVector3f vec(-CMath::FastSinR(yBias) * CMath::FastCosR(xBias), CMath::FastSinR(xBias),
                 CMath::FastCosR(xBias) * CMath::FastCosR(yBias));
+#if RSTL_CORRUPTION
+  vec.Normalize();
+  pPos = origin + (radius * vec);
+#else
 #if RSTL_PARTICLE_ANGLE_SPHERE_NORMALIZE
   vec.Normalize();
   pPos = origin + (radius * vec);
@@ -173,12 +252,130 @@ bool CVEAngleSphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const
   pPos = origin + (radius * vec);
   CVector3f dir = (pPos - origin).AsNormalized();
 #endif
+#endif
   mVelocityMag->GetValue(frame, mag);
+#if RSTL_CORRUPTION
+  pVel = mag * vec;
+#else
   pVel = mag * dir;
+#endif
 
   return false;
 }
 
+#if RSTL_CORRUPTION
+CEEPlaneEmitter::CEEPlaneEmitter(CVectorElement* translation, CVectorElement* rotation,
+                                 CVectorElement* velocity, CRealElement* xRange,
+                                 CRealElement* yRange, CRealElement* coneAngle)
+: mTranslation(translation)
+, mRotation(rotation)
+, mVelocity(velocity)
+, mXRange(xRange)
+, mYRange(yRange)
+, mConeAngleElement(coneAngle)
+, mTransform(CTransform4f::Identity())
+, mConeAngleRadians(0.f)
+, mConeCos(0.f)
+, mConeSin(0.f)
+, mConstantTransform(false)
+, mHasCone(true)
+, mConstantCone(false) {
+  if (mTranslation != nullptr && mRotation != nullptr && mTranslation->IsFastConstant() &&
+      mRotation->IsFastConstant()) {
+    mConstantTransform = true;
+    CVector3f trans = CVector3f::Zero();
+    CVector3f rot = CVector3f::Zero();
+    mTranslation->GetValue(0, trans);
+    mRotation->GetValue(0, rot);
+    mTransform = CTransform4f::RotateZ(CRelAngle::FromDegrees(rot.GetZ()));
+    mTransform.RotateLocalY(CRelAngle::FromDegrees(rot.GetY()));
+    mTransform.RotateLocalX(CRelAngle::FromDegrees(rot.GetX()));
+    mTransform.AddTranslation(trans);
+  }
+
+  if (coneAngle != nullptr && coneAngle->IsConstant()) {
+    mConstantCone = true;
+    mConeAngleElement->GetValue(0, mConeAngleRadians);
+    if (mConeAngleRadians == 0.f) {
+      mHasCone = false;
+    } else {
+      mConeAngleRadians *= M_PIF / 180.f;
+      mConeCos = CMath::FastCosR(mConeAngleRadians);
+      mConeSin = CMath::FastSinR(mConeAngleRadians);
+    }
+  }
+}
+
+CEEPlaneEmitter::~CEEPlaneEmitter() {
+  delete mTranslation;
+  delete mRotation;
+  delete mVelocity;
+  delete mXRange;
+  delete mYRange;
+  delete mConeAngleElement;
+}
+
+bool CEEPlaneEmitter::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
+  CVector3f vel = CVector3f::Zero();
+  float xRange;
+  float yRange;
+  mVelocity->GetValue(frame, vel);
+  mXRange->GetValue(frame, xRange);
+  mYRange->GetValue(frame, yRange);
+
+  if (!mConstantTransform) {
+    CVector3f trans = CVector3f::Zero();
+    CVector3f rot = CVector3f::Zero();
+    mTranslation->GetValue(frame, trans);
+    mRotation->GetValue(frame, rot);
+    mTransform = CTransform4f::RotateZ(CRelAngle::FromDegrees(rot.GetZ()));
+    mTransform.RotateLocalY(CRelAngle::FromDegrees(rot.GetY()));
+    mTransform.RotateLocalX(CRelAngle::FromDegrees(rot.GetX()));
+    mTransform.AddTranslation(trans);
+  }
+
+  const float x = CRandom16::GetRandomNumber()->Range(-xRange, xRange);
+  const float y = CRandom16::GetRandomNumber()->Range(-yRange, yRange);
+  CVector3f pos = CVector3f(x, y, 0.f);
+  if (mHasCone) {
+    if (!mConstantCone) {
+      mConeAngleElement->GetValue(frame, mConeAngleRadians);
+      mConeAngleRadians *= M_PIF / 180.f;
+      mConeCos = CMath::FastCosR(mConeAngleRadians);
+      mConeSin = CMath::FastSinR(mConeAngleRadians);
+    }
+    GetConeVelocity(xRange, yRange, mConeCos, mConeSin, pos, vel, vel);
+  }
+
+  pPos = mTransform * pos;
+  pVel = mTransform.Rotate(vel);
+  return false;
+}
+
+static void GetConeVelocity(float xRange, float yRange, float coneCos, float coneSin,
+                            const CVector3f& pos, const CVector3f& vel, CVector3f& velOut) {
+  float len = CMath::FastSqrtF(pos[kDX] * pos[kDX] + pos[kDY] * pos[kDY]);
+  const float absX = static_cast< float >(fabs(pos[kDX]));
+  float dist = absX;
+  float range = xRange;
+  if ((yRange - static_cast< float >(fabs(pos[kDY])) < xRange - absX || xRange == 0.f) &&
+      yRange != 0.f) {
+    dist = static_cast< float >(fabs(pos[kDY]));
+    range = yRange;
+  }
+
+  if (range != 0.f && coneSin != 0.f && len != 0.f) {
+    float z = len / coneSin;
+    CVector3f coneDir(pos[kDX], pos[kDY], z * coneCos);
+    coneDir.Normalize();
+    coneDir *= vel.Magnitude();
+    if (CMath::Sign(vel.GetZ()) != CMath::Sign(coneDir[kDZ])) {
+      coneDir[kDZ] *= -1.f;
+    }
+    velOut = CVector3f::Lerp(vel, coneDir, dist / range);
+  }
+}
+#else
 #if !RSTL_PRIME1
 CEEPlaneEmitter::CEEPlaneEmitter(CVectorElement* translation, CVectorElement* rotation,
                                  CVectorElement* velocity, CRealElement* xRange,
@@ -295,4 +492,5 @@ static void GetConeVelocity(float xRange, float yRange, float coneCos, float con
     velOut = CVector3f::Lerp(vel, coneDir, dist / range);
   }
 }
+#endif
 #endif

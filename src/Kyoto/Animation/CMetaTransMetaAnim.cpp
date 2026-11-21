@@ -19,4 +19,3 @@ CMetaTransMetaAnim::VGetTransitionTree(const rstl::ncrc_ptr< CAnimTreeNode >& a,
 }
 
 void CMetaTransMetaAnim::WriteTransData(COutputStream& out) const { mMetaAnim->PutTo(out); }
-

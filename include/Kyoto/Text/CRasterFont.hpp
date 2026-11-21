@@ -1,8 +1,14 @@
 #ifndef _CRASTERFONT
 #define _CRASTERFONT
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/TToken.hpp"
@@ -19,7 +25,11 @@ class IObjectStore;
 
 class CFontInfo {
 public:
+#if RSTL_CORRUPTION
+  CFontInfo(bool a, bool b, int c, int fontSize, const char* name)
+#else
   CFontInfo(bool a, bool b, int c, int fontSize, const char* RSTL_PRIME1_CONST name)
+#endif
   : x0_(a), x1_(b), x4_(c), mFontSize(fontSize) {
     strcpy(mName, name);
   }
@@ -41,6 +51,7 @@ public:
     mFirst = first;
   }
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   CKernPair(const CKernPair& other)
   : mFirst(other.mFirst)
@@ -48,6 +59,7 @@ public:
   , mHowMuch(other.mHowMuch) {}
 #endif
 
+#endif
   wchar_t GetFirst() const { return mFirst; }
   wchar_t GetSecond() const { return mSecond; }
   int GetHowMuch() const { return mHowMuch; }
@@ -63,6 +75,10 @@ private:
 class CGlyph {
 public:
   CGlyph(const int a, const int b, const int c, const float startU, const float startV,
+#if RSTL_CORRUPTION
+         const float endU, const float endV, const int layer, const int cellWidth,
+         const int cellHeight, const int baseline, const int kernStart)
+#else
          const float endU, const float endV,
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -74,6 +90,7 @@ public:
          , const uchar layer = 0
 #endif
          )
+#endif
   : mA(a)
   , mB(b)
   , mC(c)
@@ -81,8 +98,12 @@ public:
   , mStartV(startV)
   , mEndU(endU)
   , mEndV(endV)
+#if RSTL_CORRUPTION
+  , mLayer(layer)
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   , mLayer(layer)
+#endif
 #endif
   , mCellWidth(cellWidth)
   , mCellHeight(cellHeight)
@@ -96,6 +117,11 @@ public:
   float GetStartV() const { return mStartV; }
   float GetEndU() const { return mEndU; }
   float GetEndV() const { return mEndV; }
+#if RSTL_CORRUPTION
+  uchar GetCellWidth() const { return mCellWidth; }
+  uchar GetCellHeight() const { return mCellHeight; }
+  uchar GetBaseline() const { return mBaseline; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetCellWidth() const { return mCellWidth; }
@@ -107,7 +133,11 @@ public:
   uchar GetBaseline() const { return mBaseline; }
 #endif
 
+#endif
   int GetKernStart() const { return mKernStart; }
+#if RSTL_CORRUPTION
+  uchar GetLayer() const { return mLayer; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetLayer() const {
@@ -120,6 +150,7 @@ public:
 #else
   uchar GetLayer() const { return mLayer; }
 #endif
+#endif
 
 private:
   short mA;
@@ -129,6 +160,12 @@ private:
   float mStartV;
   float mEndU;
   float mEndV;
+#if RSTL_CORRUPTION
+  uchar mLayer;
+  uchar mCellWidth;
+  uchar mCellHeight;
+  uchar mBaseline;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   uchar mLayer;
   uchar mCellWidth;
@@ -138,6 +175,7 @@ private:
   short mCellWidth;
   short mCellHeight;
   short mBaseline;
+#endif
 #endif
   short mKernStart;
 };
@@ -155,13 +193,20 @@ enum EFontMode {
 
 class CRasterFont {
 public:
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   friend class CFontInstruction;
 #endif
 
+#endif
   CRasterFont(CInputStream& in, IObjectStore* store);
 
   EFontMode GetMode() const;
+#if RSTL_CORRUPTION
+  int GetMonoWidth() const { return mMonoWidth; }
+  int GetCarriageAdvance() const;
+  int GetBaseLine() const { return mBaseline; }
+#else
   int GetMonoWidth() const;
 #if RSTL_PRIME1
   int GetMonoHeight() const;
@@ -169,17 +214,28 @@ public:
   int GetCarriageAdvance() RSTL_ECHOES_CONST;
   int GetBaseLine() const;
 
+#endif
   void GetSize(const CDrawStringOptions&, int&, int&, const wchar_t*, int) const;
+#if RSTL_CORRUPTION
+  void SetTexture(const TToken< CTexture >& token);
+  const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
+#else
   void SetTexture(const TToken< CTexture >& texture);
 #if RSTL_PRIME1
   inline TToken< CTexture > GetTexture() { return *mTexture; }
 #else
   const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
 #endif
+#endif
   bool IsFinishedLoading();
+#if RSTL_CORRUPTION
+  const CGlyph* GetGlyph(wchar_t chr) const { return InternalGetGlyph(chr); }
+  bool HasGlyph(wchar_t chr) const { return GetGlyph(chr) != nullptr; }
+#else
   const CGlyph* GetGlyph(wchar_t c) const;
   bool HasGlyph(wchar_t c) const { return GetGlyph(c) != nullptr; }
 
+#endif
   void DrawString(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
                   CTextRenderBuffer* buffer, const wchar_t* str, int length) const;
   void DrawSpace(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
@@ -189,8 +245,10 @@ public:
                             CTextRenderBuffer* buffer, const wchar_t* str, int length) const;
 
   void SetupRenderState();
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   int GetLineMargin();
+#endif
 #endif
 
 private:
@@ -205,12 +263,17 @@ private:
   int mBaseline;
   int mLineMargin;
 
+#if RSTL_CORRUPTION
+  static int KernLookup(const rstl::vector< CKernPair >& kerning, int start, int chr);
+#else
   static int KernLookup(const rstl::vector< CKernPair >& kerning, int start,
                         RSTL_PRIME1_CONST int chr);
+#endif
   const CGlyph* InternalGetGlyph(wchar_t chr) const;
 };
 CHECK_SIZEOF(CRasterFont, 0x94)
 
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
 inline int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
 inline int CRasterFont::GetBaseLine() const { return mBaseline; }
@@ -219,6 +282,7 @@ inline const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGet
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8P_00
 inline int CRasterFont::GetMonoHeight() const { return mMonoHeight; }
 inline int CRasterFont::GetLineMargin() { return mLineMargin; }
+#endif
 #endif
 
 #endif // _CRASTERFONT

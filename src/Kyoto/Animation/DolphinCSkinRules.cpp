@@ -1,15 +1,28 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Animation/CSkinRules.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#else
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CPoseAsTransforms.hpp"
+#endif
 #include "Kyoto/Animation/CPoseAsTransforms_Linear.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Basics/CBasics.hpp"
+#endif
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#else
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
+#endif
 
 #include "dolphin/gx.h"
+#if !RSTL_CORRUPTION
 #include "dolphin/os/OSCache.h"
 #include "rstl/math.hpp"
 
@@ -20,8 +33,19 @@ namespace {
 constexpr borealis::Log Log{"CSkinRules"};
 } // namespace
 #endif
+#endif
 
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+
+uint CSkinRules::ReadHeader(CInputStream& in) {
+  const uint header = in.ReadInt32();
+  // clang-format off
+  RS_VERIFY_THROW(62, header =='SKIN', false, "Reading invalid skin rules file!");
+  // clang-format on
+  return in.ReadInt32();
+  }
+#else
 #if RSTL_PRIME1
 static int StreamFloatToShort(CInputStream& in) {
   const int result = in.Get< int >();
@@ -36,8 +60,26 @@ static int StreamFloatToShort(CInputStream& in) {
   return result;
 }
 #endif
+#endif
 
 CSkinRules::CSkinRules(CInputStream& in)
+#if RSTL_CORRUPTION
+: mVersion(ReadHeader(in))
+, mBones(in)
+, mMatrixIndices(in)
+, mUnsortedBoneIndices(in)
+, mSortedBoneIndices(in)
+, mVertexCount(in.ReadInt32())
+, mVertexToBone(nullptr) {
+  if (mVertexCount > 0) {
+    mVertexToBone = rs_new_line(80) uchar[mVertexCount];
+    in.Get(mVertexToBone.get(), mVertexCount);
+  }
+  RS_VERIFY_THROW(84, mBones.size() < SkinRules::kMaximumBones, false,
+                  CBasics::Stringize("Too many bones!  Has %d, max %d", mBones.size(),
+                                     SkinRules::kMaximumBones));
+  CModel::AddToTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+#else
 : mVirtualBones(in)
 #if RSTL_PRIME1
 , mVertexCount(StreamFloatToShort(in))
@@ -55,15 +97,62 @@ CSkinRules::CSkinRules(CInputStream& in)
   }
 #endif
   CModel::AddToTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
+#endif
 }
 
 CSkinRules::~CSkinRules() {
+#if RSTL_CORRUPTION
+  CModel::RemoveFromTotal(sizeof(CSkinRules) + mBones.size() * sizeof(CVirtualBone));
+#else
   CModel::RemoveFromTotal(mVirtualBones.size() * sizeof(CVirtualBone) + sizeof(CSkinRules));
+#endif
 }
 
+#if RSTL_CORRUPTION
+void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose,
+                                            CTransform4f* out, int count,
+                                            const uchar* boneIndices) const {
+  const int boneCount = mBones.size();
+  if (count == boneCount) {
+  for (int i = 0; i < boneCount; ++i) {
+      const CVirtualBone& bone = mBones[i];
+      bone.BuildAccumulatedTransform(pose, out[i]);
+  }
+  } else {
+    for (int i = 0; i < count; ++i) {
+      mBones[boneIndices[i]].BuildAccumulatedTransform(pose, out[i]);
+    }
+  }
+}
+
+CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                   int size, const CVParamTransfer& params) {
+  CMemoryInStream in(buffer.get(), size);
+  return rs_new_line(143) CSkinRules(in);
+}
+
+void CSkinRules::LoadMatrixBank(int bank, const uchar* remap) const {
+  int start = bank * 10;
+  const int end = start + 10 > mMatrixIndices.size() ? mMatrixIndices.size() : start + 10;
+  GXFlush();
+  for (int i = start; i < end; ++i) {
+    int index = mMatrixIndices[i];
+    if (index != -1) {
+      if (remap != nullptr) {
+        index = remap[index];
+      }
+      GXLoadPosMtxIndx(index, (i - start) * 3);
+  }
+}
+  for (int i = start; i < end; ++i) {
+    int index = mMatrixIndices[i];
+    if (index != -1) {
+      if (remap != nullptr) {
+        index = remap[index];
+#else
 #if RSTL_PRIME1
 void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms& pose,
-                                            const CCharLayoutInfo& layoutInfo) const 
+                                            const CCharLayoutInfo& layoutInfo) const
 #else
 void CSkinRules::BuildAccumulatedTransforms(const CPoseAsTransforms_Linear& pose,
                                             const CCharLayoutInfo& layoutInfo,
@@ -147,7 +236,15 @@ void CSkinRules::BuildNormalsFrom(const CVector3f* averageNormals, CVector3f* ou
 RSTL_PRIME1_CONST CFactoryFnReturn FSkinRulesFactory(const SObjectTag& tag, CInputStream& in,
                                                      const CVParamTransfer&) {
   return rs_new CSkinRules(in);
+#endif
 }
+#if RSTL_CORRUPTION
+      GXLoadNrmMtxIndx3x3(index, (i - start) * 3);
+  }
+}
+  GXFlush();
+  }
+#else
 
 #if RSTL_PRIME1
 static CSkinRules* sLockedRules = nullptr;
@@ -299,4 +396,5 @@ void CSkinRules::LoadMatrixBank(int bank) const {
     }
   }
 }
+#endif
 #endif

@@ -1,6 +1,9 @@
 #ifndef _TRESERVEDAVERAGE
 #define _TRESERVEDAVERAGE
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
 #include "rstl/types.h"
 
@@ -9,6 +12,21 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
 
+#if RSTL_CORRUPTION
+
+
+template < typename T >
+T GetMaxValue(const T* values, int count) {
+  const T* end = values + count;
+  T maximum = *values++;
+  for (; values < end; ++values) {
+    if (maximum < *values) {
+      maximum = *values;
+    }
+  }
+  return maximum;
+}
+#else
 #if !RSTL_PRIME1
 template < typename T >
 T GetMaxValue(const T* values, int count) {
@@ -22,12 +40,17 @@ T GetMaxValue(const T* values, int count) {
   return maximum;
 }
 #endif
+#endif
 
 template < typename T, int N >
 class TReservedAverage : public rstl::reserved_vector< T, N > {
 public:
   TReservedAverage() {}
   TReservedAverage(const T& value) { this->resize(N, value); }
+#if RSTL_CORRUPTION
+  void AddValue(const T& value) {
+  if (this->size() < N) {
+#else
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const;
   rstl::optional_object< T > GetMax() const;
@@ -44,13 +67,34 @@ inline void TReservedAverage< T, N >::AddValue(const T& value) {
 #else
   if (this->size() < N) {
 #endif
+#endif
     this->push_back(value);
   }
   for (int i = this->size() - 1; i > 0; --i) {
+#if RSTL_CORRUPTION
+      this->operator[](i) = this->operator[](i - 1);
+#else
     this->operator[](i) = this->operator[](i - 1u);
+#endif
   }
   this->operator[](0) = value;
 }
+#if RSTL_CORRUPTION
+  rstl::optional_object< T > GetAverage() const {
+  if (this->empty()) {
+    return rstl::optional_object_null();
+  }
+    return GetAverageValue(this->data(), this->size());
+  }
+  rstl::optional_object< T > GetMax() const {
+    if (this->empty()) {
+      return rstl::optional_object_null();
+    }
+
+  return GetMaxValue(this->data(), this->size());
+}
+  rstl::optional_object< T > GetEntry(int idx) const {
+#else
 
 template < typename T, int N >
 inline rstl::optional_object< T > TReservedAverage< T, N >::GetAverage() const {
@@ -78,11 +122,15 @@ inline rstl::optional_object< T > TReservedAverage< T, N >::GetMax() const {
 
 template < typename T, int N >
 inline rstl::optional_object< T > TReservedAverage< T, N >::GetEntry(int idx) const {
+#endif
   if (idx >= this->size()) {
     return rstl::optional_object_null();
   } else {
     return rstl::optional_object< T >(this->operator[](idx));
   }
 }
+#if RSTL_CORRUPTION
+};
+#endif
 
 #endif // _TRESERVEDAVERAGE

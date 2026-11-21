@@ -1,19 +1,33 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimationManager.hpp"
+#if !RSTL_CORRUPTION
 
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
+#endif
 
 #include "Kyoto/Animation/IMetaAnim.hpp"
 
 rstl::ncrc_ptr< CAnimTreeNode >
 CAnimationManager::GetAnimationTree(uint animIdx, const CMetaAnimTreeBuildOrders& orders) const {
+#if RSTL_CORRUPTION
+  return mAnimDB->GetMetaAnim(animIdx)->GetAnimationTree(mSysCtx, orders);
+#else
   const rstl::rc_ptr< IMetaAnim >& anim = mAnimDB.NonConstCopy()->GetMetaAnim(animIdx);
   return anim->GetAnimationTree(mSysCtx, orders);
+#endif
 }
 
 rstl::rc_ptr< IMetaAnim > CAnimationManager::GetMetaAnimation(uint animIdx) const {
+#if RSTL_CORRUPTION
+  return mAnimDB->GetMetaAnim(animIdx);
+#else
   return mAnimDB.NonConstCopy()->GetMetaAnim(animIdx);
+#endif
 }
+#if !RSTL_CORRUPTION
 
 #if !RSTL_PRIME1
 uint CAnimationManager::GetNumMetaAnims() const {
@@ -28,4 +42,4 @@ void CAnimationManager::ForceOrdering() {
 }
 #endif
 #endif
-
+#endif

@@ -1,5 +1,6 @@
 #ifndef _CFOLDYSURFACE
 #define _CFOLDYSURFACE
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "rstl/types.h"
@@ -8,6 +9,13 @@
 #include "Kyoto/TToken.hpp"
 
 #include "rstl/single_ptr.hpp"
+#if RSTL_CORRUPTION
+#include "rstl/reserved_vector.hpp"
+
+#include <dolphin/gx/GXEnum.h>
+
+
+#endif
 
 class CModel;
 class CModelFlags;
@@ -28,6 +36,10 @@ public:
                             const CTransform4f& upper) const;
 
 private:
+#if RSTL_CORRUPTION
+  void BuildMatrixIndexAttributes(); // Guessed name
+
+#endif
   // Guessed names for the three supported spatial segments.
   enum ESegment {
     kS_LowerX,
@@ -39,9 +51,20 @@ private:
   TCachedToken< CModel > mModel;
   rstl::single_ptr< CVector3f > mPositions;
   int mVertexCount;
+#if RSTL_CORRUPTION
+  rstl::single_ptr< uchar > mDisplayLists[kS_Count];
+#else
   rstl::single_ptr< void > mDisplayLists[kS_Count];
+#endif
   uint mDisplayListSize;
+#if RSTL_CORRUPTION
+  rstl::reserved_vector< GXAttr, 9 > mMatrixIndexAttributes; // Guessed name
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CFoldySurface, 0x4c)
+#else
 CHECK_SIZEOF(CFoldySurface, 0x24)
+#endif
 
 #endif // _CFOLDYSURFACE

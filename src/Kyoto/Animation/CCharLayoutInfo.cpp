@@ -1,19 +1,39 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
+#endif
 #include "Kyoto/Animation/CCharLayoutInfo.hpp"
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/CFactoryFnReturn.hpp"
+#endif
 #include "Kyoto/CFactoryMgr.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#endif
 #include "rstl/StringExtras.hpp"
 
+#if RSTL_CORRUPTION
+
+
+CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                 int size, const CVParamTransfer&) {
+  CMemoryInStream in(buffer.get(), size);
+  return rs_new_line(25) CCharLayoutInfo(in);
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn FCharLayoutInfo(const SObjectTag& tag, CInputStream& in,
                                                    const CVParamTransfer&) {
   return rs_new CCharLayoutInfo(in);
+#endif
 }
 
 CCharLayoutNode::CCharLayoutNode(CInputStream& in)
+#if RSTL_CORRUPTION
+: mParent(in), mReferenceStanceOffset(in), mRotation(in), mLocalRotation(in), mConnectedParts(in) {}
+#else
 : mParent(in)
 , mReferenceStanceOffset(in)
 // TODO: verify that this Prime/Echoes difference is real
@@ -22,12 +42,40 @@ CCharLayoutNode::CCharLayoutNode(CInputStream& in)
 , mLocalRotation(in)
 #endif
 , mConnectedParts(in) {}
+#endif
 
 CCharLayoutInfo::CCharLayoutInfo(CInputStream& in)
 : mNodes(rstl::ownership_transfer< TSegIdMap< CCharLayoutNode > >(
+#if RSTL_CORRUPTION
+      rs_new_line(72) TSegIdMap< CCharLayoutNode >(in)))
+#else
       rs_new TSegIdMap< CCharLayoutNode >(in)))
+#endif
 , mSegIdList(in)
 , mNameMap(in) {
+#if RSTL_CORRUPTION
+  InitializeLinearData();
+}
+
+void CCharLayoutInfo::InitializeLinearData() {
+  const int count = mSegIdList.size();
+  mLinearParents.reserve(count);
+  mLinearReferenceStanceOffsets.reserve(count);
+  mLinearParentOffsets.reserve(count);
+  mLinearRotations.reserve(count);
+  mLinearRotationMatrices.reserve(count);
+
+  for (int i = 0; i < count; ++i) {
+    CSegId id(i);
+    const CCharLayoutNode& node = GetSegmentData(id);
+    mLinearParents.push_back_unsafe(node.GetParent());
+    mLinearReferenceStanceOffsets.push_back_unsafe(node.GetReferenceStanceOffset());
+    mLinearParentOffsets.push_back_unsafe(GetFromParentUnrotated(id));
+    mLinearRotations.push_back_unsafe(node.GetRotation());
+    mLinearRotationMatrices.push_back_unsafe(mLinearRotations[i].BuildTransform());
+  }
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
   InitializeLinearData();
@@ -61,8 +109,17 @@ void CCharLayoutInfo::InitializeLinearData() {
   }
 }
 #endif
+#endif
 
 CSegId CCharLayoutInfo::GetSegIdFromString(const rstl::string& bone) const {
+#if RSTL_CORRUPTION
+  for (rstl::map< rstl::string, CSegId >::const_iterator it = mNameMap.begin();
+       it != mNameMap.end(); ++it) {
+    if (CStringExtras::CompareCaseInsensitive(it->first, bone) == 0) {
+      return it->second;
+    }
+  }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   AUTO(it, mNameMap.find(bone));
@@ -78,8 +135,10 @@ CSegId CCharLayoutInfo::GetSegIdFromString(const rstl::string& bone) const {
     }
   }
 #endif
+#endif
   return CSegId::Invalid();
 }
+#if !RSTL_CORRUPTION
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -100,4 +159,5 @@ static void CopyConnectedParts(const CCharLayoutNode& node) {
 }
 
 static void DeleteLayoutNode(CCharLayoutNode* node) { delete node; }
+#endif
 #endif

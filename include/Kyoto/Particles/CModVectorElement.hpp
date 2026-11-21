@@ -1,7 +1,10 @@
 #ifndef _CMODVECTORELEMENT
 #define _CMODVECTORELEMENT
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
 #include "rstl/types.h"
 
@@ -158,6 +161,33 @@ public:
   bool GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const override;
 };
 
+#if RSTL_CORRUPTION
+// Guessed name
+class CMVEBoxVolume : public CModVectorElement {
+  CVectorElement* x4_;
+  CVectorElement* x8_;
+  CModVectorElement* xc_;
+
+public:
+  CMVEBoxVolume(CVectorElement* a, CVectorElement* b, CModVectorElement* c);
+  ~CMVEBoxVolume() override;
+
+  // CModVectorElement
+  bool GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const override;
+};
+
+// Guessed name
+class CMVESphereVolume : public CModVectorElement {
+  CVectorElement* x4_;
+  CRealElement* x8_;
+  CModVectorElement* xc_;
+
+public:
+  CMVESphereVolume(CVectorElement* a, CRealElement* b, CModVectorElement* c);
+  ~CMVESphereVolume() override;
+  bool GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const override;
+};
+#else
 #if !RSTL_PRIME1
 class CMVEBoxVolume : public CModVectorElement {
   CVectorElement* mCenter;
@@ -183,7 +213,7 @@ class CMVESphereVolume : public CModVectorElement {
 public:
   CMVESphereVolume(CVectorElement* center, CRealElement* radius, CModVectorElement* modifier);
 
-  // IElement
+// Guessed name
   ~CMVESphereVolume() override;
 
   // CModVectorElement
@@ -191,5 +221,20 @@ public:
 };
 CHECK_SIZEOF(CMVESphereVolume, 0x10)
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+// Guessed name
+class CMVESweptLineCollision : public CModVectorElement {
+  CRealElement* mRestitution;
+  CRealElement* mDamping;
+
+public:
+  CMVESweptLineCollision(CRealElement* restitution, CRealElement* damping);
+  ~CMVESweptLineCollision() override;
+  bool GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const override;
+};
+
+
+#endif
 #endif // _CMODVECTORELEMENT

@@ -1,7 +1,13 @@
 #ifndef _CPVSVISOCTREE
 #define _CPVSVISOCTREE
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/PVS/CPVSVisSet.hpp"
@@ -17,31 +23,59 @@ public:
 
   static CPVSVisOctree MakePVSVisOctree(const char* data, int len);
 
+#if !RSTL_CORRUPTION
   void SetTestPoint(const CPVSVisOctree& octree, const CVector3f& point);
 
+#endif
   const CAABox& GetBounds() const { return mBounds; }
   // const CAABox& GetSearchBounds() const { return mSearchBounds; }
   // void SetSearchBounds(const CAABox& bounds) { mSearchBounds = bounds; }
 
   CPVSVisSet GetVisSet(const CVector3f& point) const;
+#if RSTL_CORRUPTION
+  // Guessed name and callback signature
+  typedef void (*TLeafCallback)(const CPVSVisOctree&, const CAABox&, const CPVSVisSet&, int, int,
+                               void*);
+  // Guessed name
+  void TraverseLeaves(TLeafCallback callback, void* userData);
+#else
 
 #if RSTL_PRIME1
 #ifdef ENABLE_DEBUG_TOOLS
-  // Backported traversal interface; callback receives the leaf depth and ordinal.
+  // Guessed name and callback signature
   typedef void (*TLeafCallback)(const CPVSVisOctree&, const CAABox&, const CPVSVisSet&, int, int,
                                void*);
   void TraverseLeaves(TLeafCallback callback, void* context) const;
 #endif
 #endif
+#endif
 
 private:
+#if RSTL_CORRUPTION
+  // Guessed name
+  void TraverseLeavesRecursive(TLeafCallback callback, int depth, int child, void* userData);
+
+#endif
   CAABox mBounds;
   uint mNumObjects;
   uint mNumLights;
   rstl::auto_ptr< const char > mOctreeData;
+#if RSTL_CORRUPTION
+  uint mCurrentNodeOffset; // Guessed name
+#else
   uint _28;
+#endif
   mutable CVector3f mMin;
   mutable CVector3f mMax;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CPVSVisOctree, 0x44)
+#endif
 
+#if RSTL_CORRUPTION
+// Guessed name
+extern "C" CAABox CPVSVisOctree_GetChildBounds(uchar octant, int child, CAABox bounds);
+
+
+#endif
 #endif // _CPVSVISOCTREE

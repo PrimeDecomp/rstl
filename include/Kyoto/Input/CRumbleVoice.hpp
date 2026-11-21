@@ -1,5 +1,6 @@
 #ifndef _CRUMBLEVOICE
 #define _CRUMBLEVOICE
+#include "rstl/RstlVersions.h"
 
 #include "rstl/types.h"
 
@@ -21,8 +22,12 @@ enum ERumbleFxId {
   kRFX_Twenty = 20,
   kRFX_TwentyOne = 21,
   kRFX_TwentyTwo = 22,
+#if RSTL_CORRUPTION
+  kRFX_TwentyThree = 23
+#else
   kRFX_TwentyThree = 23,
   kRFX_TwentyFour = 24
+#endif
 };
 
 enum ERumblePriority {

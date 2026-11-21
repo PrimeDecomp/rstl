@@ -1,7 +1,10 @@
 #ifndef _CEMITTERELEMENT
 #define _CEMITTERELEMENT
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
 #include "Kyoto/Math/CTransform4f.hpp"
 
@@ -10,9 +13,16 @@
 class CEESimpleEmitter : public CEmitterElement {
 public:
   CEESimpleEmitter(CVectorElement* pos, CVectorElement* vel);
+#if RSTL_CORRUPTION
+  ~CEESimpleEmitter();
+#endif
 
+#if RSTL_CORRUPTION
+  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
+#else
   ~CEESimpleEmitter() override;
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
+#endif
 
 private:
   CVectorElement* mPos;
@@ -22,9 +32,16 @@ private:
 class CVESphere : public CEmitterElement {
 public:
   CVESphere(CVectorElement* origin, CRealElement* radius, CRealElement* velocityMag);
+#if RSTL_CORRUPTION
+  ~CVESphere();
+#endif
 
+#if RSTL_CORRUPTION
+  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
+#else
   ~CVESphere() override;
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
+#endif
 
 private:
   CVectorElement* mSphereOrigin;
@@ -32,6 +49,24 @@ private:
   CRealElement* mVelocityMag;
 };
 
+#if RSTL_CORRUPTION
+// Guessed name
+class CVEEllipsoid : public CEmitterElement {
+public:
+  CVEEllipsoid(CVectorElement* origin, CVectorElement* radii, CVectorElement* rotation,
+               CRealElement* velocityMag, bool onSurface);
+  ~CVEEllipsoid();
+
+  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
+
+private:
+  CVectorElement* mOrigin;
+  CVectorElement* mRadii;
+  CVectorElement* mRotation;
+  CRealElement* mVelocityMag;
+  bool mOnSurface;
+};
+#else
 #if !RSTL_PRIME1
 // Echoes ELPS emitter: random point in (or on) a rotated ellipsoid.
 // Guessed name
@@ -54,15 +89,23 @@ private:
   bool mOnSurface;
 };
 #endif
+#endif
 
 class CVEAngleSphere : public CEmitterElement {
 public:
   CVEAngleSphere(CVectorElement* origin, CRealElement* radius, CRealElement* velocityMag,
                  CRealElement* angleXBias, CRealElement* angleYBias, CRealElement* angleXRange,
                  CRealElement* angleYRange);
+#if RSTL_CORRUPTION
+  ~CVEAngleSphere();
+#endif
 
+#if RSTL_CORRUPTION
+  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
+#else
   ~CVEAngleSphere() override;
   bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const override;
+#endif
 
 private:
   CVectorElement* mSphereOrigin;
@@ -74,6 +117,33 @@ private:
   CRealElement* mAngleYRange;
 };
 
+#if RSTL_CORRUPTION
+// Guessed name
+class CEEPlaneEmitter : public CEmitterElement {
+public:
+  CEEPlaneEmitter(CVectorElement* translation, CVectorElement* rotation, CVectorElement* velocity,
+                  CRealElement* xRange, CRealElement* yRange, CRealElement* coneAngle);
+  ~CEEPlaneEmitter();
+
+  bool GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const;
+
+private:
+  CVectorElement* mTranslation;
+  CVectorElement* mRotation;
+  CVectorElement* mVelocity;
+  CRealElement* mXRange;
+  CRealElement* mYRange;
+  CRealElement* mConeAngleElement;
+  mutable CTransform4f mTransform;
+  mutable float mConeAngleRadians;
+  mutable float mConeCos;
+  mutable float mConeSin;
+  bool mConstantTransform : 1;
+  bool mHasCone : 1;
+  bool mConstantCone : 1;
+};
+
+#else
 #if !RSTL_PRIME1
 // Echoes PLNE emitter: random point on a rotated rectangle, with an optional cone spread.
 // Guessed name
@@ -106,6 +176,7 @@ private:
 
 CHECK_SIZEOF(CVEEllipsoid, 0x18)
 CHECK_SIZEOF(CEEPlaneEmitter, 0x5C)
+#endif
 #endif
 
 #endif // _CEMITTERELEMENT

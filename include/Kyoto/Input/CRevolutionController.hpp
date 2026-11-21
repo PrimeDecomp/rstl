@@ -1,25 +1,63 @@
 #ifndef _CREVOLUTIONCONTROLLER
 #define _CREVOLUTIONCONTROLLER
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Input/IController.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Math/CVector2f.hpp"
+#endif
 
 #include "rstl/reserved_vector.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/single_ptr.hpp"
+#endif
 
 #include "revolution/kpad.h"
 
+#if RSTL_CORRUPTION
+
+
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(EMotorState)
+
+template <>
+struct reserved_vector_fill_argument< EMotorState > {
+  typedef EMotorState type;
+};
+} // namespace rstl
+#else
 class CScalarInputFilter;
 class CRevolutionMotionProcessor;
+#endif
 
 // Some method names are inferred; the layout and virtual order come from Trilogy.
 class CRevolutionController : public IController {
 public:
+#if RSTL_CORRUPTION
+  CRevolutionController();
+#endif
   ~CRevolutionController() override;
   void Poll() override;
+#if !RSTL_CORRUPTION
   void Update(float dt) override;
+#endif
   uint GetDeviceCount() const override;
+#if RSTL_CORRUPTION
+  CControllerGamepadData& GetGamepadData(int controller) override;
+  uint GetControllerType(int controller) const override;
+  void SetMotorState(EIOPort port, EMotorState state) override;
+  int GetTrackingState(int controller) const override;
+  uint GetConsecutiveValidTrackingFrames(int controller) const override;
+  uint GetConsecutiveInvalidTrackingFrames(int controller) const override;
+  CVector2f GetTrackedPosition(int controller) const override;
+#else
   CControllerData& GetInput(uint channel) override;
   void SetInput(const CControllerData& input, int channel) override;
   EDeviceType GetControllerType(int channel) const override;
@@ -46,18 +84,35 @@ public:
   float GetButtonIdleTime(uint channel) const;
   bool IsControllerIdle(uint channel) const;
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
   CRevolutionController();
 #if RSTL_CONTROLLER_CHANNEL_LIMIT
   void SetMaxControllers(int count);
 #endif
+#endif
   bool Initialize();
+#if RSTL_CORRUPTION
+  float GetAnalogStickMaxValue(EJoyAxis axis) const;
+#else
   bool IsPointerValid(int channel) const;
   bool IsPointerDevicePresent(int channel) const;
   WPADInfo GetWpadInfo(int channel) const;
   const KPADStatus& GetKpadStatus(int channel) const;
+#endif
 
 private:
+#if RSTL_CORRUPTION
+  void ProcessInputData();
+  void AdjustTrackedPositionScale(int controller); // Guessed name
+  void UpdateTrackedPosition(int controller);      // Guessed name
+  void ProcessAxis(int controller, EJoyAxis axis, CControllerButton& negative,
+                   CControllerButton& positive);
+  void ProcessButtons(int controller);
+  void ProcessDigitalButton(int controller, CControllerButton& button, uint mask);
+  void ProcessAnalogButton(float value, CControllerAxis& axis, CControllerButton& button);
+#else
   // Event names inferred from callback writes and deferred dispatch.
   enum EConnectionEvent { kCE_None, kCE_Connected, kCE_Disconnected, kCE_Rejected };
   enum EExtensionEvent { kEE_None, kEE_Wiimote, kEE_Nunchuk, kEE_Classic, kEE_Unsupported };
@@ -113,8 +168,19 @@ private:
   void InitializeController(uint channel);
   void SetControllerType(int channel, EDeviceType type);
   void CopyWpadInfo(int channel);
+#endif
 
   rstl::reserved_vector< KPADStatus, 4 > mStatus;
+#if RSTL_CORRUPTION
+  rstl::reserved_vector< CControllerGamepadData, 4 > mGamepadStates;
+  rstl::reserved_vector< EMotorState, 4 > mMotorStates;
+  rstl::reserved_vector< uint, 4 > mDeviceTypes;                 // Guessed name
+  rstl::reserved_vector< int, 4 > mTrackingStates;               // Guessed name
+  rstl::reserved_vector< CVector2f, 4 > mTrackedPositions;       // Guessed name
+  rstl::reserved_vector< float, 4 > mTrackedDistances;           // Guessed name
+  rstl::reserved_vector< uint, 4 > mConsecutiveValidFrames;      // Guessed name
+  rstl::reserved_vector< uint, 4 > mConsecutiveInvalidFrames;    // Guessed name
+#else
   rstl::reserved_vector< EDeviceType, 4 > mControllerTypes;
   rstl::reserved_vector< CControllerData, 4 > mInput;
   rstl::reserved_vector< EPointerRecenterMode, 4 > mPointerRecenterMode;
@@ -141,9 +207,17 @@ private:
 #if RSTL_CONTROLLER_EXTENDED_VIRTUALS
   bool mAcceptAdditionalConnections;
 #endif
+#endif
 };
+#if !RSTL_CORRUPTION
 CHECK_SIZEOF(CRevolutionController, 0xc8c + 4 * (sizeof(KPADStatus) - 0x84) +
                                          4 * RSTL_CONTROLLER_EXTENDED_VIRTUALS +
                                          4 * RSTL_CONTROLLER_CHANNEL_LIMIT)
+#endif
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CRevolutionController, 0x688);
+
+
+#endif
 #endif // _CREVOLUTIONCONTROLLER

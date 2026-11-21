@@ -1,31 +1,51 @@
 #ifndef _CPARTICLEDATAFACTORY
 #define _CPARTICLEDATAFACTORY
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
 
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
+#endif
 
 #include "Kyoto/Particles/IElement.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/SObjectTag.hpp"
+#endif
 #include "Kyoto/TToken.hpp"
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
+#endif
 #include "rstl/optional_object.hpp"
 #include "rstl/vector.hpp"
 
+#if !RSTL_CORRUPTION
 class CInputStream;
+#endif
 
 class CElectricDescription;
 class CGenDescription;
+#if RSTL_CORRUPTION
+class CInputStream;
+#endif
 class CModel;
 class CSimplePool;
 class CSwooshDescription;
 
 class CParticleDataFactory {
 public:
+#if RSTL_CORRUPTION
+  static CGenDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool, CAssetId id);
+  static CGenDescription* CreateGeneratorDescription(CInputStream&,
+                                                     rstl::vector< CAssetId >& assets, CAssetId id,
+                                                     CSimplePool* pool);
+#else
   static CGenDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool, uint id);
   static CGenDescription* CreateGeneratorDescription(CInputStream&, rstl::vector< uint >& assets,
                                                      uint id, CSimplePool* pool);
+#endif
   static void LoadGPSMTokens(CGenDescription* desc);
   static bool CreateGPSM(CGenDescription* desc, CInputStream& in,
                          rstl::vector< CAssetId >& resources, CSimplePool* pool);

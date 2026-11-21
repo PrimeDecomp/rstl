@@ -1,10 +1,29 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
+#define RS_TTOKEN_FILE "TToken.H"
+
+#else
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Text/CStringTable.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#else
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
+#endif
 #include "Kyoto/Alloc/CMemory.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/Basics/COsContext.hpp"
+#include "Kyoto/CDvdRequest.hpp"
+#include "Kyoto/CFactoryMgr.hpp"
+#include "Kyoto/CResFactory.hpp"
+#include "Kyoto/Streams/CInputStream.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#else
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #if RSTL_PRIME1
@@ -14,17 +33,36 @@
 #include "string.h"
 #endif
 #endif
+#endif
 
+#if !RSTL_CORRUPTION
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
+#endif
 #include "rstl/algorithm.hpp"
 #include "rstl/reserved_vector.hpp"
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+#include "string.h"
+
+
+
+namespace {
+const uint kCookie = 0x87654321;
+const uint kMinSupportedVersion = 0;
+const uint kVersion = 1;
+} // namespace
+#else
 #if !RSTL_PRIME1
 #include "string.h"
 #endif
+#endif
 
 static const wchar_t skInvalidString[] = L"Invalid";
+#if RSTL_CORRUPTION
+static const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
+static FourCC mCurrentLanguage = skLanguages[0];
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -35,7 +73,22 @@ static FourCC mCurrentLanguage = skLanguages[0];
 #else
 static FourCC mCurrentLanguage = 'ENGL';
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+struct SLanguageInfo {
+  FourCC mLanguage;
+  uint mOffset;
+  uint mSize;
+};
+
+struct SStringNameLess {
+  template < typename T >
+  bool operator()(const T& a, const T& b) const {
+    return strcmp(a.mName, b.mName) < 0;
+  }
+};
+#else
 #if !RSTL_PRIME1
 struct SLanguageInfo {
   FourCC mLanguage;
@@ -50,13 +103,93 @@ struct SStringNameLess {
   }
 };
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
+#endif
 #endif
 
 CStringTable::CStringTable(CInputStream& in)
 : mStringCount(0)
+#if RSTL_CORRUPTION
+, mNameCount(0)
+, mData(nullptr)
+, mNames(nullptr)
+, mStrings(nullptr)
+, mReloadData(nullptr) {
+  Load(in);
+}
+
+CStringTable::~CStringTable() {}
+
+void CStringTable::Load(CInputStream& in) {
+  const uint header = in.ReadInt32();
+  RS_VERIFY_THROW_DIRECT(84, header == kCookie, false, "Bad header for string table");
+  const uint version = in.Get(TType< uint >());
+  RS_VERIFY_THROW_DIRECT(
+      88, version >= kMinSupportedVersion && version <= kVersion, false,
+      CBasics::Stringize("Bad version for string table: expected %d, got %d", kVersion, version));
+  int numLanguages = in.Get(TType< int >());
+  RS_VERIFY_THROW_DIRECT(91, numLanguages > 0, false,
+                         "Fatal error: No languages specified for this string table.");
+  mStringCount = in.Get(TType< int >());
+  RS_VERIFY_THROW_DIRECT(94, numLanguages < COsContext::kLang_Count, false,
+                         "Too many languages in string table!\n");
+
+  rstl::reserved_vector< SLanguageInfo, 7 > languages;
+  for (int i = 0; i < numLanguages; ++i) {
+    FourCC language = in.Get(TType< FourCC >());
+    uint offset = in.Get(TType< uint >());
+    uint size = version != 0 ? in.Get(TType< uint >()) : 0;
+    SLanguageInfo info = {language, offset, size};
+    languages.push_back(info);
+  }
+
+  uint offset = languages[0].mOffset;
+  uint size = languages[0].mSize;
+  for (int i = 0; i < numLanguages; ++i) {
+    if (languages[i].mLanguage == mCurrentLanguage) {
+      offset = languages[i].mOffset;
+      size = languages[i].mSize;
+      break;
+    }
+  }
+  if (version != 0) {
+    mNameCount = in.Get(TType< int >());
+    uint namesSize = in.Get(TType< uint >());
+    mData = rs_new_line(136) uchar[namesSize + size];
+    mNames = reinterpret_cast< SStringName* >(mData.get());
+    mStrings = reinterpret_cast< const wchar_t** >(mData.get() + namesSize);
+    in.ReadBytes(mNames, namesSize);
+  }
+
+  for (uint i = 0; i < offset; ++i) {
+    in.ReadInt8();
+  }
+
+  if (version == 0) {
+    size = in.Get(TType< uint >());
+    mData = rs_new_line(157) uchar[size];
+    mStrings = reinterpret_cast< const wchar_t** >(mData.get());
+  }
+  in.ReadBytes(mStrings, size);
+
+  if (version != 0) {
+    SStringName* entry = mNames;
+    for (int i = 0; i < mNameCount; ++i, ++entry) {
+      entry->mName += reinterpret_cast< uint >(mNames);
+    }
+  }
+
+  uint* entry = reinterpret_cast< uint* >(mStrings);
+  for (int i = 0; i < mStringCount; ++i, ++entry) {
+    *entry += reinterpret_cast< uint >(mStrings);
+  }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mData(NULL)
@@ -206,12 +339,16 @@ void CStringTable::Load(CInputStream& in)
     *entry += reinterpret_cast< uint >(mStrings);
   }
 #endif
+#endif
 }
 
 const wchar_t* CStringTable::GetString(int idx) const {
   if (idx < 0 || idx >= mStringCount) {
     return skInvalidString;
   }
+#if RSTL_CORRUPTION
+  return mStrings[idx];
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
@@ -223,8 +360,28 @@ const wchar_t* CStringTable::GetString(int idx) const {
 #else
   return mStrings[idx];
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+int CStringTable::GetStringIndex(const char* name) const {
+  SStringName* begin = mNames;
+  if (mNameCount > 0 && *name != '\0') {
+    SStringName* end = begin + mNameCount;
+    SStringName key = {name};
+    SStringNameLess cmp;
+    SStringName* it = rstl::lower_bound(begin, end, key, cmp);
+    if (it != end && strcmp(it->mName, name) == 0) {
+      return it->mIndex;
+    }
+  }
+  return -1;
+}
+
+const wchar_t* CStringTable::GetString(const char* name) const {
+  return GetString(GetStringIndex(name));
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -271,7 +428,13 @@ const wchar_t* CStringTable::GetStringByName(const char* name) const {
   return GetString(GetStringIndexByName(name));
 }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+void CStringTable::Reload(CAssetId id, CResFactory& factory) {
+  mReloadData = nullptr;
+  mReloadData = rs_new_line(267) SReloadData(id, factory);
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 CStringTable::SReloadData::~SReloadData() {}
 #endif
@@ -283,4 +446,24 @@ const
 CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
                                      const CVParamTransfer& xfer) {
   return rs_new CStringTable(in);
+#endif
 }
+#if RSTL_CORRUPTION
+
+CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory)
+: mRequest(nullptr) {
+  const SObjectTag tag('STRG', id);
+  mSize = factory.ResourceSize(tag);
+  mBuffer = static_cast< uchar* >(rs_aligned_new_line(mSize, 298));
+  mRequest = factory.GetResLoader().LoadResourceAsync(tag,
+                                                     reinterpret_cast< char* >(mBuffer.get()));
+}
+
+CStringTable::SReloadData::~SReloadData() {}
+
+CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                     int size, const CVParamTransfer& xfer) {
+  CMemoryInStream in(buffer.get(), size);
+  return rs_new_line(313) CStringTable(in);
+}
+#endif

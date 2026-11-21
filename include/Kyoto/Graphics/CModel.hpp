@@ -1,16 +1,25 @@
 #ifndef _CMODEL
 #define _CMODEL
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#else
 #include "Kyoto/CFactoryFnReturn.hpp"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/CFactoryMgr.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Graphics/CCubeModel.hpp"
 #include "Kyoto/Graphics/CCubeSurface.hpp"
 #include "Kyoto/Graphics/CModelFlags.hpp"
 
+#endif
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/TToken.hpp"
 
@@ -23,10 +32,17 @@ class CCubeModel;
 
 class CModelFlags;
 class IObjectStore;
+#if RSTL_CORRUPTION
+class CSimplePool;
+#else
 class CModel {
   struct SShader;
   friend struct SShader;
+#endif
 
+#if RSTL_CORRUPTION
+class CModel {
+#else
   struct SShader {
     rstl::vector< TCachedToken< CTexture > > mTextures;
     TModelData mData;
@@ -49,7 +65,9 @@ class CModel {
     void MoveToThisFrameList();
 
   };
+#endif
   static uint sTotalMemory;
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   static CModel* sThisFrameList;
   static CModel* sOneFrameList;
@@ -58,6 +76,7 @@ class CModel {
   static SShader* sThisFrameList;
   static SShader* sOneFrameList;
   static SShader* sTwoFrameList;
+#endif
 #endif
 
 public:
@@ -76,31 +95,49 @@ public:
 
   void DrawUnsortedParts(const CModelFlags& flags) const;
   void DrawSortedParts(const CModelFlags& flags) const;
+#if !RSTL_CORRUPTION
   void Draw(TModelPositions positions, TModelNormals normals, const CModelFlags& flags) const;
+#endif
   void DolphinDrawFlat(EDrawFlatFlags flags) const;
   void PreDrawModel(const CModelFlags& flags) const;
 
   bool IsLoaded(int matIdx) const;
+#if !RSTL_CORRUPTION
   int GetNumMaterialSets() const { return mMatSets.size(); }
   const CAABox& GetAABB() const;
   const CAABox& GetBoundingBox() const { return mModelInstance->GetBoundingBox(); }
+#endif
   bool IsDefinitelyOpaque() const;
+#if RSTL_CORRUPTION
+  bool HasUnsortedSurfaces() const; // Guessed name
+  bool HasSortedSurfaces() const;   // Guessed name
+  const CAABox& GetAABB() const;
+#endif
   void UnlockTextures();
 
   const float* GetPositions() const;
   const float* GetNormals() const;
   const CCubeModel* GetModelInstance() const { return mModelInstance.get(); }
+#if !RSTL_CORRUPTION
   const CCubeModel* GetCubeModel() const { return mModelInstance.get(); }
 
+#endif
   void UpdateLastFrame() const;
   void VerifyCurrentShader(int shader) const;
-
+  // Guessed name
   rstl::auto_ptr< uchar > GetData();
+#if !RSTL_CORRUPTION
 #if !defined(TARGET_PC)
-  // Retail buffer relocation methods; names are inferred from their implementations.
+  // Guessed name
   void RemapData(uchar* data);
 #endif
+#endif
   uint GetDataSize() const;
+#if RSTL_CORRUPTION
+  // Guessed name
+  void RemapData(CSimplePool* pool, uchar* data);
+
+#endif
   static void DisableTextureTimeout();
   static void EnableTextureTimeout();
   static void FrameDone();
@@ -108,20 +145,27 @@ public:
   static void RemoveFromTotal(uint amt) { sTotalMemory -= amt; }
   static uint GetTotalMemory() { return sTotalMemory; }
 
+#if !RSTL_CORRUPTION
   void RemoveFromList() const;
   void MoveToThisFrameList() const;
 
+#endif
 private:
   void* SetupSkinMatrices() const;
 
   rstl::single_ptr< uchar > mData;
   uint mDataLen;
+#if RSTL_CORRUPTION
+  rstl::vector< void* > mSurfaces;
+#else
 #if !defined(TARGET_PC)
   CCubeModel::SurfaceList mSurfaces;
 #endif
 
   mutable rstl::vector< SShader > mMatSets;
+#endif
   rstl::single_ptr< CCubeModel > mModelInstance;
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   mutable short mCurrentMatxIdx;
   mutable short mLastMaterialFrame;
@@ -129,7 +173,13 @@ private:
   mutable CModel* mNext;
 #endif
 
+#endif
   mutable uint mLastFrame;
+#if RSTL_CORRUPTION
+  mutable uint mCurrentMatxIdx : 16;
+  uint mInitialTextureLocksReleased : 1;
+  uint mHasSkinMatrices : 1;
+#else
 #if !RSTL_PRIME1
   mutable uint mCurrentMatxIdx : 16;
   uint mInitialTextureLocksReleased : 1;
@@ -138,9 +188,17 @@ private:
 #if defined(TARGET_PC)
   uint mResourceSize;
 #endif
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CModel, 0x24)
+#else
 CHECK_SIZEOF(CModel, RSTL_PRIME1 ? 0x3c : 0x34)
+#endif
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FModelFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& ptr, int len,
+#else
 #if RSTL_PRIME1
 inline bool CModel::IsDefinitelyOpaque() const {
   return mModelInstance.get() != nullptr && !mModelInstance->GetAlphaSurfaces().IsValid();
@@ -163,6 +221,7 @@ inline void CModel::PreDrawModel(const CModelFlags& flags) const {
 
 RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
                                                  const rstl::auto_ptr< uchar >& ptr, int len,
+#endif
                                                  const CVParamTransfer& xfer);
 
 #endif // _CMODEL

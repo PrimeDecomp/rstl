@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CGX.hpp"
@@ -9,8 +12,10 @@
 #include "Kyoto/Text/CFontImageDef.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextColor.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Basics/CBasics.hpp"
 
+#endif
 #include "rstl/math.hpp"
 #include "dolphin/gx/GXVert.h"
 #include "limits.h"
@@ -19,18 +24,48 @@
 CTextRenderBuffer::CTextRenderBuffer(EMode mode)
 : mMode(mode)
 , mBlobSize(0)
+#if RSTL_CORRUPTION
+, mCurrentBytecodeOffset(0)
+#else
 , mCurBytecodeOffset(0)
+#endif
 , mActiveFont(-1)
 , mActivePalette(-1)
 , mQueuedFont(-1)
 , mQueuedPalette(-1)
 , mNextPalette(0)
+#if RSTL_CORRUPTION
+, mTextBounds(CVector2i(0, 0), CVector2i(0, 0))
+, mTextBoundsDirty(false) {}
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 , mBounds(CVector2i(0, 0), CVector2i(0, 0))
 , mBoundsDirty(false)
 #endif
 {}
+#endif
 
+#if RSTL_CORRUPTION
+void CTextRenderBuffer::GetNextAvailablePalette() const {
+  if (mNextPalette >= 64) {
+    mNextPalette = 0;
+  }
+  if (mNextPalette < mPalettes.size()) {
+    mPalettes[mNextPalette] =
+        SFontPalette(kFM_None, rs_new_line(50) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(51) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(52) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(53) CGraphicsPalette(kPaletteFormat_RGB5A3, 16));
+  } else {
+    mPalettes.push_back(
+        SFontPalette(kFM_None, rs_new_line(58) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(59) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(60) CGraphicsPalette(kPaletteFormat_RGB5A3, 16),
+                     rs_new_line(61) CGraphicsPalette(kPaletteFormat_RGB5A3, 16)));
+  }
+  ++mNextPalette;
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -83,7 +118,20 @@ void CTextRenderBuffer::GetNextAvailablePalette() const {
   ++mNextPalette;
 }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+int CTextRenderBuffer::GetMatchingPaletteIndex(EFontMode mode,
+                                               const CGraphicsPalette& palette) const {
+  for (int i = 0; i < mPalettes.size(); ++i) {
+    const SFontPalette& entry = mPalettes[i];
+    if (entry.mMode == mode && !memcmp(entry.mColors, palette.GetPaletteData(), 8)) {
+      return i;
+    }
+  }
+  return -1;
+}
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 int CTextRenderBuffer::GetMatchingPaletteIndex(EFontMode mode,
                                                const CGraphicsPalette& palette) const {
@@ -105,6 +153,7 @@ int CTextRenderBuffer::GetMatchingPaletteIndex(const CGraphicsPalette& palette) 
   return -1;
 }
 #endif
+#endif
 
 void CTextRenderBuffer::AddFontChange(const TToken< CRasterFont >& font) {
   if (mMode == kM_BufferFill) {
@@ -123,6 +172,9 @@ void CTextRenderBuffer::AddFontChange(const TToken< CRasterFont >& font) {
     if (!found) {
       mFonts.reserve(mFonts.size() + 1);
       int fontIndex = mFonts.size();
+#if RSTL_CORRUPTION
+      mFonts.push_back_unsafe(font);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mFonts.push_back(font);
@@ -130,17 +182,74 @@ void CTextRenderBuffer::AddFontChange(const TToken< CRasterFont >& font) {
       mFonts.push_back_unsafe(font);
 #endif
 
+#endif
       out.WriteUint8(kC_FontChange);
       out.WriteInt8(fontIndex);
     }
+#if RSTL_CORRUPTION
+    mCurrentBytecodeOffset += out.GetWrittenBytes();
+#else
     mCurBytecodeOffset += out.GetWrittenBytes();
 
+#endif
   } else {
     // Command + index
     mBlobSize += sizeof(char) + sizeof(char);
   }
 }
 
+#if RSTL_CORRUPTION
+void CTextRenderBuffer::GeneratePalette(EFontMode mode, int layer, CGraphicsPalette& dest,
+                                        const CGraphicsPalette& source) {
+  ushort* data = static_cast< ushort* >(dest.Lock());
+  const ushort* colors = static_cast< const ushort* >(source.GetPaletteData());
+  if (mode == kFM_OneLayer || mode == kFM_OneLayerOutline) {
+    memcpy(data, colors, 8);
+  } else {
+    for (int i = 0; i < 16; ++i) {
+      int shift = layer * 2;
+      switch (mode) {
+      case kFM_TwoLayers: {
+        bool low = (i & (1 << shift)) != 0;
+        bool high = (i & (2 << shift)) != 0;
+        if (low && high) {
+          data[i] = colors[1];
+        } else if (high) {
+          data[i] = CColor::FromRGB5A3(colors[1]).WithAlphaModulatedBy(0.66f).ToRGB5A3();
+        } else if (low) {
+          data[i] = CColor::FromRGB5A3(colors[1]).WithAlphaModulatedBy(0.33f).ToRGB5A3();
+        } else {
+          data[i] = colors[0];
+        }
+        break;
+      }
+      case kFM_FourLayers:
+        if ((i >> layer) & 1) {
+          data[i] = colors[1];
+        } else {
+          data[i] = colors[0];
+        }
+        break;
+      case kFM_TwoLayersOutline: {
+        bool low = (i & (1 << shift)) != 0;
+        bool high = (i & (2 << shift)) != 0;
+        if (low) {
+          data[i] = colors[1];
+        } else if (high) {
+          data[i] = colors[2];
+        } else {
+          data[i] = colors[0];
+        }
+        break;
+      }
+      }
+    }
+  }
+  dest.UnLock();
+}
+
+void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -261,18 +370,32 @@ void CTextRenderBuffer::GeneratePalette(EFontMode mode, int layer, CGraphicsPale
 void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode) {
 #endif
 
+#endif
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
 
+#if RSTL_CORRUPTION
+    int paletteIndex = GetMatchingPaletteIndex(mode, palette);
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
     int paletteIndex = GetMatchingPaletteIndex(mode, palette);
 #else
     int paletteIndex = GetMatchingPaletteIndex(palette);
 #endif
 
+#endif
     if (paletteIndex == -1) {
       GetNextAvailablePalette();
       paletteIndex = mNextPalette - 1;
+#if RSTL_CORRUPTION
+      SFontPalette& dest = mPalettes[paletteIndex];
+      dest.mMode = mode;
+      memcpy(dest.mColors, palette.GetPaletteData(), 8);
+      GeneratePalette(mode, 0, *dest.mPalette0, palette);
+      GeneratePalette(mode, 1, *dest.mPalette1, palette);
+      GeneratePalette(mode, 2, *dest.mPalette2, palette);
+      GeneratePalette(mode, 3, *dest.mPalette3, palette);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -298,12 +421,17 @@ void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontM
       GeneratePalette(mode, 2, *dest.mPalette2, palette);
       GeneratePalette(mode, 3, *dest.mPalette3, palette);
 #endif
+#endif
     }
 
     out.WriteUint8(kC_PaletteChange);
     out.WriteInt8(paletteIndex);
+#if RSTL_CORRUPTION
+    mCurrentBytecodeOffset += out.GetWrittenBytes();
+#else
     mCurBytecodeOffset += out.GetWrittenBytes();
 
+#endif
   } else {
     // Command + index
     mBlobSize += sizeof(char) + sizeof(char);
@@ -313,6 +441,11 @@ void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontM
 void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint color) {
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
+#if RSTL_CORRUPTION
+    int tmp = mCurrentBytecodeOffset;
+    mPrimitiveOffsets.reserve(mPrimitiveOffsets.size() + 1);
+    mPrimitiveOffsets.push_back_unsafe(tmp);
+#else
     int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
 #if RSTL_PRIME1
@@ -321,7 +454,15 @@ void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint co
     mPrimOffsets.push_back_unsafe(tmp);
 #endif
 
+#endif
     out.WriteUint8(kC_CharacterRender);
+#if RSTL_CORRUPTION
+    out.WriteInt16(offset.GetX());
+    out.WriteInt16(offset.GetY());
+    out.WriteInt16(chr);
+    out.WriteInt32(color);
+    mCurrentBytecodeOffset += out.GetWrittenBytes();
+#else
 #if RSTL_PRIME1
     out.Put< short >(offset.GetX());
     out.Put< short >(offset.GetY());
@@ -335,18 +476,28 @@ void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint co
 #endif
 
     mCurBytecodeOffset += out.GetWrittenBytes();
+#endif
   } else {
     // Command + x + y + char + color
     mBlobSize += sizeof(char) + sizeof(short) + sizeof(short) + sizeof(short) + sizeof(CTextColor);
   }
+#if RSTL_CORRUPTION
+  mTextBoundsDirty = true;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mBoundsDirty = true;
+#endif
 #endif
 }
 
 void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& image) {
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
+#if RSTL_CORRUPTION
+    const int tmp = mCurrentBytecodeOffset;
+    mPrimitiveOffsets.reserve(mPrimitiveOffsets.size() + 1);
+    mPrimitiveOffsets.push_back_unsafe(tmp);
+#else
     const int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
 #if RSTL_PRIME1
@@ -355,8 +506,12 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
     mPrimOffsets.push_back_unsafe(tmp);
 #endif
 
+#endif
     mImages.reserve(mImages.size() + 1);
     int imageIdx = mImages.size();
+#if RSTL_CORRUPTION
+    mImages.push_back_unsafe(image);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     mImages.push_back(image);
@@ -364,7 +519,12 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
     mImages.push_back_unsafe(image);
 #endif
 
+#endif
     out.WriteUint8(kC_ImageRender);
+#if RSTL_CORRUPTION
+    out.WriteInt16(offset.GetX());
+    out.WriteInt16(offset.GetY());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< short >(offset.GetX());
@@ -374,7 +534,12 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
     out.WriteInt16(offset.GetY());
 #endif
 
+#endif
     out.WriteInt8(imageIdx);
+#if RSTL_CORRUPTION
+    out.WriteUint32(CColor::White().GetColor_u32());
+    mCurrentBytecodeOffset += out.GetWrittenBytes();
+#else
 #if RSTL_PRIME1
     out.Put< uint >(CColor::White().GetColor_u32());
 #else
@@ -382,12 +547,17 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
 #endif
 
     mCurBytecodeOffset += out.GetWrittenBytes();
+#endif
   } else {
     // Command + x + y + index + color
     mBlobSize += sizeof(char) + sizeof(short) + sizeof(short) + sizeof(char) + sizeof(uint);
   }
+#if RSTL_CORRUPTION
+  mTextBoundsDirty = true;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mBoundsDirty = true;
+#endif
 #endif
 }
 
@@ -405,6 +575,7 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
           mQueuedFont = -1;
         }
       }
+#if !RSTL_CORRUPTION
 #if RSTL_VERSION < RSTL_GM8P_00
       if (mQueuedPalette != -1) {
         mPalettes[mQueuedPalette]->Load();
@@ -412,6 +583,7 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
       }
 #endif
 
+#endif
       short x = in.Get< short >();
       short y = in.Get< short >();
       short chr = in.Get< short >();
@@ -419,6 +591,32 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
       if (mActiveFont != -1) {
         TToken< CRasterFont > font = mFonts[mActiveFont];
         if (font.IsLoaded()) {
+#if RSTL_CORRUPTION
+          const CGlyph* glyph = font->GetGlyph(chr);
+          if (glyph != nullptr) {
+            int layer = glyph->GetLayer();
+            if (mQueuedPalette != -1 || layer != -1) {
+              char paletteIndex = mQueuedPalette != -1 ? mQueuedPalette : mActivePalette;
+              if (paletteIndex != -1) {
+                const SFontPalette& palette = mPalettes[paletteIndex];
+                switch (layer) {
+                case 0:
+                  palette.mPalette0->Load();
+                  break;
+                case 1:
+                  palette.mPalette1->Load();
+                  break;
+                case 2:
+                  palette.mPalette2->Load();
+                  break;
+                case 3:
+                  palette.mPalette3->Load();
+                  break;
+                }
+                mQueuedPalette = -1;
+              }
+            }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -477,7 +675,15 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
             }
 #endif
 
+#endif
             CGX::SetTevKColor(GX_KCOLOR0, CColor::Modulate(CColor(chrColor), color).GetGXColor());
+#if RSTL_CORRUPTION
+            static const GXVtxDescList skDescList[] = {
+                {GX_VA_POS, GX_DIRECT}, {GX_VA_TEX0, GX_DIRECT}, {GX_VA_NULL, GX_NONE}};
+            CGX::SetVtxDescv(skDescList);
+            CGX::SetNumChans(0);
+            CGX::SetNumTexGens(1);
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
             static const GXVtxDescList skDescList[] = {
                 {GX_VA_POS, GX_DIRECT}, {GX_VA_TEX0, GX_DIRECT}, {GX_VA_NULL, GX_NONE}};
@@ -486,22 +692,41 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
             CGX::SetNumTexGens(1);
 #endif
 
+#endif
             CGX::Begin(GX_TRIANGLESTRIP, GX_VTXFMT0, 4);
+#if RSTL_CORRUPTION
+            const int width = glyph->GetCellWidth();
+            const int height = glyph->GetCellHeight();
+            const float offset = (width - glyph->GetB()) / 2.f;
+            float xpos = x - offset;
+            GXPosition3f32(xpos, 0.f, y);
+#else
             GXPosition3f32(x, 0.f, y);
+#endif
             GXTexCoord2f32(glyph->GetStartU(), glyph->GetStartV());
+#if RSTL_CORRUPTION
+            GXPosition3f32(xpos, 0.f, y + height);
+            GXTexCoord2f32(glyph->GetStartU(), glyph->GetEndV());
+            GXPosition3f32(width + xpos, 0.f, y);
+#else
 #if !RSTL_PRIME1
             GXPosition3f32(x, 0.f, y + glyph->GetCellHeight());
             GXTexCoord2f32(glyph->GetStartU(), glyph->GetEndV());
 #endif
 
             GXPosition3f32(x + glyph->GetCellWidth(), 0.f, y);
+#endif
             GXTexCoord2f32(glyph->GetEndU(), glyph->GetStartV());
+#if RSTL_CORRUPTION
+            GXPosition3f32(width + xpos, 0.f, y + height);
+#else
 #if RSTL_PRIME1
             GXPosition3f32(x, 0.f, y + glyph->GetCellHeight());
             GXTexCoord2f32(glyph->GetStartU(), glyph->GetEndV());
 #endif
 
             GXPosition3f32(x + glyph->GetCellWidth(), 0.f, y + glyph->GetCellHeight());
+#endif
             GXTexCoord2f32(glyph->GetEndU(), glyph->GetEndV());
             CGX::End();
           }
@@ -542,18 +767,25 @@ void CTextRenderBuffer::Render(const CColor& color, float time) const {
         CGX::Begin(GX_TRIANGLESTRIP, GX_VTXFMT0, 4);
         GXPosition3f32(x, 0.f, y);
         GXTexCoord2f32(0.5f - cropXHalf, 0.5f + cropYHalf);
+#if RSTL_CORRUPTION
+        GXPosition3f32(x, 0.f, y + height);
+        GXTexCoord2f32(0.5f - cropXHalf, 0.5f - cropYHalf);
+#else
 #if !RSTL_PRIME1
         GXPosition3f32(x, 0.f, y + height);
         GXTexCoord2f32(0.5f - cropXHalf, 0.5f - cropYHalf);
 #endif
 
+#endif
         GXPosition3f32(x + width, 0.f, y);
         GXTexCoord2f32(0.5f + cropXHalf, 0.5f + cropYHalf);
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
         GXPosition3f32(x, 0.f, y + height);
         GXTexCoord2f32(0.5f - cropXHalf, 0.5f - cropYHalf);
 #endif
 
+#endif
         GXPosition3f32(x + width, 0.f, y + height);
         GXTexCoord2f32(0.5f + cropXHalf, 0.5f - cropYHalf);
         CGX::End();
@@ -584,17 +816,29 @@ void CTextRenderBuffer::SetMode(EMode mode) { mMode = mode; }
 
 void* CTextRenderBuffer::GetOutStream() {
   VerifyBuffer();
+#if RSTL_CORRUPTION
+  return mBytecode.data() + mCurrentBytecodeOffset;
+#else
   return mBytecode.data() + mCurBytecodeOffset;
 
+#endif
 }
 
 size_t CTextRenderBuffer::GetCurLen() {
   VerifyBuffer();
+#if RSTL_CORRUPTION
+  return mBlobSize - mCurrentBytecodeOffset;
+#else
   return mBlobSize - mCurBytecodeOffset;
 
+#endif
 }
 
 CTextRenderBuffer::Primitive CTextRenderBuffer::GetPrimitive(int index) const {
+#if RSTL_CORRUPTION
+  CMemoryInStream in(mBytecode.data() + mPrimitiveOffsets[index],
+                     mBlobSize - mPrimitiveOffsets[index]);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CMemoryInStream in(mBytecode.data() + mPrimOffsets[index], mBlobSize - mPrimOffsets[index]);
@@ -603,6 +847,7 @@ CTextRenderBuffer::Primitive CTextRenderBuffer::GetPrimitive(int index) const {
   CMemoryInStream in(mBytecode.data() + offset, mBlobSize - offset);
 #endif
 
+#endif
   switch (static_cast< ECmd >(in.Get< uchar >())) {
   case kC_CharacterRender: {
     short x = in.Get< short >();
@@ -625,12 +870,23 @@ CTextRenderBuffer::Primitive CTextRenderBuffer::GetPrimitive(int index) const {
 }
 
 void CTextRenderBuffer::SetPrimitive(const Primitive& prim, int index) {
+#if RSTL_CORRUPTION
+  CMemoryStreamOut out(mBytecode.data() + mPrimitiveOffsets[index],
+                       mBlobSize - mPrimitiveOffsets[index], CMemoryStreamOut::kOS_NotOwned, 64);
+#else
   CMemoryStreamOut out(mBytecode.data() + mPrimOffsets[index], mBlobSize - mPrimOffsets[index],
                        CMemoryStreamOut::kOS_NotOwned, 64);
 
+#endif
   switch (prim.mCmd) {
   case kC_CharacterRender:
     out.WriteUint8(kC_CharacterRender);
+#if RSTL_CORRUPTION
+    out.WriteUint16(prim.mX);
+    out.WriteUint16(prim.mY);
+    out.WriteUint16(prim.mChar);
+    out.WriteUint32(prim.mColor);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< short >(prim.mX);
@@ -644,9 +900,14 @@ void CTextRenderBuffer::SetPrimitive(const Primitive& prim, int index) {
     out.WriteUint32(prim.mColor);
 #endif
 
+#endif
     break;
   case kC_ImageRender:
     out.WriteUint8(kC_ImageRender);
+#if RSTL_CORRUPTION
+    out.WriteUint16(prim.mX);
+    out.WriteUint16(prim.mY);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< short >(prim.mX);
@@ -656,7 +917,11 @@ void CTextRenderBuffer::SetPrimitive(const Primitive& prim, int index) {
     out.WriteUint16(prim.mY);
 #endif
 
+#endif
     out.WriteInt8(prim.mIndex);
+#if RSTL_CORRUPTION
+    out.WriteUint32(prim.mColor);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     out.Put< uint >(prim.mColor);
@@ -664,13 +929,21 @@ void CTextRenderBuffer::SetPrimitive(const Primitive& prim, int index) {
     out.WriteUint32(prim.mColor);
 #endif
 
+#endif
     break;
   }
+#if RSTL_CORRUPTION
+  mTextBoundsDirty = true;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mBoundsDirty = true;
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+void CTextRenderBuffer::AccumulateTextBounds() {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 bool CTextRenderBuffer::HasSpaceAvailable(const CVector2i& origin, const CVector2i& extent) {
@@ -695,11 +968,16 @@ rstl::pair< CVector2i, CVector2i > CTextRenderBuffer::AccumulateTextBounds() {
 void CTextRenderBuffer::AccumulateTextBounds() {
 #endif
 
+#endif
   CVector2i min(INT_MAX, INT_MAX);
   CVector2i max(-INT_MAX - 1, -INT_MAX - 1);
   CMemoryInStream in(mBytecode.data(), mBlobSize, CMemoryInStream::kOS_NotOwned);
+#if RSTL_CORRUPTION
+  while (in.GetReadPosition() < mCurrentBytecodeOffset) {
+#else
   while (in.GetReadPosition() < mCurBytecodeOffset) {
 
+#endif
     switch (static_cast< ECmd >(in.Get< uchar >())) {
     case kC_CharacterRender: {
       short x = in.Get< short >();
@@ -745,14 +1023,27 @@ void CTextRenderBuffer::AccumulateTextBounds() {
       break;
     }
   }
+#if RSTL_CORRUPTION
+  mTextBounds = rstl::pair< CVector2i, CVector2i >(min, max);
+  mTextBoundsDirty = false;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   mBounds = rstl::pair< CVector2i, CVector2i >(min, max);
   mBoundsDirty = false;
 #else
   return rstl::pair< CVector2i, CVector2i >(min, max);
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+const rstl::pair< CVector2i, CVector2i >& CTextRenderBuffer::GetTextBounds() {
+  if (mTextBoundsDirty) {
+    AccumulateTextBounds();
+  }
+  return mTextBounds;
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -771,4 +1062,4 @@ const rstl::pair< CVector2i, CVector2i >& CTextRenderBuffer::GetTextBounds() {
   return mBounds;
 }
 #endif
-
+#endif

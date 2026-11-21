@@ -1,21 +1,49 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/Platform.h"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if !RSTL_CORRUPTION
 #include "dolphin/dvd.h"
 #include "dolphin/os.h"
 #include "dolphin/os/OSThread.h"
+#endif
 
+#if RSTL_CORRUPTION
+void CDSPStreamManager::Initialize() {}
+#else
 #include "string.h"
+#endif
 
+#if RSTL_CORRUPTION
+void CDSPStreamManager::Shutdown() {}
+#else
 #if defined(TARGET_PC)
 #include "Metaforce/Audio.hpp"
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+int CDSPStreamManager::StartStreaming(const rstl::string&, int, int) {
+  static unsigned int lastHandle = 0;
+  ++lastHandle;
+  if (static_cast< int >(lastHandle) == -1) {
+    ++lastHandle;
+}
+
+  return static_cast< int >(lastHandle);
+}
+
+void CDSPStreamManager::StopStreaming(int) {}
+
+void CDSPStreamManager::UpdateVolume(int, int) {}
+#else
 #if RSTL_PRIME1
 CDSPStreamManager g_Streams[4] = {CDSPStreamManager(), CDSPStreamManager(), CDSPStreamManager(),
                                   CDSPStreamManager()};
@@ -140,7 +168,7 @@ void CDSPStreamManager::Initialize() {
 void CDSPStreamManager::Shutdown() {
 #if defined(TARGET_PC)
   #if RSTL_PRIME1
-  
+
   {
     metaforce::AudioLockGuard lock;
     for (auto& stream : g_Streams) stream.mHeaderReadCancelled = true;
@@ -798,9 +826,9 @@ void CDSPStreamManager::HeaderReadComplete(s32 result, DVDFileInfo* fileInfo) {
       CInterruptGuard interrupts;
 
       #if (IS_TARGET_PC)
-        if (result != 0x60 
-            || !metaforce::ReadDSPHeader({reinterpret_cast<const u8*>(&stream->mHeader), 0x60}, stream->mHeader) 
-            || fileInfo->length < 0x60 
+        if (result != 0x60
+            || !metaforce::ReadDSPHeader({reinterpret_cast<const u8*>(&stream->mHeader), 0x60}, stream->mHeader)
+            || fileInfo->length < 0x60
             || (u64(stream->mHeader.mNumNibbles) + 1) / 2 > fileInfo->length - 0x60) {
           *stream = CDSPStreamManager();
           return;
@@ -879,4 +907,5 @@ CDSPStreamManager::EState CDSPStreamManager::GetStreamState(int handle) {
   }
   return kS_Oneshot;
 }
+#endif
 #endif

@@ -1,22 +1,37 @@
 #ifndef _CVIRTUALBONE
 #define _CVIRTUALBONE
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CSegId.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 
 #include "rstl/reserved_vector.hpp"
 
+#if RSTL_CORRUPTION
+#include "dolphin/mtx.h"
+
+
+#else
 #if !RSTL_PRIME1
 #include "dolphin/mtx.h"
+#endif
 #endif
 
 struct SSkinWeighting {
   CSegId mId;
   float mWeight;
+#if RSTL_CORRUPTION
+  explicit SSkinWeighting(CInputStream& in) : mId(in.Get< int >()), mWeight(in.Get< float >()) {}
+#else
   explicit SSkinWeighting(CInputStream& in)
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -27,11 +42,26 @@ struct SSkinWeighting {
   , mWeight(in.Get< float >())
 #endif
   {}
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(SSkinWeighting, 0x8)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(SSkinWeighting, 0x8)
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+// Guessed name. GPU matrix records occupy three cache lines.
+struct SSkinningMatrices {
+  Mtx mPosition;
+  float mNormal[3][3];
+} ATTRIBUTE_ALIGN(32);
+CHECK_SIZEOF(SSkinningMatrices, 0x60)
+
+class CPoseAsTransforms_Linear;
+#else
 class CPoseAsTransforms;
 #if !RSTL_PRIME1
 // Guessed name. GPU matrix records occupy three cache lines.
@@ -44,10 +74,14 @@ CHECK_SIZEOF(SSkinningMatrices, 0x60)
 class CPoseAsTransforms_Linear;
 #endif
 
+#endif
 class CVirtualBone {
 public:
   explicit CVirtualBone(CInputStream& in);
   const rstl::reserved_vector< SSkinWeighting, 3 >& GetWeights() const { return mWeights; }
+#if RSTL_CORRUPTION
+  uint GetVertexCount() const { return mVertexCount; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int GetNumIndices() const { return mVertexCount; }
@@ -55,7 +89,15 @@ public:
 #else
   uint GetVertexCount() const { return mVertexCount; }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+  void BuildAccumulatedTransform(const CPoseAsTransforms_Linear& pose, CTransform4f& out) const;
+  void BuildFinalPosMatrix(const CPoseAsTransforms_Linear& pose, CTransform4f& out) const;
+  // Guessed name.
+  void BuildSkinningMatrices(const CTransform4f& xf, SSkinningMatrices& out,
+                             const bool uniformScale) const;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   void BuildPoints(const ushort*, volatile void*, int) const;
@@ -72,9 +114,13 @@ public:
   void BuildSkinningMatrices(const CTransform4f& xf, SSkinningMatrices& out,
                              const bool uniformScale) const;
 #endif
+#endif
 
 private:
   rstl::reserved_vector< SSkinWeighting, 3 > mWeights;
+#if RSTL_CORRUPTION
+  uint mVertexCount;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int mVertexCount;
@@ -83,7 +129,12 @@ private:
 #else
   uint mVertexCount;
 #endif
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CVirtualBone, 0x20)
+#else
 CHECK_SIZEOF(CVirtualBone, RSTL_PRIME1 ? 0x74 : 0x20)
+#endif
 
 #endif // _CVIRTUALBONE

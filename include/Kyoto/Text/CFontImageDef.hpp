@@ -1,8 +1,14 @@
 #ifndef _CFONTIMAGEDEF
 #define _CFONTIMAGEDEF
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/TToken.hpp"
@@ -28,6 +34,10 @@ public:
     TToken< CTexture > tex = mTextures[0];
     return tex->GetHeight() * mCropFactor.GetY();
   }
+#if RSTL_CORRUPTION
+  int GetWidth() const;
+  int GetHeight() const;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 #if RSTL_VERSION < RSTL_GM8P_00
@@ -47,6 +57,7 @@ public:
 #endif
 #endif
 
+#endif
   int CalculateBaseline() const;
   int CalculateHeight() const;
 

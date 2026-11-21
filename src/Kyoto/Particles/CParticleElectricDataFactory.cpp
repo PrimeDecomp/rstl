@@ -1,23 +1,43 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CParticleElectricDataFactory.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Streams/CMemoryInStream.hpp"
+#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
 
 #include "Kyoto/Particles/CElectricDescription.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Particles/CIntElement.hpp"
+#endif
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
+#if !RSTL_CORRUPTION
 RSTL_PRIME1_CONST CFactoryFnReturn
 FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
                              const CVParamTransfer& transfer) {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   rstl::rc_ptr< IVParamObj > obj = transfer.mObj;
 #else
   rstl::rc_ptr< IVParamObj > obj = transfer.GetObj();
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag,
+                                              const rstl::auto_ptr< uchar >& buffer, int size,
+                                              const CVParamTransfer& transfer) {
+  CMemoryInStream in(buffer.get(), size);
+  rstl::rc_ptr< IVParamObj > obj = transfer.GetObj();
+#endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
   CElectricDescription* desc = CParticleElectricDataFactory::GetGeneratorDesc(in, pool);
   return desc;
@@ -25,7 +45,11 @@ FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
 
 CElectricDescription* CParticleElectricDataFactory::GetGeneratorDesc(CInputStream& in,
                                                                      CSimplePool* pool) {
+#if RSTL_CORRUPTION
+  rstl::vector< uint > resources;
+#else
   rstl::vector< CAssetId > resources;
+#endif
   return CreateGeneratorDescription(in, pool);
 }
 
@@ -35,7 +59,11 @@ CElectricDescription* CParticleElectricDataFactory::CreateGeneratorDescription(C
   if (classId != 'ELSM') {
     return nullptr;
   }
+#if RSTL_CORRUPTION
+  CElectricDescription* desc = rs_new_line(90) CElectricDescription();
+#else
   CElectricDescription* desc = rs_new CElectricDescription();
+#endif
   CreateELSM(desc, in, pool);
   LoadELSMTokens(desc);
   return desc;
@@ -94,9 +122,14 @@ bool CParticleElectricDataFactory::CreateELSM(CElectricDescription* desc, CInput
     case 'SSWH': {
       const FourCC childId = CParticleDataFactory::GetClassID(in);
       if (childId != 'NONE') {
+#if RSTL_CORRUPTION
+        const CAssetId id(in);
+        if (id != kInvalidAssetId) {
+#else
         const CAssetId id = in.ReadLong();
 
         if (id != 0) {
+#endif
           desc->mSSWH = TCachedToken< CSwooshDescription >(pool->GetObj(SObjectTag('SWHC', id)));
         }
       }
@@ -141,6 +174,13 @@ bool CParticleElectricDataFactory::CreateELSM(CElectricDescription* desc, CInput
     case 'ZERY':
       desc->mZERY = CParticleDataFactory::GetBool(in);
       break;
+#if RSTL_CORRUPTION
+    case 'TEXR':
+      desc->mTEXR = CParticleDataFactory::GetTextureElement(in, pool);
+      break;
+    case 'BLDM':
+      desc->mBLDM = CParticleDataFactory::GetIntElement(in);
+#else
 #if !RSTL_PRIME1
     case 'TEXR':
       desc->mTEXR = CParticleDataFactory::GetTextureElement(in, pool);
@@ -149,16 +189,30 @@ bool CParticleElectricDataFactory::CreateELSM(CElectricDescription* desc, CInput
 
     case '_END':
       done = true;
+#endif
       break;
+#if RSTL_CORRUPTION
+    case 'DFLG':
+      desc->mDFLG = CParticleDataFactory::GetBitflag(in);
+      break;
+    case '_END':
+      done = true;
+      break;
+#else
 #if !RSTL_PRIME1
     case 'DFLG':
       desc->mDFLG = CParticleDataFactory::GetBitflag(in);
       break;
 #endif
+#endif
     default:
       return false;
     }
   }
+#if RSTL_CORRUPTION
+  if (desc->mBLDM == nullptr) {
+    desc->mBLDM = rs_new_line(284) CIEConstant(0);
+  }
+#endif
   return true;
 }
-

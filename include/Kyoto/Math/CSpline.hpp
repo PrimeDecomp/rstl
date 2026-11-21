@@ -1,5 +1,6 @@
 #ifndef _CSPLINE
 #define _CSPLINE
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CMayaSpline.hpp"
@@ -30,24 +31,46 @@ public:
 
   // Guessed accessor names, recovered from the script-camera callers.
   uint GetPositionKnotCount() const;
+#if RSTL_CORRUPTION
+  uint GetLookAtKnotCount() const { return mLookAtSpline.GetKnotCount(); }
+#else
   uint GetLookAtKnotCount() const;
+#endif
   CMotionSpline& PositionSpline();
+#if RSTL_CORRUPTION
+  CMotionSpline& LookAtSpline() { return mLookAtSpline; }
+#else
   CMotionSpline& LookAtSpline();
+#endif
   const CMotionSpline& GetPositionSpline() const;
+#if RSTL_CORRUPTION
+  const CMotionSpline& GetLookAtSpline() const { return mLookAtSpline; }
+#else
   const CMotionSpline& GetLookAtSpline() const;
+#endif
   CMayaSpline& PositionTimeSpline();
+#if RSTL_CORRUPTION
+  CMayaSpline& LookAtTimeSpline() { return mLookAtTimeSpline; }
+#else
   CMayaSpline& LookAtTimeSpline();
   float GetLength() const;
+#endif
   float GetDuration() const;
   uint GetFlags() const { return mFlags; }
+#if !RSTL_CORRUPTION
   float FindClosestLengthOnSpline(float start, const CVector3f& position) const;
   float ValidateLength(float distance) const;
+#endif
   CVector3f GetPositionByTime(float time) const;
+#if !RSTL_CORRUPTION
   CVector3f GetPositionByLength(float distance) const;
+#endif
   CVector3f GetLookAtByTime(float time) const;
+#if !RSTL_CORRUPTION
   CVector3f GetLookAtByLength(float distance) const;
   CQuaternion GetOrientationByTime(float time) const;
   CQuaternion GetOrientationByLength(float distance) const;
+#endif
 
 protected:
   // Guessed semantic names, supported by construction and native samplers.

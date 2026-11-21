@@ -1,16 +1,28 @@
 #ifndef _IMETATRANS
 #define _IMETATRANS
+#include "rstl/RstlVersions.h"
 
+#if !RSTL_CORRUPTION
 #include "rstl/types.h"
 #include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 #include "rstl/rc_ptr.hpp"
 
+#if !RSTL_CORRUPTION
 class COutputStream;
+#endif
 
 class CAnimSysContext;
+#if RSTL_CORRUPTION
+class COutputStream;
+#endif
 
+#if RSTL_CORRUPTION
+enum EMetaTransType { kMTT_MetaAnim = 0, kMTT_PhaseTrans = 2, kMTT_Snap = 3, kMTT_Trans = 4 };
+#else
 enum EMetaTransType { kMTT_MetaAnim, kMTT_Trans, kMTT_PhaseTrans, kMTT_Snap };
+#endif
 
 class IMetaTrans {
 public:

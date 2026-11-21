@@ -1,19 +1,34 @@
 #ifndef _CRUMBLEGENERATOR
 #define _CRUMBLEGENERATOR
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/Input/CRumbleVoice.hpp"
 #include "Kyoto/Input/InputTypes.hpp"
 
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 class IController;
+#endif
 #endif
 
 class CRumbleGenerator {
 private:
+#if RSTL_CORRUPTION
+  CRumbleVoice mVoice;
+  float mPeriodTime;
+  float mOnTime;
+  EMotorState mCommand;
+  EIOPort mInputIndex;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static const EMotorState kStopAll[4];
@@ -32,9 +47,13 @@ private:
   EIOPort mInputIndex;
 #endif
 
+#endif
   bool mDisabled : 1;
 
 public:
+#if RSTL_CORRUPTION
+  CRumbleGenerator(EIOPort inputIndex);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CRumbleGenerator();
@@ -46,8 +65,13 @@ public:
 #endif
 #endif
 
+#endif
   ~CRumbleGenerator();
 
+#if RSTL_CORRUPTION
+  short Rumble(const SAdsrData& adsr, float, ERumblePriority prio);
+  void Stop(short id);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   short Rumble(const SAdsrData& adsr, float, ERumblePriority prio, EIOPort port);
@@ -63,15 +87,24 @@ public:
   void Stop(short id);
 #endif
 
+#endif
   void Update(float);
   void HardStopAll();
+#if RSTL_CORRUPTION
+  void SetDisabled(bool disabled);
+#else
   void SetDisabled(const bool disabled);
 
+#endif
   bool GetDisabled() const { return mDisabled; }
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CRumbleGenerator, 0x44);
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CRumbleGenerator, RSTL_VERSION >= RSTL_R32J ? 0x48 : 0x44)
+#endif
 #endif
 
 #endif // _CRUMBLEGENERATOR

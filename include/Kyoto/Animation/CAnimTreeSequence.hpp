@@ -1,12 +1,20 @@
 #ifndef _CANIMTREESEQUENCE
 #define _CANIMTREESEQUENCE
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeSingleChild.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CSequenceHelper.hpp"
+#endif
 #include "Kyoto/Animation/CSequenceFundamentals.hpp"
 
 #include "rstl/rc_ptr.hpp"
@@ -29,13 +37,25 @@ public:
   CCharAnimTime VGetTimeRemaining() const override;
   CSteadyStateAnimInfo VGetSteadyStateAnimInfo() const override;
   uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                       uint iterator, const CSegIdMaskMap& mask) const override;
+#else
                       uint iterator, int) const override;
   uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
                        uint iterator, int) const override;
+#endif
   uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                           uint iterator, const CSegIdMaskMap& mask) const override;
+#else
                           uint iterator, int) const override;
+#endif
   uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                        uint iterator, const CSegIdMaskMap& mask) const override;
+#else
                        uint iterator, int) const override;
+#endif
   rstl::ownership_transfer< IAnimReader > VClone() const override;
 
   // CAnimTreeNode
@@ -52,6 +72,10 @@ private:
   CSequenceFundamentals mFundamentals;
   CCharAnimTime mCurTime;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CAnimTreeSequence, 0xdc)
+#else
 CHECK_CHILD_SIZEOF(CAnimTreeSequence, CAnimTreeSingleChild, RSTL_PRIME1 ? 0x84 : (RSTL_VERSION >= RSTL_R32J ? 0x78 : 0x8c))
+#endif
 
 #endif // _CANIMTREESEQUENCE

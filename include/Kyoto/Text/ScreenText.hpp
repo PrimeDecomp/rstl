@@ -1,9 +1,12 @@
 #ifndef _SCREENTEXT
 #define _SCREENTEXT
+#include "rstl/RstlVersions.h"
 
 #include "rstl/string.hpp"
 
+#if !RSTL_CORRUPTION
 class CColor;
+#endif
 class CRasterFont;
 class CTextExecuteBuffer;
 template < class T >
@@ -12,10 +15,12 @@ class TToken;
 // Guessed namespace and names for the screen-space text utilities.
 namespace ScreenText {
 void DrawString(const rstl::string& text, int x, int y, const TToken< CRasterFont >& font);
+#if !RSTL_CORRUPTION
 void DrawString(const rstl::string& text, int x, int y, const TToken< CRasterFont >& font,
                 const CColor& color, bool shadow);
 void DrawString(const rstl::wstring& text, int x, int y, const TToken< CRasterFont >& font,
                 const CColor& color, bool shadow);
+#endif
 void DrawExecuteBuffer(const CTextExecuteBuffer& buffer);
 } // namespace ScreenText
 

@@ -1,12 +1,22 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/rc_ptr.hpp"
 
+#endif
 #include "rstl/auto_ptr.hpp"
 
 CAnimTreeNode::CAnimTreeNode(const rstl::string& name) : mName(name) {}
+#if RSTL_CORRUPTION
+
+CAnimTreeNode::~CAnimTreeNode() {}
+#else
 #if !RSTL_PRIME1
 CAnimTreeNode::~CAnimTreeNode() {}
+#endif
 #endif
 
 rstl::ncrc_ptr< CAnimTreeNode > Cast(const rstl::ownership_transfer< IAnimReader >& ptr) {
@@ -20,4 +30,3 @@ rstl::ncrc_ptr< CAnimTreeNode > Cast(const rstl::ownership_transfer< IAnimReader
 }
 
 bool CAnimTreeNode::IsCAnimTreeNode() const { return true; }
-

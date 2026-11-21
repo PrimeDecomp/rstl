@@ -1,3 +1,4 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/CRelFileDebugInfo.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
@@ -14,7 +15,11 @@ void CRelFileDebugInfo::Register(const char* name, const void* start, uint size)
     return;
   }
   mName = name;
+#if RSTL_CORRUPTION
+  mStart = reinterpret_cast< uint >(start);
+#else
   mStart = reinterpret_cast< TRelFileDebugStart >(start);
+#endif
   mSize = size;
   mNext = mspHead;
   if (mNext != nullptr) {
@@ -37,9 +42,17 @@ void CRelFileDebugInfo::Unregister() {
   mPrev = nullptr;
 }
 
+#if RSTL_CORRUPTION
+bool CRelFileDebugInfo::Contains(int address) const { return address - mStart < mSize; }
+#else
 bool CRelFileDebugInfo::Contains(TRelFileDebugAddress address) const { return address - mStart < mSize; }
+#endif
 
+#if RSTL_CORRUPTION
+CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(int address) {
+#else
 CRelFileDebugInfo* CRelFileDebugInfo::FindByAddress(TRelFileDebugAddress address) {
+#endif
   for (CRelFileDebugInfo* info = mspHead; info != nullptr; info = info->mNext) {
     if (info->Contains(address)) {
       return info;

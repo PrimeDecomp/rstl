@@ -1,5 +1,7 @@
 #ifndef _CDSPSTREAMMANAGER
 #define _CDSPSTREAMMANAGER
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 
@@ -11,9 +13,11 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/reserved_vector.hpp"
 #include "Kyoto/Audio/CDSPStream.hpp"
+#endif
 
 #include "rstl/string.hpp"
 
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 #include "dolphin/dvd.h"
 #include "musyx/musyx.h"
@@ -53,9 +57,11 @@ struct SDSPStreamVoice {
 };
 CHECK_SIZEOF(SDSPStreamVoice, 0x20)
 #endif
+#endif
 
 class CDSPStreamManager {
 public:
+#if !RSTL_CORRUPTION
   // Echoes never reports kS_Preparing.
   enum EState { kS_Looping, kS_Oneshot, kS_Preparing };
 
@@ -67,14 +73,26 @@ public:
   CDSPStreamManager();
 #endif
 
+#endif
   static void Initialize();
   static void Shutdown();
+#if !RSTL_CORRUPTION
   static int StartStreaming(const rstl::string& fileName, int volume, int type);
+#endif
 
+#if RSTL_CORRUPTION
+  static int StartStreaming(const rstl::string& fileName, int volume, int type);
+#endif
   static void StopStreaming(int handle);
   static void UpdateVolume(int handle, int volume);
   static bool IsStreamAvailable(int handle);
   static bool CanStop(int handle);
+#if RSTL_CORRUPTION
+  static int GetStreamState(int handle);
+  };
+
+  // Guessed name
+#else
   static EState GetStreamState(int handle);
 
 private:
@@ -147,4 +165,5 @@ private:
 };
 CHECK_SIZEOF(CDSPStreamManager, RSTL_PRIME1 ? 0xC0 : 0x300)
 
+#endif
 #endif // _CDSPSTREAMMANAGER

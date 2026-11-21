@@ -1,20 +1,33 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Input/CRumbleVoice.hpp"
 #include "rstl/math.hpp"
 
+#if !RSTL_CORRUPTION
 CRumbleVoice::CRumbleVoice()
 : mDatas(4, SAdsrData()
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
          , rstl::rmemory_allocator()
 #endif
          )
 , mDeltas(4, SAdsrDelta::Stopped()
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+CRumbleVoice::CRumbleVoice()
+: mDatas(4, SAdsrData())
+, mDeltas(4, SAdsrDelta::Stopped())
+#else
 #if RSTL_PRIME1
           , rstl::rmemory_allocator()
 #endif
           )
+#endif
 , mHandleIds(4, 0)
 , mUsedChannels(0)
 , mLastId(0) {}
@@ -79,16 +92,26 @@ bool CRumbleVoice::UpdateChannel(SAdsrDelta& delta, const SAdsrData& data, float
     }
     break;
   case SAdsrDelta::kP_Attack:
+#if RSTL_CORRUPTION
+    UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mAttackTime, 0.f, delta.mAttackIntensity,
+                data.mAttackDur, SAdsrDelta::kP_Decay, dt);
+#else
     UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mAttackTime, 0.f,
                 delta.mAttackIntensity, data.mAttackDur, SAdsrDelta::kP_Decay, dt);
+#endif
     break;
   case SAdsrDelta::kP_Decay:
     if (data.mHasSustain) {
       UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime, delta.mAttackIntensity,
                   delta.mSustainIntensity, data.mDecayDur, SAdsrDelta::kP_Sustain, dt);
     } else {
+#if RSTL_CORRUPTION
+      UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime, delta.mAttackIntensity, 0.f,
+                  data.mDecayDur, SAdsrDelta::kP_Stop, dt);
+#else
       UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime,
                   delta.mAttackIntensity, 0.f, data.mDecayDur, SAdsrDelta::kP_Stop, dt);
+#endif
       if (delta.mPhase != SAdsrDelta::kP_Decay) {
         delta.mPhase = SAdsrDelta::kP_Stop;
         return true;
@@ -97,8 +120,13 @@ bool CRumbleVoice::UpdateChannel(SAdsrDelta& delta, const SAdsrData& data, float
     break;
   case SAdsrDelta::kP_Release: {
     float a = data.mHasSustain ? delta.mSustainIntensity : 0.f;
+#if RSTL_CORRUPTION
+    UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mReleaseTime, a, 0.f, data.mReleaseDur,
+                SAdsrDelta::kP_Stop, dt);
+#else
     UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mReleaseTime, a, 0.f,
                 data.mReleaseDur, SAdsrDelta::kP_Stop, dt);
+#endif
     if (delta.mPhase != SAdsrDelta::kP_Release) {
       delta.mPhase = SAdsrDelta::kP_Stop;
       return true;
@@ -136,7 +164,11 @@ bool CRumbleVoice::Update(float dt) {
 ushort CRumbleVoice::GetFreeChannel() const {
   for (ushort i = 0; i < 4; ++i) {
     if ((mUsedChannels & (1 << i)) == 0) {
+#if RSTL_CORRUPTION
+      return i;
+#else
       return (ushort)i;
+#endif
     }
   }
   return 0;
@@ -144,6 +176,18 @@ ushort CRumbleVoice::GetFreeChannel() const {
 
 float CRumbleVoice::GetIntensity() const {
   float ret = mDeltas[0].mCurIntensity;
+#if RSTL_CORRUPTION
+  if (ret < mDeltas[1].mCurIntensity) {
+    ret = mDeltas[1].mCurIntensity;
+  }
+  if (ret < mDeltas[2].mCurIntensity) {
+    ret = mDeltas[2].mCurIntensity;
+  }
+
+  if (ret < mDeltas[3].mCurIntensity) {
+    ret = mDeltas[3].mCurIntensity;
+  }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (int i = 1; i < 4; ++i) {
@@ -163,6 +207,7 @@ float CRumbleVoice::GetIntensity() const {
     ret = mDeltas[3].mCurIntensity;
   }
 #endif
+#endif
 
   if (ret > 2.f) {
     return 2.f;
@@ -177,11 +222,20 @@ bool CRumbleVoice::OwnsSustained(short handle) const {
   return i < 4 ? mHandleIds[i] == owner : false;
 }
 
+#if RSTL_CORRUPTION
+short CRumbleVoice::CreateRumbleHandle(ushort idx) {
+#else
 /* TODO: Fake matched, find real solution */
 short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
+#endif
   ++mLastId;
   if (mLastId == 0)
     mLastId = 1;
+#if RSTL_CORRUPTION
+  ushort& handle = mHandleIds[idx];
+  handle = mLastId;
+  return ((mLastId << 8) | idx) & 0xFFFF;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   ushort* h = &mHandleIds[idx];
@@ -196,5 +250,5 @@ short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
 #else
   return ((mLastId << 8) | x) & 0xFFFF;
 #endif
+#endif
 }
-

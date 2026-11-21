@@ -1,6 +1,9 @@
 #ifndef _CPASANIMPARMDATA
 #define _CPASANIMPARMDATA
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
 #include "Kyoto/Animation/CPASAnimState.hpp"
 
@@ -9,8 +12,12 @@ class CPASAnimParmData {
   rstl::reserved_vector< CPASAnimParm, 8 > mParms;
 
 public:
+#if RSTL_CORRUPTION
+  CPASAnimParmData(pas::EAnimationState stateId,
+#else
   CPASAnimParmData(RSTL_PRIME1_CONST pas::EAnimationState stateId,
 
+#endif
                    const CPASAnimParm& parm1 = CPASAnimParm::NoParameter(),
                    const CPASAnimParm& parm2 = CPASAnimParm::NoParameter(),
                    const CPASAnimParm& parm3 = CPASAnimParm::NoParameter(),

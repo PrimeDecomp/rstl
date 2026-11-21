@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CColorElement.hpp"
 #include "Kyoto/Particles/CEmitterElement.hpp"
@@ -23,11 +26,17 @@ CElectricDescription::CElectricDescription()
 , mLCL1(nullptr)
 , mLCL2(nullptr)
 , mLCL3(nullptr)
+#if RSTL_CORRUPTION
+, mTEXR(nullptr)
+, mBLDM(nullptr)
+, mDFLG(0)
+#else
 #if !RSTL_PRIME1
 , mTEXR(nullptr)
 , mDFLG(0)
 #endif
 
+#endif
 , mZERY(false) {}
 
 CElectricDescription::~CElectricDescription() {
@@ -47,9 +56,13 @@ CElectricDescription::~CElectricDescription() {
   delete mLCL1;
   delete mLCL2;
   delete mLCL3;
+#if RSTL_CORRUPTION
+  delete mTEXR;
+  delete mBLDM;
+#else
 #if !RSTL_PRIME1
   delete mTEXR;
 #endif
 
+#endif
 }
-

@@ -1,12 +1,20 @@
 #ifndef _CDRAWABLEPLANEOBJECT
 #define _CDRAWABLEPLANEOBJECT
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Graphics/CDrawable.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Math/CAABox.hpp"
 
+#endif
 #include "Kyoto/Math/CPlane.hpp"
 
 class CDrawablePlaneObject : public CDrawable {
@@ -14,12 +22,16 @@ public:
   CDrawablePlaneObject(EDrawableType type, float closeDistance, float farDistance,
                        const CAABox& bounds, bool invertTest, const CPlane& plane, bool zOnly,
                        const void* data)
+#if RSTL_CORRUPTION
+  : CDrawable(type, 0, closeDistance, bounds, data, false)
+#else
   : CDrawable(type, 0, closeDistance, bounds, data
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
               , false
 #endif
               )
+#endif
   , mTargetBucket(0)
   , mFarDistance(farDistance)
   , mPlane(plane)
@@ -40,8 +52,12 @@ private:
   bool mInvertTest : 1;
   bool mZOnly : 1;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CDrawablePlaneObject, 0x40)
+#else
 #if !RSTL_PRIME1
 CHECK_CHILD_SIZEOF(CDrawablePlaneObject, CDrawable, 0x1c)
+#endif
 #endif
 
 #endif // _CDRAWABLEPLANEOBJECT

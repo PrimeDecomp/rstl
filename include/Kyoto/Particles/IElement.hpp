@@ -1,6 +1,9 @@
 #ifndef _IELEMENT
 #define _IELEMENT
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 
 #include "rstl/types.h"
 
@@ -22,10 +25,12 @@ public:
       return sCurrentChunk ? sCurrentChunk->GetAllocatedSize() : 0;
     }
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   private:
 #endif
 
+#endif
     static CElementAllocationChunk* sCurrentChunk;
     static CElementAllocationChunk* sFreeChunk;
   };
@@ -33,8 +38,12 @@ public:
 
   // -> CFrameDelayedKiller
   void* operator new(size_t sz, const char*, const char*);
+#if RSTL_CORRUPTION
+  void* operator new(size_t sz) { return operator new(sz, "??(??)", nullptr); }
+#else
   void* operator new(size_t sz) { return operator new(sz, "\?\?(\?\?)", nullptr); }
 
+#endif
   void operator delete(void* ptr, size_t sz);
 };
 
@@ -74,12 +83,16 @@ public:
 };
 
 struct SUVElementSet {
+#if RSTL_CORRUPTION
+  float xMin, yMin, xMax, yMax;
+#else
   float xMin;
   float yMin;
   float xMax;
   float yMax;
 
   //  SUVElementSet() {}
+#endif
   // SUVElementSet() : xMin(0.f), yMin(1.f), xMax(0.f), yMax(1.f) {}
   // SUVElementSet(float xMin, float yMin, float xMax, float yMax)
   // : xMin(xMin), yMin(yMin), xMax(xMax), yMax(yMax) {}

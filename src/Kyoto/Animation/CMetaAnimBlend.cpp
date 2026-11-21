@@ -35,4 +35,3 @@ void CMetaAnimBlend::WriteAnimData(COutputStream& out) const {
   out.WriteReal32(mBlend);
   out.WriteChar(mCharacterSpaceBlend ? 1 : 0);
 }
-

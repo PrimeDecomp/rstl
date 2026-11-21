@@ -1,17 +1,32 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CFBStreamedCompression.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+#else
 #include "Kyoto/Animation/CAnimPOIData.hpp"
 
+#endif
 #include "Kyoto/Animation/CFBStreamedAnimReader.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/IObjectStore.hpp"
 
+#endif
 #include "Kyoto/Math/CloseEnough.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
+#endif
 
 rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words,
                                                                       CInputStream& in) {
+#if RSTL_CORRUPTION
+  rstl::auto_ptr< uint > data(rs_new_line(14) uint[words]);
+#else
   rstl::auto_ptr< uint > data(rs_new uint[words]);
+#endif
   void* cursor = data.get();
   CStandardMultiFormatHeader* mainHeader = static_cast< CStandardMultiFormatHeader* >(cursor);
   new (mainHeader) CStandardMultiFormatHeader(in);
@@ -20,19 +35,26 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
       static_cast< CFBStreamedCompressionTimeHeader* >(cursor);
   new (timeHeader) CFBStreamedCompressionTimeHeader(in);
   cursor = const_cast< void* >(timeHeader->AfterEnd());
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   in.Get< uint >();
+#endif
 #endif
   CFBStreamedPerChannelHeaderList* channels =
       static_cast< CFBStreamedPerChannelHeaderList* >(cursor);
   new (channels) CFBStreamedPerChannelHeaderList(in);
   const CFBStreamedPerChannelHeader& first = *channels->begin();
+#if RSTL_CORRUPTION
+  uchar* next = const_cast< uchar* >(channels->AfterEnd());
+  cursor = next;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   cursor = const_cast< uchar* >(channels->AfterEnd());
 #else
   uchar* next = const_cast< uchar* >(channels->AfterEnd());
   cursor = next;
+#endif
 #endif
   uint wordCount = static_cast< uint >(
       static_cast< float >(
@@ -45,8 +67,15 @@ rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words
   return data;
 }
 
+#if RSTL_CORRUPTION
+CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore&)
+#else
 CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& store)
+#endif
 : mScratchSize(in.Get< uint >())
+#if RSTL_CORRUPTION
+, mVersionNumber(in.ReadInt8())
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mEvnt(in.Get< uint >())
@@ -54,8 +83,14 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
 #else
 , mVersionNumber(in.ReadInt8())
 #endif
+#endif
 , mRotsAndOffs(GetRotationsAndOffsets(mScratchSize / 4 + 1, in).release())
 , mRootOffset(0.f, 0.f, 0.f) {
+#if RSTL_CORRUPTION
+  RS_VERIFY_THROW(55, mVersionNumber <= kCurrentVersionNumber, kException_InvalidVersion,
+                  "Invalid compressed animation version!  Re-cook animation with current tools.");
+  {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mEvnt != 0) {
@@ -63,6 +98,7 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
   }
 #else
   {
+#endif
 #endif
   const CStandardMultiFormatHeader& mainHeader = MainHeader();
   const CFBStreamedCompressionTimeHeader& timeHeader = TimeHeader(mainHeader);
@@ -76,6 +112,9 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
   uint rootIndex = 0;
   for (CFBStreamedPerChannelHeaderList::const_iterator channel(firstChannel, channels.size());
        channel != channels.end(); ++channel) {
+#if RSTL_CORRUPTION
+      if (channel->GetSegId() == CSegId(0)) {
+#else
     if (channel->GetSegId() ==
 #if RSTL_PRIME1
         CSegId::Root()
@@ -83,6 +122,7 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
         CSegId(0)
 #endif
     ) {
+#endif
       break;
     }
     ++rootIndex;
@@ -105,20 +145,36 @@ CFBStreamedCompression::CFBStreamedCompression(CInputStream& in, IObjectStore& s
   }
   mAverageVelocity = distance / GetAnimationDuration().GetSeconds();
 }
+#if RSTL_CORRUPTION
+  CCharAnimMemoryMetrics::AddToTotalSize(mScratchSize, CCharAnimMemoryMetrics::kASS_Two);
+}
+#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(mScratchSize, CCharAnimMemoryMetrics::kASS_Two);
 }
 #endif
+#endif
 
 CFBStreamedCompression::~CFBStreamedCompression() {
+#if RSTL_CORRUPTION
+  CCharAnimMemoryMetrics::SubtractFromTotalSize(mScratchSize, CCharAnimMemoryMetrics::kASS_Two);
+#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mScratchSize, CCharAnimMemoryMetrics::kASS_Two);
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
+  return MainHeader().GetMaxTime();
+}
+
+const uchar CStandardMultiFormatHeader::kCurrentVersionNumber = 1;
+#else
 #if !RSTL_CFB_ANIMATION_DURATION_IN_READER
 CCharAnimTime CFBStreamedCompression::GetAnimationDuration() const {
   return MainHeader().GetMaxTime();
 }
 #endif
-
+#endif

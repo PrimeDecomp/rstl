@@ -1,17 +1,32 @@
 #ifndef _CFONTRENDERSTATE
 #define _CFONTRENDERSTATE
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#else
 #include "rstl/list.hpp"
 
+#endif
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Text/CRasterFont.hpp"
 
+#endif
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
+#if RSTL_CORRUPTION
+#include "rstl/list.hpp"
+
+
+#else
 #include "rstl/vector.hpp"
+#endif
 
 class CBlockInstruction;
 class CLineInstruction;
@@ -25,6 +40,7 @@ public:
   void PopState();
   void SetColor(EColorType type, const CTextColor& color);
   void RefreshPalette();
+#if !RSTL_CORRUPTION
   TToken< CRasterFont >& GetFont() {
 #if RSTL_PRIME1
     return *mState.GetFont();
@@ -33,10 +49,13 @@ public:
 #endif
   }
 
+#endif
   bool IsFinishedLoading() { return mState.IsFinishedLoading(); }
   CDrawStringOptions& GetOptions() { return mState.GetOptions(); }
   void SetFont(const TToken< CRasterFont >& font) { mState.SetFont(font); }
-
+#if RSTL_CORRUPTION
+  TToken< CRasterFont >& GetFont() { return mState.GetFont(); }
+#endif
   rstl::vector< CTextColor >& GetColors() { return mState.GetColors(); }
   rstl::vector< bool >& GetOverride() { return mState.GetOverride(); }
   float GetLineSpacing() const { return mState.GetLineSpacing(); }
@@ -58,6 +77,7 @@ public:
 
   bool IsFirstWordOnLine() const { return mLineInitialized; }
   void SetFirstWordOnLine(bool v) { mLineInitialized = v; }
+#if !RSTL_CORRUPTION
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -67,6 +87,7 @@ public:
   void AddX(const int x) { mCurX += x; }
 
   void SubY(const int y) { mCurY -= y; }
+#endif
 #endif
 
   int GetSpacing(const int value) const {
@@ -85,6 +106,12 @@ private:
   int mCurX;
   int mCurY;
   const CLineInstruction* mCurrentLineInst;
+#if RSTL_CORRUPTION
+  uint xe8_;
+  uint xec_;
+  rstl::vector< CTextColor > xf0_;
+  rstl::vector< bool > x100_;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   uint xe0_;
@@ -98,10 +125,15 @@ private:
   rstl::vector< bool > x100_;
 #endif
 
+#endif
   bool mLineInitialized;
   rstl::list< CSaveableState > mPushedStates;
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CFontRenderState, 0x12c)
+#else
 CHECK_SIZEOF(CFontRenderState, (RSTL_VERSION >= RSTL_GM8P_00 ? 0x12c : 0x124))
+#endif
 
 #endif // _CFONTRENDERSTATE

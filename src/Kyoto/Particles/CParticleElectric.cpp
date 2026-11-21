@@ -1,6 +1,9 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
 #include "rstl/list.hpp" // IWYU pragma: keep
+#endif
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
 
 #include "Kyoto/Basics/CStopwatch.hpp"
@@ -22,26 +25,45 @@
 #include "Kyoto/Particles/IElement.hpp"
 
 #include "dolphin/gx/GXVert.h"
+#if !RSTL_CORRUPTION
 #include "float.h"
+#endif
 #include "math.h"
 #include "rstl/math.hpp"
 
+#if RSTL_CORRUPTION
+
+
+static CVector3f sOneVector(1.f, 1.f, 1.f);
+#else
 #if !RSTL_PRIME1
 static CVector3f sOneVector(1.f, 1.f, 1.f);
 #endif
+#endif
 
 ushort CParticleElectric::sSeed = 99;
+#if RSTL_CORRUPTION
+
+void CParticleElectric::ReseedRandom(uint seed) { mRandState = CRandom16(seed); }
+#endif
 
 CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 : mElecDesc(desc)
 , mCurrentFrame(0)
 , mLIFE(0)
+#if RSTL_CORRUPTION
+, mBLDM(0)
+#endif
 , mCurTime(0.0)
 , mTranslation(CVector3f::Zero())
 , mOrientation(CTransform4f::Identity())
 , mInvOrientation(CTransform4f::Identity())
 , mGlobalTranslation(CVector3f::Zero())
 , mGlobalOrientation(CTransform4f::Identity())
+#if RSTL_CORRUPTION
+, mGlobalScale(sOneVector)
+, mLocalScale(sOneVector)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mGlobalScale(1.f, 1.f, 1.f)
@@ -51,7 +73,11 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , mLocalScale(sOneVector)
 #endif
 
+#endif
 , mCachedXf(CTransform4f::Identity())
+#if RSTL_CORRUPTION
+, x130_(0.f)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , x128_(0.f)
@@ -59,9 +85,13 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , x130_(0.f)
 #endif
 
+#endif
 , mRenderTime(0.f)
 , mMinBounds(CVector3f::Zero())
 , mMaxBounds(CVector3f::Zero())
+#if RSTL_CORRUPTION
+, x150_(0.f)
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , x148_(0.f)
@@ -69,19 +99,27 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , x150_(0.f)
 #endif
 
+#endif
 , mRandState(sSeed++)
 , mSSEG(8)
 , mSCNT(1)
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 , x158_(0)
 #endif
 
+#endif
 , mGenRem(0.f)
+#if RSTL_CORRUPTION
+, mGeneratorRate(1.f)
+, mCumulativeParticles(0)
+#else
 #if !RSTL_PRIME1
 , mGeneratorRate(1.f)
 , mCumulativeParticles(0)
 #endif
 
+#endif
 , mSystemBounds(CAABox::MakeMaxInvertedBox())
 , mModuColor(CColor::White())
 , mAllocated(false)
@@ -91,6 +129,12 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
 , mHaveSSWH(false)
 , mHaveLWD(false)
 , mTransformDirty(true)
+#if RSTL_CORRUPTION
+, mTranslationDirty(false)
+, mOrientationDirty(false)
+, mGlobalScaleDirty(false) {
+  SetDrawFlags(mElecDesc->mDFLG);
+#else
 #if !RSTL_PRIME1
 , mTranslationDirty(false)
 , mOrientationDirty(false)
@@ -101,6 +145,7 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   SetDrawFlags(mElecDesc->mDFLG);
 #endif
 
+#endif
   if (mElecDesc->mSSEG) {
     mElecDesc->mSSEG->GetValue(mCurrentFrame, mSSEG);
   }
@@ -118,7 +163,12 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   if (mElecDesc->mSSWH) {
     mHaveSSWH = true;
     for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+      mSwooshGenerators.push_back(rs_new_line(251)
+                                      CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
+#else
       mSwooshGenerators.push_back(rs_new CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
+#endif
       CParticleSwoosh& swoosh = *mSwooshGenerators.back();
       const int count = swoosh.GetSwooshCount();
       for (int j = 0; j < count; ++j) {
@@ -128,19 +178,28 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
     }
   }
   ++mSSEG;
+#if RSTL_CORRUPTION
+  mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(mSSEG, CVector3f::Zero(),
+                                                                        rstl::aligned_allocator());
+#else
   mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(
       mSSEG, CVector3f::Zero(), rstl::aligned_allocator());
+#endif
   mFractalOffsets = rstl::vector< CVector3f >(mSSEG, CVector3f::Zero(), rstl::rmemory_allocator());
   mFractalMags = rstl::vector< float >(mSSEG, 0.f, rstl::rmemory_allocator());
   if (mElecDesc->mGPSM) {
     mHaveGPSM = true;
     mGPSMGenerators.reserve(mSCNT);
     for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+      mGPSMGenerators.push_back_unsafe(rs_new_line(275) CElementGen(mElecDesc->mGPSM->GetToken()));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mGPSMGenerators.push_back(rs_new CElementGen(mElecDesc->mGPSM->GetToken()));
 #else
       mGPSMGenerators.push_back_unsafe(rs_new CElementGen(mElecDesc->mGPSM->GetToken()));
+#endif
 #endif
       mGPSMGenerators.back()->SetParticleEmission(false);
     }
@@ -149,11 +208,15 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
     mHaveEPSM = true;
     mEPSMGenerators.reserve(mSCNT);
     for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+      mEPSMGenerators.push_back_unsafe(rs_new_line(287) CElementGen(mElecDesc->mEPSM->GetToken()));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       mEPSMGenerators.push_back(rs_new CElementGen(mElecDesc->mEPSM->GetToken()));
 #else
       mEPSMGenerators.push_back_unsafe(rs_new CElementGen(mElecDesc->mEPSM->GetToken()));
+#endif
 #endif
       mEPSMGenerators.back()->SetParticleEmission(false);
     }
@@ -161,7 +224,11 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   if (mElecDesc->mLWD1 || mElecDesc->mLWD2 || mElecDesc->mLWD3) {
     mHaveLWD = true;
     for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+      mLineManagers.push_back(rs_new_line(299) CLineManager);
+#else
       mLineManagers.push_back(rs_new CLineManager);
+#endif
     }
   }
 }
@@ -172,10 +239,14 @@ void CParticleElectric::CalculatePoints() {
   rstl::reserved_vector< CVector3f, 4 > points;
   CVector3f pos = CVector3f::Zero();
   CVector3f vel = CVector3f::Zero();
+#if RSTL_CORRUPTION
+  CParticleElectricManager& manager = mElectricManagers.back();
+#else
 #if !RSTL_PRIME1
   CParticleElectricManager& manager = mElectricManagers.back();
 #endif
 
+#endif
   if (mElecDesc->mIEMT) {
     mElecDesc->mIEMT->GetValue(mCurrentFrame, pos, vel);
   }
@@ -185,11 +256,16 @@ void CParticleElectric::CalculatePoints() {
   if (mOverrideIVel) {
     vel = *mOverrideIVel;
   }
+#if RSTL_CORRUPTION
+  manager.mInitialPos = pos;
+  manager.mInitialVel = vel;
+#else
 #if !RSTL_PRIME1
   manager.mInitialPos = pos;
   manager.mInitialVel = vel;
 #endif
 
+#endif
   if (vel.IsNonZero()) {
     points.push_back(pos);
     points.push_back(pos + vel);
@@ -208,11 +284,16 @@ void CParticleElectric::CalculatePoints() {
   if (mOverrideFVel) {
     fvel = *mOverrideFVel;
   }
+#if RSTL_CORRUPTION
+  manager.mFinalPos = fpos;
+  manager.mFinalVel = fvel;
+#else
 #if !RSTL_PRIME1
   manager.mFinalPos = fpos;
   manager.mFinalVel = fvel;
 #endif
 
+#endif
   if (fvel.IsNonZero()) {
     if (points.size() == 3) {
       points[2] = fpos + fvel;
@@ -227,34 +308,53 @@ void CParticleElectric::CalculatePoints() {
   }
   if (points.size() == 4) {
     const int segments = mSSEG - 1;
+#if RSTL_CORRUPTION
+    const float segDiv = 1.f / static_cast< float >(segments);
+    mCalculatedVerts[0] = points[0];
+#else
     const CVector3f& p0 = points[0];
     const CVector3f& p1 = points[1];
     const CVector3f& p2 = points[2];
     const float segDiv = 1.f / static_cast< float >(mSSEG - 1);
     mCalculatedVerts[0] = p0;
+#endif
     float curDiv = segDiv;
     for (int i = 1; i < segments; ++i) {
       const float t = segDiv * mRandState.Range(-0.45f, 0.45f) + curDiv;
+#if RSTL_CORRUPTION
+      const CVector3f point = CMath::GetBezierPoint(points[0], points[1], points[2], points[3], t);
+#else
       const CVector3f point = CMath::GetBezierPoint(p0, p1, p2, points[3], t);
+#endif
       mCalculatedVerts[i] = point;
       curDiv += segDiv;
     }
     mCalculatedVerts[segments] = points[3];
   } else {
+#if !RSTL_CORRUPTION
     int i;
+#endif
     mCalculatedVerts[0] = pos;
     const int segments = mSSEG - 1;
     const float segDiv = 1.f / static_cast< float >(segments);
+#if RSTL_CORRUPTION
+    const CVector3f segDelta = (fpos - pos) * segDiv;
+#else
 #if !RSTL_PRIME1
     const CVector3f segDelta = (fpos - pos) * segDiv;
 #endif
 
+#endif
     CVector3f accum = mCalculatedVerts[0];
+#if RSTL_CORRUPTION
+    for (int i = 1; i < segments; ++i) {
+#else
 #if RSTL_PRIME1
     const CVector3f segDelta = (fpos - pos) * segDiv;
 #endif
 
     for (i = 1; i < segments; ++i) {
+#endif
       const float r = mRandState.Range(-0.45f, 0.45f);
       mCalculatedVerts[i] = accum + segDelta * r;
       accum += segDelta;
@@ -277,7 +377,11 @@ void CParticleElectric::CalculatePoints() {
   CVector3f v0 = mCalculatedVerts[0] - mCalculatedVerts[1];
   CVector3f v1 = mCalculatedVerts[mCalculatedVerts.size() - 1] - mCalculatedVerts[1];
   CVector3f up = CVector3f::Up();
+#if RSTL_CORRUPTION
+  if (v0.IsNormalizable() && v1.IsNormalizable()) {
+#else
   if (v0.CanBeNormalized() && v1.CanBeNormalized()) {
+#endif
     v0.Normalize();
     v1.Normalize();
     float dot = CVector3f::Dot(v0, v1);
@@ -352,14 +456,36 @@ const bool CParticleElectric::Update(double dt) {
   mCurTime += dt;
   if (mTransformDirty) {
     UpdateCachedTransform();
+#if RSTL_CORRUPTION
+  }
+  if (mTranslationDirty || mOrientationDirty || mGlobalScaleDirty || mLocalScaleDirty) {
+#else
 #if !RSTL_PRIME1
   }
   if (mTranslationDirty || mOrientationDirty || mGlobalScaleDirty || mLocalScaleDirty) {
 #endif
 
+#endif
     const CTransform4f orientation = mCachedXf.GetRotation();
     const CVector3f translation = mCachedXf.GetTranslation();
     if (mHaveSSWH) {
+#if RSTL_CORRUPTION
+      for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+           it != mElectricManagers.end(); ++it) {
+        if (mTranslationDirty) {
+          mSwooshGenerators[it->mIdx]->SetGlobalTranslation(translation);
+        }
+        if (mOrientationDirty) {
+          mSwooshGenerators[it->mIdx]->SetGlobalOrientation(orientation);
+        }
+        if (mGlobalScaleDirty) {
+          mSwooshGenerators[it->mIdx]->SetGlobalScale(mGlobalScale);
+        }
+        if (mLocalScaleDirty) {
+          mSwooshGenerators[it->mIdx]->SetLocalScale(mLocalScale);
+        }
+      }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
@@ -385,9 +511,24 @@ const bool CParticleElectric::Update(double dt) {
         }
       }
 #endif
+#endif
     }
     if (mHaveGPSM) {
       for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+        if (mTranslationDirty) {
+          mGPSMGenerators[i]->SetGlobalTranslation(translation);
+        }
+        if (mOrientationDirty) {
+          mGPSMGenerators[i]->SetGlobalOrientation(orientation);
+        }
+        if (mGlobalScaleDirty) {
+          mGPSMGenerators[i]->SetGlobalScale(mGlobalScale);
+        }
+        if (mLocalScaleDirty) {
+          mGPSMGenerators[i]->SetLocalScale(mLocalScale);
+        }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mGPSMGenerators[i]->SetGlobalTranslation(translation);
@@ -409,10 +550,25 @@ const bool CParticleElectric::Update(double dt) {
         }
 #endif
 
+#endif
       }
     }
     if (mHaveEPSM) {
       for (int i = 0; i < mSCNT; ++i) {
+#if RSTL_CORRUPTION
+        if (mTranslationDirty) {
+          mEPSMGenerators[i]->SetGlobalTranslation(translation);
+        }
+        if (mOrientationDirty) {
+          mEPSMGenerators[i]->SetGlobalOrientation(orientation);
+        }
+        if (mGlobalScaleDirty) {
+          mEPSMGenerators[i]->SetGlobalScale(mGlobalScale);
+        }
+        if (mLocalScaleDirty) {
+          mEPSMGenerators[i]->SetLocalScale(mLocalScale);
+        }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mEPSMGenerators[i]->SetGlobalTranslation(translation);
@@ -434,9 +590,16 @@ const bool CParticleElectric::Update(double dt) {
         }
 #endif
 
+#endif
       }
     }
     updated = true;
+#if RSTL_CORRUPTION
+    mTranslationDirty = false;
+    mOrientationDirty = false;
+    mGlobalScaleDirty = false;
+    mLocalScaleDirty = false;
+#else
 #if !RSTL_PRIME1
     mTranslationDirty = false;
     mOrientationDirty = false;
@@ -444,6 +607,7 @@ const bool CParticleElectric::Update(double dt) {
     mLocalScaleDirty = false;
 #endif
 
+#endif
   }
   while (evalTime < mCurTime) {
     CParticleGlobals::SetEmitterTime(mCurrentFrame);
@@ -471,6 +635,9 @@ const bool CParticleElectric::Update(double dt) {
         mEPSMGenerators[i]->Update(1.0 / 60.0);
       }
     }
+#if RSTL_CORRUPTION
+    mElecDesc->mBLDM->GetValue(mCurrentFrame, mBLDM);
+#endif
     updated = true;
     evalTime += 1.0 / 60.0;
     ++mCurrentFrame;
@@ -483,8 +650,12 @@ const bool CParticleElectric::Update(double dt) {
 
 void CParticleElectric::Render() {
   const float startTime = CStopwatch::GetGlobalTime();
+#if RSTL_CORRUPTION
+  if (ShouldDraw()) {
+#else
 #if !RSTL_PRIME1
   if (ShouldDraw()) {
+#endif
 #endif
   if (!mElectricManagers.empty()) {
     if (mTransformDirty) {
@@ -493,9 +664,14 @@ void CParticleElectric::Render() {
     if (mHaveSSWH) {
       RenderSwooshes();
     }
+#if RSTL_CORRUPTION
+    }
+#endif
     if (mHaveLWD) {
       RenderLines();
+#if !RSTL_CORRUPTION
     }
+#endif
   }
   if (mHaveGPSM) {
     for (int i = 0; i < mSCNT; ++i) {
@@ -507,13 +683,21 @@ void CParticleElectric::Render() {
       mEPSMGenerators[i]->Render();
     }
   }
+#if RSTL_CORRUPTION
+  }
+#else
 #if !RSTL_PRIME1
   }
+#endif
 #endif
   mRenderTime = CStopwatch::GetGlobalTime() - startTime;
 }
 
 void CParticleElectric::RenderSwooshes() {
+#if RSTL_CORRUPTION
+  for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+       it != mElectricManagers.end(); ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
@@ -522,10 +706,16 @@ void CParticleElectric::RenderSwooshes() {
        it != mElectricManagers.end(); ++it) {
 #endif
 
+#endif
     mSwooshGenerators[it->mIdx]->Render();
   }
 }
 
+#if RSTL_CORRUPTION
+void CParticleElectric::SetLineBlendMode(int mode) {
+  if (mode == 0) {
+    CGraphics::DisableAlphaUpdate(0);
+#else
 void CParticleElectric::RenderLines() {
 #if !RSTL_PRIME1
   if (CElementGen::sMoveRedToAlphaBuffer) {
@@ -535,16 +725,88 @@ void CParticleElectric::RenderLines() {
 
   CGraphics::DisableAllLights();
   CGraphics::SetDepthWriteMode(true, kE_LEqual, false);
+#endif
   CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+#if RSTL_CORRUPTION
+  } else if (mode == 5) {
+    CGraphics::DisableAlphaUpdate(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 1) {
+    CGraphics::DisableDestinationAlpha(0);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_One, kBF_One, kLO_Clear);
+  } else if (mode == 2) {
+    CGraphics::EnableDestinationAlpha(0, 255);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 3) {
+    CGraphics::EnableDestinationAlpha(0, 128);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 4) {
+    CGraphics::EnableDestinationAlpha(0, 64);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
+  } else if (mode == 6) {
+    CGraphics::DisableDestinationAlpha(0);
+    CGraphics::SetBlendMode(kBM_None, kBF_One, kBF_Zero, kLO_Clear);
+  } else if (mode == 7) {
+    CGraphics::EnableDestinationAlpha(0, 255);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 8) {
+    CGraphics::EnableDestinationAlpha(0, 128);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  } else if (mode == 9) {
+    CGraphics::EnableDestinationAlpha(0, 64);
+    CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_InvSrcAlpha, kLO_Clear);
+  }
+  if (mode == 2) {
+    CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
+  } else {
+    CGraphics::SetAlphaCompare(kAF_Greater, 0, kAO_And, kAF_Always, 0);
+  }
+}
+
+void CParticleElectric::RenderLines() {
+  CGraphics::CAlphaContextsGuard alphaGuard;
+  SetLineBlendMode(mBLDM);
+  CGraphics::SetLightingMode(0);
+  CGraphics::SetDepthWriteMode(true, kE_LEqual, false);
+#endif
   CGraphics::SetModelMatrix(CTransform4f::Translate(mGlobalTranslation) * mGlobalOrientation *
                             CTransform4f::Translate(mTranslation) * mOrientation *
                             CTransform4f::Scale(mGlobalScale) * CTransform4f::Scale(mLocalScale));
   CGraphics::SetCullMode(kCM_None);
+#if RSTL_CORRUPTION
+  const bool textured = mElecDesc->mTEXR != nullptr;
+#else
 #if !RSTL_PRIME1
   const bool textured = mElecDesc->mTEXR != nullptr;
 #endif
 
+#endif
   SetupLineGXMaterial();
+#if RSTL_CORRUPTION
+  if (textured) {
+    mElecDesc->mTEXR->GetValueTexture(0)->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
+    for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+         it != mElectricManagers.end(); ++it) {
+      CLineManager& line = *mLineManagers[it->mIdx];
+      int frame = mCurrentFrame - it->mStartFrame;
+      CParticleGlobals::SetParticleLifetime(it->mEndFrame - it->mStartFrame);
+      CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+      SUVElementSet uvs;
+      mElecDesc->mTEXR->GetValueUV(frame, uvs);
+      if (mElecDesc->mLWD1) {
+        DrawTexturedLineStrip(line.mVerts, line.mWidth1, line.mColor1, uvs);
+      }
+      if (mElecDesc->mLWD2) {
+        DrawTexturedLineStrip(line.mVerts, line.mWidth2, line.mColor2, uvs);
+      }
+      if (mElecDesc->mLWD3) {
+        DrawTexturedLineStrip(line.mVerts, line.mWidth3, line.mColor3, uvs);
+      }
+    }
+  } else {
+    for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+         it != mElectricManagers.end(); ++it) {
+#else
 #if !RSTL_PRIME1
   if (textured) {
     mElecDesc->mTEXR->GetValueTexture(0)->Load(GX_TEXMAP0, CTexture::kCM_Repeat);
@@ -575,6 +837,7 @@ void CParticleElectric::RenderLines() {
     for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
          it != mElectricManagers.end(); ++it) {
 #endif
+#endif
     CLineManager& line = *mLineManagers[it->mIdx];
     if (mElecDesc->mLWD1) {
       DrawLineStrip(line.mVerts, line.mWidth1, line.mColor1);
@@ -586,21 +849,50 @@ void CParticleElectric::RenderLines() {
       DrawLineStrip(line.mVerts, line.mWidth3, line.mColor3);
     }
   }
+#if RSTL_CORRUPTION
+  }
+#else
 #if !RSTL_PRIME1
   }
 #endif
 
+#endif
   CGraphics::SetCullMode(kCM_Front);
   CGraphics::SetLineWidth(1.f, kTO_Zero);
+#if RSTL_CORRUPTION
+  CGraphics::SetAlphaCompare(kAF_Always, 0, kAO_And, kAF_Always, 0);
+#else
 #if !RSTL_PRIME1
   if (CElementGen::sMoveRedToAlphaBuffer) {
     GXSetAlphaUpdate(GX_TRUE);
   }
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetupLineGXMaterial() {
+#if RSTL_CORRUPTION
+  if (mElecDesc->mTEXR) {
+    static const GXVtxDescList vtxDescTex[] = {
+        {GX_VA_POS, GX_DIRECT}, {GX_VA_TEX0, GX_DIRECT}, {GX_VA_NULL, GX_NONE}};
+    CGX::SetVtxDescv(vtxDescTex);
+    CGX::SetNumChans(0);
+    CGX::SetNumTexGens(1);
+    CGX::SetNumTevStages(1);
+    CGX::SetNumIndStages(0);
+    CGraphics::SetLightingMode(0);
+    CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_ZERO);
+    CGX::SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
+    CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
+    CGX::SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
+    CGX::SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
+    CGX::SetTevDirect(GX_TEVSTAGE0);
+    CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE,
+                        GX_PTIDENTITY);
+  } else {
+#else
 #if !RSTL_PRIME1
   if (mElecDesc->mTEXR) {
     static const GXVtxDescList vtxDescTex[] = {
@@ -623,20 +915,29 @@ void CParticleElectric::SetupLineGXMaterial() {
                         GX_PTIDENTITY);
   } else {
 #endif
+#endif
   static const GXVtxDescList vtxDesc[] = {{GX_VA_POS, GX_DIRECT}, {GX_VA_NULL, GX_NONE}};
   CGX::SetVtxDescv(vtxDesc);
   CGX::SetNumChans(1);
   CGX::SetNumTexGens(0);
   CGX::SetNumTevStages(1);
+#if RSTL_CORRUPTION
+    CGraphics::SetLightingMode(0);
+#else
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_KONST);
   CGX::SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
   CGX::SetStandardTevColorAlphaOp(GX_TEVSTAGE0);
   CGX::SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
   CGX::SetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
+#if RSTL_CORRUPTION
+  }
+#else
 #if !RSTL_PRIME1
   }
+#endif
 #endif
 }
 
@@ -650,13 +951,40 @@ void CParticleElectric::DrawLineStrip(
   for (int i = 0; i < count; ++i) {
     const CVector3f& vert = verts[i];
     GXPosition3f32(vert[kDX], vert[kDY], vert[kDZ]);
+#if RSTL_CORRUPTION
+    CGraphics::DelayStreamVertex();
+#else
 #if !RSTL_PRIME1
     CGraphics::DelayStreamVertex();
+#endif
 #endif
   }
   CGX::End();
 }
 
+#if RSTL_CORRUPTION
+void CParticleElectric::DrawTexturedLineStrip(
+    const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
+    const CColor& color, const SUVElementSet& uvs) {
+  const int count = verts.size();
+  float u = uvs.xMin;
+  const float du = (uvs.xMax - u) / static_cast< float >(count - 1);
+  float v = uvs.yMin;
+  const float dv = (uvs.yMax - v) / static_cast< float >(count - 1);
+  CGraphics::SetLineWidth(width, kTO_Zero);
+  CGX::SetTevKColor(GX_KCOLOR0, CColor::Modulate(GetModulationColor(), color).GetGXColor());
+  CGX::Begin(GX_LINESTRIP, GX_VTXFMT0, count);
+  for (int i = 0; i < count; ++i) {
+    const CVector3f& vert = verts[i];
+    GXPosition3f32(vert[kDX], vert[kDY], vert[kDZ]);
+    GXTexCoord2f32(u, v);
+    u += du;
+    v += dv;
+    CGraphics::DelayStreamVertex();
+  }
+  CGX::End();
+}
+#else
 #if !RSTL_PRIME1
 void CParticleElectric::DrawTexturedLineStrip(
     const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
@@ -680,6 +1008,7 @@ void CParticleElectric::DrawTexturedLineStrip(
   CGX::End();
 }
 #endif
+#endif
 
 void CParticleElectric::AddElectricalEffects() {
   float rate = 0.f;
@@ -694,6 +1023,10 @@ void CParticleElectric::AddElectricalEffects() {
       rate = rstl::max_val(0.f, rate);
     }
   }
+#if RSTL_CORRUPTION
+  mGenRem += rate * mGeneratorRate;
+  const int count = static_cast< int >(floorf(mGenRem));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mGenRem += rate;
@@ -703,10 +1036,25 @@ void CParticleElectric::AddElectricalEffects() {
   const int count = static_cast< int >(floorf(mGenRem));
 #endif
 
+#endif
   mGenRem -= count;
   CreateNewParticles(count);
 }
 
+#if RSTL_CORRUPTION
+CParticleElectric::CParticleElectricManager::CParticleElectricManager(uint idx, uint slif,
+                                                                      uint startFrame)
+: mIdx(idx)
+, mSLIF(slif)
+, mStartFrame(startFrame)
+, mEndFrame(mStartFrame + mSLIF)
+, mGPSMIdx(-1)
+, mEPSMIdx(-1)
+, mInitialPos(CVector3f::Zero())
+, mInitialVel(CVector3f::Zero())
+, mFinalPos(CVector3f::Zero())
+, mFinalVel(CVector3f::Zero()) {}
+#else
 #if !RSTL_PRIME1
 CParticleElectric::CParticleElectricManager::CParticleElectricManager(uint idx, uint slif,
                                                                       uint startFrame)
@@ -721,12 +1069,17 @@ CParticleElectric::CParticleElectricManager::CParticleElectricManager(uint idx, 
 , mFinalPos(CVector3f::Zero())
 , mFinalVel(CVector3f::Zero()) {}
 #endif
+#endif
 
 void CParticleElectric::CreateNewParticles(int count) {
+#if RSTL_CORRUPTION
+  CParticleGlobals::SParticleSystem system('ELSC', this);
+#else
 #if !RSTL_PRIME1
   CParticleGlobals::SParticleSystem system('ELSC', this);
 #endif
 
+#endif
   int allocIdx = 0;
   for (int i = 0; i < count; ++i) {
     if (mElectricManagers.size() >= mSCNT) {
@@ -748,10 +1101,14 @@ void CParticleElectric::CreateNewParticles(int count) {
       int frame = mCurrentFrame - manager.mStartFrame;
       CParticleGlobals::SetParticleLifetime(manager.mEndFrame - manager.mStartFrame);
       CParticleGlobals::UpdateParticleLifetimeTweenValues(frame);
+#if RSTL_CORRUPTION
+      CParticleGlobals::SetCurrentParticle(reinterpret_cast< CElementGen::CParticle* >(&manager));
+#else
 #if !RSTL_PRIME1
       CParticleGlobals::SetCurrentParticle(reinterpret_cast< CElementGen::CParticle* >(&manager));
 #endif
 
+#endif
       CalculatePoints();
       if (mHaveSSWH) {
         CParticleSwoosh& swoosh = *mSwooshGenerators[allocIdx];
@@ -761,8 +1118,12 @@ void CParticleElectric::CreateNewParticles(int count) {
         swoosh.SetGlobalScale(mGlobalScale);
         swoosh.SetLocalScale(mLocalScale);
         CColor color = CColor::White();
+#if RSTL_CORRUPTION
+        if (mElecDesc->mCOLR) {
+#else
         CElectricDescription* desc = *mElecDesc;
         if (desc->mCOLR) {
+#endif
           mElecDesc->mCOLR->GetValue(frame, color);
         }
         swoosh.SetModulationColor(CColor::Modulate(color, mModuColor));
@@ -778,8 +1139,13 @@ void CParticleElectric::CreateNewParticles(int count) {
         line.mVerts = mCalculatedVerts;
         UpdateLine(allocIdx, 0);
         if (!mHaveSSWH) {
+#if RSTL_CORRUPTION
+          mMinBounds = CVector3f(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+          mMaxBounds = CVector3f(-3.4028235e38f, -3.4028235e38f, -3.4028235e38f);
+#else
           mMinBounds = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
           mMaxBounds = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
+#endif
           for (int j = 0; j < mCalculatedVerts.size(); ++j) {
             const CVector3f& vert = mCalculatedVerts[j];
             mMaxBounds = CVector3f(rstl::max_val(vert.GetX(), mMaxBounds.GetX()),
@@ -816,16 +1182,25 @@ void CParticleElectric::CreateNewParticles(int count) {
           }
         }
       }
+#if RSTL_CORRUPTION
+      ++mCumulativeParticles;
+#else
 #if !RSTL_PRIME1
       ++mCumulativeParticles;
 #endif
 
+#endif
       break;
     }
   }
 }
 
 void CParticleElectric::UpdateElectricalEffects() {
+#if RSTL_CORRUPTION
+  CParticleGlobals::SParticleSystem system('ELSC', this);
+  for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+       it != mElectricManagers.end();) {
+#else
 #if !RSTL_PRIME1
   CParticleGlobals::SParticleSystem system('ELSC', this);
 #endif
@@ -837,6 +1212,7 @@ void CParticleElectric::UpdateElectricalEffects() {
        it != mElectricManagers.end();) {
 #endif
 
+#endif
     CParticleElectricManager& manager = *it;
     if (manager.mSLIF <= 1) {
       mAllocated[manager.mIdx] = false;
@@ -859,10 +1235,14 @@ void CParticleElectric::UpdateElectricalEffects() {
         mElecDesc->mCOLR->GetValue(frame, color);
       }
       swoosh.SetModulationColor(CColor::Modulate(color, mModuColor));
+#if RSTL_CORRUPTION
+      swoosh.UpdateAllBounds();
+#else
 #if !RSTL_PRIME1
       swoosh.UpdateAllBounds();
 #endif
 
+#endif
     }
     if (mHaveLWD) {
       UpdateLine(manager.mIdx, frame);
@@ -886,24 +1266,36 @@ void CParticleElectric::UpdateLine(int idx, int frame) {
   }
   if (CRealElement* element = mElecDesc->mLWD1) {
     element->GetValue(frame, line.mWidth1);
+#if RSTL_CORRUPTION
+    line.mWidth1 = rstl::min_val(42.5f, line.mWidth1);
+#else
 #if !RSTL_PRIME1
     line.mWidth1 = rstl::min_val(42.5f, line.mWidth1);
 #endif
 
+#endif
   }
   if (CRealElement* element = mElecDesc->mLWD2) {
     element->GetValue(frame, line.mWidth2);
+#if RSTL_CORRUPTION
+    line.mWidth2 = rstl::min_val(42.5f, line.mWidth2);
+#else
 #if !RSTL_PRIME1
     line.mWidth2 = rstl::min_val(42.5f, line.mWidth2);
 #endif
 
+#endif
   }
   if (CRealElement* element = mElecDesc->mLWD3) {
     element->GetValue(frame, line.mWidth3);
+#if RSTL_CORRUPTION
+    line.mWidth3 = rstl::min_val(42.5f, line.mWidth3);
+#else
 #if !RSTL_PRIME1
     line.mWidth3 = rstl::min_val(42.5f, line.mWidth3);
 #endif
 
+#endif
   }
 }
 
@@ -914,6 +1306,10 @@ void CParticleElectric::BuildBounds() {
   }
   mSystemBounds = CAABox::MakeMaxInvertedBox();
   if (mHaveSSWH) {
+#if RSTL_CORRUPTION
+    for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+         it != mElectricManagers.end(); ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
@@ -922,6 +1318,7 @@ void CParticleElectric::BuildBounds() {
          it != mElectricManagers.end(); ++it) {
 #endif
 
+#endif
       rstl::optional_object< CAABox > bounds = mSwooshGenerators[it->mIdx]->GetBounds();
       if (bounds) {
         mSystemBounds.Include(*bounds);
@@ -929,6 +1326,10 @@ void CParticleElectric::BuildBounds() {
     }
   } else if (mHaveLWD) {
     CAABox bounds = CAABox::MakeMaxInvertedBox();
+#if RSTL_CORRUPTION
+    for (rstl::list< CParticleElectricManager >::iterator it = mElectricManagers.begin();
+         it != mElectricManagers.end(); ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
@@ -937,6 +1338,7 @@ void CParticleElectric::BuildBounds() {
          it != mElectricManagers.end(); ++it) {
 #endif
 
+#endif
       bounds.Include(mLineManagers[it->mIdx]->mBounds);
     }
     if (!bounds.Invalid()) {
@@ -971,8 +1373,12 @@ rstl::optional_object< CAABox > CParticleElectric::GetBounds() const {
   return mSystemBounds;
 }
 
+#if RSTL_CORRUPTION
+int CParticleElectric::GetEmitterTime() const { return mCurrentFrame; }
+#else
 #if !RSTL_PRIME1
 int CParticleElectric::GetEmitterTime() const { return mCurrentFrame; }
+#endif
 #endif
 
 void CParticleElectric::SetModulationColor(const CColor& color) { mModuColor = color; }
@@ -1004,6 +1410,10 @@ bool CParticleElectric::IsSystemDeletable() const {
 int CParticleElectric::GetParticleCount() const {
   int count = 0;
   if (!mElectricManagers.empty()) {
+#if RSTL_CORRUPTION
+    for (rstl::list< CParticleElectricManager >::const_iterator it = mElectricManagers.begin();
+         it != mElectricManagers.end(); ++it) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     for (AUTO(it, mElectricManagers.begin()); it != mElectricManagers.end(); ++it) {
@@ -1012,6 +1422,7 @@ int CParticleElectric::GetParticleCount() const {
          it != mElectricManagers.end(); ++it) {
 #endif
 
+#endif
       if (mHaveSSWH) {
         count += mSwooshGenerators[it->mIdx]->GetParticleCount();
       }
@@ -1033,6 +1444,22 @@ int CParticleElectric::GetParticleCount() const {
   return count;
 }
 
+#if RSTL_CORRUPTION
+int CParticleElectric::GetSystemCount() const {
+  int count = mElectricManagers.size();
+  if (mHaveGPSM) {
+    for (int i = 0; i < mSCNT; ++i) {
+      count += mGPSMGenerators[i]->GetSystemCount();
+    }
+  }
+  if (mHaveEPSM) {
+    for (int i = 0; i < mSCNT; ++i) {
+      count += mEPSMGenerators[i]->GetSystemCount();
+    }
+  }
+  return count;
+}
+#else
 #if !RSTL_PRIME1
 int CParticleElectric::GetSystemCount() const {
   int count = mElectricManagers.size();
@@ -1049,6 +1476,7 @@ int CParticleElectric::GetSystemCount() const {
   return count;
 }
 #endif
+#endif
 
 void CParticleElectric::ForceParticleCreation(int count) {
   CGlobalRandom random(mRandState);
@@ -1058,25 +1486,36 @@ void CParticleElectric::ForceParticleCreation(int count) {
 void CParticleElectric::SetTranslation(const CVector3f& translation) {
   mTranslation = translation;
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mTranslationDirty = true;
+#else
 #if !RSTL_PRIME1
   mTranslationDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetOrientation(const CTransform4f& orientation) {
   mOrientation = orientation;
   mInvOrientation = mOrientation.GetQuickInverse();
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mOrientationDirty = true;
+#else
 #if !RSTL_PRIME1
   mOrientationDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetGlobalTranslation(const CVector3f& translation) {
   mGlobalTranslation = translation;
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mTranslationDirty = true;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mHaveSSWH) {
@@ -1098,11 +1537,15 @@ void CParticleElectric::SetGlobalTranslation(const CVector3f& translation) {
   mTranslationDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetGlobalOrientation(const CTransform4f& orientation) {
   mGlobalOrientation = orientation.GetRotation();
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mOrientationDirty = true;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mHaveSSWH) {
@@ -1124,20 +1567,28 @@ void CParticleElectric::SetGlobalOrientation(const CTransform4f& orientation) {
   mOrientationDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetGlobalScale(const CVector3f& scale) {
   mGlobalScale = scale;
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mGlobalScaleDirty = true;
+#else
 #if !RSTL_PRIME1
   mGlobalScaleDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::SetLocalScale(const CVector3f& scale) {
   mLocalScale = scale;
   mTransformDirty = true;
+#if RSTL_CORRUPTION
+  mLocalScaleDirty = true;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (mHaveSSWH) {
@@ -1159,6 +1610,7 @@ void CParticleElectric::SetLocalScale(const CVector3f& scale) {
   mLocalScaleDirty = true;
 #endif
 
+#endif
 }
 
 void CParticleElectric::UpdateCachedTransform() {
@@ -1187,28 +1639,45 @@ CLight CParticleElectric::GetLight() const {
   return CLight::BuildLocalAmbient(GetGlobalTranslation(), CColor::Orange());
 }
 
+#if RSTL_CORRUPTION
+void CParticleElectric::SetParticleEmission(bool emission) { mEmitting = emission; }
+#else
 void CParticleElectric::SetParticleEmission(RSTL_PRIME1_CONST bool emission) {
   mEmitting = emission;
 }
+#endif
 
 uint CParticleElectric::Get4CharId() const { return 'ELSC'; }
+#if RSTL_CORRUPTION
+
+void CParticleElectric::SetGeneratorRate(float rate) { mGeneratorRate = rstl::max_val(rate, 0.f); }
+
+float CParticleElectric::GetGeneratorRate() const { return mGeneratorRate; }
+#else
 #if !RSTL_PRIME1
 void CParticleElectric::SetGeneratorRate(float rate) { mGeneratorRate = rstl::max_val(rate, 0.f); }
 
 float CParticleElectric::GetGeneratorRate() const { return mGeneratorRate; }
 #endif
+#endif
 
 void CParticleElectric::DestroyParticles() {}
 
+#if RSTL_CORRUPTION
+const CColor& CParticleElectric::GetModulationColor() const { return mModuColor; }
+
+const CVector3f& CParticleElectric::GetGlobalScale() const { return mGlobalScale; }
+
+#else
 #if !RSTL_PRIME1
 const CColor& CParticleElectric::GetModulationColor() const { return mModuColor; }
 
 const CVector3f& CParticleElectric::GetGlobalScale() const { return mGlobalScale; }
 
 #endif
+#endif
 const CTransform4f& CParticleElectric::GetGlobalOrientation() const { return mGlobalOrientation; }
 
 const CVector3f& CParticleElectric::GetGlobalTranslation() const { return mGlobalTranslation; }
 const CTransform4f& CParticleElectric::GetOrientation() const { return mOrientation; }
 const CVector3f& CParticleElectric::GetTranslation() const { return mTranslation; }
-

@@ -1,12 +1,19 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Text/CFontRenderState.hpp"
 
 CFontRenderState::CFontRenderState()
+#if RSTL_CORRUPTION
+: mCurBlock(nullptr), mCurX(0), mCurY(0), mCurrentLineInst(nullptr), mLineInitialized(true) {
+#else
 : mCurBlock(nullptr)
 , mCurX(0)
 , mCurY(0)
 , mCurrentLineInst(nullptr)
 , mLineInitialized(true) {
+#endif
   GetColors()[0] = CTextColor(255, 255, 255, 255);
   GetColors()[1] = CTextColor(128, 128, 128, 255);
   GetColors()[2] = CTextColor(255, 255, 255, 255);
@@ -18,6 +25,17 @@ void CFontRenderState::RefreshColor(const EColorType col) {
   case kCT_Main: {
     if (IsFinishedLoading() && GetFont().IsLoaded()) {
       switch (GetFont()->GetMode()) {
+#if RSTL_CORRUPTION
+      case kFM_OneLayer:
+      case kFM_OneLayerOutline:
+      case kFM_FourLayers:
+      case kFM_TwoLayersOutline:
+      case kFM_TwoLayers:
+        if (!GetOverride()[0]) {
+          GetOptions().SetPaletteEntry(0, ConvertToTextureSpace(GetColors()[0]));
+        }
+        break;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
       case kFM_OneLayer:
       case kFM_OneLayerOutline:
@@ -41,6 +59,7 @@ void CFontRenderState::RefreshColor(const EColorType col) {
         break;
       }
 #endif
+#endif
       default:
         break;
       }
@@ -54,11 +73,16 @@ void CFontRenderState::RefreshColor(const EColorType col) {
   } break;
   case kCT_Outline: {
     if (IsFinishedLoading() && GetFont().IsLoaded() && !GetOverride()[1]) {
+#if RSTL_CORRUPTION
+      if (GetFont()->GetMode() == kFM_OneLayerOutline ||
+          GetFont()->GetMode() == kFM_TwoLayersOutline) {
+#else
       if (GetFont()->GetMode() == kFM_OneLayerOutline
 #if RSTL_VERSION >= RSTL_GM8P_00
           || GetFont()->GetMode() == kFM_TwoLayersOutline
 #endif
       ) {
+#endif
         GetOptions().SetPaletteEntry(1, ConvertToTextureSpace(GetColors()[1]));
       }
     }
@@ -110,4 +134,3 @@ void CFontRenderState::PopState() {
 uint CFontRenderState::ConvertToTextureSpace(const CTextColor& color) const {
   return CTextColor(color).GetRGBA();
 }
-

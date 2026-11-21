@@ -1,8 +1,14 @@
 #ifndef _CANIMTREEDOUBLECHILD
 #define _CANIMTREEDOUBLECHILD
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 #include "rstl/math.hpp"
 
@@ -10,17 +16,32 @@ class CAnimTreeDoubleChild : public CAnimTreeNode {
 public:
   class CDoubleChildAdvancementResult {
   public:
+#if RSTL_CORRUPTION
+    CDoubleChildAdvancementResult(const CCharAnimTime& time, const SAdvancementDeltas& left,
+                                  const SAdvancementDeltas& right);
+#else
     CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
                                   const CAdvancementDeltas& leftDeltas,
                                   const CAdvancementDeltas& rightDeltas);
+#endif
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
+#if RSTL_CORRUPTION
+    const SAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
+    const SAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
+#else
     const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
     const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
+#endif
 
   private:
     CCharAnimTime mTrueAdvancement;
+#if RSTL_CORRUPTION
+    SAdvancementDeltas mLeftDeltas;
+    SAdvancementDeltas mRightDeltas;
+#else
     CAdvancementDeltas mLeftDeltas;
     CAdvancementDeltas mRightDeltas;
+#endif
   };
 
   CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,
@@ -30,15 +51,32 @@ public:
   SAdvancementResults VAdvanceView(const CCharAnimTime& time) override;
 
   uint VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                       uint iterator, const CSegIdMaskMap& mask) const override;
+#else
                        uint iterator, int additive) const override;
 
   uint VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut, uint capacity,
                         uint iterator, int additive) const override;
 
+#endif
   uint VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                           uint iterator, const CSegIdMaskMap& mask) const override;
+#else
                            uint iterator, int additive) const override;
 
+#endif
   uint VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut, uint capacity,
+#if RSTL_CORRUPTION
+                        uint iterator, const CSegIdMaskMap& mask) const override;
+  uint VGetAssetSoundPOIList(const CCharAnimTime& time, CAssetSoundPOINode* listOut, uint capacity,
+                             uint iterator, const CSegIdMaskMap& mask) const override;
+  uint VGetAssetPOIList(const CCharAnimTime& time, CAssetPOINode* listOut, uint capacity,
+                        uint iterator, const CSegIdMaskMap& mask) const override;
+  bool VGetBoolPOIState(uint nameHash) const override;
+  CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;
+#else
                         uint iterator, int additive) const override;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -50,6 +88,7 @@ public:
   s32 VGetInt32POIState(uint nameHash) const override;
   CParticleData::EParentedMode VGetParticlePOIState(uint nameHash) const override;
 #endif
+#endif
   void VSetPhase(float phase) override;
   SAdvancementResults VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const override;
@@ -57,11 +96,17 @@ public:
   // CAnimTreeNode
   uint Depth() const override { return rstl::max_val(mA->Depth(), mB->Depth()) + 1; }
   CAnimTreeEffectiveContribution VGetContributionOfHighestInfluence() const override;
+#if RSTL_CORRUPTION
+  uint VGetNumDirectChildren() const override;
+#endif
   uint VGetNumChildren() const override;
   rstl::rc_ptr< CAnimTreeNode > VGetBestUnblendedChild() const override;
   void VGetWeightedReaders(
       float weight,
       rstl::reserved_vector< rstl::pair< float, IAnimReader* >, 16 >& out) const override;
+#if RSTL_CORRUPTION
+  rstl::rc_ptr< CAnimTreeNode > VGetDirectChild(uint index) const override;
+#endif
 
   virtual float VGetRightChildWeight() const = 0;
   void ReplaceLeftChild(const rstl::ncrc_ptr< CAnimTreeNode >& child) { mA = child; }
@@ -80,6 +125,10 @@ protected:
   rstl::ncrc_ptr< CAnimTreeNode > mA;
   rstl::ncrc_ptr< CAnimTreeNode > mB;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CAnimTreeDoubleChild, 0x24)
+#else
 CHECK_CHILD_SIZEOF(CAnimTreeDoubleChild, CAnimTreeNode, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0xc : 0x8) : 0x10)
+#endif
 
 #endif // _CANIMTREEDOUBLECHILD

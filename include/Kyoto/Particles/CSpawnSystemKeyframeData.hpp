@@ -1,17 +1,29 @@
 #ifndef _CSPAWNSYSTEMKEYFRAMEDATA
 #define _CSPAWNSYSTEMKEYFRAMEDATA
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "rstl/types.h"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/CAssetId.hpp"
+#endif
 #include "Kyoto/CToken.hpp"
 
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 
+#if !RSTL_CORRUPTION
 class CInputStream;
+#endif
 
+#if RSTL_CORRUPTION
+
+class CInputStream;
+#endif
 class CSimplePool;
 class CSpawnSystemKeyframeData {
 public:
@@ -26,16 +38,28 @@ public:
     }
     void LoadToken(CSimplePool* pool);
     rstl::optional_object< CToken > GetToken() const { return mToken; }
+#if RSTL_CORRUPTION
+    uint GetType() const { return mType; }
+#else
 #if !RSTL_PRIME1
     uint GetType() const { return mType; }
 #endif
+#endif
 
   private:
+#if RSTL_CORRUPTION
+    CAssetId mId;
+#else
     uint mId;
+#endif
     uint mType;
+#if !RSTL_CORRUPTION
     uint x8_;
+#endif
     uint xc_;
-
+#if RSTL_CORRUPTION
+    uint x10_;
+#endif
     rstl::optional_object< CToken > mToken;
   };
 
@@ -44,8 +68,12 @@ public:
 
   void LoadAllSpawnedSystemTokens(CSimplePool* pool);
   rstl::vector< CSpawnSystemKeyframeInfo >& GetSpawnedSystemsAtFrame(uint frame);
+#if RSTL_CORRUPTION
+  uint GetEndFrame() const { return mEndFrame; }
+#else
 #if !RSTL_PRIME1
   uint GetEndFrame() const { return mEndFrame; }
+#endif
 #endif
 
 private:
@@ -55,8 +83,13 @@ private:
   int xc_;
   rstl::vector< rstl::pair< uint, rstl::vector< CSpawnSystemKeyframeInfo > > > mFrames;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CSpawnSystemKeyframeData, 0x20)
+NESTED_CHECK_SIZEOF(CSpawnSystemKeyframeData, CSpawnSystemKeyframeInfo, 0x20)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CSpawnSystemKeyframeData, 0x20)
+#endif
 #endif
 
 #endif // _CSPAWNSYSTEMKEYFRAMEDATA

@@ -1,8 +1,14 @@
 #ifndef MP1_TSEGIDMAP_HPP
 #define MP1_TSEGIDMAP_HPP
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/types.h"
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 #include "Kyoto/Animation/CSegId.hpp"
@@ -13,12 +19,29 @@
 template < typename T >
 class TSegIdMap {
 public:
+#if !RSTL_CORRUPTION
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
   inline
 #endif
+#endif
   TSegIdMap(uchar count);
 
+#if RSTL_CORRUPTION
+  TSegIdMap(CInputStream& in)
+  : mBoneCount(0)
+  , mCapacity(in.Get< uint >())
+  , mIndirectionMap(150, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
+  , mNodes(reinterpret_cast< T* >(
+      rs_new_line_in("TSegIdMapVariableSize.h", 118) char[mCapacity * sizeof(T)]))
+  , mCurPrevBone(CSegId::Null()) {
+    for (int i = 0; i < mCapacity; ++i) {
+      CSegId seg(in);
+      T node(in);
+      insert(seg, node);
+    }
+    CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
+#else
   TSegIdMap(CInputStream& in);
 
   ~TSegIdMap();
@@ -29,18 +52,33 @@ public:
 #else
     return mNodes[mIndirectionMap[id.val()].second.val()];
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  ~TSegIdMap();
+#else
   const T& operator[](const CSegId& id) const {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+  T& operator[](const CSegId& id) { return mNodes[mIndirectionMap[id.val()].second.val()]; }
+
+  const T& operator[](const CSegId& id) const {
+    return mNodes[mIndirectionMap[id.val()].second.val()];
+#else
 #if RSTL_PRIME1
     uint rawId = id.val();
     return AccessElement(static_cast< uchar >(mIndirectionMap[rawId].second));
 #else
     return mNodes[mIndirectionMap[id.val()].second.val()];
 #endif
+#endif
   }
 
+#if RSTL_CORRUPTION
+  int GetNumNodes() const { return mBoneCount; }
+#else
   bool ContainsDataFor(const CSegId& id) const {
 #if RSTL_PRIME1
     return mIndirectionMap[id.val()] != rstl::pair< char, char >(-1, -1);
@@ -59,14 +97,25 @@ public:
     return *ptr;
   }
 #endif
+#endif
 
   const T& AccessElement(int index) const { return mNodes[index]; }
+#if RSTL_CORRUPTION
+
+  bool ContainsDataFor(const CSegId& id) const {
+    return mIndirectionMap[id.val()] !=
+           rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null());
+  }
+#endif
 
   void insert(const CSegId& id, const T& value);
 
 private:
   char mBoneCount;
   char mCapacity;
+#if RSTL_CORRUPTION
+  rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 150 > mIndirectionMap;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::reserved_vector< rstl::pair< char, char >, 100 > mIndirectionMap;
@@ -74,14 +123,23 @@ private:
   rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mIndirectionMap;
 #endif
 
+#endif
   T* mNodes;
+#if RSTL_CORRUPTION
+  CSegId mCurPrevBone;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   char mCurPrevBone;
 #else
   CSegId mCurPrevBone;
 #endif
+#endif
 };
+#if RSTL_CORRUPTION
+typedef TSegIdMap< uchar > TSegIdMapSizeCheck;
+CHECK_SIZEOF(TSegIdMapSizeCheck, 0x13c)
+#else
 #if !RSTL_PRIME1
 typedef TSegIdMap< uchar > TSegIdMapSizeCheck;
 CHECK_SIZEOF(TSegIdMapSizeCheck, 0xd8)
@@ -114,18 +172,26 @@ TSegIdMap< T >::TSegIdMap(CInputStream& in)
   CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
+#endif
 
 template < typename T >
 TSegIdMap< T >::TSegIdMap(uchar count)
 : mBoneCount(0)
 , mCapacity(count)
+#if RSTL_CORRUPTION
+, mIndirectionMap(150, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mIndirectionMap(100, rstl::pair< char, char >(-1, -1))
 #else
 , mIndirectionMap(100, rstl::pair< CSegId, CSegId >(CSegId::Null(), CSegId::Null()))
 #endif
+#endif
 , mNodes(nullptr)
+#if RSTL_CORRUPTION
+, mCurPrevBone(CSegId::Null()) {
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mCurPrevBone(0)
@@ -133,32 +199,50 @@ TSegIdMap< T >::TSegIdMap(uchar count)
 , mCurPrevBone(CSegId::Null())
 #endif
 {
+#endif
   mNodes = reinterpret_cast< T* >(rs_new uchar[count * sizeof(T)]);
+#if RSTL_CORRUPTION
+  CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
+#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::AddToTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
+#endif
 #endif
 }
 
 template < typename T >
 TSegIdMap< T >::~TSegIdMap() {
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   const rstl::pair< char, char >* const links = mIndirectionMap.data();
 #endif
+#endif
   CSegId id(mCurPrevBone);
   while (id != CSegId::Null()) {
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
     const int index = id.val();
 #endif
+#endif
     (*this)[id].~T();
+#if RSTL_CORRUPTION
+    id = mIndirectionMap[id.val()].first;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = CSegId(links[static_cast< int >(id.val())].first);
 #else
     id = mIndirectionMap.begin()[index].first;
 #endif
+#endif
   }
+#if RSTL_CORRUPTION
+
+  CCharAnimMemoryMetrics::SubtractFromTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
+#else
 #if !RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(mCapacity, CCharAnimMemoryMetrics::kASS_Two);
+#endif
 #endif
   delete[] reinterpret_cast< char* >(mNodes);
 }
@@ -168,6 +252,10 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   T* node = &mNodes[mBoneCount];
   uchar rawId = id.val();
   new (node) T(value);
+#if RSTL_CORRUPTION
+  mIndirectionMap[rawId] = rstl::pair< CSegId, CSegId >(mCurPrevBone, CSegId(mBoneCount));
+  mCurPrevBone = id;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   mIndirectionMap[rawId] = rstl::pair< char, char >(mCurPrevBone, mBoneCount);
@@ -177,12 +265,15 @@ void TSegIdMap< T >::insert(const CSegId& id, const T& value) {
   mCurPrevBone = id;
 #endif
 
+#endif
   ++mBoneCount;
 }
 
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 typedef TSegIdMap< uchar > unk_TSegIdMap;
 CHECK_SIZEOF(unk_TSegIdMap, 0xd8)
+#endif
 #endif
 
 #endif // MP1_TSEGIDMAP_HPP

@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CMetaAnimRandom.hpp"
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
@@ -56,14 +59,17 @@ CMetaAnimRandom::RandomData CMetaAnimRandom::CreateRandomData(CInputStream& in) 
 
   for (int i = 0; i < randCount; ++i) {
     rstl::rc_ptr< IMetaAnim > metaAnim = CMetaAnimFactory::CreateMetaAnim(in);
+#if RSTL_CORRUPTION
+    ret.push_back_unsafe(rstl::pair< rstl::rc_ptr< IMetaAnim >, int >(metaAnim, in.ReadInt32()));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     ret.push_back(rstl::pair< rstl::rc_ptr< IMetaAnim >, int >(metaAnim, in.ReadLong()));
 #else
     ret.push_back_unsafe(rstl::pair< rstl::rc_ptr< IMetaAnim >, int >(metaAnim, in.ReadInt32()));
 #endif
+#endif
   }
 
   return ret;
 }
-

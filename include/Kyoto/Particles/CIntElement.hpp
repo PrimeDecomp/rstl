@@ -1,7 +1,10 @@
 #ifndef _CINTELEMENT
 #define _CINTELEMENT
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
 #include "rstl/types.h"
 
@@ -203,16 +206,90 @@ public:
 
 class CIEGetEmitterTime : public CIntElement {
 public:
+#if RSTL_CORRUPTION
+  ~CIEGetEmitterTime() override {}
+#else
 #if RSTL_PRIME1
   ~CIEGetEmitterTime() override;
 #else
   ~CIEGetEmitterTime() override {}
 #endif
 
+#endif
   bool GetValue(int frame, int& valOut) const override;
 };
 
-// Echoes additions. Class and member names below are target-derived hypotheses.
+// Guessed name
+#if RSTL_CORRUPTION
+class CIEDivide : public CIntElement {
+  CIntElement* x4_;
+  CIntElement* x8_;
+
+public:
+  CIEDivide(CIntElement* a, CIntElement* b);
+  // IElement
+  ~CIEDivide() override;
+  // CIntElement
+  bool GetValue(int frame, int& valOut) const override;
+};
+
+// Guessed name
+class CIEInitialSwitch : public CIntElement {
+  CIntElement* x4_;
+  CIntElement* x8_;
+
+public:
+  CIEInitialSwitch(CIntElement* a, CIntElement* b);
+  // IElement
+  ~CIEInitialSwitch() override;
+  // CIntElement
+  bool GetValue(int frame, int& valOut) const override;
+};
+
+// Guessed name
+class CIEKeyframeInput : public CIntElement {
+  int mPercent;
+  int mUnk1;
+  bool mLoop;
+  bool mUnk2;
+  int mLoopEnd;
+  int mLoopStart;
+  float x18_;
+  float x1c_;
+  rstl::vector< int > mKeys;
+  CRealElement* x30_;
+
+public:
+  CIEKeyframeInput(CInputStream& in);
+  // IElement
+  ~CIEKeyframeInput() override;
+  // CIntElement
+  bool GetValue(int frame, int& valOut) const override;
+  int GetLoopStart() const { return mLoopStart; }
+  int GetLoopEnd() const { return mLoopEnd; }
+};
+// Constructed for both PCRT and PDET.
+// Guessed name
+class CIEParticleCreationTime : public CIntElement {
+public:
+  // CIntElement
+  bool GetValue(int frame, int& valOut) const override;
+  // IElement
+  ~CIEParticleCreationTime() override;
+};
+
+// Guessed name
+class CIEKeepInitial : public CIntElement {
+  CIntElement* x4_;
+
+public:
+  CIEKeepInitial(CIntElement* a);
+  // IElement
+  ~CIEKeepInitial() override;
+  // CIntElement
+  bool GetValue(int frame, int& valOut) const override;
+};
+#else
 
 #if !RSTL_PRIME1
 // Guessed name
@@ -290,6 +367,7 @@ public:
   bool GetValue(int frame, int& valOut) const override;
 };
 CHECK_SIZEOF(CIEKeepInitial, 0x8)
+#endif
 #endif
 
 #endif // _CINTELEMENT

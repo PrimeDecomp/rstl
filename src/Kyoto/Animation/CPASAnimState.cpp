@@ -1,5 +1,8 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
+#endif
 #include "Kyoto/Animation/CPASAnimState.hpp"
 
 #include "Kyoto/CRandom16.hpp"
@@ -20,12 +23,17 @@ CPASAnimState::CPASAnimState(CInputStream& in) : mId(pas::kAS_Invalid) {
   mSelectionCache.reserve(animCount);
 
   for (uint i = 0; i < parmCount; i++) {
+#if RSTL_CORRUPTION
+    CPASParmInfo parmInfo(in);
+    mParms.push_back_unsafe(parmInfo);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     const CPASParmInfo info(in);
     mParms.push_back(info);
 #else
     mParms.push_back_unsafe(CPASParmInfo(in));
+#endif
 #endif
   }
 
@@ -60,16 +68,28 @@ CPASAnimState::CPASAnimState(CInputStream& in) : mId(pas::kAS_Invalid) {
     }
 
     CPASAnimInfo animInfo(id, parms);
+#if RSTL_CORRUPTION
+    mAnims.push_back_unsafe(animInfo);
+#else
     rstl::vector< CPASAnimInfo >::iterator iter =
         rstl::lower_bound(mAnims.begin(), mAnims.end(), animInfo);
     mAnims.insert(iter, animInfo);
+#endif
   }
 }
 
+#if RSTL_CORRUPTION
+const CPASAnimInfo* CPASAnimState::GetAnimInfoByIndex(int index) const { return &mAnims[index]; }
+#else
 #if !RSTL_PRIME1
 const CPASAnimInfo* CPASAnimState::GetAnimInfoByIndex(int index) const { return &mAnims[index]; }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CPASAnimParm CPASAnimState::GetAnimParmData(int animIndex, uint parmIdx) const {
+  return mAnims[animIndex].GetAnimParmData(parmIdx, mParms[parmIdx].GetParameterType());
+#else
 CPASAnimParm CPASAnimState::GetAnimParmData(int animId, uint parmIdx) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -82,8 +102,12 @@ CPASAnimParm CPASAnimState::GetAnimParmData(int animId, uint parmIdx) const {
     return it->GetAnimParmData(parmIdx, mParms[parmIdx].GetParameterType());
   }
   return CPASAnimParm::NoParameter();
+#endif
 }
 
+#if RSTL_CORRUPTION
+SPASAnimSelection
+#else
 // The linker strips this entry point and retains its vector insertion helpers.
 void CPASAnimState::AddAnimParmData(int animId,
                                     const rstl::reserved_vector< CPASAnimParm, 8 >& parms) {
@@ -104,10 +128,16 @@ void CPASAnimState::AddAnimParmData(int animId,
 }
 
 rstl::pair< float, int >
+#endif
 CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >& parms,
                                  CRandom16& random, int ignoreAnim) const {
   float weight = -1.f;
   mSelectionCache.clear();
+#if RSTL_CORRUPTION
+  for (int animIndex = 0; animIndex < mAnims.size(); ++animIndex) {
+    const CPASAnimInfo& animInfo = mAnims[animIndex];
+    if (animInfo.GetAnimId() == ignoreAnim) {
+#else
   if (HasAnims()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -117,13 +147,22 @@ CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >&
          ++it) {
 #endif
       if (it->GetAnimId() == ignoreAnim) {
+#endif
         continue;
       }
 
+#if RSTL_CORRUPTION
+    float animWeight = mParms.size() > 0 ? 0.f : 100.f;
+#else
       float animWeight = mParms.size() > 0 ? 0.f : 1.f;
+#endif
       int unweightedCount = 0;
       for (uint i = 0; i < mParms.size(); ++i) {
+#if RSTL_CORRUPTION
+      const CPASAnimParm::UParmValue& value = animInfo.GetAnimParmValue(i);
+#else
         const CPASAnimParm::UParmValue& value = it->GetAnimParmValue(i);
+#endif
         const CPASParmInfo& info = mParms[i];
         const float parmWeight = info.GetParameterWeight();
         float computedWeight = 0.f;
@@ -145,29 +184,45 @@ CPASAnimState::FindBestAnimation(const rstl::reserved_vector< CPASAnimParm, 8 >&
       }
 
       if (unweightedCount == mParms.size()) {
+#if RSTL_CORRUPTION
+      animWeight = 100.f;
+#else
         animWeight = 1.f;
+#endif
       }
       if (animWeight > weight) {
         mSelectionCache.clear();
+#if RSTL_CORRUPTION
+      mSelectionCache.push_back_unsafe(SPASAnimSelection(animWeight, animInfo.GetAnimId(), animIndex));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mSelectionCache.push_back(it->GetAnimId());
 #else
         mSelectionCache.push_back_unsafe(it->GetAnimId());
 #endif
+#endif
         weight = animWeight;
       } else if (animWeight == weight) {
+#if RSTL_CORRUPTION
+      mSelectionCache.push_back_unsafe(SPASAnimSelection(animWeight, animInfo.GetAnimId(), animIndex));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
         mSelectionCache.push_back(it->GetAnimId());
 #else
         mSelectionCache.push_back_unsafe(it->GetAnimId());
+#endif
 #endif
         weight = animWeight;
       }
     }
+#if RSTL_CORRUPTION
+  return PickRandomAnimation(random);
+#else
   }
   return rstl::pair< float, int >(weight, PickRandomAnimation(random));
+#endif
 }
 
 float CPASAnimState::ComputeExactMatchWeight(uint idx, const CPASAnimParm& parm,
@@ -260,6 +315,16 @@ float CPASAnimState::ComputeAngularPercentErrorWeight(uint idx, const CPASAnimPa
     error = CMath::AbsF(parm.GetEnumValue() - value.m_int);
     break;
   }
+#if RSTL_CORRUPTION
+  float result;
+  if (range > FLT_EPSILON) {
+    const float weight = 1.f - (error > 0.5f * range ? range - error : error) / (0.5f * range);
+    result = rstl::min_val(rstl::max_val(weight, 0.f), 1.f);
+  } else {
+    result = error < FLT_EPSILON ? 1.f : 0.f;
+  }
+  return result;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   if (range > FLT_EPSILON) {
@@ -278,8 +343,14 @@ float CPASAnimState::ComputeAngularPercentErrorWeight(uint idx, const CPASAnimPa
   }
   return ret;
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+SPASAnimSelection CPASAnimState::PickRandomAnimation(CRandom16& random) const {
+  if (mSelectionCache.size() != 0) {
+    return mSelectionCache[random.Range(0, mSelectionCache.size() - 1)];
+#else
 int CPASAnimState::PickRandomAnimation(CRandom16& random) const {
   int anim = -1;
   switch (mSelectionCache.size()) {
@@ -292,11 +363,17 @@ int CPASAnimState::PickRandomAnimation(CRandom16& random) const {
     int idx = static_cast< int >(random.Float() * mSelectionCache.size());
     if (idx == mSelectionCache.size()) {
       --idx;
+#endif
     }
+#if RSTL_CORRUPTION
+  return SPASAnimSelection(0.f, -1, -1);
+#else
     anim = mSelectionCache[idx];
     break;
+#endif
   }
+#if !RSTL_CORRUPTION
   }
   return anim;
 }
-
+#endif

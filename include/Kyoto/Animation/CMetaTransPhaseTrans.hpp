@@ -1,8 +1,14 @@
 #ifndef _CMETATRANSPHASETRANS
 #define _CMETATRANSPHASETRANS
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Animation/IMetaTrans.hpp"
 
@@ -18,8 +24,18 @@ public:
 
   void WriteTransData(COutputStream&) const override;
 
+#if RSTL_CORRUPTION
+  const CCharAnimTime& GetTransDur() const { return mTransDur; }
+  bool GetCharacterSpaceBlend() const { return mCharacterSpaceBlend; }
+  bool GetRunA() const { return mRunA; }
+  uint GetFlags() const { return mFlags; }
+
+#endif
 private:
   CCharAnimTime mTransDur;
+#if RSTL_CORRUPTION
+  bool mCharacterSpaceBlend;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   bool xc_;
@@ -27,6 +43,7 @@ private:
   bool mCharacterSpaceBlend;
 #endif
 
+#endif
   bool mRunA;
   uint mFlags;
 };

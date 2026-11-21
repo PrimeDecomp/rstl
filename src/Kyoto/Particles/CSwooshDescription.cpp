@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CSwooshDescription.hpp"
 #include "Kyoto/Particles/CColorElement.hpp"
 #include "Kyoto/Particles/CIntElement.hpp"
@@ -15,6 +18,11 @@ CSwooshDescription::CSwooshDescription()
 , mLENG(nullptr)
 , mCOLR(nullptr)
 , mSIDE(nullptr)
+#if RSTL_CORRUPTION
+, mZROT(nullptr)
+, mYROT(nullptr)
+, mXROT(nullptr)
+#endif
 , mIROT(nullptr)
 , mROTM(nullptr)
 , mPOFS(nullptr)
@@ -32,18 +40,26 @@ CSwooshDescription::CSwooshDescription()
 , mSROT(false)
 , mWIRE(false)
 , mTEXW(false)
+#if RSTL_CORRUPTION
+, mCLTX(false)
+#else
 #if !RSTL_PRIME1
 , mCLTX(false)
 #endif
 
+#endif
 , mAALP(false)
 , mZBUF(false)
 , mORNT(false)
 , mCRND(false)
+#if RSTL_CORRUPTION
+, mDFLG(0) {}
+#else
 #if !RSTL_PRIME1
 , mDFLG(0)
 #endif
 {}
+#endif
 
 CSwooshDescription::~CSwooshDescription() {
   delete mPSLT;
@@ -53,6 +69,11 @@ CSwooshDescription::~CSwooshDescription() {
   delete mLENG;
   delete mCOLR;
   delete mSIDE;
+#if RSTL_CORRUPTION
+  delete mZROT;
+  delete mYROT;
+  delete mXROT;
+#endif
   delete mIROT;
   delete mROTM;
   delete mPOFS;
@@ -64,4 +85,3 @@ CSwooshDescription::~CSwooshDescription() {
   delete mTEXR;
   delete mTSPN;
 }
-

@@ -1,14 +1,20 @@
 #ifndef _CTIMEREMAINDERANDFRACTION
 #define _CTIMEREMAINDERANDFRACTION
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CCharAnimTime.hpp"
 #include "Kyoto/Basics/CCast.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
+#endif
 #include "rstl/math.hpp"
 
 class CIntegerTimeAndRemainder {
 public:
+#if RSTL_CORRUPTION
+  CIntegerTimeAndRemainder(const CCharAnimTime& time, const CCharAnimTime& interval);
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   CIntegerTimeAndRemainder(const CCharAnimTime& time, const CCharAnimTime& interval);
 #else
@@ -16,6 +22,7 @@ public:
   : mRealTime(time.GetSeconds())
   , mIntegerTime(CCast::ToUint32(time / interval))
   , mRemainder(rstl::max_val(mRealTime - mIntegerTime * interval.GetSeconds(), 0.f)) {}
+#endif
 #endif
 
   const float& RealTime() const { return mRealTime; }
@@ -29,11 +36,18 @@ private:
   uint mIntegerTime;
   float mRemainder;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CIntegerTimeAndRemainder, 0xc)
+#else
 DECLARE_FULL_SIZE_FOR(CIntegerTimeAndRemainder, 0xc)
 CHECK_SIZEOF(CIntegerTimeAndRemainder, CIntegerTimeAndRemainder_FULL_SIZE)
+#endif
 
 class CTimeRemainderAndFraction : public CIntegerTimeAndRemainder {
 public:
+#if RSTL_CORRUPTION
+  CTimeRemainderAndFraction(const CCharAnimTime& time, const CCharAnimTime& interval);
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
   CTimeRemainderAndFraction(const CCharAnimTime& time, const CCharAnimTime& interval);
 #else
@@ -42,6 +56,7 @@ public:
   , mFraction(Remainder() / interval.GetSeconds())
   , mFinestSample(interval.GetSeconds()) {}
 #endif
+#endif
 
   const float& FinestSample() const { return mFinestSample; }
 
@@ -49,6 +64,10 @@ private:
   float mFraction;
   float mFinestSample;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CTimeRemainderAndFraction, 0x14)
+#else
 CHECK_CHILD_SIZEOF(CTimeRemainderAndFraction, CIntegerTimeAndRemainder, 0x8)
+#endif
 
 #endif

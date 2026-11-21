@@ -1,23 +1,38 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimTreeDoubleChild.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Animation/CAssetPOINode.hpp"
+#include "Kyoto/Animation/CAssetSoundPOINode.hpp"
+#else
 #include "Kyoto/Animation/CAnimTreeNode.hpp"
 
+#endif
 #include "Kyoto/Animation/CBoolPOINode.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/CCharAnimMemoryMetrics.hpp"
 
 #include "Kyoto/Animation/CInt32POINode.hpp"
 #include "Kyoto/Animation/CPOINode.hpp"
 
+#endif
 #include "Kyoto/Animation/CParticlePOINode.hpp"
 #include "Kyoto/Animation/CSoundPOINode.hpp"
+#if !RSTL_CORRUPTION
 #include "Kyoto/Animation/IAnimReader.hpp"
 
+#endif
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "stdlib.h"
 
 CAnimTreeDoubleChild::CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,
                                            const rstl::ncrc_ptr< CAnimTreeNode >& b,
                                            const rstl::string& name)
+#if RSTL_CORRUPTION
+: CAnimTreeNode(name), mA(a), mB(b) {}
+#else
 : CAnimTreeNode(name)
 , mA(a)
 , mB(b) {
@@ -26,8 +41,14 @@ CAnimTreeDoubleChild::CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >
   CCharAnimMemoryMetrics::AddToTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
+#endif
 
 SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time) {
+#if RSTL_CORRUPTION
+  SAdvancementResults a = mA->VAdvanceView(time);
+  SAdvancementResults b = mB->VAdvanceView(time);
+  return a.mRemTime > b.mRemTime ? a : b;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   SAdvancementResults resA = mA->AdvanceView(time);
@@ -38,16 +59,26 @@ SAdvancementResults CAnimTreeDoubleChild::VAdvanceView(const CCharAnimTime& time
   SAdvancementResults resB = mB->VAdvanceView(time);
   return resA.mRemTime > resB.mRemTime ? resA : resB;
 #endif
+#endif
 }
 
+#if RSTL_CORRUPTION
+CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {}
+#else
 CAnimTreeDoubleChild::~CAnimTreeDoubleChild() {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CCharAnimMemoryMetrics::SubtractFromTotalSize(8, CCharAnimMemoryMetrics::kASS_Two);
 #endif
 }
+#endif
 
 uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINode* listOut,
+#if RSTL_CORRUPTION
+                                           uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+  uint count = mA->GetBoolPOIList(time, listOut, capacity, iterator, mask);
+  count += mB->GetBoolPOIList(time, listOut, capacity, count + iterator, mask);
+#else
                                            uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -57,6 +88,7 @@ uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINo
 #endif
       count = mA->GetBoolPOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetBoolPOIList(time, listOut, capacity, count + iterator, additive);
+#endif
   if (count > capacity) {
     count = capacity;
   }
@@ -64,6 +96,7 @@ uint CAnimTreeDoubleChild::VGetBoolPOIList(const CCharAnimTime& time, CBoolPOINo
   return count;
 }
 
+#if !RSTL_CORRUPTION
 uint CAnimTreeDoubleChild::VGetInt32POIList(const CCharAnimTime& time, CInt32POINode* listOut,
                                             uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
@@ -81,7 +114,13 @@ uint CAnimTreeDoubleChild::VGetInt32POIList(const CCharAnimTime& time, CInt32POI
   return count;
 }
 
+#endif
 uint CAnimTreeDoubleChild::VGetParticlePOIList(const CCharAnimTime& time, CParticlePOINode* listOut,
+#if RSTL_CORRUPTION
+                                               uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+  uint count = mA->GetParticlePOIList(time, listOut, capacity, iterator, mask);
+  count += mB->GetParticlePOIList(time, listOut, capacity, count + iterator, mask);
+#else
                                                uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -91,6 +130,7 @@ uint CAnimTreeDoubleChild::VGetParticlePOIList(const CCharAnimTime& time, CParti
 #endif
       count = mA->GetParticlePOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetParticlePOIList(time, listOut, capacity, count + iterator, additive);
+#endif
   if (count > capacity) {
     count = capacity;
   }
@@ -99,6 +139,11 @@ uint CAnimTreeDoubleChild::VGetParticlePOIList(const CCharAnimTime& time, CParti
 }
 
 uint CAnimTreeDoubleChild::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOINode* listOut,
+#if RSTL_CORRUPTION
+                                            uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+  uint count = mA->GetSoundPOIList(time, listOut, capacity, iterator, mask);
+  count += mB->GetSoundPOIList(time, listOut, capacity, count + iterator, mask);
+#else
                                             uint capacity, uint iterator, int additive) const {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -108,6 +153,7 @@ uint CAnimTreeDoubleChild::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOI
 #endif
       count = mA->GetSoundPOIList(time, listOut, capacity, iterator, additive);
   count += mB->GetSoundPOIList(time, listOut, capacity, count + iterator, additive);
+#endif
   if (count > capacity) {
     count = capacity;
   }
@@ -115,6 +161,18 @@ uint CAnimTreeDoubleChild::VGetSoundPOIList(const CCharAnimTime& time, CSoundPOI
   return count;
 }
 
+#if RSTL_CORRUPTION
+uint CAnimTreeDoubleChild::VGetAssetSoundPOIList(const CCharAnimTime& time,
+                                                 CAssetSoundPOINode* listOut, uint capacity,
+                                                 uint iterator, const CSegIdMaskMap& mask) const {
+  uint count = mA->GetAssetSoundPOIList(time, listOut, capacity, iterator, mask);
+  count += mB->GetAssetSoundPOIList(time, listOut, capacity, count + iterator, mask);
+  if (count > capacity) {
+    count = capacity;
+  }
+  qsort(listOut, count, sizeof(CAssetSoundPOINode), CPOINode::compare);
+  return count;
+#else
 bool CAnimTreeDoubleChild::VGetBoolPOIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -124,8 +182,20 @@ bool CAnimTreeDoubleChild::VGetBoolPOIState(
 #endif
     ) const {
   return mB->VGetBoolPOIState(name);
+#endif
 }
 
+#if RSTL_CORRUPTION
+uint CAnimTreeDoubleChild::VGetAssetPOIList(const CCharAnimTime& time, CAssetPOINode* listOut,
+                                            uint capacity, uint iterator, const CSegIdMaskMap& mask) const {
+  uint count = mA->GetAssetPOIList(time, listOut, capacity, iterator, mask);
+  count += mB->GetAssetPOIList(time, listOut, capacity, count + iterator, mask);
+  if (count > capacity) {
+    count = capacity;
+  }
+  qsort(listOut, count, sizeof(CAssetPOINode), CPOINode::compare);
+  return count;
+#else
 s32 CAnimTreeDoubleChild::VGetInt32POIState(
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -135,10 +205,21 @@ s32 CAnimTreeDoubleChild::VGetInt32POIState(
 #endif
     ) const {
   return mB->VGetInt32POIState(name);
+#endif
 }
 
+#if RSTL_CORRUPTION
+bool CAnimTreeDoubleChild::VGetBoolPOIState(uint nameHash) const {
+  return mB->VGetBoolPOIState(nameHash);
+}
+#else
 CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(uint nameHash) const {
+  return mB->VGetParticlePOIState(nameHash);
+#else
 #if RSTL_PRIME1
     const char* name
 #else
@@ -146,23 +227,49 @@ CParticleData::EParentedMode CAnimTreeDoubleChild::VGetParticlePOIState(
 #endif
     ) const {
   return mB->VGetParticlePOIState(name);
+#endif
 }
 
 CAnimTreeEffectiveContribution CAnimTreeDoubleChild::VGetContributionOfHighestInfluence() const {
   CAnimTreeEffectiveContribution a = mA->GetContributionOfHighestInfluence();
   CAnimTreeEffectiveContribution b = mB->GetContributionOfHighestInfluence();
+#if RSTL_CORRUPTION
+  const float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
+  const float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
+#else
   RSTL_ECHOES_CONST float leftWeight = a.GetContributionWeight() * GetLeftChildWeight();
   RSTL_ECHOES_CONST float rightWeight = b.GetContributionWeight() * GetRightChildWeight();
+#endif
   return leftWeight > rightWeight
+#if RSTL_CORRUPTION
+             ? CAnimTreeEffectiveContribution(leftWeight, a.GetPrimitive(),
+                                              a.GetSteadyStateAnimInfo(), a.GetTimeRemaining())
+             : CAnimTreeEffectiveContribution(rightWeight, b.GetPrimitive(),
+                                              b.GetSteadyStateAnimInfo(), b.GetTimeRemaining());
+#else
              ? CAnimTreeEffectiveContribution(leftWeight, a.GetPrimitiveName(),
                                               a.GetSteadyStateAnimInfo(), a.GetTimeRemaining(),
                                               a.GetAnimDatabaseIndex())
              : CAnimTreeEffectiveContribution(rightWeight, b.GetPrimitiveName(),
                                               b.GetSteadyStateAnimInfo(), b.GetTimeRemaining(),
                                               b.GetAnimDatabaseIndex());
+#endif
 }
 
 uint CAnimTreeDoubleChild::VGetNumChildren() const {
+#if RSTL_CORRUPTION
+  const uint rightCount = mB->VGetNumChildren();
+  return mA->VGetNumChildren() + 2 + rightCount;
+}
+
+uint CAnimTreeDoubleChild::VGetNumDirectChildren() const { return 2; }
+
+rstl::rc_ptr< CAnimTreeNode > CAnimTreeDoubleChild::VGetDirectChild(uint index) const {
+  if (index < 2) {
+    return index == 0 ? GetLeftChild() : GetRightChild();
+  }
+  return rstl::rc_ptr< CAnimTreeNode >(nullptr);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   int num_children = mB->VGetNumChildren();
@@ -172,13 +279,19 @@ uint CAnimTreeDoubleChild::VGetNumChildren() const {
   const uint rightCount = mB->VGetNumChildren();
   return mA->VGetNumChildren() + 2 + rightCount;
 #endif
+#endif
 }
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult::CDoubleChildAdvancementResult(
+#if RSTL_CORRUPTION
+    const CCharAnimTime& time, const SAdvancementDeltas& left, const SAdvancementDeltas& right)
+: mTrueAdvancement(time), mLeftDeltas(left), mRightDeltas(right) {}
+#else
     const CCharAnimTime& time, const CAdvancementDeltas& left, const CAdvancementDeltas& right)
 : mTrueAdvancement(time)
 , mLeftDeltas(left)
 , mRightDeltas(right) {}
+#endif
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult
 CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool runLeft,
@@ -202,22 +315,30 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
           mA->Simplified();
       if (simplified.valid())
         mA = Cast(*simplified);
+#if RSTL_CORRUPTION
+      SAdvancementDeltas deltas = result.mDeltas;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
       CAdvancementDeltas deltas = result.mDeltas;
 #endif
+#endif
       leftOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
       leftRotation *= rotation;
       if (!loopLeft)
         totalTime = mA->GetTimeRemaining();
+#if RSTL_CORRUPTION
+      leftRemaining = result.mRemTime;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       leftRemaining = result.GetRemainder();
 #else
       leftRemaining = result.mRemTime;
+#endif
 #endif
     }
     while (rightRemaining.GreaterThanZero() && !close_enough(rightRemaining.GetSeconds(), 0.f)) {
@@ -227,25 +348,39 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
           mB->Simplified();
       if (simplified.valid())
         mB = Cast(*simplified);
+#if RSTL_CORRUPTION
+      SAdvancementDeltas deltas = result.mDeltas;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
       CAdvancementDeltas deltas = result.mDeltas;
 #endif
+#endif
       rightOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
       rightRotation *= rotation;
+#if RSTL_CORRUPTION
+      rightRemaining = result.mRemTime;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       rightRemaining = result.GetRemainder();
 #else
       rightRemaining = result.mRemTime;
 #endif
+#endif
     }
   }
+#if RSTL_CORRUPTION
+
+  return CDoubleChildAdvancementResult(time, SAdvancementDeltas(leftOffset, leftRotation),
+                                       SAdvancementDeltas(rightOffset, rightRotation));
+#else
   return CDoubleChildAdvancementResult(time, CAdvancementDeltas(leftOffset, leftRotation),
                                        CAdvancementDeltas(rightOffset, rightRotation));
+#endif
 }
 
 void CAnimTreeDoubleChild::VSetPhase(float phase) {
@@ -256,6 +391,11 @@ void CAnimTreeDoubleChild::VSetPhase(float phase) {
 SAdvancementResults
 CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& time,
                                              const CCharAnimTime& startOffset) const {
+#if RSTL_CORRUPTION
+  SAdvancementResults a = mA->VGetAdvancementResults(time, startOffset);
+  SAdvancementResults b = mB->VGetAdvancementResults(time, startOffset);
+  return a.mRemTime > b.mRemTime ? a : b;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   SAdvancementResults resA = mA->GetAdvancementResults(time, startOffset);
@@ -265,6 +405,7 @@ CAnimTreeDoubleChild::VGetAdvancementResults(const CCharAnimTime& time,
   SAdvancementResults resA = mA->VGetAdvancementResults(time, startOffset);
   SAdvancementResults resB = mB->VGetAdvancementResults(time, startOffset);
   return resA.mRemTime > resB.mRemTime ? resA : resB;
+#endif
 #endif
 }
 

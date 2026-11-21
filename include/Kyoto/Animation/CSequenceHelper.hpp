@@ -1,7 +1,10 @@
 #ifndef _CSEQUENCEHELPER
 #define _CSEQUENCEHELPER
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimSysContext.hpp"
 #include "Kyoto/Animation/CSequenceFundamentals.hpp"
 
@@ -19,13 +22,21 @@ public:
 private:
   CAnimSysContext mContext;
   rstl::vector< rstl::ncrc_ptr< CAnimTreeNode > > mNodes;
+#if RSTL_CORRUPTION
+  rstl::vector< bool > x28_;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   rstl::vector< bool > x20_;
 #else
   rstl::vector< bool > x28_;
 #endif
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CSequenceHelper, 0x3c)
+#else
 CHECK_SIZEOF(CSequenceHelper, RSTL_PRIME1 ? 0x30 : 0x38)
+#endif
 
 #endif // _CSEQUENCEHELPER

@@ -1,11 +1,14 @@
 #ifndef _CPASANIMINFO
 #define _CPASANIMINFO
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Animation/CPASAnimParm.hpp"
 
+#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/vector.hpp"
+#endif
 #include "rstl/reserved_vector.hpp"
 
 class CPASAnimInfo {
@@ -25,8 +28,16 @@ private:
   int mId;
   rstl::reserved_vector< CPASAnimParm::UParmValue, 8 > mParms;
 };
+#if !RSTL_CORRUPTION
 CHECK_SIZEOF(CPASAnimInfo, 0x28)
+#endif
 
+#if RSTL_CORRUPTION
+namespace rstl {
+RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CPASAnimInfo)
+RSTL_DECLARE_BITWISE_CONSTRUCTION(CPASAnimInfo)
+    }
+#else
 #if RSTL_KYOTO_CONSTRUCTION_POLICIES
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CPASAnimInfo)
@@ -43,5 +54,11 @@ template <> struct vector_copy_construction_policy< CPASAnimInfo > {
 };
 } // namespace rstl
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CPASAnimInfo, 0x28)
+
+
+#endif
 #endif // _CPASANIMINFO

@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CRealElement.hpp"
 
 #include "Kyoto/Basics/CCast.hpp"
@@ -19,6 +22,28 @@
 
 #include "rstl/math.hpp"
 
+#if RSTL_CORRUPTION
+
+// Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
+static const CVector3f skOneVector(1.f, 1.f, 1.f);
+
+static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loopEnd) {
+  if (loop) {
+    if (frame >= loopEnd) {
+      frame -= loopStart;
+      frame = frame % (loopEnd - loopStart);
+      frame += loopStart;
+    }
+  } else {
+    frame = rstl::min_val(frame, loopEnd - 1);
+  }
+  return frame;
+}
+
+static inline int GetKeyframeTime(float value, float start, float rate) {
+  return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
+}
+#else
 #if !RSTL_PRIME1
 // Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
@@ -39,6 +64,7 @@ static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loop
 static inline int GetKeyframeTime(float value, float start, float rate) {
   return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
 }
+#endif
 #endif
 
 CREConstant::CREConstant(float val) : mVal(val) {}
@@ -148,8 +174,12 @@ bool CRERandom::GetValue(int frame, float& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CREInitialRandom::CREInitialRandom(CRealElement* min, CRealElement* max) : mMin(min), mMax(max) {}
+#else
 CREInitialRandom::CREInitialRandom(CRealElement* min, CRealElement* max)
 : mMin(min), mMax(max) {}
+#endif
 
 CREInitialRandom::~CREInitialRandom() {
   delete mMin;
@@ -185,8 +215,12 @@ bool CRETimeChain::GetValue(int frame, float& valOut) const {
   }
 }
 
+#if RSTL_CORRUPTION
+CREClamp::CREClamp(CRealElement* a, CRealElement* b, CRealElement* c) : mMin(a), mMax(b), mVal(c) {}
+#else
 CREClamp::CREClamp(CRealElement* a, CRealElement* b, CRealElement* c)
 : mMin(a), mMax(b), mVal(c) {}
+#endif
 
 CREClamp::~CREClamp() {
   delete mMin;
@@ -275,20 +309,35 @@ bool CRELifetimeTween::GetValue(int frame, float& valOut) const {
 }
 
 CREKeyframeEmitter::CREKeyframeEmitter(CInputStream& in)
+#if RSTL_CORRUPTION
+: mPercent(in.ReadInt32())
+, mUnk1(in.ReadInt32())
+#else
 : mPercent(in.ReadLong())
 , mUnk1(in.ReadLong())
 
+#endif
 , mLoop(in.ReadBool())
 , mUnk2(in.ReadBool())
+#if RSTL_CORRUPTION
+, mLoopEnd(in.ReadInt32())
+, mLoopStart(in.ReadInt32())
+#else
 , mLoopEnd(in.ReadLong())
 , mLoopStart(in.ReadLong())
 
+#endif
 , mKeys(in) {}
 
 CREKeyframeEmitter::~CREKeyframeEmitter() {}
 
 bool CREKeyframeEmitter::GetValue(int frame, float& valOut) const {
   if (mPercent == 0) {
+#if RSTL_CORRUPTION
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int emitterTime = CParticleGlobals::GetEmitterTime();
@@ -308,6 +357,7 @@ bool CREKeyframeEmitter::GetValue(int frame, float& valOut) const {
         GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
     valOut = mKeys[emitterTime];
 #endif
+#endif
     return false;
   }
 
@@ -322,6 +372,38 @@ bool CREKeyframeEmitter::GetValue(int frame, float& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CREKeyframeInput::CREKeyframeInput(CInputStream& in)
+: mPercent(in.ReadInt32())
+, mUnk1(in.ReadInt32())
+, mLoop(in.ReadBool())
+, mUnk2(in.ReadBool())
+, mLoopEnd(in.ReadInt32())
+, mLoopStart(in.ReadInt32())
+, x18_(in.ReadFloat())
+, x1c_(in.ReadFloat())
+, mKeys(in)
+, x30_(CParticleDataFactory::GetRealElement(in)) {}
+
+CREKeyframeInput::~CREKeyframeInput() { delete x30_; }
+
+bool CREKeyframeInput::GetValue(int frame, float& valOut) const {
+  if (mPercent == 2) {
+    float in = 0.0f;
+    x30_->GetValue(frame, in);
+    int idx =
+        GetKeyframeIndex(GetKeyframeTime(in, x18_, x1c_), mLoop, GetLoopStart(), GetLoopEnd());
+    bool lerp = idx > 0 && idx < mLoopEnd - 1;
+    if (lerp) {
+      float t = CMath::Clamp(0.0f, (in - x18_) - static_cast< float >(idx) / x1c_, 1.0f);
+      valOut = (1.0f - t) * mKeys[idx] + t * mKeys[idx + 1];
+    } else {
+      valOut = mKeys[idx];
+    }
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CREKeyframeInput::CREKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
@@ -352,6 +434,7 @@ bool CREKeyframeInput::GetValue(int frame, float& valOut) const {
   }
   return false;
 }
+#endif
 #endif
 
 bool CREParticleAccessParameter1::GetValue(int, float& valOut) const {
@@ -394,11 +477,18 @@ bool CREParticleAccessParameter8::GetValue(int, float& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+bool CREParticleAccessParameter9::GetValue(int, float& valOut) const {
+  valOut = CParticleGlobals::GetParticleAccessParameters()[8];
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 bool CREParticleAccessParameter9::GetValue(int, float& valOut) const {
   valOut = CParticleGlobals::GetParticleAccessParameters()[8];
   return false;
 }
+#endif
 #endif
 
 bool CREParticleSizeOrLineLength::GetValue(int, float& valOut) const {
@@ -550,6 +640,10 @@ bool CREExternalVar::GetValue(int frame, float& valOut) const {
   mA->GetValue(frame, a);
   a = rstl::max_val(0, a);
   a %= 16;
+#if RSTL_CORRUPTION
+  valOut = static_cast< CElementGen* >(CParticleGlobals::GetCurrentParticleSystem()->mSystem)
+               ->GetExternalVar(a);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   valOut = CParticleGlobals::GetCurrentParticleSystem()->mSystem->GetExternalVar(a);
@@ -558,6 +652,7 @@ bool CREExternalVar::GetValue(int frame, float& valOut) const {
                ->GetExternalVar(a);
 #endif
 
+#endif
   return false;
 }
 
@@ -636,6 +731,24 @@ bool CREIntTimesReal::GetValue(int frame, float& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+bool CREGetCumulativeParticleCount::GetValue(int frame, float& valOut) const {
+  CParticleGlobals::SParticleSystem* system = CParticleGlobals::GetCurrentParticleSystem();
+  FourCC type = system == nullptr ? 'NULL' : system->mType;
+  switch (type) {
+  case 'PART':
+    valOut = static_cast< CElementGen* >(system->mSystem)->GetCumulativeParticleCount();
+    break;
+  case 'ELSC':
+    valOut = static_cast< CParticleElectric* >(system->mSystem)->GetCumulativeParticleCount();
+    break;
+  default:
+    valOut = 0.f;
+    break;
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 bool CREGetCumulativeParticleCount::GetValue(int frame, float& valOut) const {
   CParticleGlobals::SParticleSystem* system = CParticleGlobals::GetCurrentParticleSystem();
@@ -654,7 +767,273 @@ bool CREGetCumulativeParticleCount::GetValue(int frame, float& valOut) const {
   return false;
 }
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CREKeepInitial::CREKeepInitial(CRealElement* a) : x4_(a) {}
+
+CREKeepInitial::~CREKeepInitial() { delete x4_; }
+
+bool CREKeepInitial::GetValue(int frame, float& valOut) const {
+  if (frame == 0) {
+    x4_->GetValue(0, valOut);
+  }
+  return false;
+}
+
+CREOscillatingSweep::CREOscillatingSweep(CIntElement* a) : x4_(a) {}
+
+CREOscillatingSweep::~CREOscillatingSweep() { delete x4_; }
+
+bool CREOscillatingSweep::GetValue(int frame, float& valOut) const {
+  int count = static_cast< CElementGen* >(CParticleGlobals::GetCurrentParticleSystem()->mSystem)
+                  ->GetCumulativeParticleCount();
+  int period;
+  x4_->GetValue(frame, period);
+  int t = count % (period * 2);
+  if (t < period) {
+    valOut = t;
+  } else {
+    valOut = period - t % period - 1;
+  }
+  return false;
+}
+
+CRETimeOscillatingSweep::CRETimeOscillatingSweep(const bool a, CIntElement* b, CIntElement* c,
+                                                 CIntElement* d)
+: x4_(b), x8_(c), xc_(d), x10_(a), x14_(0), x18_(0), x1c_(0), x20_(0), x24_(0), x28_(-1) {
+  if (x4_) {
+    x4_->GetValue(0, x14_);
+  }
+  if (x8_) {
+    x8_->GetValue(0, x18_);
+  }
+  if (x1c_) {
+    xc_->GetValue(0, x1c_);
+  }
+}
+
+CRETimeOscillatingSweep::~CRETimeOscillatingSweep() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+}
+
+bool CRETimeOscillatingSweep::GetValue(int frame, float& valOut) const {
+  if (x28_ != frame) {
+    x28_ = frame;
+    if (x20_ > 0) {
+      --x20_;
+      return false;
+    }
+
+    int cycle = x24_ / x14_;
+    int t = x24_ % x14_;
+    if (t == 0) {
+      bool odd = cycle & 1;
+      CIntElement* elem = odd ? xc_ : x8_;
+      x20_ = odd ? x1c_ : x18_;
+      elem->GetValue(x24_, x20_);
+      x20_ = rstl::max_val(x20_ - 1, 0);
+    } else if (x10_) {
+      int m = x24_ % (x14_ * 2);
+      if (m < x14_) {
+        valOut = m;
+      } else {
+        valOut = x14_ - m % x14_;
+      }
+    } else {
+      valOut = t;
+    }
+    ++x24_;
+  }
+  return false;
+}
+
+CREPerlinNoise1d::CREPerlinNoise1d(CRealElement* a) : x4_(a) {}
+
+CREPerlinNoise1d::~CREPerlinNoise1d() { delete x4_; }
+
+bool CREPerlinNoise1d::GetValue(int frame, float& valOut) const {
+  float x = 0.f;
+  x4_->GetValue(frame, x);
+  valOut = CMath::Noise1d(x);
+  return false;
+}
+
+CREPerlinNoise2d::CREPerlinNoise2d(CRealElement* a, CRealElement* b) : x4_(a), x8_(b) {}
+
+CREPerlinNoise2d::~CREPerlinNoise2d() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CREPerlinNoise2d::GetValue(int frame, float& valOut) const {
+  float x = 0.f;
+  x4_->GetValue(frame, x);
+  float y = 0.f;
+  x8_->GetValue(frame, y);
+  valOut = CMath::Noise2d(x, y);
+  return false;
+}
+
+CREPerlinNoise3d::CREPerlinNoise3d(CVectorElement* a) : x4_(a) {}
+
+CREPerlinNoise3d::~CREPerlinNoise3d() { delete x4_; }
+
+bool CREPerlinNoise3d::GetValue(int frame, float& valOut) const {
+  CVector3f v = CVector3f::Zero();
+  x4_->GetValue(frame, v);
+  valOut = CMath::Noise3d(v.GetX(), v.GetY(), v.GetZ());
+  return false;
+}
+
+CREPerlinNoise4d::CREPerlinNoise4d(CVectorElement* a, CRealElement* b) : x4_(a), x8_(b) {}
+
+CREPerlinNoise4d::~CREPerlinNoise4d() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CREPerlinNoise4d::GetValue(int frame, float& valOut) const {
+  CVector3f v = CVector3f::Zero();
+  x4_->GetValue(frame, v);
+  float w = 0.f;
+  x8_->GetValue(frame, w);
+  valOut = CMath::Noise4d(v.GetX(), v.GetY(), v.GetZ(), w);
+  return false;
+}
+
+CREPerlinNoiseOctave1d::CREPerlinNoiseOctave1d(CRealElement* a, CRealElement* b, CRealElement* c,
+                                               CIntElement* d)
+: x4_(a), x8_(b), xc_(c), x10_(d) {}
+
+CREPerlinNoiseOctave1d::~CREPerlinNoiseOctave1d() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+  delete x10_;
+}
+
+bool CREPerlinNoiseOctave1d::GetValue(int frame, float& valOut) const {
+  float x = 0.f;
+  x4_->GetValue(frame, x);
+  float freq = 1.f;
+  x8_->GetValue(frame, freq);
+  float persistence = 1.f;
+  xc_->GetValue(frame, persistence);
+  int octaves = 1;
+  x10_->GetValue(frame, octaves);
+
+  valOut = 0.f;
+  float amp = 1.f;
+  for (int i = 0; i < octaves; ++i) {
+    valOut += amp * CMath::Noise1d(x * freq);
+    freq *= 2.f;
+    amp *= persistence;
+  }
+  return false;
+}
+
+CREPerlinNoiseOctave2d::CREPerlinNoiseOctave2d(CRealElement* a, CRealElement* b, CRealElement* c,
+                                               CRealElement* d, CIntElement* e)
+: x4_(a), x8_(b), xc_(c), x10_(d), x14_(e) {}
+
+CREPerlinNoiseOctave2d::~CREPerlinNoiseOctave2d() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+  delete x10_;
+  delete x14_;
+}
+
+bool CREPerlinNoiseOctave2d::GetValue(int frame, float& valOut) const {
+  float x = 0.f;
+  x4_->GetValue(frame, x);
+  float y = 0.f;
+  x8_->GetValue(frame, y);
+  float freq = 1.f;
+  xc_->GetValue(frame, freq);
+  float persistence = 1.f;
+  x10_->GetValue(frame, persistence);
+  int octaves = 1;
+  x14_->GetValue(frame, octaves);
+
+  valOut = 0.f;
+  float amp = 1.f;
+  for (int i = 0; i < octaves; ++i) {
+    valOut += amp * CMath::Noise2d(x * freq, y * freq);
+    freq *= 2.f;
+    amp *= persistence;
+  }
+  return false;
+}
+
+CREPerlinNoiseOctave3d::CREPerlinNoiseOctave3d(CVectorElement* a, CRealElement* b, CRealElement* c,
+                                               CIntElement* d)
+: x4_(a), x8_(b), xc_(c), x10_(d) {}
+
+CREPerlinNoiseOctave3d::~CREPerlinNoiseOctave3d() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+  delete x10_;
+}
+
+bool CREPerlinNoiseOctave3d::GetValue(int frame, float& valOut) const {
+  CVector3f v = CVector3f::Zero();
+  x4_->GetValue(frame, v);
+  float freq = 1.f;
+  x8_->GetValue(frame, freq);
+  float persistence = 1.f;
+  xc_->GetValue(frame, persistence);
+  int octaves = 1;
+  x10_->GetValue(frame, octaves);
+
+  valOut = 0.f;
+  float amp = 1.f;
+  for (int i = 0; i < octaves; ++i) {
+    valOut += amp * CMath::Noise3d(freq * v.GetX(), freq * v.GetY(), freq * v.GetZ());
+    freq *= 2.f;
+    amp *= persistence;
+  }
+  return false;
+}
+
+CREPerlinNoiseOctave4d::CREPerlinNoiseOctave4d(CVectorElement* a, CRealElement* b, CRealElement* c,
+                                               CRealElement* d, CIntElement* e)
+: x4_(a), x8_(b), xc_(c), x10_(d), x14_(e) {}
+
+CREPerlinNoiseOctave4d::~CREPerlinNoiseOctave4d() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+  delete x10_;
+  delete x14_;
+}
+
+bool CREPerlinNoiseOctave4d::GetValue(int frame, float& valOut) const {
+  CVector3f v = CVector3f::Zero();
+  x4_->GetValue(frame, v);
+  float w = 0.f;
+  x8_->GetValue(frame, w);
+  float freq = 1.f;
+  xc_->GetValue(frame, freq);
+  float persistence = 1.f;
+  x10_->GetValue(frame, persistence);
+  int octaves = 1;
+  x14_->GetValue(frame, octaves);
+
+  valOut = 0.f;
+  float amp = 1.f;
+  for (int i = 0; i < octaves; ++i) {
+    valOut += amp * CMath::Noise4d(freq * v.GetX(), freq * v.GetY(), freq * v.GetZ(), w);
+    freq *= 2.f;
+    amp *= persistence;
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CREKeepInitial::CREKeepInitial(CRealElement* a) : x4_(a) {}
 
@@ -916,4 +1295,5 @@ bool CREPerlinNoiseOctave4d::GetValue(int frame, float& valOut) const {
   }
   return false;
 }
+#endif
 #endif

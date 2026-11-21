@@ -1,8 +1,14 @@
 #ifndef _CANIMTREEBLEND
 #define _CANIMTREEBLEND
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/CAnimTreeTweenBase.hpp"
 
 class CAnimTreeBlend : public CAnimTreeTweenBase {
@@ -11,9 +17,11 @@ public:
                  const rstl::ncrc_ptr< CAnimTreeNode >& b, float weight, const rstl::string& name)
   : CAnimTreeTweenBase(characterSpaceBlend, a, b, kBlendRoot_Offset | kBlendRoot_Rotation, name)
   , mBlendWeight(weight) {}
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 
   // IAnimReader
+#endif
 #endif
 
   ~CAnimTreeBlend() override {}
@@ -32,6 +40,10 @@ public:
 private:
   float mBlendWeight;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CAnimTreeBlend, 0x30)
+#else
 CHECK_CHILD_SIZEOF(CAnimTreeBlend, CAnimTreeTweenBase, 0x4)
+#endif
 
 #endif // _CANIMTREEBLEND

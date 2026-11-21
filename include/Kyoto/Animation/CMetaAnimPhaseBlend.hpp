@@ -1,8 +1,14 @@
 #ifndef _CMETAANIMPHASEBLEND
 #define _CMETAANIMPHASEBLEND
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "Kyoto/Animation/IMetaAnim.hpp"
 #include "rstl/rc_ptr.hpp"
 
@@ -24,6 +30,10 @@ private:
   float mBlend;
   bool mCharacterSpaceBlend;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CMetaAnimPhaseBlend, 0x1c)
+#else
 CHECK_SIZEOF(CMetaAnimPhaseBlend, RSTL_PRIME1 ? 0x14 : 0x1c)
+#endif
 
 #endif // _CMETAANIMPHASEBLEND

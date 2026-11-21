@@ -1,8 +1,22 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Animation/CAnimSourceReader.hpp"
+#if RSTL_CORRUPTION
+
+#include "Kyoto/Math/CloseEnough.hpp"
+
+
+#else
 #include "Kyoto/Animation/CCharAnimTime.hpp"
+#endif
 
 CAnimSourceReader::CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& source,
+#if RSTL_CORRUPTION
+                                     const CCharAnimTime& time, const CAnimPOIData* poiData)
+: CAnimSourceReaderBase(rs_new_line(31) CAnimSourceInfo(source), poiData)
+#else
                                      const CCharAnimTime& time
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -15,6 +29,7 @@ CAnimSourceReader::CAnimSourceReader(const TSubAnimTypeToken< CAnimSource >& sou
                         , poiData
 #endif
                         )
+#endif
 , mSource(source)
 , mSteadyStateInfo(mSource->GetSteadyStateAnimInfo(time)) {
   PostConstruct(time);
@@ -27,9 +42,17 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
   if (previousTime == duration) {
     mCurTime = CCharAnimTime::ZeroFlat();
     mPassedBoolCount = 0;
+#if !RSTL_CORRUPTION
     mPassedIntCount = 0;
+#endif
     mPassedParticleCount = 0;
     mPassedSoundCount = 0;
+#if RSTL_CORRUPTION
+    mPassedAssetSoundCount = 0;
+    mPassedAssetCount = 0;
+    return SAdvancementResults(dt,
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(dt, CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -38,8 +61,13 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
 #endif
             ));
 
+#endif
   }
   if (dt.EqualsZero()) {
+#if RSTL_CORRUPTION
+    return SAdvancementResults(CCharAnimTime::ZeroFlat(),
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -48,6 +76,7 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
 #endif
             ));
 
+#endif
   }
 
   mCurTime += dt;
@@ -56,18 +85,30 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
     remainingTime = mCurTime - duration;
     mCurTime = duration;
   }
+#if RSTL_CORRUPTION
+  if (close_enough(mCurTime.GetSeconds(), duration.GetSeconds())) {
+    mCurTime = duration;
+#else
 #if RSTL_PRIME1
   if (mSource->HasPOIData())
 #endif
   {
     UpdatePOIStates();
+#endif
   }
+#if RSTL_CORRUPTION
+  UpdatePOIStates();
+#endif
 
+#if RSTL_CORRUPTION
+  const CSegId root = CSegId(0);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
+#endif
 #endif
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
   const CQuaternion newRotation = mSource->GetRotation(root, mCurTime);
@@ -82,21 +123,33 @@ SAdvancementResults CAnimSourceReader::VAdvanceView(const CCharAnimTime& dt) {
     offset = inverseRotation * offset;
   }
   return SAdvancementResults(remainingTime,
+#if RSTL_CORRUPTION
+                             SAdvancementDeltas(offset, newRotation * inverseOldRotation));
+#else
                              CAdvancementDeltas(offset, newRotation * inverseOldRotation));
 
+#endif
 }
 
 CCharAnimTime CAnimSourceReader::VGetTimeRemaining() const {
   return mSource->GetAnimationDuration() - mCurTime;
 }
 
+#if RSTL_CORRUPTION
+CSteadyStateAnimInfo CAnimSourceReader::VGetSteadyStateAnimInfo() const { return mSteadyStateInfo; }
+#else
 CSteadyStateAnimInfo CAnimSourceReader::VGetSteadyStateAnimInfo() const {
   return mSteadyStateInfo;
 }
+#endif
 
+#if RSTL_CORRUPTION
+bool CAnimSourceReader::VHasOffset(const CSegId& seg) const { return mSource->HasOffset(seg); }
+#else
 bool CAnimSourceReader::VHasOffset(const CSegId& seg) const {
   return mSource->HasOffset(seg);
 }
+#endif
 
 CVector3f CAnimSourceReader::VGetOffset(const CSegId& seg) const {
   return mSource->GetOffset(seg, mCurTime);
@@ -119,6 +172,27 @@ void CAnimSourceReader::VGetSegStatementSet(const CSegIdList& list, CSegStatemen
   mSource->GetSegStatementSet(list, set, time);
 }
 
+#if RSTL_CORRUPTION
+void CAnimSourceReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
+                                             CJointData_LinearStorage& data,
+                                             const CCharAnimTime& time) const {
+  mSource->GetJointData_Linear(layout, data, time);
+}
+
+const CVisibilityAnimationDataReader* CAnimSourceReader::VGetVisibilityDataAtCurrentTime() const {
+  return mSource->GetVisibilityDataAtTime(mCurTime);
+}
+
+const CVisibilityAnimationDataReader*
+CAnimSourceReader::VGetVisibilityDataAtTime(const CCharAnimTime& time) const {
+  return mSource->GetVisibilityDataAtTime(time);
+}
+
+void CAnimSourceReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
+                                             CJointData_LinearStorage& data) const {
+  mSource->GetJointData_Linear(layout, data, mCurTime);
+}
+#else
 #if !RSTL_PRIME1
 
 void CAnimSourceReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
@@ -132,8 +206,14 @@ void CAnimSourceReader::VGetJointData_Linear(const CCharLayoutInfo& layout,
   mSource->GetJointData_Linear(layout, data, mCurTime);
 }
 #endif
+#endif
 
 rstl::ownership_transfer< IAnimReader > CAnimSourceReader::VClone() const {
+#if RSTL_CORRUPTION
+  return rstl::ownership_transfer< IAnimReader >(rs_new_line(212) CAnimSourceReader(
+      mSource, mPOIData, mCurTime, mSteadyStateInfo, mPassedBoolCount, mPassedParticleCount,
+      mPassedSoundCount, mPassedAssetSoundCount, mPassedAssetCount, mBoolStates, mParticleStates));
+#else
   return rstl::ownership_transfer< IAnimReader >(rs_new CAnimSourceReader(
       mSource
 // TODO: verify that this Prime/Echoes difference is real
@@ -142,6 +222,7 @@ rstl::ownership_transfer< IAnimReader > CAnimSourceReader::VClone() const {
 #endif
       , mCurTime, mSteadyStateInfo, mPassedBoolCount, mPassedIntCount, mPassedParticleCount,
       mPassedSoundCount, mBoolStates, mInt32States, mParticleStates));
+#endif
 }
 
 SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
@@ -150,6 +231,10 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
   const CCharAnimTime& duration = mSource->GetAnimationDuration();
   if (previousTime.EqualsZero()) {
     mCurTime = duration;
+#if RSTL_CORRUPTION
+    return SAdvancementResults(dt,
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(dt, CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -158,8 +243,13 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
 #endif
             ));
 
+#endif
   }
   if (dt.EqualsZero()) {
+#if RSTL_CORRUPTION
+    return SAdvancementResults(CCharAnimTime::ZeroFlat(),
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -168,6 +258,7 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
 #endif
             ));
 
+#endif
   }
 
   mCurTime -= dt;
@@ -177,11 +268,15 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
     mCurTime = CCharAnimTime();
   }
 
+#if RSTL_CORRUPTION
+  const CSegId root = CSegId(0);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
+#endif
 #endif
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
   const CQuaternion newRotation = mSource->GetRotation(root, mCurTime);
@@ -196,11 +291,19 @@ SAdvancementResults CAnimSourceReader::VReverseView(const CCharAnimTime& dt) {
     offset = inverseRotation * offset;
   }
   return SAdvancementResults(remainingTime,
+#if RSTL_CORRUPTION
+                             SAdvancementDeltas(offset, newRotation * inverseOldRotation));
+#else
                              CAdvancementDeltas(offset, newRotation * inverseOldRotation));
 
+#endif
 }
 
 void CAnimSourceReader::VSetPhase(float phase) {
+#if RSTL_CORRUPTION
+  const CSteadyStateAnimInfo& steadyStateInfo = mSource->GetSteadyStateAnimInfo(mCurTime);
+  mCurTime = CCharAnimTime(phase * steadyStateInfo.GetDuration().GetSeconds());
+#else
 #if RSTL_PRIME1
   mCurTime = CCharAnimTime(
       phase * mSource->GetSteadyStateAnimInfo(mCurTime).GetDuration().GetSeconds());
@@ -210,13 +313,21 @@ void CAnimSourceReader::VSetPhase(float phase) {
   mCurTime = CCharAnimTime(phase * duration.GetSeconds());
 #endif
   {
+#endif
     UpdatePOIStates();
     if (!mCurTime.GreaterThanZero()) {
       mPassedBoolCount = 0;
+#if !RSTL_CORRUPTION
       mPassedIntCount = 0;
+#endif
       mPassedParticleCount = 0;
       mPassedSoundCount = 0;
+#if RSTL_CORRUPTION
+    mPassedAssetSoundCount = 0;
+    mPassedAssetCount = 0;
+#else
     }
+#endif
   }
 }
 
@@ -229,6 +340,10 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
   CCharAnimTime currentTime = mCurTime + startOffset;
   const CCharAnimTime& duration = mSource->GetAnimationDuration();
   if (previousTime >= duration) {
+#if RSTL_CORRUPTION
+    return SAdvancementResults(dt,
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(dt, CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -237,8 +352,13 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
 #endif
             ));
 
+#endif
   }
   if (dt.EqualsZero()) {
+#if RSTL_CORRUPTION
+    return SAdvancementResults(CCharAnimTime::ZeroFlat(),
+                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+#else
     return SAdvancementResults(CCharAnimTime::ZeroFlat(), CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
@@ -247,6 +367,7 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
 #endif
             ));
 
+#endif
   }
 
   currentTime += dt;
@@ -256,11 +377,15 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
     currentTime = duration;
   }
 
+#if RSTL_CORRUPTION
+  const CSegId root = CSegId(0);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const CSegId root = CSegId::Root();
 #else
   const CSegId root = CSegId(0);
+#endif
 #endif
   CVector3f offset(0.f, 0.f, 0.f);
   const CQuaternion oldRotation = mSource->GetRotation(root, previousTime);
@@ -275,11 +400,18 @@ CAnimSourceReader::VGetAdvancementResults(const CCharAnimTime& dt,
     offset = inverseRotation * offset;
   }
   return SAdvancementResults(remainingTime,
+#if RSTL_CORRUPTION
+                             SAdvancementDeltas(offset, newRotation * inverseOldRotation));
+#else
                              CAdvancementDeltas(offset, newRotation * inverseOldRotation));
 
+#endif
 }
 
+#if RSTL_CORRUPTION
+CAnimSourceReader::~CAnimSourceReader() {}
+#else
 #if !RSTL_PRIME1
 CAnimSourceReader::~CAnimSourceReader() {}
 #endif
-
+#endif

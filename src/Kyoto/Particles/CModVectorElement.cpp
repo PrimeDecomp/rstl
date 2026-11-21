@@ -1,8 +1,16 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CModVectorElement.hpp"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CAABox.hpp"
+#if RSTL_CORRUPTION
+#include "Kyoto/Particles/CParticleCollisionSignal.hpp"
+
+
+#endif
 
 CMVEConstant::CMVEConstant(CRealElement* a, CRealElement* b, CRealElement* c)
 : mX(a), mY(b), mZ(c) {}
@@ -36,6 +44,9 @@ CMVEGravity::CMVEGravity(CVectorElement* a) : mA(a) {}
 CMVEGravity::~CMVEGravity() { delete mA; }
 
 bool CMVEGravity::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f grav(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f grav(0.f, 0.f, 0.f);
@@ -43,6 +54,7 @@ bool CMVEGravity::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f grav(CVector3f::Zero());
 #endif
 
+#endif
   mA->GetValue(frame, grav);
   pVel += grav;
   return false;
@@ -57,6 +69,9 @@ CMVEWind::~CMVEWind() {
 }
 
 bool CMVEWind::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f wVel(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f wVel(0.f, 0.f, 0.f);
@@ -64,6 +79,7 @@ bool CMVEWind::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f wVel(CVector3f::Zero());
 #endif
 
+#endif
   mVelocity->GetValue(frame, wVel);
   CVector3f diff = wVel - pVel;
   float factor;
@@ -164,6 +180,9 @@ CMVEImplosion::~CMVEImplosion() {
 }
 
 bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f av(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -171,6 +190,7 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
   CVector3f av(CVector3f::Zero());
 #endif
 
+#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -192,6 +212,9 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
     return false;
   }
 
+#if RSTL_CORRUPTION
+  CVector3f dvs = (1.f / dvm) * dv;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -199,6 +222,7 @@ bool CMVEImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
+#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel += b * dvs;
@@ -217,6 +241,9 @@ CMVELinearImplosion::~CMVELinearImplosion() {
 }
 
 bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f av(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -224,6 +251,7 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
   CVector3f av(CVector3f::Zero());
 #endif
 
+#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -245,6 +273,9 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
     return false;
   }
 
+#if RSTL_CORRUPTION
+  CVector3f dvs = (1.f / dvm) * dv;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -252,6 +283,7 @@ bool CMVELinearImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) 
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
+#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel = b * dvs;
@@ -270,6 +302,9 @@ CMVEExponentialImplosion::~CMVEExponentialImplosion() {
 }
 
 bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f av(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f av(0.f, 0.f, 0.f);
@@ -277,6 +312,7 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
   CVector3f av(CVector3f::Zero());
 #endif
 
+#endif
   mImplPoint->GetValue(frame, av);
 
   CVector3f dv = av - pPos;
@@ -298,6 +334,9 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
     return false;
   }
 
+#if RSTL_CORRUPTION
+  CVector3f dvs = (1.f / dvm) * dv;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f dvs = dv / dvm;
@@ -305,6 +344,7 @@ bool CMVEExponentialImplosion::GetValue(int frame, CVector3f& pVel, CVector3f& p
   CVector3f dvs = (1.f / dvm) * dv;
 #endif
 
+#endif
   float b;
   mMagScale->GetValue(frame, b);
   pVel += dvm * (b * dvs);
@@ -322,6 +362,10 @@ CMVESwirl::~CMVESwirl() {
 }
 
 bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+#if RSTL_CORRUPTION
+  CVector3f a(CVector3f::Zero());
+  CVector3f b(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CVector3f a(0.f, 0.f, 0.f);
@@ -331,6 +375,7 @@ bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   CVector3f b(CVector3f::Zero());
 #endif
 
+#endif
   mHelixPoint->GetValue(frame, a);
   mCurveBinormal->GetValue(frame, b);
 
@@ -342,6 +387,10 @@ bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   mFilterGain->GetValue(frame, c);
   mTangentialVelocity->GetValue(frame, d);
 
+#if RSTL_CORRUPTION
+  const CVector3f tangent = CVector3f::Cross(b, posToHelix) * d;
+  pVel = c * (b * CVector3f::Dot(b, pVel) + tangent) + (1.f - c) * pVel;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00
   pVel = (b * CVector3f::Dot(b, pVel) + d * CVector3f::Cross(b, posToHelix)) * c +
@@ -351,6 +400,7 @@ bool CMVESwirl::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
   pVel = (b * CVector3f::Dot(b, pVel) + tangent) * c + (1.f - c) * pVel;
 #endif
 
+#endif
   return false;
 }
 
@@ -362,6 +412,9 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
 , mRestitution(restitution)
 , mPlanePrecomputed(false)
 , mDieOnPenetrate(e)
+#if RSTL_CORRUPTION
+, mPlaneValidatedNormal(CVector3f::Zero())
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mPlaneValidatedNormal(0.f, 0.f, 0.f)
@@ -369,6 +422,7 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
 , mPlaneValidatedNormal(CVector3f::Zero())
 #endif
 
+#endif
 , mPlaneD(0.f) {
   if (planePoint && planeNormal && planePoint->IsFastConstant() && planeNormal->IsFastConstant()) {
     // Precompute Hesse normal form of plane (for penetration testing)
@@ -379,6 +433,9 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
     if (mPlaneValidatedNormal.MagSquared() > 0.f) {
       mPlaneValidatedNormal.Normalize();
     }
+#if RSTL_CORRUPTION
+    CVector3f a(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CVector3f a(0.f, 0.f, 0.f);
@@ -386,6 +443,7 @@ CMVEBounce::CMVEBounce(CVectorElement* planePoint, CVectorElement* planeNormal,
     CVector3f a(CVector3f::Zero());
 #endif
 
+#endif
     planePoint->GetValue(0, a);
     mPlaneD = CVector3f::Dot(mPlaneValidatedNormal, a);
   }
@@ -404,6 +462,9 @@ bool CMVEBounce::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
     mPlaneNormal->GetValue(frame, mPlaneValidatedNormal);
     mPlaneValidatedNormal.Normalize();
 
+#if RSTL_CORRUPTION
+    CVector3f a(CVector3f::Zero());
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     CVector3f a(0.f, 0.f, 0.f);
@@ -411,6 +472,7 @@ bool CMVEBounce::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
     CVector3f a(CVector3f::Zero());
 #endif
 
+#endif
     mPlanePoint->GetValue(frame, a);
 
     mPlaneD = CVector3f::Dot(mPlaneValidatedNormal, a);
@@ -449,6 +511,67 @@ bool CMVESetPosition::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) cons
   return false;
 }
 
+#if RSTL_CORRUPTION
+CMVESphereVolume::CMVESphereVolume(CVectorElement* a, CRealElement* b, CModVectorElement* c)
+: x4_(a), x8_(b), xc_(c) {}
+
+CMVESphereVolume::~CMVESphereVolume() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+}
+
+bool CMVESphereVolume::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+  CVector3f center(CVector3f::Zero());
+  x4_->GetValue(frame, center);
+  float radius = 0.0f;
+  x8_->GetValue(frame, radius);
+  CVector3f delta = pPos - center;
+  if (delta.MagSquared() < radius * radius) {
+    xc_->GetValue(frame, pVel, pPos);
+  }
+  return false;
+}
+
+CMVEBoxVolume::CMVEBoxVolume(CVectorElement* a, CVectorElement* b, CModVectorElement* c)
+: x4_(a), x8_(b), xc_(c) {}
+
+CMVEBoxVolume::~CMVEBoxVolume() {
+  delete x4_;
+  delete x8_;
+  delete xc_;
+}
+
+bool CMVEBoxVolume::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+  CVector3f center(CVector3f::Zero());
+  x4_->GetValue(frame, center);
+  CVector3f extents(CVector3f::Zero());
+  x8_->GetValue(frame, extents);
+  extents *= 0.5f;
+  CAABox box(center - extents, center + extents);
+  if (box.PointInside(pPos)) {
+    xc_->GetValue(frame, pVel, pPos);
+  }
+  return false;
+}
+
+CMVESweptLineCollision::CMVESweptLineCollision(CRealElement* restitution, CRealElement* damping)
+: mRestitution(restitution), mDamping(damping) {}
+
+CMVESweptLineCollision::~CMVESweptLineCollision() {
+  delete mRestitution;
+  delete mDamping;
+}
+
+bool CMVESweptLineCollision::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const {
+  float damping = 0.f;
+  mDamping->GetValue(frame, damping);
+  float restitution = 0.5f;
+  mRestitution->GetValue(frame, restitution);
+  gParticleCollisionSignal.Emit(pVel, pPos, restitution, damping);
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CMVESphereVolume::CMVESphereVolume(CVectorElement* center, CRealElement* radius,
                                    CModVectorElement* modifier)
@@ -494,4 +617,5 @@ bool CMVEBoxVolume::GetValue(int frame, CVector3f& pVel, CVector3f& pPos) const 
   }
   return false;
 }
+#endif
 #endif

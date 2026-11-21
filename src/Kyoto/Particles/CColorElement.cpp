@@ -1,4 +1,7 @@
 #include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Particles/CColorElement.hpp"
 
 #include "Kyoto/Basics/CCast.hpp"
@@ -13,6 +16,28 @@
 
 #include "rstl/math.hpp"
 
+#if RSTL_CORRUPTION
+
+// Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
+static const CVector3f skOneVector(1.f, 1.f, 1.f);
+
+static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loopEnd) {
+  if (loop) {
+    if (frame >= loopEnd) {
+      frame -= loopStart;
+      frame = frame % (loopEnd - loopStart);
+      frame += loopStart;
+    }
+  } else {
+    frame = rstl::min_val(frame, loopEnd - 1);
+  }
+  return frame;
+}
+
+static inline int GetKeyframeTime(float value, float start, float rate) {
+  return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
+}
+#else
 #if !RSTL_PRIME1
 // Unreferenced; every nearby particle TU constructs one of these, likely from a shared header.
 static const CVector3f skOneVector(1.f, 1.f, 1.f);
@@ -33,6 +58,7 @@ static inline int GetKeyframeIndex(int frame, bool loop, int loopStart, int loop
 static inline int GetKeyframeTime(float value, float start, float rate) {
   return rstl::max_val(0, CCast::ToInt32(rate * (value - start)));
 }
+#endif
 #endif
 
 CCEConstant::CCEConstant(CRealElement* r, CRealElement* g, CRealElement* b, CRealElement* a)
@@ -59,6 +85,11 @@ bool CCEConstant::GetValue(int frame, CColor& colorOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CCEFastConstant::CCEFastConstant(const float r, const float g, const float b, const float a)
+: mVal(CMath::Clamp(0.f, r, 1.f), CMath::Clamp(0.f, g, 1.f), CMath::Clamp(0.f, b, 1.f),
+       CMath::Clamp(0.f, a, 1.f)) {}
+#else
 CCEFastConstant::CCEFastConstant(const float r, const float g, const float b, const float a) {
    float cr = CMath::Clamp(0.f, r, 1.f);
    float cg = CMath::Clamp(0.f, g, 1.f);
@@ -66,6 +97,7 @@ CCEFastConstant::CCEFastConstant(const float r, const float g, const float b, co
    float ca = CMath::Clamp(0.f, a, 1.f);
    mVal.Set(cr, cg, cb, ca);
 }
+#endif
 
 CCEFastConstant::~CCEFastConstant() {}
 
@@ -91,8 +123,13 @@ bool CCEFade::GetValue(int frame, CColor& colorOut) const {
   if (t >= 1.f) {
     mB->GetValue(frame, colorOut);
   } else {
+#if RSTL_CORRUPTION
+    CColor colA(0xffff00ff);
+    CColor colB(0xffff00ff);
+#else
     CColor colA;
     CColor colB;
+#endif
     mA->GetValue(frame, colA);
     mB->GetValue(frame, colB);
 
@@ -130,8 +167,13 @@ bool CCEFadeEnd::GetValue(int frame, CColor& colorOut) const {
   float end;
   mEndFrame->GetValue(frame, end);
 
+#if RSTL_CORRUPTION
+  CColor colA(0xffff00ff);
+  CColor colB(0xffff00ff);
+#else
   CColor colA;
   CColor colB;
+#endif
   mA->GetValue(frame, colA);
   mB->GetValue(frame, colB);
 
@@ -140,6 +182,9 @@ bool CCEFadeEnd::GetValue(int frame, CColor& colorOut) const {
   colA.Get(ar, ag, ab, aa);
   colB.Get(br, bg, bb, ba);
 
+#if RSTL_CORRUPTION
+  float t = rstl::max_val(0.f, rstl::min_val((frameF - start) / (end - start), 1.f));
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   float t = (frameF - start) / (end - start);
@@ -147,6 +192,7 @@ bool CCEFadeEnd::GetValue(int frame, CColor& colorOut) const {
   float t = rstl::max_val(0.f, rstl::min_val((frameF - start) / (end - start), 1.f));
 #endif
 
+#endif
   float nt = 1.f - t;
   colorOut = CColor(ar * nt + br * t, ag * nt + bg * t, ab * nt + bb * t, aa * nt + ba * t);
   return false;
@@ -203,14 +249,24 @@ bool CCEPulse::GetValue(int frame, CColor& colorOut) const {
 }
 
 CCEKeyframeEmitter::CCEKeyframeEmitter(CInputStream& in)
+#if RSTL_CORRUPTION
+: mPercent(in.ReadInt32())
+, mUnk1(in.ReadInt32())
+#else
 : mPercent(in.ReadLong())
 , mUnk1(in.ReadLong())
 
+#endif
 , mLoop(in.ReadBool())
 , mUnk2(in.ReadBool())
+#if RSTL_CORRUPTION
+, mLoopEnd(in.ReadInt32())
+, mLoopStart(in.ReadInt32())
+#else
 , mLoopEnd(in.ReadLong())
 , mLoopStart(in.ReadLong())
 
+#endif
 , mKeys(in) {
   if (mLoopStart >= mLoopEnd) {
     mLoopStart = 0;
@@ -221,6 +277,11 @@ CCEKeyframeEmitter::~CCEKeyframeEmitter() {}
 
 bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
   if (mPercent == 0) {
+#if RSTL_CORRUPTION
+    int emitterTime =
+        GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
+    valOut = mKeys[emitterTime];
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     int emitterTime = CParticleGlobals::GetEmitterTime();
@@ -240,6 +301,7 @@ bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
         GetKeyframeIndex(CParticleGlobals::GetEmitterTime(), mLoop, mLoopStart, mLoopEnd);
     valOut = mKeys[emitterTime];
 #endif
+#endif
     return false;
   }
 
@@ -253,6 +315,43 @@ bool CCEKeyframeEmitter::GetValue(int frame, CColor& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CCEKeyframeInput::CCEKeyframeInput(CInputStream& in)
+: mPercent(in.ReadInt32())
+, mUnk1(in.ReadInt32())
+, mLoop(in.ReadBool())
+, mUnk2(in.ReadBool())
+, mLoopEnd(in.ReadInt32())
+, mLoopStart(in.ReadInt32())
+, x18_(in.ReadFloat())
+, x1c_(in.ReadFloat())
+, mKeys(in)
+, x30_(CParticleDataFactory::GetRealElement(in)) {
+  if (mLoopStart >= mLoopEnd) {
+    mLoopStart = 0;
+  }
+}
+
+CCEKeyframeInput::~CCEKeyframeInput() { delete x30_; }
+
+bool CCEKeyframeInput::GetValue(int frame, CColor& valOut) const {
+  if (mPercent == 2) {
+    float in = 0.0f;
+    x30_->GetValue(frame, in);
+    int idx =
+        GetKeyframeIndex(GetKeyframeTime(in, x18_, x1c_), mLoop, GetLoopStart(), GetLoopEnd());
+    bool lerp = idx > 0 && idx < mLoopEnd - 1;
+    if (lerp) {
+      float t = CMath::Clamp(0.0f, (in - x18_) - static_cast< float >(idx) / x1c_, 1.0f);
+      const CColor& nextKey = mKeys[idx + 1];
+      valOut = CColor::Lerp(mKeys[idx], nextKey, t);
+    } else {
+      valOut = mKeys[idx];
+    }
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CCEKeyframeInput::CCEKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
@@ -288,12 +387,90 @@ bool CCEKeyframeInput::GetValue(int frame, CColor& valOut) const {
   return false;
 }
 #endif
+#endif
 
 bool CCEParticleColor::GetValue(int frame, CColor& colorOut) const {
   colorOut = CParticleGlobals::GetCurrentParticle()->mColor;
   return false;
 }
 
+#if RSTL_CORRUPTION
+CCEMultiply::CCEMultiply(CColorElement* a, CColorElement* b) : x4_(a), x8_(b) {}
+
+CCEMultiply::~CCEMultiply() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CCEMultiply::GetValue(int frame, CColor& valOut) const {
+  CColor a(0xffff00ff);
+  CColor b(0xffff00ff);
+  x4_->GetValue(frame, a);
+  x8_->GetValue(frame, b);
+  valOut = CColor::Modulate(a, b);
+  return false;
+}
+
+CCEVectorAndRealToColor::CCEVectorAndRealToColor(CVectorElement* a, CRealElement* b)
+: x4_(a), x8_(b) {}
+
+CCEVectorAndRealToColor::~CCEVectorAndRealToColor() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CCEVectorAndRealToColor::GetValue(int frame, CColor& valOut) const {
+  CVector3f rgb = CVector3f::Zero();
+  float a = 1.f;
+  x4_->GetValue(frame, rgb);
+  x8_->GetValue(frame, a);
+  valOut.Set(CMath::Clamp(0.f, rgb.GetX(), 1.f), CMath::Clamp(0.f, rgb.GetY(), 1.f),
+             CMath::Clamp(0.f, rgb.GetZ(), 1.f), CMath::Clamp(0.f, a, 1.f));
+  return false;
+}
+
+CCEInitialSwitch::CCEInitialSwitch(CColorElement* a, CColorElement* b) : x4_(a), x8_(b) {}
+
+CCEInitialSwitch::~CCEInitialSwitch() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CCEInitialSwitch::GetValue(int frame, CColor& valOut) const {
+  if (frame == 0) {
+    x4_->GetValue(0, valOut);
+  } else {
+    x8_->GetValue(frame - 1, valOut);
+  }
+  return false;
+}
+
+CCEKeepInitial::CCEKeepInitial(CColorElement* a) : x4_(a) {}
+
+CCEKeepInitial::~CCEKeepInitial() { delete x4_; }
+
+bool CCEKeepInitial::GetValue(const int frame, CColor& valOut) const {
+  if (frame == 0) {
+    x4_->GetValue(0, valOut);
+  }
+  return false;
+}
+
+CCEModifyAlphaOnly::CCEModifyAlphaOnly(CColorElement* a, CRealElement* b) : x4_(a), x8_(b) {}
+
+CCEModifyAlphaOnly::~CCEModifyAlphaOnly() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CCEModifyAlphaOnly::GetValue(int frame, CColor& valOut) const {
+  x4_->GetValue(frame, valOut);
+  float a = 1.f;
+  x8_->GetValue(frame, a);
+  valOut.SetAlpha(CMath::Clamp(0.f, a, 1.f));
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CCEMultiply::CCEMultiply(CColorElement* a, CColorElement* b) : x4_(a), x8_(b) {}
 
@@ -369,4 +546,5 @@ bool CCEModifyAlphaOnly::GetValue(int frame, CColor& valOut) const {
   valOut.SetAlpha(CMath::Clamp(0.f, a, 1.f));
   return false;
 }
+#endif
 #endif

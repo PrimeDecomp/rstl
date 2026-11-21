@@ -1,8 +1,14 @@
 #ifndef _CSWOOSHDESCRIPTION
 #define _CSWOOSHDESCRIPTION
+#include "rstl/RstlVersions.h"
+#if !RSTL_CORRUPTION
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#endif
 
+#if RSTL_CORRUPTION
+#include "rstl/static_assert.hpp"
+#endif
 #include "rstl/types.h"
 
 class CColorElement;
@@ -23,6 +29,11 @@ public:
   CIntElement* mLENG;
   CColorElement* mCOLR;
   CIntElement* mSIDE;
+#if RSTL_CORRUPTION
+  CRealElement* mZROT;
+  CRealElement* mYROT;
+  CRealElement* mXROT;
+#endif
   CRealElement* mIROT;
   CRealElement* mROTM;
   CVectorElement* mPOFS;
@@ -40,21 +51,33 @@ public:
   bool mSROT : 1;
   bool mWIRE : 1;
   bool mTEXW : 1;
+#if RSTL_CORRUPTION
+  bool mCLTX : 1;
+#else
 #if !RSTL_PRIME1
   bool mCLTX : 1;
 #endif
 
+#endif
   bool mAALP : 1;
   bool mZBUF : 1;
   bool mORNT : 1;
   bool mCRND : 1;
+#if RSTL_CORRUPTION
+  int mDFLG;
+#else
 #if !RSTL_PRIME1
   int mDFLG;
 #endif
 
+#endif
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CSwooshDescription, 0x58)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CSwooshDescription, 0x4c)
+#endif
 #endif
 
 #endif // _CSWOOSHDESCRIPTION

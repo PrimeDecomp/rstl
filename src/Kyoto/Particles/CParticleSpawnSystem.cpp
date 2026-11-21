@@ -1,3 +1,4 @@
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
 
 #include "Kyoto/Graphics/CGraphics.hpp"
@@ -15,17 +16,25 @@ static const CVector3f skOne(1.f, 1.f, 1.f);
 
 CParticleSpawnSystem::CParticleSpawnSystem(TToken< CSpawnSystemDescription > description,
                                            CElementGen::EOptionalSystemFlags flags,
+#if RSTL_CORRUPTION
+                                           bool modelsUseLights)
+#else
                                            const bool modelsUseLights)
+#endif
 : mDescription(description)
 , mRandom(sSeed)
 , mPrevFrame(-1)
 , mCurFrame(0)
 , mCurSeconds(0.0)
 , mParticleCount(0)
+#if RSTL_CORRUPTION
+, mOptionalFlags(flags)
+#else
 #if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
 , mOptionalFlags(flags)
 #else
 , mEnableOPTS(flags & CElementGen::kOSF_Two)
+#endif
 #endif
 , mModelsUseLights(modelsUseLights)
 , mParticleEmission(true)
@@ -90,7 +99,11 @@ CParticleSpawnSystem::~CParticleSpawnSystem() {
   }
 }
 
+#if RSTL_CORRUPTION
+bool CParticleSpawnSystem::Update(double dt) {
+#else
 const bool CParticleSpawnSystem::Update(double dt) {
+#endif
   CGlobalRandom random(mRandom);
   if (mCurFrame > mLifetime && !mChildren.empty()) {
     if (mDescription->mDEOL) {
@@ -466,6 +479,10 @@ CParticleGen* CParticleSpawnSystem::ConstructChildParticleSystem(const CToken& d
   const CVector3f localScale = CVector3f::ByElementMultiply(mLocalScaleMultiplier, mLocalScale);
   const CColor color = CColor::Modulate(mParticleColor, mModulationColor);
   return CElementGen::ConstructChildParticleSystem(
+#if RSTL_CORRUPTION
+      description, type, seed, mOptionalFlags, mModelsUseLights, mParticleEmission, translation,
+      orientation, globalTranslation, globalOrientation, globalScale, color, localScale);
+#else
       description, type, seed,
 #if RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS
       mOptionalFlags,
@@ -474,6 +491,7 @@ CParticleGen* CParticleSpawnSystem::ConstructChildParticleSystem(const CToken& d
 #endif
       mModelsUseLights, mParticleEmission, translation, orientation, globalTranslation,
       globalOrientation, globalScale, color, localScale);
+#endif
 }
 
 void CParticleSpawnSystem::UpdateChildParticleSystems(double dt) {
@@ -486,7 +504,11 @@ void CParticleSpawnSystem::UpdateChildParticleSystems(double dt) {
     rstl::vector< CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo >& spawns =
         mDescription->mSPWN->GetSpawnedSystemsAtFrame(mCurFrame);
     if (!spawns.empty()) {
+#if RSTL_CORRUPTION
+      const uint backupSeed = sSeed;
+#else
       const ushort backupSeed = sSeed;
+#endif
       mChildren.reserve(spawns.size() + mChildren.size());
       for (int i = 0; i < spawns.size(); ++i) {
         const CSpawnSystemKeyframeData::CSpawnSystemKeyframeInfo& spawn = spawns[i];
@@ -571,4 +593,3 @@ int CParticleSpawnSystem::GetEmitterTime() const { return mCurFrame; }
 int CParticleSpawnSystem::GetParticleCount() const { return mParticleCount; }
 
 bool CParticleSpawnSystem::GetParticleEmission() const { return mParticleEmission; }
-

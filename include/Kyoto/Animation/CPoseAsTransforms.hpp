@@ -1,19 +1,38 @@
 #ifndef _CPOSEASTRANSFORMS
 #define _CPOSEASTRANSFORMS
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "rstl/types.h"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/TGameTypes.hpp"
+
+#else
 #include "Kyoto/Animation/TSegIdMapVariableSize.hpp"
 #include "Kyoto/Math/CMatrix3f.hpp"
+#endif
 #include "Kyoto/Math/CTransform4f.hpp"
 
 #include "rstl/reserved_vector.hpp"
 #include "rstl/single_ptr.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/RstlVersions.h"
+#endif
 
 class CPoseAsTransforms {
 public:
+#if RSTL_CORRUPTION
+  const CMatrix3f& GetRotation(const CSegId& id) const;
+
+  private:
+  CSegId mNextId;
+  CSegId mCount;
+  // TODO TSegIdMapVariableSize<CPoseAsTransforms::CElementType>
+  rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mLinks;
+  rstl::single_ptr< CTransform4f > mTransformArr;
+  CSegId mLastInserted;
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   class CElementType {
@@ -54,6 +73,7 @@ private:
   rstl::reserved_vector< rstl::pair< CSegId, CSegId >, 100 > mLinks;
   rstl::single_ptr< CTransform4f > mTransformArr;
   CSegId mLastInserted;
+#endif
 #endif
 };
 CHECK_SIZEOF(CPoseAsTransforms, 0xd8)
