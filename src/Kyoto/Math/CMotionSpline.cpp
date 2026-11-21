@@ -749,7 +749,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (rs_can_normalize(direction)) {
+    if (direction.IsNormalizable()) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -830,7 +830,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
       const float length = t * span + mKnotDistances[i];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (rs_can_normalize(offset)) {
+      if (offset.IsNormalizable()) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
@@ -867,7 +867,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (rs_can_normalize(direction)) {
+    if (direction.IsNormalizable()) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -958,7 +958,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       const float length = t * span + mKnotDistances[i * 3];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (rs_can_normalize(offset)) {
+      if (offset.IsNormalizable()) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
