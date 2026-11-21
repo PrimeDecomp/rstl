@@ -77,7 +77,7 @@ CAudioSys::CAudioSys(const uchar numVoices, const uchar numMusic, const uchar nu
 
   sndSetHooks(&hooks);
 #if defined(TARGET_PC)
-  metaforce::InitializeAudio(numVoices, numMusic, numSfx, 0);//mProLogic2 ? 1 : 0);
+  metaforce::InitializeAudio(numVoices, numMusic, numSfx, kProLogic2Studios, 0);//mProLogic2 ? 1 : 0);
 #else
   if (mProLogic2) {
     sndInit(numVoices, numMusic, numSfx, kProLogic2Studios, 1, aramSize);
