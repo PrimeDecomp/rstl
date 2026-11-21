@@ -55,23 +55,12 @@ void CTextExecuteBuffer::Clear() {
 }
 
 void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool imageBaseline,
-#if RSTL_CORRUPTION
-                                    ETextDirection dir, EJustification justification,
-                                    EVerticalJustification verticalJustification) {
-#else
                                     ETextDirection dir, EJustification just,
                                     EVerticalJustification vjust) {
-#endif
   mImageBaseline = imageBaseline;
-#if RSTL_CORRUPTION
-  const rstl::ncrc_ptr< CInstruction > instruction = rs_new_line(81)
-      CBlockInstruction(x, y, width, height, dir, justification, verticalJustification);
-  mCurBlock = static_cast< CBlockInstruction* >(instruction.GetPtr());
-#else
   const rstl::ncrc_ptr< CInstruction > instruction =
-      rs_new CBlockInstruction(x, y, width, height, dir, just, vjust);
+      rs_new_line(81) CBlockInstruction(x, y, width, height, dir, just, vjust);
   mCurBlock = static_cast< CBlockInstruction* >(instruction.GetPtr());
-#endif
   if (mState.IsFinishedLoading()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -85,15 +74,9 @@ void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool im
 #endif
   }
   Add(instruction);
-#if RSTL_CORRUPTION
-  mState.GetOptions().SetTextDirection(dir);
-  mState.SetJustification(justification);
-  mState.SetVerticalJustification(verticalJustification);
-#else
   mState.GetOptions().SetTextDirection(dir);
   mState.SetJustification(just);
   mState.SetVerticalJustification(vjust);
-#endif
 }
 
 void CTextExecuteBuffer::EndBlock() {

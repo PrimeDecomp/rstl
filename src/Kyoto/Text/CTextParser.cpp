@@ -392,16 +392,8 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
   }
 }
 
-#if RSTL_CORRUPTION
-bool CTextParser::BeginsWith(const wchar_t* str, int len, const wchar_t* str2) {
-#else
 bool CTextParser::BeginsWith(const wchar_t* str1, int len, const wchar_t* str2) {
-#endif
   int i = 0;
-#if RSTL_CORRUPTION
-  for (; str2[i] && i < len; ++i) {
-    if (str[i] != str2[i]) {
-#else
   for (;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -412,23 +404,14 @@ bool CTextParser::BeginsWith(const wchar_t* str1, int len, const wchar_t* str2) 
        && i < len;
        ++i) {
     if (str1[i] != str2[i]) {
-#endif
       return false;
     }
   }
   return str2[i] == L'\0';
 }
 
-#if RSTL_CORRUPTION
-bool CTextParser::Equals(const wchar_t* str, int len, const wchar_t* other) {
-#else
 bool CTextParser::Equals(const wchar_t* str1, int len, const wchar_t* str2) {
-#endif
   int i = 0;
-#if RSTL_CORRUPTION
-  for (; other[i] && i < len; ++i) {
-    if (str[i] != other[i]) {
-#else
   for (;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -439,15 +422,10 @@ bool CTextParser::Equals(const wchar_t* str1, int len, const wchar_t* str2) {
        && i < len;
        ++i) {
     if (str1[i] != str2[i]) {
-#endif
       return false;
     }
   }
-#if RSTL_CORRUPTION
-  return other[i] == L'\0';
-#else
   return str2[i] == L'\0';
-#endif
 }
 
 #if RSTL_CORRUPTION
