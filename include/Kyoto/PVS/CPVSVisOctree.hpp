@@ -33,6 +33,7 @@ public:
 private:
   void TraverseLeavesRecursive(TLeafCallback callback, int depth, int child,
                                void* userData); // Guessed name
+  static CAABox GetChildBounds(uchar octant, int child, CAABox bounds); // Guessed name
 
   CAABox mBounds;
   uint mNumObjects;
@@ -43,8 +44,5 @@ private:
   mutable CVector3f mMax;
 };
 CHECK_SIZEOF(CPVSVisOctree, 0x44)
-
-extern "C" CAABox CPVSVisOctree_GetChildBounds(uchar octant, int child,
-                                                CAABox bounds); // Guessed name
 
 #endif // _CPVSVISOCTREE

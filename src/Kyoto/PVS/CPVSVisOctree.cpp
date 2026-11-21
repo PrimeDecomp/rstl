@@ -95,7 +95,7 @@ void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* userData) {
   TraverseLeavesRecursive(callback, 0, 0, userData);
 }
 
-CAABox CPVSVisOctree_GetChildBounds(uchar octant, int child, CAABox bounds) {
+CAABox CPVSVisOctree::GetChildBounds(uchar octant, int child, CAABox bounds) {
   const CVector3f center = bounds.GetCenterPoint();
   const CVector3f min = bounds.GetMinPoint();
   const CVector3f max = bounds.GetMaxPoint();
@@ -152,7 +152,7 @@ void CPVSVisOctree::TraverseLeavesRecursive(TLeafCallback callback, int depth, i
   if (numChildren > 0) {
     for (int i = 0; i < numChildren; ++i) {
       mCurrentNodeOffset = nodeOffset + 1;
-      const CAABox childBounds = CPVSVisOctree_GetChildBounds(nodeData, i, bounds);
+      const CAABox childBounds = GetChildBounds(nodeData, i, bounds);
       mMin = childBounds.GetMinPoint();
       mMax = childBounds.GetMaxPoint();
       if (i != 0) {

@@ -2,6 +2,7 @@
 #define _TSIGNAL1
 
 #include "rstl/types.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/IConnection.hpp"
@@ -10,20 +11,12 @@
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"
 
-// A one-argument signal. The template name comes from the "TSignal1.h(56) : " allocation string;
-// everything else is inferred from its instantiation for CDebugOption (CDebugOption.cpp and
-// CGameDebug). Neither Echoes nor Prime has an equivalent.
-//
-// Each listener is a TFunctor1 kept in an rstl::list together with the connection object handed
-// back to the caller. Deleting the connection removes the listener. Destroying the signal first
-// detaches every connection, so connections that outlive the signal do nothing when deleted.
-
 template < typename A1 >
 class TSignal1 {
 public:
   typedef TFunctor1< A1 > Functor;
 
-  // Guessed name. One listener (0x1C bytes).
+  // Guessed name
   struct SSlot {
     SSlot(IConnection* connection, const Functor& functor)
     : mConnection(connection), mFunctor(functor) {}
@@ -66,5 +59,7 @@ public:
 private:
   SlotList mSlots;
 };
+
+NESTED_CHECK_SIZEOF(TSignal1< int >, SSlot, 0x1C)
 
 #endif // _TSIGNAL1

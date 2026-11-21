@@ -9,9 +9,6 @@
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"
 
-// The three-argument signal, shaped like TSignal1 and TSignal2 (the asserts name TSignal1.h ..
-// TSignal5.h). CStateManager's weapon-added signal (0x1E0) is the instance modelled so far: its
-// Emit (0x8028FDC4) and destructor (0x80296C40) have the same code as TSignal2's.
 template < class A1, class A2, class A3 >
 class TSignal3 {
 public:
