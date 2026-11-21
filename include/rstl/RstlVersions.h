@@ -527,12 +527,24 @@
 #define RSTL_ECHOES_CONST const
 #define RSTL_PRIME1_INLINE
 #endif
+// Two different vector tests: Corruption's `IsNormalizable` and the others' `CanBeNormalized`.
+#if RSTL_CORRUPTION
+#define RSTL_KYOTO_CAN_BE_NORMALIZED(v) (v).IsNormalizable()
+#else
+#define RSTL_KYOTO_CAN_BE_NORMALIZED(v) (v).CanBeNormalized()
+#endif
 // `const` by-value scalar parameters that Prime and Echoes declare and the prototype does not.
 #if RSTL_CORRUPTION
 #define RSTL_KYOTO_SCALAR_PARAM_CONST
 #else
 #define RSTL_KYOTO_SCALAR_PARAM_CONST const
 #endif
+// The prototype's PVS octree traversal and its leaf bounds helper.
+#define RSTL_KYOTO_PVS_PROTO_TRAVERSAL (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype's CMath solver and noise forms.
+#define RSTL_KYOTO_MATH_PROTO_SOLVERS (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype's TTokenSet exact-compare case order, lower-cased locals and by-value const char.
+#define RSTL_KYOTO_TOKEN_SET_PROTO_FORMS (RSTL_VERSION == RSTL_G2MEAB)
 // Small value types declare their rstl container copy policies.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
 // CAssetId is the prototype's class (Kyoto/CAssetId.hpp) instead of a `uint`.
@@ -714,6 +726,12 @@
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_CORRUPTION)
 // Address queries follow the prototype's existing int interface.
 #define RSTL_KYOTO_REL_DEBUG_INT_ADDRESS (RSTL_VERSION == RSTL_G2MEAB)
+// TTokenSet::ToLower takes its character by const value (this changes the emitted code).
+#if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
+#define RSTL_KYOTO_TOKEN_SET_CHAR_PARAM const char
+#else
+#define RSTL_KYOTO_TOKEN_SET_CHAR_PARAM char
+#endif
 // The fatal error handler switches to a clean OSContext and waits for controller port 1.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
 // Echoes' fatal error handler: halts audio and DVD, resets when idle, names REL addresses.
@@ -813,6 +831,14 @@
 // The Revolution controller interface.
 #define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
 // Later controllers add acceptance and motion-activity slots.
+// The prototype reads its Revolution controllers through the wpadEmu KPAD library.
+#define RSTL_KYOTO_WPAD_EMU_CONTROLLER (RSTL_VERSION == RSTL_G2MEAB)
+// `const` by-value parameters that every build declares except the prototype's wpadEmu rumble.
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+#define RSTL_KYOTO_CONST_UNLESS_WPAD_EMU
+#else
+#define RSTL_KYOTO_CONST_UNLESS_WPAD_EMU const
+#endif
 #define RSTL_CONTROLLER_EXTENDED_VIRTUALS (RSTL_VERSION >= RSTL_RM3P)
 // CRevolutionController supports up to four channels (`SetMaxControllers`); Wii Echoes only.
 #if defined(PRIME2) && RSTL_VERSION >= RSTL_R32J

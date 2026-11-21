@@ -65,7 +65,7 @@ public:
 
   void Update(float);
   void HardStopAll();
-  void SetDisabled(const bool disabled);
+  void SetDisabled(RSTL_KYOTO_CONST_UNLESS_WPAD_EMU bool disabled);
 
   bool GetDisabled() const { return mDisabled; }
 };

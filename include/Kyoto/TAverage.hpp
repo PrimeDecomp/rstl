@@ -28,17 +28,10 @@ T GetAverageValue(const T* ptr, int count) {
 }
 
 template < typename T >
-class TAverage
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-: rstl::vector< T >
-#endif
-{
+class TAverage : rstl::vector< T > {
 public:
   TAverage() {}
-#if !RSTL_PRIME1
-  explicit TAverage(int capacity) { mValues.reserve(capacity); }
-#endif
+  explicit TAverage(int capacity) { this->reserve(capacity); }
   TAverage(int capacity, const T& value
 #if RSTL_PRIME1
                          = T()
@@ -47,70 +40,26 @@ public:
 
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const {
-    if (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-        this->empty()
-#else
-        mValues.empty()
-#endif
-    ) {
+    if (this->empty()) {
       return rstl::optional_object_null();
     } else {
-      return GetAverageValue(
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-          this->data(), this->size()
-#else
-          mValues.data(), mValues.size()
-#endif
-      );
+      return GetAverageValue(this->data(), this->size());
     }
   }
-#if !RSTL_PRIME1
-private:
-  rstl::vector< T > mValues;
-#endif
 };
 
 template < typename T >
 inline TAverage< T >::TAverage(int capacity, const T& value) {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   this->resize(capacity, value);
-#else
-  mValues.resize(capacity, value);
-#endif
 }
 
 template < typename T >
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-inline
-#endif
-void TAverage< T >::AddValue(const T& value) {
-  if (
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-      this->size() == this->capacity()
-#else
-      mValues.size() == mValues.capacity()
-#endif
-  ) {
+inline void TAverage< T >::AddValue(const T& value) {
+  if (this->size() == this->capacity()) {
     // TODO ?
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
     this->mCount -= 1;
-#else
-    mValues.mCount -= 1;
-#endif
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   this->insert(this->begin(), value);
-#else
-  mValues.insert(mValues.begin(), value);
-#endif
 }
 
 #endif // _TAVERAGE

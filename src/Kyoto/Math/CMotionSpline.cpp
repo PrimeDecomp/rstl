@@ -7,10 +7,8 @@
 
 #if RSTL_CORRUPTION
 #define CMOTIONSPLINE_CONST_PARAM
-#define CMOTIONSPLINE_NORMALIZABLE(v) (v).IsNormalizable()
 #else
 #define CMOTIONSPLINE_CONST_PARAM const
-#define CMOTIONSPLINE_NORMALIZABLE(v) (v).CanBeNormalized()
 #endif
 
 CMotionSpline::CMotionSpline(bool closedLoop, float duration, ESplineType type)
@@ -318,27 +316,27 @@ float CMotionSpline::CalculateRoundedCatmullRomLength(int index) const {
   rstl::reserved_vector< CVector3f, 4 > points;
   GetSurroundingPoints(index, points);
   const CVector3f span = points[2] - points[1];
-  if (!CMOTIONSPLINE_NORMALIZABLE(span)) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(span)) {
     return 0.f;
   }
 
   CVector3f previous = points[0] - points[1];
-  if (!CMOTIONSPLINE_NORMALIZABLE(previous)) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(previous)) {
     previous = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f firstTangent = span.AsNormalized() - previous.AsNormalized();
-  if (CMOTIONSPLINE_NORMALIZABLE(firstTangent)) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(firstTangent)) {
     firstTangent.Normalize();
   } else {
     firstTangent = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f next = points[3] - points[2];
-  if (!CMOTIONSPLINE_NORMALIZABLE(next)) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(next)) {
     next = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f reverseSpan = -span;
   CVector3f secondTangent = next.AsNormalized() - reverseSpan.AsNormalized();
-  if (CMOTIONSPLINE_NORMALIZABLE(secondTangent)) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(secondTangent)) {
     secondTangent.Normalize();
   } else {
     secondTangent = CVector3f(0.f, 1.f, 0.f);
@@ -896,7 +894,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       forwardDirection = (first - previous) + (second - first);
     }
-    if (CMOTIONSPLINE_NORMALIZABLE(forwardDirection)) {
+    if (RSTL_KYOTO_CAN_BE_NORMALIZED(forwardDirection)) {
       forwardDirection.Normalize();
     }
     if (i < knots.size() - 2) {
@@ -915,7 +913,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       backwardDirection = (second - next) + (first - second);
     }
-    if (CMOTIONSPLINE_NORMALIZABLE(backwardDirection)) {
+    if (RSTL_KYOTO_CAN_BE_NORMALIZED(backwardDirection)) {
       backwardDirection.Normalize();
     }
     const float firstProjection = CVector3f::Dot(position - first, forwardDirection);
@@ -1019,7 +1017,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     if (mClosedLoop && distance > 0.5f * mLength) {
       tangent = mControlPoints[0] - mControlPoints[1];
     }
-    if (CMOTIONSPLINE_NORMALIZABLE(tangent)) {
+    if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangent)) {
       tangent.Normalize();
     } else {
       tangent = CVector3f::Forward();
@@ -1054,7 +1052,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     }
     }
   }
-  if (CMOTIONSPLINE_NORMALIZABLE(tangent)) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangent)) {
     tangent.Normalize();
   } else {
     tangent = CVector3f::Forward();

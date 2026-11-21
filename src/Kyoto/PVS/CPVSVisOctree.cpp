@@ -5,8 +5,8 @@
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#if RSTL_VERSION >= RSTL_R32J
 #include "string.h"
+#if RSTL_VERSION >= RSTL_R32J
 
 #include "CPVSVisOctree.inc"
 #endif
@@ -30,12 +30,22 @@ int CPVSVisOctree::IterateSearch(uchar octant, const CVector3f& pos) const {
   float minY, maxY;
   float minZ, maxZ;
   bool highX, highY, highZ;
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
+  const float centerX = center[0];
+  if (pos[0] > centerX) {
+    minX = centerX;
+#else
   if (pos[0] > center[0]) {
     minX = center[0];
+#endif
     maxX = mMax[0];
     highX = true;
   } else {
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
+    maxX = centerX;
+#else
     maxX = center[0];
+#endif
     minX = mMin[0];
     highX = false;
   }
@@ -77,3 +87,118 @@ uint CPVSVisOctree::GetNumChildren(uchar octant) const {
   return childCount[octant & 7];
 }
 
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
+void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* userData) {
+  mMin = mBounds.GetMinPoint();
+  mMax = mBounds.GetMaxPoint();
+  mCurrentNodeOffset = 0;
+  TraverseLeavesRecursive(callback, 0, 0, userData);
+}
+
+CAABox CPVSVisOctree::GetChildBounds(uchar octant, int child, CAABox bounds) {
+  const CVector3f center = bounds.GetCenterPoint();
+  const CVector3f min = bounds.GetMinPoint();
+  const CVector3f max = bounds.GetMaxPoint();
+  const float* centerCoords = center.GetArrayPtr();
+  const float* minCoords = min.GetArrayPtr();
+  const float* maxCoords = max.GetArrayPtr();
+  float minX, maxX;
+  float minY, maxY;
+  float minZ, maxZ;
+  const bool highX = (octant & 1) && (child & 1);
+  if (octant & 1) {
+    child >>= 1;
+  }
+  if (highX) {
+    minX = centerCoords[0];
+    maxX = maxCoords[0];
+  } else {
+    minX = minCoords[0];
+    maxX = centerCoords[0];
+  }
+  const bool highY = (octant & 2) && (child & 1);
+  if (octant & 2) {
+    child >>= 1;
+  }
+  if (highY) {
+    minY = centerCoords[1];
+    maxY = maxCoords[1];
+  } else {
+    minY = minCoords[1];
+    maxY = centerCoords[1];
+  }
+  const bool highZ = (octant & 4) && (child & 1);
+  if (highZ) {
+    minZ = centerCoords[2];
+    maxZ = maxCoords[2];
+  } else {
+    minZ = minCoords[2];
+    maxZ = centerCoords[2];
+  }
+  const CVector3f childMin(octant & 1 ? minX : minCoords[0], octant & 2 ? minY : minCoords[1],
+                           octant & 4 ? minZ : minCoords[2]);
+  const CVector3f childMax(octant & 1 ? maxX : maxCoords[0], octant & 2 ? maxY : maxCoords[1],
+                           octant & 4 ? maxZ : maxCoords[2]);
+  return CAABox(childMin, childMax);
+}
+
+void CPVSVisOctree::TraverseLeavesRecursive(TLeafCallback callback, int depth, int child,
+                                          void* userData) {
+  const CAABox bounds(mMin, mMax);
+  const uint nodeOffset = mCurrentNodeOffset;
+  const char* const data = mOctreeData.get();
+  uchar nodeData = CCast::ToUint8(data[nodeOffset]);
+  const int numChildren = GetNumChildren(nodeData);
+  if (numChildren > 0) {
+    for (int i = 0; i < numChildren; ++i) {
+      mCurrentNodeOffset = nodeOffset + 1;
+      const CAABox childBounds = GetChildBounds(nodeData, i, bounds);
+      mMin = childBounds.GetMinPoint();
+      mMax = childBounds.GetMaxPoint();
+      if (i != 0) {
+        if ((nodeData & 0x60) == 0) {
+#ifdef __MWERKS__
+          mCurrentNodeOffset +=
+              CBasics::SwapBytes(reinterpret_cast< const ushort* >(data + mCurrentNodeOffset)[i - 1]);
+#else
+          ushort offset;
+          memcpy(&offset, data + mCurrentNodeOffset + (i - 1) * sizeof(offset), sizeof(offset));
+          mCurrentNodeOffset += CBasics::SwapBytes(offset);
+#endif
+        } else if (nodeData & 0x20) {
+          mCurrentNodeOffset += CCast::ToUint8(data[mCurrentNodeOffset + i - 1]);
+        } else {
+          const uchar* offset =
+              reinterpret_cast< const uchar* >(data) + mCurrentNodeOffset + (i - 1) * 3;
+          mCurrentNodeOffset += (offset[0] << 16) + (offset[1] << 8) + offset[2];
+        }
+      }
+      if ((nodeData & 0x60) == 0) {
+        mCurrentNodeOffset += (GetNumChildren(nodeData) - 1) * 2;
+      } else if (nodeData & 0x20) {
+        mCurrentNodeOffset += GetNumChildren(nodeData) - 1;
+      } else {
+        mCurrentNodeOffset += (GetNumChildren(nodeData) - 1) * 3;
+      }
+      TraverseLeavesRecursive(callback, depth + 1, i, userData);
+    }
+  } else {
+    CPVSVisSet vis(kVSS_OutOfBounds);
+    switch (nodeData & 0x18) {
+    case 24: {
+      rstl::auto_ptr< const char > leaf(data + (nodeOffset + 1));
+      leaf.release();
+      vis = CPVSVisSet(GetNumObjects(), GetNumLights(), rstl::auto_ptr< const char >(leaf));
+      break;
+    }
+    case 8:
+      vis = CPVSVisSet(kVSS_OutOfBounds);
+      break;
+    case 16:
+      vis = CPVSVisSet(kVSS_EndOfTree);
+      break;
+    }
+    callback(*this, bounds, vis, depth, child, userData);
+  }
+}
+#endif

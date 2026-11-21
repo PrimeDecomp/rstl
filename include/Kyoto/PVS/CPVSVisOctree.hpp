@@ -1,6 +1,7 @@
 #ifndef _CPVSVISOCTREE
 #define _CPVSVISOCTREE
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
@@ -25,23 +26,23 @@ public:
 
   CPVSVisSet GetVisSet(const CVector3f& point) const;
 
-#if RSTL_PRIME1
-#ifdef ENABLE_DEBUG_TOOLS
-  // Backported traversal interface; callback receives the leaf depth and ordinal.
   typedef void (*TLeafCallback)(const CPVSVisOctree&, const CAABox&, const CPVSVisSet&, int, int,
-                               void*);
-  void TraverseLeaves(TLeafCallback callback, void* context) const;
-#endif
-#endif
+                                void*);
+  void TraverseLeaves(TLeafCallback callback, void* userData) RSTL_KYOTO_SCALAR_PARAM_CONST;
 
 private:
+  void TraverseLeavesRecursive(TLeafCallback callback, int depth, int child,
+                               void* userData); // Guessed name
+  static CAABox GetChildBounds(uchar octant, int child, CAABox bounds); // Guessed name
+
   CAABox mBounds;
   uint mNumObjects;
   uint mNumLights;
   rstl::auto_ptr< const char > mOctreeData;
-  uint _28;
+  uint mCurrentNodeOffset; // Guessed name
   mutable CVector3f mMin;
   mutable CVector3f mMax;
 };
+CHECK_SIZEOF(CPVSVisOctree, 0x44)
 
 #endif // _CPVSVISOCTREE

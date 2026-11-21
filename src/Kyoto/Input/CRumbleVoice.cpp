@@ -136,7 +136,11 @@ bool CRumbleVoice::Update(float dt) {
 ushort CRumbleVoice::GetFreeChannel() const {
   for (ushort i = 0; i < 4; ++i) {
     if ((mUsedChannels & (1 << i)) == 0) {
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+      return i;
+#else
       return (ushort)i;
+#endif
     }
   }
   return 0;
@@ -197,4 +201,3 @@ short CRumbleVoice::CreateRumbleHandle(RSTL_PRIME1_CONST ushort idx) {
   return ((mLastId << 8) | x) & 0xFFFF;
 #endif
 }
-
