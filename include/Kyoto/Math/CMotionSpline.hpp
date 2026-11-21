@@ -7,11 +7,7 @@
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 
-#if RSTL_CORRUPTION
-
-
 class CColor;
-#endif
 class CQuaternion;
 
 class CMotionSpline {
@@ -31,9 +27,7 @@ public:
   void Initialise(const rstl::vector< CVector3f >& points);
   void Translate(const CVector3f& offset);
   void Rotate(const CQuaternion& rotation, const CVector3f& origin);
-#if !RSTL_CORRUPTION
   CVector3f GetInterpolatedSplinePointByTime(float time) const;
-#endif
   float FindClosestLengthOnSpline(float start, const CVector3f& position) const;
   float ValidateLength(float distance) const;
   // Guessed names; time is mapped through arc length rather than segment parameterization.

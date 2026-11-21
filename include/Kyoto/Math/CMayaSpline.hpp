@@ -2,12 +2,8 @@
 #define _CMAYASPLINE
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "Kyoto/Math/CAbsAngle.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
 

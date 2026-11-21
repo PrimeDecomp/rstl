@@ -2,24 +2,14 @@
 #define _CFONTRENDERSTATE
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#else
 #include "rstl/list.hpp"
-
-#endif
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
-#if RSTL_CORRUPTION
-#include "rstl/list.hpp"
-
-
-#else
+#if !RSTL_CORRUPTION
 #include "rstl/vector.hpp"
 #endif
 
@@ -116,10 +106,6 @@ private:
   rstl::list< CSaveableState > mPushedStates;
 };
 
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CFontRenderState, 0x12c)
-#else
 CHECK_SIZEOF(CFontRenderState, (RSTL_VERSION >= RSTL_GM8P_00 ? 0x12c : 0x124))
-#endif
 
 #endif // _CFONTRENDERSTATE

@@ -3,21 +3,15 @@
 #include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CVector2i.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
-#include "Kyoto/SObjectTag.hpp"
 #include "rstl/list.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
-#if RSTL_CORRUPTION
 #include "rstl/single_ptr.hpp"
-#endif
 #include "rstl/string.hpp"
 
 class CGuiTextProperties {
@@ -77,9 +71,7 @@ public:
   void SetLineSpacingScale(float scale) { mLineSpacingScale = scale; } // Guessed name
 #endif
   float GetNumCharactersPrinted() const;
-#if !RSTL_CORRUPTION
   float GetNumCharsTotal() const;
-#endif
   float GetCurrentAnimationOverAge() const;
   const rstl::wstring& GetText() const { return mText; }
   int GetTotalPageCount();

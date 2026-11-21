@@ -1,19 +1,13 @@
 #ifndef _CPARTICLEELECTRICDATAFACTORY
 #define _CPARTICLEELECTRICDATAFACTORY
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 
 #include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 
-#if !RSTL_CORRUPTION
 class CInputStream;
-#endif
 
 class CElectricDescription;
-#if RSTL_CORRUPTION
-class CInputStream;
-#endif
 class CSimplePool;
 
 class CParticleElectricDataFactory {

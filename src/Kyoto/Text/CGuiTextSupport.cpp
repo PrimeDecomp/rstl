@@ -2,9 +2,7 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CGuiTextSupport.hpp"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Basics/CCast.hpp"
-#endif
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Text/CInstruction.hpp"

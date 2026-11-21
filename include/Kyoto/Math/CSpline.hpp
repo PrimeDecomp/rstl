@@ -57,20 +57,14 @@ public:
 #endif
   float GetDuration() const;
   uint GetFlags() const { return mFlags; }
-#if !RSTL_CORRUPTION
   float FindClosestLengthOnSpline(float start, const CVector3f& position) const;
   float ValidateLength(float distance) const;
-#endif
   CVector3f GetPositionByTime(float time) const;
-#if !RSTL_CORRUPTION
   CVector3f GetPositionByLength(float distance) const;
-#endif
   CVector3f GetLookAtByTime(float time) const;
-#if !RSTL_CORRUPTION
   CVector3f GetLookAtByLength(float distance) const;
   CQuaternion GetOrientationByTime(float time) const;
   CQuaternion GetOrientationByLength(float distance) const;
-#endif
 
 protected:
   // Guessed semantic names, supported by construction and native samplers.

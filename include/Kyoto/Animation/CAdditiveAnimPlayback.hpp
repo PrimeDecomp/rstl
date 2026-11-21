@@ -2,11 +2,7 @@
 #define _CADDITIVEANIMPLAYBACK
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "rstl/types.h"
 
 #include "Kyoto/Animation/CAdditiveAnimationInfo.hpp"
@@ -14,11 +10,9 @@
 #include "rstl/rc_ptr.hpp"
 
 class CAnimTreeNode;
-#if !RSTL_CORRUPTION
 class CCharLayoutInfo;
 class CSegIdList;
 class CSegStatementSet;
-#endif
 
 class CAdditiveAnimPlayback {
 public:
@@ -36,11 +30,13 @@ public:
   const rstl::rc_ptr< CAnimTreeNode >& GetAnimationTree() const { return mAnim; }
   rstl::ncrc_ptr< CAnimTreeNode >& AnimationTree() { return mAnim; }
 
+  float GetWeight() const {
 #if RSTL_CORRUPTION
-  float GetWeight() const { return mCurWeight; }
+    return mCurWeight;
 #else
-  float GetWeight() const { return mTargetWeight; }
+    return mTargetWeight;
 #endif
+  }
   void SetWeight(float weight);
 
   EPlaybackPhase GetFadingMode() const { return mPhase; }
@@ -52,9 +48,7 @@ public:
 
   void FadeOut();
   void Update(float dt);
-#if !RSTL_CORRUPTION
   void AddToSegStatementSet(const CSegIdList&, const CCharLayoutInfo&, CSegStatementSet&) const;
-#endif
 
 private:
   CAdditiveAnimationInfo mInfo;
@@ -66,10 +60,6 @@ private:
   EPlaybackPhase mPhase;
   bool mNeedsFadeOut;
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CAdditiveAnimPlayback, 0x28)
-#else
 CHECK_SIZEOF(CAdditiveAnimPlayback, RSTL_PRIME1 ? 0x24 : 0x28)
-#endif
 
 #endif // _CADDITIVEANIMPLAYBACK

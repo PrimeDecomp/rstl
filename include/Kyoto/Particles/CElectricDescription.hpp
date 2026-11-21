@@ -2,11 +2,8 @@
 #define _CELECTRICDESCRIPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#else
+#if !RSTL_CORRUPTION
 #include "Kyoto/Particles/CGenDescription.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
@@ -62,10 +59,6 @@ public:
   rstl::optional_object< TCachedToken< CGenDescription > > mEPSM;
   bool mZERY;
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CElectricDescription, 0x80)
-#else
-CHECK_SIZEOF(CElectricDescription, RSTL_PRIME1 ? 0x74 : 0x7c)
-#endif
+CHECK_SIZEOF(CElectricDescription, RSTL_CORRUPTION ? 0x80 : RSTL_PRIME1 ? 0x74 : 0x7c)
 
 #endif // _CELECTRICDESCRIPTION

@@ -2,19 +2,11 @@
 #define _CTEXTPARSER
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "Kyoto/TToken.hpp"
 #include "Kyoto/Text/CFontImageDef.hpp"
-#if RSTL_CORRUPTION
 #include "rstl/optional_object.hpp"
-#else
-#include "Kyoto/SObjectTag.hpp"
-#endif
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 

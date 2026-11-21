@@ -4,9 +4,7 @@
 
 #include "rstl/string.hpp"
 
-#if !RSTL_CORRUPTION
 class CColor;
-#endif
 class CRasterFont;
 class CTextExecuteBuffer;
 template < class T >

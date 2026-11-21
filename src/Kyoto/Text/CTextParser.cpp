@@ -1,14 +1,10 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CTextParser.hpp"
 #include "Kyoto/Math/CVector2f.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/IObjectStore.hpp"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Alloc/Assert.hpp"
-#include "Kyoto/IObjectStore.hpp"
-#endif
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Text/CTextExecuteBuffer.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
@@ -293,8 +289,8 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
     if (font) {
       buffer.AddFont(*font);
     } else {
-      rs_debugger_printf("Warning: Couldn't parse font tag with %s\n",
-                         CStringExtras::ConvertToANSI(string).c_str());
+      RS_DEBUGGER_PRINT("Warning: Couldn't parse font tag with %s\n",
+                        CStringExtras::ConvertToANSI(string).c_str());
     }
 #else
     TToken< CRasterFont > font = GetFont(string + 5, len - 5);
@@ -306,8 +302,8 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
     if (texture) {
       buffer.AddImage(*texture);
     } else {
-      rs_debugger_printf("Warning: Couldn't parse image tag with %s\n",
-                         CStringExtras::ConvertToANSI(string).c_str());
+      RS_DEBUGGER_PRINT("Warning: Couldn't parse image tag with %s\n",
+                        CStringExtras::ConvertToANSI(string).c_str());
     }
 #else
     CFontImageDef texture = GetImage(string + 6, len - 6, vec);

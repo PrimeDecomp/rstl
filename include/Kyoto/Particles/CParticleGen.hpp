@@ -1,7 +1,6 @@
 #ifndef _CPARTICLEGEN
 #define _CPARTICLEGEN
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
@@ -15,13 +14,11 @@
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
 
-#if !RSTL_CORRUPTION
 class CAABox;
 class CColor;
 class CLight;
 class CTransform4f;
 class CVector3f;
-#endif
 
 class CWarp;
 

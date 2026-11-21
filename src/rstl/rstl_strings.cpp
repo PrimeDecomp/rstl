@@ -2,9 +2,7 @@
 #include "rstl/string.hpp"
 #include "rstl/math.hpp"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Alloc/CMemory.hpp"
-#endif
 
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/COutputStream.hpp"

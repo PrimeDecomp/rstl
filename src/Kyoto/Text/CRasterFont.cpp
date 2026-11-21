@@ -1,18 +1,13 @@
 #include "rstl/RstlVersions.h"
 #if RSTL_CORRUPTION
 #define RSTL_INLINE_SWAP
-#else
-#include "rstl/RstlVersions.h"
 #endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 
-#if RSTL_CORRUPTION
-#else
 #include "Kyoto/CFactoryFnReturn.hpp"
-#endif
 #include "Kyoto/CFactoryMgr.hpp"
 
 #include "Kyoto/CSimplePool.hpp"
@@ -22,10 +17,7 @@
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-#if RSTL_CORRUPTION
-#include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 #include "Kyoto/Text/CDrawStringOptions.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Text/TextCommon.hpp"

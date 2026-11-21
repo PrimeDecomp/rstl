@@ -2,7 +2,6 @@
 #define _CGENDESCRIPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
 #include "Kyoto/CToken.hpp"
@@ -159,10 +158,7 @@ public:
 #endif
 
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CGenDescription, 0x15C)
-#else
-CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
-#endif
+CHECK_SIZEOF(CGenDescription, RSTL_CORRUPTION ? 0x15C :
+             RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
 
 #endif // _CGENDESCRIPTION

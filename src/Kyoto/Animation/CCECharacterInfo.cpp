@@ -1,16 +1,13 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CCECharacterInfo.hpp"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
-#endif
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 #if RSTL_CORRUPTION
 #include "rstl/algorithm.hpp"
@@ -125,7 +122,7 @@ static void CopyAnimBBoxes(const rstl::vector< rstl::pair< rstl::string, CAABox 
 }
 
 #if RSTL_CORRUPTION
-  rs_debugger_printf("WARNING: Bounding box not found for 0x%x\n", id);
+  RS_DEBUGGER_PRINT("WARNING: Bounding box not found for 0x%x\n", id);
   return CAABox::MakeNullBox();
 #else
 // Guessed; stands in for a function stripped from the link.

@@ -2,18 +2,12 @@
 #define _CFONT
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "Kyoto/Graphics/CColor.hpp"
 
 #include "rstl/types.h"
 
-#if !RSTL_CORRUPTION
 class CTexture;
-#endif
 
 class CFont {
 public:

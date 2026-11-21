@@ -2,14 +2,8 @@
 #define _CTEXTEXECUTEBUFFER
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#else
 #include "Kyoto/Text/TextCommon.hpp"
-
-#endif
 #include "rstl/list.hpp"
 #include "rstl/rc_ptr.hpp"
 #include "rstl/string.hpp"
@@ -17,11 +11,7 @@
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
 
-#if RSTL_CORRUPTION
-
-
 class CInstruction;
-#endif
 class CBlockInstruction;
 class CLineInstruction;
 class CFontImageDef;
@@ -117,10 +107,6 @@ private:
   rstl::list< CSaveableState > mStateStack;
 };
 
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CTextExecuteBuffer, 0xe0)
-#else
 CHECK_SIZEOF(CTextExecuteBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xe0 : 0xdc))
-#endif
 
 #endif // _CTEXTEXECUTEBUFFER

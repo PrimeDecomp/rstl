@@ -1,12 +1,6 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_CORRUPTION
-#define MSL_NO_INLINE_SQRT
-#else
-#include "rstl/RstlVersions.h"
 #if !RSTL_PRIME1
 #define MSL_NO_INLINE_SQRT
-#endif
-
 #endif
 #include "Kyoto/Math/CMath.hpp"
 
@@ -929,7 +923,7 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
     const float x = roots[i];
     const float value = x * ((coefficients[3] * x + coefficients[2]) * x + coefficients[1]);
     if (fabsf(coefficients[0] + value) > 0.0002f) {
-      rs_debugger_printf("Cubic solver inaccurate!\n");
+      RS_DEBUGGER_PRINT("Cubic solver inaccurate!\n");
     }
   }
   return count;

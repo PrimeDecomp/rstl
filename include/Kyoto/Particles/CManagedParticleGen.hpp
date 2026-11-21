@@ -7,16 +7,11 @@
 #include "Kyoto/SObjectTag.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/single_ptr.hpp"
-#if RSTL_CORRUPTION
-
-
-
 class CElementGen;
 class CParticleSwoosh;
 class CParticleElectric;
 class CParticleSortedSystem;
 class CParticleSpawnSystem;
-#endif
 
 // Class name from Corruption diagnostics; its Echoes correspondence is reconstructed.
 // Owns an effect token, optional dependencies and a lazily created generator.
@@ -61,10 +56,6 @@ private:
   bool mCreatePending : 1;
   bool mUseSystemDeletable : 1; // Guessed name
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CManagedParticleGen, 0x50)
-#else
-CHECK_SIZEOF(CManagedParticleGen, 0x44)
-#endif
+CHECK_SIZEOF(CManagedParticleGen, RSTL_CORRUPTION ? 0x50 : 0x44)
 
 #endif // _CMANAGEDPARTICLEGEN

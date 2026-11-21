@@ -2,12 +2,9 @@
 #define _CSPAWNSYSTEMKEYFRAMEDATA
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/CAssetId.hpp"
-#endif
 #include "Kyoto/CToken.hpp"
 
 #include "rstl/optional_object.hpp"

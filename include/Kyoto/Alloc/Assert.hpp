@@ -98,9 +98,6 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
   if (!(condition))                                                                                \
   RS_VERIFY_FAILURE_IN(file, line, #condition, #exception, message)
 #else
-#if RSTL_CORRUPTION
-extern "C" void rs_debugger_printf(const char* format, ...);
-#endif
 // Builds without asserts keep every assert in the source; each one compiles to nothing and does
 // not evaluate its arguments.
 #define RS_DEBUGGER_WARNING(...) (void)(0)

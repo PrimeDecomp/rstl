@@ -1,7 +1,6 @@
 #ifndef _IELEMENT
 #define _IELEMENT
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 
 #include "rstl/types.h"
 
@@ -34,12 +33,7 @@ public:
 
   // -> CFrameDelayedKiller
   void* operator new(size_t sz, const char*, const char*);
-#if RSTL_CORRUPTION
-  void* operator new(size_t sz) { return operator new(sz, "??(??)", nullptr); }
-#else
   void* operator new(size_t sz) { return operator new(sz, "\?\?(\?\?)", nullptr); }
-
-#endif
   void operator delete(void* ptr, size_t sz);
 };
 

@@ -1,18 +1,13 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleElectricDataFactory.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
 
 #include "Kyoto/Particles/CElectricDescription.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Particles/CIntElement.hpp"
-#endif
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 

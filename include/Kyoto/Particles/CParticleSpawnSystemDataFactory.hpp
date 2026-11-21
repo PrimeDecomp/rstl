@@ -4,18 +4,10 @@
 
 #include "rstl/types.h"
 #include "Kyoto/CFactoryMgr.hpp"
-#if RSTL_CORRUPTION
-#include "rstl/types.h"
-#endif
 
-#if !RSTL_CORRUPTION
 class CInputStream;
-#endif
 
 class CSpawnSystemDescription;
-#if RSTL_CORRUPTION
-class CInputStream;
-#endif
 class CSimplePool;
 class CVParamTransfer;
 

@@ -2,11 +2,7 @@
 #define _CELEMENTGEN
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "rstl/types.h"
 
 #include "Kyoto/CRandom16.hpp"
@@ -600,11 +596,8 @@ public:
 
 #endif
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CElementGen, 0x350)
-#else
-CHECK_SIZEOF(CElementGen, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
-#endif
+CHECK_SIZEOF(CElementGen, RSTL_CORRUPTION ? 0x350 :
+             RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
 
 #if !RSTL_CORRUPTION
 #if !RSTL_PRIME1

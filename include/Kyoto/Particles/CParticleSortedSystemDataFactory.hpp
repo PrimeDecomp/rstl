@@ -5,14 +5,9 @@
 #include "Kyoto/CFactoryMgr.hpp"
 #include "rstl/types.h"
 
-#if !RSTL_CORRUPTION
 class CInputStream;
-#endif
 
 class CSortedParticleSystemDescription;
-#if RSTL_CORRUPTION
-class CInputStream;
-#endif
 class CSimplePool;
 class CVParamTransfer;
 

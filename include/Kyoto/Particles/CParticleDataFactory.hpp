@@ -1,30 +1,21 @@
 #ifndef _CPARTICLEDATAFACTORY
 #define _CPARTICLEDATAFACTORY
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
 
 #include "Kyoto/Particles/IElement.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/SObjectTag.hpp"
-#endif
 #include "Kyoto/TToken.hpp"
 
-#include "Kyoto/SObjectTag.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/vector.hpp"
 
-#if !RSTL_CORRUPTION
 class CInputStream;
-#endif
 
 class CElectricDescription;
 class CGenDescription;
-#if RSTL_CORRUPTION
-class CInputStream;
-#endif
 class CModel;
 class CSimplePool;
 class CSwooshDescription;

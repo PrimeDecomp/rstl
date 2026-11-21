@@ -1,18 +1,14 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CIntElement.hpp"
 
 #include "Kyoto/Basics/CCast.hpp"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Particles/CParticleGlobals.hpp"
-#endif
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
-#include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 
 #include "rstl/math.hpp"

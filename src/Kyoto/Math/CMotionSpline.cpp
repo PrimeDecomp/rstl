@@ -3,9 +3,7 @@
 
 #include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Math/CQuaternion.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Math/CUnitVector3f.hpp"
-#endif
 #include "Kyoto/Math/CloseEnough.hpp"
 
 CMotionSpline::CMotionSpline(bool closedLoop, float duration, ESplineType type)

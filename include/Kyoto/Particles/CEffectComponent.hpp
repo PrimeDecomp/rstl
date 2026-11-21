@@ -2,11 +2,7 @@
 #define _CEFFECTCOMPONENT
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "Kyoto/Particles/CParticleData.hpp"
 #include "rstl/string.hpp"
 
@@ -60,12 +56,8 @@ private:
   CParticleData::EParentedMode mParentedMode;
   uint mFlags;
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CEffectComponent, 0x28)
-#else
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CEffectComponent, 0x1c)
-#endif
+CHECK_SIZEOF(CEffectComponent, RSTL_CORRUPTION ? 0x28 : 0x1c)
 #endif
 
 #endif // _CEFFECTCOMPONENT

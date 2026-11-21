@@ -2,11 +2,7 @@
 #define _CSWOOSHDESCRIPTION
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "rstl/types.h"
 
 class CColorElement;
@@ -62,12 +58,8 @@ public:
 #endif
 
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CSwooshDescription, 0x58)
-#else
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CSwooshDescription, 0x4c)
-#endif
+CHECK_SIZEOF(CSwooshDescription, RSTL_CORRUPTION ? 0x58 : 0x4c)
 #endif
 
 #endif // _CSWOOSHDESCRIPTION

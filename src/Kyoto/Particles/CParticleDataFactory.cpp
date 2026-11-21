@@ -1,6 +1,5 @@
 #include "Kyoto/Alloc/Assert.hpp"
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
@@ -28,9 +27,7 @@
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 #include "Kyoto/TToken.hpp"
 #include "dolphin/types.h"
 #include "rstl/algorithm.hpp"

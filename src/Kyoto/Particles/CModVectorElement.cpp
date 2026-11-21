@@ -1,13 +1,10 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CModVectorElement.hpp"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Particles/CParticleCollisionSignal.hpp"
-
-
 #endif
 
 CMVEConstant::CMVEConstant(CRealElement* a, CRealElement* b, CRealElement* c)

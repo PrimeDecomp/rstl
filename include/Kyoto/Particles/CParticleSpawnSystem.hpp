@@ -129,10 +129,6 @@ private:
   bool mVelocitySourceLocal[2];
   CModVectorElement* mVelocitySources[2];
 };
-#if RSTL_CORRUPTION
-CHECK_SIZEOF(CParticleSpawnSystem, 0x220)
-#else
 CHECK_SIZEOF(CParticleSpawnSystem, RSTL_PARTICLE_SPAWN_OPTIONAL_FLAGS ? 0x220 : 0x218)
-#endif
 
 #endif // _CPARTICLESPAWNSYSTEM

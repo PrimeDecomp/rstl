@@ -1,10 +1,7 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleSwooshDataFactory.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#endif
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/CVParamTransfer.hpp"

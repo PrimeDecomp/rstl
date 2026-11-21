@@ -5,10 +5,8 @@
 
 #include "rstl/types.h"
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
-#endif
 
 #include "rstl/allocator_auto_ptr.hpp"
 #include "rstl/iterator.hpp"

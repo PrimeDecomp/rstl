@@ -1,12 +1,8 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CUVElement.hpp"
 
 #include "Kyoto/Graphics/CTexture.hpp"
-#if RSTL_CORRUPTION
 #include "Kyoto/Math/CMath.hpp"
-
-#endif
 #include "Kyoto/Basics/CCast.hpp"
 
 #include "rstl/math.hpp"

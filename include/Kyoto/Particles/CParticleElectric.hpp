@@ -2,11 +2,7 @@
 #define _CPARTICLEELECTRIC
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#if RSTL_CORRUPTION
-#include "rstl/static_assert.hpp"
-#endif
 #include "Kyoto/Particles/CParticleGen.hpp"
 
 #include "Kyoto/CRandom16.hpp"
@@ -127,9 +123,7 @@ public:
   };
 
   void ForceParticleCreation(int count);
-#if RSTL_CORRUPTION
   void ReseedRandom(uint seed); // Guessed name
-#endif
   void SetOverrideIPos(const CVector3f& vec) { mOverrideIPos = vec; }
   void SetOverrideIVel(const CVector3f& vec) { mOverrideIVel = vec; }
   void SetOverrideFPos(const CVector3f& vec) { mOverrideFPos = vec; }
@@ -140,9 +134,7 @@ public:
 #endif
 
 private:
-#if RSTL_CORRUPTION
   static void SetLineBlendMode(int mode); // Guessed name
-#endif
   void SetupLineGXMaterial();
   void DrawLineStrip(const rstl::vector< CVector3f, rstl::aligned_allocator >& verts, float width,
                      const CColor& color);

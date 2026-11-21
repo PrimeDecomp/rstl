@@ -2,7 +2,6 @@
 #define _CPARTICLESWOOSH
 #include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
 #include "Kyoto/CRandom16.hpp"
@@ -14,20 +13,13 @@
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 #include "rstl/vector.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
 #include "Prime/MetroidPrime/CParticleDatabase.hpp"
 #endif
 #include "dolphin/gx/GXEnum.h"
-#endif
 
 class CSwooshDescription;
 class CTexture;
-#if RSTL_CORRUPTION
-
-#include "dolphin/gx/GXEnum.h"
-#endif
 
 class CParticleSwoosh : public CParticleGen {
   friend class CParticleElectric;

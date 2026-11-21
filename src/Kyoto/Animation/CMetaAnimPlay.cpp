@@ -1,5 +1,4 @@
 #include "rstl/RstlVersions.h"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CMetaAnimPlay.hpp"
@@ -25,8 +24,8 @@ CMetaAnimPlay::VGetAnimationTree(const CAnimSysContext& animSys,
 #if RSTL_CORRUPTION
   const SObjectTag tag('ANIM', CAssetId(mPrimitive.GetResourceId()));
   if (!animSys.GetObjectStore().ObjectIsLive(tag)) {
-    rs_debugger_printf("Requested animation '%s' is not currently instanced -- LOADING\n",
-                       mPrimitive.GetName().data());
+    RS_DEBUGGER_PRINT("Requested animation '%s' is not currently instanced -- LOADING\n",
+                      mPrimitive.GetName().data());
   }
   TLockedToken< CAllFormatsAnimSource > anim = animSys.GetObjectStore().GetObj(tag);
   const CAnimPOIData* pAnimPOIData =
