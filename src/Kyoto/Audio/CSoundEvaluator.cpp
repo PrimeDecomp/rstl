@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Audio/CSoundEvaluator.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
@@ -47,3 +49,4 @@ rstl::rc_ptr< CSoundEvaluator > CSoundEvaluatorFactory::GetSoundEvaluator(CInput
     return rstl::rc_ptr< CSoundEvaluator >(nullptr);
   }
 }
+#endif

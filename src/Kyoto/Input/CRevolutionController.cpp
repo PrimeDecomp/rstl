@@ -1,4 +1,6 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
+#include "rstl/RstlVersions.h"
 #include "Kyoto/Input/CRevolutionController.hpp"
 
 #if RSTL_CORRUPTION
@@ -1454,4 +1456,5 @@ void CRevolutionController::SetAcceptAdditionalConnections(bool accept) {
 void CRevolutionController::SetInput(const CControllerData& input, int channel) {
   mInput[channel] = input;
 }
+#endif
 #endif

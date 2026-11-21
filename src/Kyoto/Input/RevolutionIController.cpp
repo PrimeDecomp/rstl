@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_PROTO_UNIT
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/Input/CRevolutionController.hpp"
@@ -16,3 +18,4 @@ IController::~IController() {}
 IController* IController::Create(const COsContext& ctx) {
   return rs_new_line(60) CRevolutionController();
 }
+#endif
