@@ -1708,92 +1708,6 @@ void CElementGen::UpdatePSTranslationAndOrientation() {
   }
 }
 #endif
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_CORRUPTION
-CParticleGen* CElementGen::ConstructChildParticleSystem(
-    const CToken& description, uint type, short seed, EOptionalSystemFlags flags,
-    bool modelsUseLights, bool emission, const CVector3f& translation,
-    const CTransform4f& orientation, const CVector3f& globalTranslation,
-    const CTransform4f& globalOrientation, const CVector3f& globalScale,
-    const CColor& modulationColor, const CVector3f& localScale) {
-  CParticleGen* child;
-  const bool optsEnabled = (flags & kOSF_Two) != 0;
-  switch (type) {
-  case 'PART': {
-    const short backupSeed = sSeed;
-    if (seed != 0) {
-      sSeed = seed;
-    }
-    TLockedToken< CGenDescription > particleDescription(description);
-    const bool descOpts = particleDescription->mOPTS;
-    if (optsEnabled && descOpts) {
-      return nullptr;
-    }
-    CElementGen* particles = rs_new_line(1332) CElementGen(particleDescription, kMOT_Normal, flags);
-    particles->SetLeaveLightsEnabledForModelRender(modelsUseLights);
-    child = particles;
-    sSeed = backupSeed;
-    break;
-  }
-  case 'SWHC': {
-    TToken< CSwooshDescription > swooshDescription(description);
-    child = rs_new_line(1342) CParticleSwoosh(swooshDescription, 0);
-    break;
-  }
-  case 'ELSC': {
-    const short backupSeed = CParticleElectric::GetGlobalSeed();
-    if (seed != 0) {
-      CParticleElectric::SetGlobalSeed(seed);
-    }
-    TToken< CElectricDescription > electricDescription(description);
-    child = rs_new_line(1354) CParticleElectric(electricDescription);
-    CParticleElectric::SetGlobalSeed(backupSeed);
-    break;
-  }
-  case 'SPSC': {
-    const short backupSeed = CParticleSpawnSystem::GetGlobalSeed();
-    if (seed != 0) {
-      CParticleSpawnSystem::SetGlobalSeed(seed);
-    }
-    TToken< CSpawnSystemDescription > spawnDescription(description);
-    child = rs_new_line(1368) CParticleSpawnSystem(spawnDescription, flags, modelsUseLights);
-    CParticleSpawnSystem::SetGlobalSeed(backupSeed);
-    break;
-  }
-  case 'SRSC': {
-    const short backupSeed = CParticleSortedSystem::GetGlobalSeed();
-    if (seed != 0) {
-      CParticleSortedSystem::SetGlobalSeed(seed);
-    }
-    TToken< CSortedParticleSystemDescription > spawnDescription(description);
-    child = rs_new_line(1382) CParticleSortedSystem(spawnDescription, flags, modelsUseLights);
-    CParticleSortedSystem::SetGlobalSeed(backupSeed);
-    break;
-  }
-  default:
-    RS_WARNING_PRINT("Unsupported spawned particle asset type %d\n", type);
-    return nullptr;
-  }
-
-  if (child) {
-    if (child->Get4CharId() == 'SPSC') {
-      CParticleSpawnSystem* spawnSystem = static_cast< CParticleSpawnSystem* >(child);
-      spawnSystem->ForceSetTranslation(translation);
-      spawnSystem->ForceSetOrientation(orientation);
-      spawnSystem->ForceSetGlobalTranslation(globalTranslation);
-      spawnSystem->ForceSetGlobalOrientation(globalOrientation);
-    } else {
-      child->SetGlobalTranslation(globalTranslation);
-      child->SetGlobalOrientation(globalOrientation);
-      child->SetTranslation(translation);
-      child->SetOrientation(orientation);
-    }
-    child->SetGlobalScale(globalScale);
-    child->SetLocalScale(localScale);
-    child->SetParticleEmission(emission);
-    child->SetModulationColor(modulationColor);
-  }
-#else
 #if RSTL_PRIME1
 CElementGen* CElementGen::ConstructChildParticleSystem(TToken< CGenDescription > desc) const {
   CElementGen* child = rs_new CElementGen(desc, kMOT_Normal, mEnableOPTS ? kOSF_Two : kOSF_One);
@@ -1834,9 +1748,9 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
       return nullptr;
     }
 #if RSTL_PARTICLE_BOUNDS_MODES
-    CElementGen* particles = rs_new CElementGen(particleDescription, kMOT_Normal, flags);
+    CElementGen* particles = rs_new_line(1332) CElementGen(particleDescription, kMOT_Normal, flags);
 #else
-    CElementGen* particles = rs_new CElementGen(particleDescription, kMOT_Normal,
+    CElementGen* particles = rs_new_line(1332) CElementGen(particleDescription, kMOT_Normal,
                                                 optsEnabled ? kOSF_Two : kOSF_One);
 #endif
     particles->SetLeaveLightsEnabledForModelRender(modelsUseLights);
@@ -1846,7 +1760,7 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
   }
   case 'SWHC': {
     TToken< CSwooshDescription > swooshDescription(description);
-    child = rs_new CParticleSwoosh(swooshDescription, 0);
+    child = rs_new_line(1342) CParticleSwoosh(swooshDescription, 0);
     break;
   }
   case 'ELSC': {
@@ -1855,7 +1769,7 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
       CParticleElectric::SetGlobalSeed(seed);
     }
     TToken< CElectricDescription > electricDescription(description);
-    child = rs_new CParticleElectric(electricDescription);
+    child = rs_new_line(1354) CParticleElectric(electricDescription);
     CParticleElectric::SetGlobalSeed(backupSeed);
     break;
   }
@@ -1868,7 +1782,7 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     const EOptionalSystemFlags flags = optsEnabled ? kOSF_Two : kOSF_One;
 #endif
     TToken< CSpawnSystemDescription > spawnDescription(description);
-    child = rs_new CParticleSpawnSystem(spawnDescription, flags, modelsUseLights);
+    child = rs_new_line(1368) CParticleSpawnSystem(spawnDescription, flags, modelsUseLights);
     CParticleSpawnSystem::SetGlobalSeed(backupSeed);
     break;
   }
@@ -1881,11 +1795,12 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     const EOptionalSystemFlags flags = optsEnabled ? kOSF_Two : kOSF_One;
 #endif
     TToken< CSortedParticleSystemDescription > spawnDescription(description);
-    child = rs_new CParticleSortedSystem(spawnDescription, flags, modelsUseLights);
+    child = rs_new_line(1382) CParticleSortedSystem(spawnDescription, flags, modelsUseLights);
     CParticleSortedSystem::SetGlobalSeed(backupSeed);
     break;
   }
   default:
+    RS_WARNING_PRINT("Unsupported spawned particle asset type %d\n", type);
     return nullptr;
   }
 
@@ -1907,8 +1822,6 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     child->SetParticleEmission(emission);
     child->SetModulationColor(modulationColor);
   }
-#endif
-
 #endif
   return child;
 }
