@@ -1136,7 +1136,11 @@ ECardResult CMemoryCardSys::GetResultCode(int port) {
   return static_cast< ECardResult >(CARDGetResultCode(port));
 }
 
+#if RSTL_CORRUPTION
+ECardResult CMemoryCardSys::MountSync(EMemoryCardPort port) {
+#else
 ECardResult CMemoryCardSys::MountCardSync(EMemoryCardPort port) {
+#endif
   return static_cast< ECardResult >(CARDMount(port, AllocCardWorkArea(port), nullptr));
 }
 
@@ -1396,7 +1400,7 @@ TCardWorkArea& CMemoryCardSys::WorkAreaVector(EMemoryCardPort port) {
   case kCS_SlotB:
     return mWorkAreaB;
   default:
-    RS_VERIFY_FAILURE(1306, "false", "false", "Invalid memory card port");
+    RS_VERIFY_FAILURE(1306, "false", "false", "Invalid memory card port")
     return mWorkAreaA;
   }
 }

@@ -3,8 +3,6 @@
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CManagedParticleGen.hpp"
 
-#if RSTL_CORRUPTION
-#endif
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"

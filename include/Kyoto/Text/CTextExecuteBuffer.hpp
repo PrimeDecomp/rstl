@@ -109,7 +109,7 @@ private:
   InstList mInstructions;
   CSaveableState mState;
 #if RSTL_CORRUPTION
-  CBlockInstruction* mCurBlock;
+  CBlockInstruction* mCurrentBlock;
   CLineInstruction* mCurLine;
   InstList::iterator mCurWordIt;
   int mCurrentY;

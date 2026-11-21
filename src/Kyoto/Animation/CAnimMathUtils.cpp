@@ -4,13 +4,8 @@
 #endif
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Animation/CAnimMathUtils.hpp"
-#if !RSTL_CORRUPTION
-#include "Kyoto/Math/CMath.hpp"
-#endif
 
-#if RSTL_CORRUPTION
 #include "Kyoto/Math/CMath.hpp"
-#endif
 #include "Kyoto/Math/CQuaternion.hpp"
 #if !RSTL_CORRUPTION
 #include "Kyoto/Streams/CInputStream.hpp"

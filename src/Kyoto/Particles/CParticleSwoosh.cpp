@@ -5,8 +5,6 @@
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
 
-#if RSTL_CORRUPTION
-#endif
 #include "Kyoto/Basics/CStopwatch.hpp"
 
 #include "Kyoto/Graphics/CGX.hpp"

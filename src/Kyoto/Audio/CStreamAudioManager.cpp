@@ -13,8 +13,6 @@
 #include "Kyoto/Audio/CAudioSys.hpp"
 #endif
 #include "Kyoto/Audio/CDSPStreamManager.hpp"
-#if RSTL_CORRUPTION
-#endif
 #include "Kyoto/Basics/CCast.hpp"
 #include "rstl/StringExtras.hpp"
 #if !RSTL_PRIME1

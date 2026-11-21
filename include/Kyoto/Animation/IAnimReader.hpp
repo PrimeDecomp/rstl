@@ -42,11 +42,11 @@ struct SAdvancementResults {
 #if RSTL_CORRUPTION
 class CSegIdMaskMap;
 
-typedef CAdvancementDeltas CAdvancementDeltas;
+typedef CAdvancementDeltas SAdvancementDeltas;
 
 struct SAdvancementResults {
   CCharAnimTime mRemTime;
-  CAdvancementDeltas mDeltas;
+  SAdvancementDeltas mDeltas;
 
 #else
 #if RSTL_PRIME1
@@ -55,7 +55,7 @@ struct SAdvancementResults {
 #endif
   SAdvancementResults() {}
 #if RSTL_CORRUPTION
-  SAdvancementResults(const CCharAnimTime& time, const CAdvancementDeltas& deltas)
+  SAdvancementResults(const CCharAnimTime& time, const SAdvancementDeltas& deltas)
 #else
   explicit SAdvancementResults(const CCharAnimTime& time)
   : mRemTime(time)

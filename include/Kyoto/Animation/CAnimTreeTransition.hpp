@@ -78,8 +78,12 @@ public:
 #endif
 
 private:
+#if RSTL_CORRUPTION
+  rstl::pair< CCharAnimTime, SAdvancementDeltas >
+#else
   rstl::pair< CCharAnimTime, CAdvancementDeltas >
 
+#endif
   AdvanceViewForTransitionalPeriod(const CCharAnimTime& time);
   // Guessed name.
   static uint GetLoopPOIHash();

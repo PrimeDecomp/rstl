@@ -4,8 +4,6 @@
 #endif
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Text/CFont.hpp"
-#if !RSTL_CORRUPTION
-#endif
 #include "Kyoto/Graphics/CGraphics.hpp"
 #if RSTL_CORRUPTION
 #include "Kyoto/Graphics/CGX.hpp"

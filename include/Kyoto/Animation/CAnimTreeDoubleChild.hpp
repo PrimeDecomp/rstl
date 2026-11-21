@@ -17,21 +17,31 @@ public:
   class CDoubleChildAdvancementResult {
   public:
 #if RSTL_CORRUPTION
-    CDoubleChildAdvancementResult(const CCharAnimTime& time, const CAdvancementDeltas& leftDeltas,
-                                  const CAdvancementDeltas& rightDeltas);
+    CDoubleChildAdvancementResult(const CCharAnimTime& time, const SAdvancementDeltas& left,
+                                  const SAdvancementDeltas& right);
 #else
     CDoubleChildAdvancementResult(const CCharAnimTime& trueAdvancement,
                                   const CAdvancementDeltas& leftDeltas,
                                   const CAdvancementDeltas& rightDeltas);
 #endif
     const CCharAnimTime& GetTrueAdvancement() const { return mTrueAdvancement; }
+#if RSTL_CORRUPTION
+    const SAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
+    const SAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
+#else
     const CAdvancementDeltas& GetLeftAdvancementDeltas() const { return mLeftDeltas; }
     const CAdvancementDeltas& GetRightAdvancementDeltas() const { return mRightDeltas; }
+#endif
 
   private:
     CCharAnimTime mTrueAdvancement;
+#if RSTL_CORRUPTION
+    SAdvancementDeltas mLeftDeltas;
+    SAdvancementDeltas mRightDeltas;
+#else
     CAdvancementDeltas mLeftDeltas;
     CAdvancementDeltas mRightDeltas;
+#endif
   };
 
   CAnimTreeDoubleChild(const rstl::ncrc_ptr< CAnimTreeNode >& a,

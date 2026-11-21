@@ -97,18 +97,18 @@ SAdvancementResults CAnimTreeBlend::VAdvanceView(const CCharAnimTime& time) {
 #if RSTL_CORRUPTION
   const CCharAnimTime remainder =
       rstl::max_val< const CCharAnimTime& >(resA.GetRemainder(), resB.GetRemainder());
-  const CAdvancementDeltas& deltasA = resA.mDeltas;
-  const CAdvancementDeltas& deltasB = resB.mDeltas;
+  const SAdvancementDeltas& deltasA = resA.mDeltas;
+  const SAdvancementDeltas& deltasB = resB.mDeltas;
   switch (GetBlendRoot() & (kBlendRoot_Offset | kBlendRoot_Rotation)) {
   case kBlendRoot_Offset:
     return SAdvancementResults(
-        remainder, CAdvancementDeltas::BlendTranslationOnly(deltasA, deltasB, GetBlendingWeight()));
+        remainder, SAdvancementDeltas::BlendTranslationOnly(deltasA, deltasB, GetBlendingWeight()));
   case kBlendRoot_Rotation:
     return SAdvancementResults(
-        remainder, CAdvancementDeltas::BlendRotationOnly(deltasA, deltasB, GetBlendingWeight()));
+        remainder, SAdvancementDeltas::BlendRotationOnly(deltasA, deltasB, GetBlendingWeight()));
   case kBlendRoot_Offset | kBlendRoot_Rotation:
     return SAdvancementResults(
-        remainder, CAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
+        remainder, SAdvancementDeltas::Blend(deltasA, deltasB, GetBlendingWeight()));
   default:
 #else
 #if RSTL_PRIME1
