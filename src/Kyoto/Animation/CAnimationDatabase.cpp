@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
 #include "Kyoto/Animation/CAnimationDatabase.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
@@ -34,3 +36,4 @@ void CAnimationDatabase::GetUniquePrimitivesFromMetaAnim(rstl::set< CPrimitive >
                   "CAnimationDatabase::GetUniquePrimitivesFromMetaAnim(rstl::set, rstl::string) "
                   "should not be used!");
 }
+#endif
