@@ -53,6 +53,14 @@ public:
   bool IsNotInf() const;
   bool IsNormalizable() const;
   bool CanBeNormalized() const;
+  // The normalizability test the game's code uses: the prototype's IsNormalizable, CanBeNormalized elsewhere.
+  bool IsSafelyNormalizable() const {
+#if RSTL_CORRUPTION
+    return IsNormalizable();
+#else
+    return CanBeNormalized();
+#endif
+  }
   static float GetAngleDiff(const CVector3f& a, const CVector3f& b);
   bool IsEqu(const CVector3f& other, float epsilon = FLT_EPSILON) const;
   static CVector3f Lerp(const CVector3f& a, const CVector3f& b, float v) {

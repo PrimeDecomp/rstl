@@ -246,9 +246,9 @@ void CMotionSpline::GetSurroundingPoints(int index,
             break;
           case kST_RoundedCatmullRom: {
             CVector3f first = mControlPoints[count - 2] - mControlPoints[count - 1];
-            first = first.IsNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+            first = first.IsSafelyNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
             CVector3f second = mControlPoints[count - 3] - mControlPoints[count - 2];
-            second = second.IsNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+            second = second.IsSafelyNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
             points.push_back(mControlPoints[count - 1] - 1.5f * first + 0.5f * second);
             break;
           }
@@ -276,9 +276,9 @@ void CMotionSpline::GetSurroundingPoints(int index,
         break;
       case kST_RoundedCatmullRom: {
         CVector3f first = mControlPoints[1] - mControlPoints[0];
-        first = first.IsNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+        first = first.IsSafelyNormalizable() ? first.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
         CVector3f second = mControlPoints[2] - mControlPoints[1];
-        second = second.IsNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
+        second = second.IsSafelyNormalizable() ? second.AsNormalized() : static_cast<const CVector3f&>(CVector3f::Forward());
         points.push_back(mControlPoints[0] - 1.5f * first + 0.5f * second);
         break;
       }
@@ -321,47 +321,27 @@ float CMotionSpline::CalculateRoundedCatmullRomLength(int index) const {
   rstl::reserved_vector< CVector3f, 4 > points;
   GetSurroundingPoints(index, points);
   const CVector3f span = points[2] - points[1];
-#if RSTL_CORRUPTION
-  if (!span.IsNormalizable()) {
-#else
-  if (!span.CanBeNormalized()) {
-#endif
+  if (!span.IsSafelyNormalizable()) {
     return 0.f;
   }
 
   CVector3f previous = points[0] - points[1];
-#if RSTL_CORRUPTION
-  if (!previous.IsNormalizable()) {
-#else
-  if (!previous.CanBeNormalized()) {
-#endif
+  if (!previous.IsSafelyNormalizable()) {
     previous = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f firstTangent = span.AsNormalized() - previous.AsNormalized();
-#if RSTL_CORRUPTION
-  if (firstTangent.IsNormalizable()) {
-#else
-  if (firstTangent.CanBeNormalized()) {
-#endif
+  if (firstTangent.IsSafelyNormalizable()) {
     firstTangent.Normalize();
   } else {
     firstTangent = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f next = points[3] - points[2];
-#if RSTL_CORRUPTION
-  if (!next.IsNormalizable()) {
-#else
-  if (!next.CanBeNormalized()) {
-#endif
+  if (!next.IsSafelyNormalizable()) {
     next = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f reverseSpan = -span;
   CVector3f secondTangent = next.AsNormalized() - reverseSpan.AsNormalized();
-#if RSTL_CORRUPTION
-  if (secondTangent.IsNormalizable()) {
-#else
-  if (secondTangent.CanBeNormalized()) {
-#endif
+  if (secondTangent.IsSafelyNormalizable()) {
     secondTangent.Normalize();
   } else {
     secondTangent = CVector3f(0.f, 1.f, 0.f);
@@ -769,7 +749,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (direction.IsNormalizable()) {
+    if (direction.IsSafelyNormalizable()) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -850,7 +830,7 @@ float CMotionSpline::FindClosestLengthOnSpline(float start, const CVector3f& pos
       const float length = t * span + mKnotDistances[i];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (offset.IsNormalizable()) {
+      if (offset.IsSafelyNormalizable()) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
@@ -887,7 +867,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
   }
   if (mKnots.size() == 2) {
     CVector3f direction = mKnots[1] - mKnots[0];
-    if (direction.IsNormalizable()) {
+    if (direction.IsSafelyNormalizable()) {
       direction.Normalize();
       return CVector3f::Dot(direction, position - mKnots[0]);
     }
@@ -927,11 +907,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       forwardDirection = (first - previous) + (second - first);
     }
-#if RSTL_CORRUPTION
-    if (forwardDirection.IsNormalizable()) {
-#else
-    if (forwardDirection.CanBeNormalized()) {
-#endif
+    if (forwardDirection.IsSafelyNormalizable()) {
       forwardDirection.Normalize();
     }
     if (i < knots.size() - 2) {
@@ -950,11 +926,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       }
       backwardDirection = (second - next) + (first - second);
     }
-#if RSTL_CORRUPTION
-    if (backwardDirection.IsNormalizable()) {
-#else
-    if (backwardDirection.CanBeNormalized()) {
-#endif
+    if (backwardDirection.IsSafelyNormalizable()) {
       backwardDirection.Normalize();
     }
     const float firstProjection = CVector3f::Dot(position - first, forwardDirection);
@@ -986,7 +958,7 @@ float CMotionSpline::FindClosestBezierLength(float start, const CVector3f& posit
       const float length = t * span + mKnotDistances[i * 3];
       const CVector3f offset = position - GetPositionByLength(length);
       float distance = 0.f;
-      if (offset.IsNormalizable()) {
+      if (offset.IsSafelyNormalizable()) {
         distance = offset.Magnitude();
         if (distance < 0.f) {
           distance = 0.f;
@@ -1058,11 +1030,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     if (mClosedLoop && distance > 0.5f * mLength) {
       tangent = mControlPoints[0] - mControlPoints[1];
     }
-#if RSTL_CORRUPTION
-    if (tangent.IsNormalizable()) {
-#else
-    if (tangent.CanBeNormalized()) {
-#endif
+    if (tangent.IsSafelyNormalizable()) {
       tangent.Normalize();
     } else {
       tangent = CVector3f::Forward();
@@ -1097,11 +1065,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
     }
     }
   }
-#if RSTL_CORRUPTION
-  if (tangent.IsNormalizable()) {
-#else
-  if (tangent.CanBeNormalized()) {
-#endif
+  if (tangent.IsSafelyNormalizable()) {
     tangent.Normalize();
   } else {
     tangent = CVector3f::Forward();

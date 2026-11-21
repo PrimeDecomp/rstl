@@ -716,13 +716,7 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           if (otherIdx == mCurParticle) {
             delta = swoosh.mTranslation - mSwooshes[(curIdx + 1) % mSwooshes.size()].mTranslation;
           }
-#if RSTL_CORRUPTION
-          if (delta.IsNormalizable()) {
-            const CVector3f cameraDelta = camToParticle - swoosh.mTranslation;
-            CVector3f deltaCross = CVector3f::Cross(delta, cameraDelta);
-            if (deltaCross.IsNormalizable()) {
-#else
-          if (delta.CanBeNormalized()) {
+          if (delta.IsSafelyNormalizable()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
             CVector3f deltaCross = CVector3f::Cross(delta, camToParticle - swoosh.mTranslation);
@@ -731,8 +725,7 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
             CVector3f deltaCross = CVector3f::Cross(delta, cameraDelta);
 #endif
 
-            if (deltaCross.CanBeNormalized()) {
-#endif
+            if (deltaCross.IsSafelyNormalizable()) {
               deltaCross.Normalize();
               dotVec = (CVector3f::Dot(deltaCross, dotVec) < 0.f ? -1.f : 1.f) * deltaCross;
               const CVector3f v0 =

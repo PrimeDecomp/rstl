@@ -271,83 +271,6 @@ float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float 
 #endif
 }
 
-#if RSTL_CORRUPTION
-CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
-                                                 const CVector3f& c, const CVector3f& d, float t) {
-  if (t <= 0.f) {
-    return b;
-  }
-  if (t >= 1.f) {
-    return c;
-  }
-
-  const CVector3f span = c - b;
-  if (!span.IsNormalizable()) {
-    return b;
-  }
-
-  CVector3f incoming = a - b;
-  if (!incoming.IsNormalizable()) {
-    incoming = CVector3f(0.f, 1.f, 0.f);
-  }
-  CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.IsNormalizable()) {
-    tangentA.Normalize();
-  } else {
-    tangentA = CVector3f(0.f, 1.f, 0.f);
-  }
-
-  CVector3f outgoing = d - c;
-  if (!outgoing.IsNormalizable()) {
-    outgoing = CVector3f(0.f, 1.f, 0.f);
-  }
-  const CVector3f backwardSpan = -span;
-  CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.IsNormalizable()) {
-    tangentB.Normalize();
-  } else {
-    tangentB = CVector3f(0.f, 1.f, 0.f);
-  }
-
-  const float length = span.Magnitude();
-  return GetHermiteSplinePoint(b, c, length * tangentA, length * tangentB, t);
-}
-
-CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVector3f& b,
-                                                   const CVector3f& c, const CVector3f& d,
-                                                   float t) {
-  const CVector3f span = c - b;
-  if (!span.IsNormalizable()) {
-    return b;
-  }
-
-  CVector3f incoming = a - b;
-  if (!incoming.IsNormalizable()) {
-    incoming = CVector3f(0.f, 1.f, 0.f);
-  }
-  CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.IsNormalizable()) {
-    tangentA.Normalize();
-  } else {
-    tangentA = CVector3f(0.f, 1.f, 0.f);
-  }
-
-  CVector3f outgoing = d - c;
-  if (!outgoing.IsNormalizable()) {
-    outgoing = CVector3f(0.f, 1.f, 0.f);
-  }
-  const CVector3f backwardSpan = -span;
-  CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.IsNormalizable()) {
-    tangentB.Normalize();
-  } else {
-    tangentB = CVector3f(0.f, 1.f, 0.f);
-  }
-
-  const float length = span.Magnitude();
-  return GetHermiteSplineTangent(b, c, length * tangentA, length * tangentB, t);
-}
-#else
 #if !RSTL_PRIME1
 CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b,
                                                  const CVector3f& c, const CVector3f& d, float t) {
@@ -359,28 +282,28 @@ CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVect
   }
 
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!span.IsSafelyNormalizable()) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!incoming.IsSafelyNormalizable()) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (tangentA.IsSafelyNormalizable()) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!outgoing.IsSafelyNormalizable()) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (tangentB.IsSafelyNormalizable()) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -394,28 +317,28 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
                                                    const CVector3f& c, const CVector3f& d,
                                                    float t) {
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!span.IsSafelyNormalizable()) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!incoming.IsSafelyNormalizable()) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (tangentA.IsSafelyNormalizable()) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!outgoing.IsSafelyNormalizable()) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (tangentB.IsSafelyNormalizable()) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -424,7 +347,6 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
   const float length = span.Magnitude();
   return GetHermiteSplineTangent(b, c, length * tangentA, length * tangentB, t);
 }
-#endif
 #endif
 
 CVector3f CMath::GetBezierPoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,

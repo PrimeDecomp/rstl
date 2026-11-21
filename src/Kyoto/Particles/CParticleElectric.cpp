@@ -314,11 +314,7 @@ void CParticleElectric::CalculatePoints() {
   CVector3f v0 = mCalculatedVerts[0] - mCalculatedVerts[1];
   CVector3f v1 = mCalculatedVerts[mCalculatedVerts.size() - 1] - mCalculatedVerts[1];
   CVector3f up = CVector3f::Up();
-#if RSTL_CORRUPTION
-  if (v0.IsNormalizable() && v1.IsNormalizable()) {
-#else
-  if (v0.CanBeNormalized() && v1.CanBeNormalized()) {
-#endif
+  if (v0.IsSafelyNormalizable() && v1.IsSafelyNormalizable()) {
     v0.Normalize();
     v1.Normalize();
     float dot = CVector3f::Dot(v0, v1);

@@ -55,19 +55,11 @@ bool CVESphere::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f normVec1 = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100),
                                  CRandom16::GetRandomNumber()->Range(-100, 100));
-#if RSTL_CORRUPTION
-  normVec1 = (normVec1.IsNormalizable() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
-#else
-  normVec1 = (normVec1.CanBeNormalized() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
-#endif
+  normVec1 = (normVec1.IsSafelyNormalizable() ? (0.01f * normVec1).AsNormalized() : (0.01f * normVec1));
   pPos = origin + (normVec1 * radius);
 
   CVector3f offset = (pPos - origin);
-#if RSTL_CORRUPTION
-  CVector3f direction = offset.IsNormalizable() ? offset.AsNormalized() : offset;
-#else
-  CVector3f direction = offset.CanBeNormalized() ? offset.AsNormalized() : offset;
-#endif
+  CVector3f direction = offset.IsSafelyNormalizable() ? offset.AsNormalized() : offset;
   mVelocityMag->GetValue(frame, mag);
   pVel = mag * direction;
   return false;
@@ -103,7 +95,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
                             CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100));
   dir *= 0.01f;
-  if (dir.IsNormalizable()) {
+  if (dir.IsSafelyNormalizable()) {
     dir.Normalize();
   }
   if (!mOnSurface) {
@@ -120,7 +112,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   dir = xf * dir;
 
   pPos = origin + dir;
-  pVel = dir.IsNormalizable() ? dir.AsNormalized() : dir;
+  pVel = dir.IsSafelyNormalizable() ? dir.AsNormalized() : dir;
   pVel *= mag;
   return false;
 }
@@ -154,7 +146,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   CVector3f dir = CVector3f(CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100),
                             CRandom16::GetRandomNumber()->Range(-100, 100));
-  bool canNormalize = dir.CanBeNormalized();
+  bool canNormalize = dir.IsSafelyNormalizable();
   dir *= 0.01f;
   if (canNormalize) {
     dir.Normalize();
@@ -173,7 +165,7 @@ bool CVEEllipsoid::GetValue(int frame, CVector3f& pPos, CVector3f& pVel) const {
   dir = xf * dir;
 
   pPos = origin + dir;
-  pVel = dir.CanBeNormalized() ? dir.AsNormalized() : dir;
+  pVel = dir.IsSafelyNormalizable() ? dir.AsNormalized() : dir;
   pVel *= mag;
   return false;
 }

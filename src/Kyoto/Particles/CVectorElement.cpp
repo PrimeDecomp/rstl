@@ -282,11 +282,7 @@ CVECircleCluster::CVECircleCluster(CVectorElement* circleOffset, CVectorElement*
 
   circleNormal->GetValue(0, normal);
   tmp = normal;
-#if RSTL_CORRUPTION
-  if (normal.IsNormalizable()) {
-#else
-  if (normal.CanBeNormalized()) {
-#endif
+  if (normal.IsSafelyNormalizable()) {
     normal = normal.AsNormalized();
   } else {
     normal = CVector3f::Up();
