@@ -627,16 +627,12 @@ bool CFBStreamedAnimReader::VSupportsReverseView() const { return false; }
 
 SAdvancementResults CFBStreamedAnimReader::VReverseView(const CCharAnimTime&) {
   return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-#if RSTL_CORRUPTION
-                             SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
                              CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                                  CVector3f::Zero(), CQuaternion::NoRotation()
 #endif
                                  ));
-#endif
 }
 
 SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& time) {
@@ -656,29 +652,21 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
     mPassedAssetCount = 0;
 #endif
     return SAdvancementResults(time,
-#if RSTL_CORRUPTION
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
                                CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                                    CVector3f::Zero(), CQuaternion::NoRotation()
 #endif
                                    ));
-#endif
   }
   if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-#if RSTL_CORRUPTION
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
-#else
                                CAdvancementDeltas(
 // TODO: verify that this Prime/Echoes difference is real
 #if !RSTL_PRIME1
                                    CVector3f::Zero(), CQuaternion::NoRotation()
 #endif
                                    ));
-#endif
   }
 
   CSegStatement prior;
@@ -749,11 +737,7 @@ SAdvancementResults CFBStreamedAnimReader::VAdvanceView(const CCharAnimTime& tim
     const CQuaternion nextInverse = nextRotation.BuildInverted();
     offset = nextInverse.Transform(offset);
   }
-#if RSTL_CORRUPTION
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
-#else
   return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
-#endif
 }
 
 void CFBStreamedAnimReader::VSetPhase(float phase) {
@@ -889,11 +873,11 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
   const CCharAnimTime& duration = mSource->GetAnimationDuration();
   if (startTime >= duration) {
     return SAdvancementResults(time,
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   if (time.EqualsZero()) {
     return SAdvancementResults(CCharAnimTime::ZeroFlat(),
-                               SAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
+                               CAdvancementDeltas(CVector3f::Zero(), CQuaternion::NoRotation()));
   }
   SetReadTime(startTime);
   CSegStatement prior;
@@ -930,7 +914,7 @@ CFBStreamedAnimReader::VGetAdvancementResults(const CCharAnimTime& time,
     offset = nextInverse.Transform(offset);
   }
   SetReadTime(mCurTime);
-  return SAdvancementResults(remainder, SAdvancementDeltas(offset, nextRotation * priorInverse));
+  return SAdvancementResults(remainder, CAdvancementDeltas(offset, nextRotation * priorInverse));
 }
 #endif
 // Prime's Wii advancement routine inlines this helper; Echoes keeps the call.

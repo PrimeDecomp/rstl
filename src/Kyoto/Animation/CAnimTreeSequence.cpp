@@ -155,7 +155,7 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
       remTime = res.mRemTime;
       totalDelta += prevRemTime - remTime;
 #if RSTL_CORRUPTION
-      const SAdvancementDeltas& deltas = res.mDeltas;
+      const CAdvancementDeltas& deltas = res.mDeltas;
 #else
       const CAdvancementDeltas& deltas = res.mDeltas;
 
@@ -173,7 +173,7 @@ SAdvancementResults CAnimTreeSequence::VAdvanceView(const CCharAnimTime& dt) {
 #if RSTL_CORRUPTION
   const CTransform4f rotation = rotDelta.BuildTransform4f();
   return SAdvancementResults(dt - totalDelta,
-                            SAdvancementDeltas(rotation.TransposeRotate(posDelta), rotDelta));
+                            CAdvancementDeltas(rotation.TransposeRotate(posDelta), rotDelta));
 #else
   return SAdvancementResults(dt - totalDelta, CAdvancementDeltas(posDelta, rotDelta));
 

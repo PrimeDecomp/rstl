@@ -275,15 +275,10 @@ rstl::rc_ptr< CAnimTreeNode > CAnimTreeDoubleChild::VGetDirectChild(uint index) 
 }
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult::CDoubleChildAdvancementResult(
-#if RSTL_CORRUPTION
-    const CCharAnimTime& time, const SAdvancementDeltas& left, const SAdvancementDeltas& right)
-: mTrueAdvancement(time), mLeftDeltas(left), mRightDeltas(right) {}
-#else
     const CCharAnimTime& time, const CAdvancementDeltas& left, const CAdvancementDeltas& right)
 : mTrueAdvancement(time)
 , mLeftDeltas(left)
 , mRightDeltas(right) {}
-#endif
 
 CAnimTreeDoubleChild::CDoubleChildAdvancementResult
 CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool runLeft,
@@ -307,15 +302,11 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
           mA->Simplified();
       if (simplified.valid())
         mA = Cast(*simplified);
-#if RSTL_CORRUPTION
-      SAdvancementDeltas deltas = result.mDeltas;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
       CAdvancementDeltas deltas = result.mDeltas;
-#endif
 #endif
       leftOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
@@ -336,15 +327,11 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
           mB->Simplified();
       if (simplified.valid())
         mB = Cast(*simplified);
-#if RSTL_CORRUPTION
-      SAdvancementDeltas deltas = result.mDeltas;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
       CAdvancementDeltas deltas = result.GetAdvancementDeltas();
 #else
       CAdvancementDeltas deltas = result.mDeltas;
-#endif
 #endif
       rightOffset += deltas.GetOffsetDelta();
       CQuaternion rotation = deltas.GetOrientationDelta();
@@ -357,14 +344,8 @@ CAnimTreeDoubleChild::AdvanceViewBothChildren(const CCharAnimTime& time, bool ru
 #endif
     }
   }
-#if RSTL_CORRUPTION
-
-  return CDoubleChildAdvancementResult(time, SAdvancementDeltas(leftOffset, leftRotation),
-                                       SAdvancementDeltas(rightOffset, rightRotation));
-#else
   return CDoubleChildAdvancementResult(time, CAdvancementDeltas(leftOffset, leftRotation),
                                        CAdvancementDeltas(rightOffset, rightRotation));
-#endif
 }
 
 void CAnimTreeDoubleChild::VSetPhase(float phase) {
