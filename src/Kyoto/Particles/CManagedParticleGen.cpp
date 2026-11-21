@@ -17,11 +17,7 @@
 
 CManagedParticleGen::CManagedParticleGen(const CToken& effect, const CDependencyGroupToken& group)
 : mEffect(effect)
-#if RSTL_CORRUPTION
 , mAssetTag(mEffect.GetTag())
-#else
-, mTag(mEffect.GetTag())
-#endif
 , mDependencies(group)
 , mGenerator(nullptr)
 , mMaxIdleTime(0.2f)
@@ -176,11 +172,7 @@ CParticleSpawnSystem* CManagedParticleGen::SpawnSystem() {
 #endif
 void CManagedParticleGen::CreateGenerator() {
   CParticleGen* gen;
-#if RSTL_CORRUPTION
   switch (mAssetTag.type) {
-#else
-  switch (mTag.type) {
-#endif
   case 'PART': {
     TLockedToken< CGenDescription > desc(mEffect);
     gen = rs_new_line(431) CElementGen(desc, CElementGen::kMOT_Normal, CElementGen::kOSF_One);
@@ -212,7 +204,7 @@ void CManagedParticleGen::CreateGenerator() {
   }
   default:
 #if RSTL_CORRUPTION
-    gpfnWarningPrintf("Unsupported spawned particle asset type %d\n", mAssetTag.type);
+    RS_WARNING_PRINT("Unsupported spawned particle asset type %d\n", mAssetTag.type);
 #endif
     return;
   }

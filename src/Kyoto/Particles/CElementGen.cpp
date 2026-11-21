@@ -94,8 +94,8 @@ static const double skTickTime = 1.0 / 60.0;
 
 #if RSTL_CORRUPTION
 ushort CElementGen::sSeed = 99;
-int CElementGen::sParticleAliveCount;
-int CElementGen::sParticleSystemAliveCount;
+int CElementGen::mParticleAliveCount;
+int CElementGen::mParticleSystemAliveCount;
 #else
 #if !RSTL_PRIME1
 ushort CElementGen::sSeed = 99;
@@ -276,12 +276,7 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 #endif
   }
   mRandState.SetSeed(mRandomSeed);
-#if RSTL_CORRUPTION
-  ++sParticleSystemAliveCount;
-
-#else
   ++mParticleSystemAliveCount;
-#endif
   mLIT_ = mLoadedGenDesc->mLIT_;
 #if !RSTL_CORRUPTION
   mAAPH = mLoadedGenDesc->mAAPH;
@@ -573,8 +568,8 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
 
 CElementGen::~CElementGen() {
 #if RSTL_CORRUPTION
-  --sParticleSystemAliveCount;
-  sParticleAliveCount -= mParticles.size();
+  --mParticleSystemAliveCount;
+  mParticleAliveCount -= mParticles.size();
   for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
        it != mActivePartChildren.end(); ++it) {
     delete (*it);
@@ -592,9 +587,9 @@ void CElementGen::Initialize() {
     return;
   }
 #if RSTL_CORRUPTION
-  rs_debugger_printf("Initialize - Static Particle List - ");
-  sParticleAliveCount = 0;
-  sParticleSystemAliveCount = 0;
+  RS_DEBUGGER_PRINT("Initialize - Static Particle List - ");
+  mParticleAliveCount = 0;
+  mParticleSystemAliveCount = 0;
 #else
   mParticleAliveCount = 0;
   mParticleSystemAliveCount = 0;
@@ -1176,11 +1171,7 @@ void CElementGen::UpdateExistingParticles() {
 #endif
   while (it != mParticles.end()) {
     if (it->mEndFrame < mCurFrame) {
-#if RSTL_CORRUPTION
-      --sParticleAliveCount;
-#else
       --mParticleAliveCount;
-#endif
       if (it + 1 == mParticles.end()) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1378,8 +1369,8 @@ void CElementGen::CreateNewParticles(int count) {
   if (newCount + mParticles.size() > mMAXP) {
     newCount = mMAXP - mParticles.size();
   }
-  if (newCount + sParticleAliveCount > 0x1000) {
-    newCount = 0x1000 - sParticleAliveCount;
+  if (newCount + mParticleAliveCount > 0x1000) {
+    newCount = 0x1000 - mParticleAliveCount;
 #else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1667,7 +1658,7 @@ void CElementGen::CreateNewParticles(int count) {
     AccumulateBounds(particle.mPos, particle.mLineLengthOrSize);
 #if RSTL_CORRUPTION
         }
-      ++sParticleAliveCount;
+      ++mParticleAliveCount;
         ++mActiveParticleCount;
 #else
 #if RSTL_PARTICLE_BOUNDS_MODES
@@ -1799,7 +1790,7 @@ CParticleGen* CElementGen::ConstructChildParticleSystem(
     break;
   }
   default:
-    gpfnWarningPrintf("Unsupported spawned particle asset type %d\n", type);
+    RS_WARNING_PRINT("Unsupported spawned particle asset type %d\n", type);
     return nullptr;
   }
 
@@ -2336,12 +2327,8 @@ void CElementGen::EndLifetime() {
 }
 
 void CElementGen::DestroyParticles() {
-#if RSTL_CORRUPTION
-  sParticleAliveCount -= mParticles.size();
-#else
   mParticleAliveCount -= mParticles.size();
 
-#endif
   mParticles.clear();
 #if RSTL_CORRUPTION
   for (rstl::vector< CParticleGen* >::iterator it = mActivePartChildren.begin();
@@ -4657,7 +4644,7 @@ void CElementGen::RenderParticlesIndirectTexture() {
         GXGetTexBufferSize(clipRect.GetTexWidth() >> indScale,
                            clipRect.GetHeight() >> indScale, GX_TF_RGB565, GX_FALSE, 0);
     if (texBufSize > bufSize) {
-      gpfnWarningPrintf("Ind particle %d by %d too big - not drawn.\n", clipRect.GetWidth(),
+      RS_WARNING_PRINT("Ind particle %d by %d too big - not drawn.\n", clipRect.GetWidth(),
                         clipRect.GetHeight());
       continue;
 #else
@@ -5306,7 +5293,7 @@ void CElementGen::RenderIndirectModelParticle(SModelRenderState& state, const CC
   const size_t textureSize = GXGetTexBufferSize(
       clip.GetTexWidth() >> halfSize, clip.GetHeight() >> halfSize, GX_TF_RGB565, false, 0);
   if (textureSize > bufferSize) {
-    gpfnWarningPrintf("Ind particle %d by %d too big - not drawn.\n", clip.GetWidth(), clip.GetHeight());
+    RS_WARNING_PRINT("Ind particle %d by %d too big - not drawn.\n", clip.GetWidth(), clip.GetHeight());
     return;
   }
   bool useVideoFilter = CGraphics::GetUseVideoFilter();

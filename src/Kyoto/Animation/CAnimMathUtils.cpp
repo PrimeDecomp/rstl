@@ -46,7 +46,7 @@ CQuaternion CAnimMathUtils::Slerp(const CQuaternion& start, const CQuaternion& e
 #if RSTL_CORRUPTION
   if (dot < -0.9999999f) {
     RS_VERIFY_FAILURE(39, "false", "false",
-                      "CAnimMathUtils::Slerp: Quaternions are nearly/exactly opposite.")
+                      "CAnimMathUtils::Slerp: Quaternions are nearly/exactly opposite.");
     return t < 0.5f ? start : end;
   }
 

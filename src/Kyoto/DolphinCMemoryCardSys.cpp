@@ -31,11 +31,11 @@ CMemoryCardSys::CCardFileInfo::Icon::Icon(CAssetId id, int speed, CSimplePool& p
   const short height = pTexture->GetHeight();
   RS_VERIFY_THROW(
       167, width == 32 && height == 32, false,
-      CBasics::Stringize("Need icons size 32x32, got %dx%d for icon %x", width, height, mId))
+      CBasics::Stringize("Need icons size 32x32, got %dx%d for icon %x", width, height, mId));
 
   const ETexelFormat texFormat = pTexture->GetTexelFormat();
   RS_VERIFY_THROW(174, texFormat == kTexelFormat_RGB5A3 || texFormat == kTexelFormat_CI8, false,
-                  CBasics::Stringize("Invalid texel format for icon texture (%d).", texFormat))
+                  CBasics::Stringize("Invalid texel format for icon texture (%d).", texFormat));
 
   if (texFormat == kTexelFormat_CI8) {
     const CGraphicsPalette* pPalette = pTexture->GetPalette();
@@ -157,7 +157,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::Close() {
 
 ECardResult CMemoryCardSys::CCardFileInfo::ReadFileSync() {
   RS_VERIFY_THROW(299, GetPort() != kCardPort_Invalid, false,
-                  "Tried to read a file without opening it first")
+                  "Tried to read a file without opening it first");
 
   CardStat stat;
   ECardResult result = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
@@ -169,7 +169,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::ReadFileSync() {
 
   const uint fileLength = stat.GetFileLength();
   RS_VERIFY_THROW(311, fileLength == CMemoryCardSys::kSupportedSectorSize * GetTotalNumBlocks(),
-                  false, "Unexpected file length on opened file!")
+                  false, "Unexpected file length on opened file!");
 
   mLoadedData = rstl::vector< uchar >();
   mHeaderBuffer.assign(kSupportedSectorSize, 0);
@@ -202,7 +202,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::ReadFileSync() {
 
 ECardResult CMemoryCardSys::CCardFileInfo::ReadSelfAsync() {
   RS_VERIFY_THROW(360, GetPort() != kCardPort_Invalid, false,
-                  "Tried to read a file without opening it first")
+                  "Tried to read a file without opening it first");
 
   CardStat stat;
   ECardResult result = CMemoryCardSys::GetStatus(GetPort(), GetFileNo(), stat);
@@ -214,7 +214,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::ReadSelfAsync() {
 
   const uint fileLength = stat.GetFileLength();
   RS_VERIFY_THROW(371, fileLength == CMemoryCardSys::kSupportedSectorSize * GetTotalNumBlocks(),
-                  false, "Unexpected file length on opened file!")
+                  false, "Unexpected file length on opened file!");
 
   mLoadedData = rstl::vector< uchar >();
   mHeaderBuffer.assign(kSupportedSectorSize, 0);
@@ -281,7 +281,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::TryCompleteRead() {
 
 ECardResult CMemoryCardSys::CCardFileInfo::WriteFileSync() {
   RS_VERIFY_THROW(486, GetPort() != kCardPort_Invalid, false,
-                  "Tried to read a file without opening it first")
+                  "Tried to read a file without opening it first");
 
   BuildWriteBuffers();
   if (mNewFile) {
@@ -328,7 +328,7 @@ ECardResult CMemoryCardSys::CCardFileInfo::WriteSaveSlot(int slot) {
 
 ECardResult CMemoryCardSys::CCardFileInfo::WriteSelfAsync() {
   RS_VERIFY_THROW(549, GetPort() != kCardPort_Invalid, false,
-                  "Tried to read a file without opening it first")
+                  "Tried to read a file without opening it first");
 
   ECardResult result;
   BuildWriteBuffers();
@@ -687,11 +687,11 @@ void CMemoryCardSys::CCardFileInfo::LockBannerToken(CAssetId bannerTxtr, CSimple
   const short height = pTexture->GetHeight();
   RS_VERIFY_THROW(746, width == 96 && height == 32, false,
                   CBasics::Stringize("Need banner size 96x32, got %dx%d for banner %x", width,
-                                     height, mBannerTex))
+                                     height, mBannerTex));
 
   const ETexelFormat texFormat = pTexture->GetTexelFormat();
   RS_VERIFY_THROW(753, texFormat == kTexelFormat_RGB5A3 || texFormat == kTexelFormat_CI8, false,
-                  CBasics::Stringize("Invalid texel format for banner texture (%d).", texFormat))
+                  CBasics::Stringize("Invalid texel format for banner texture (%d).", texFormat));
 
   if (texFormat == kTexelFormat_CI8) {
     const CGraphicsPalette* pPalette = pTexture->GetPalette();
@@ -952,7 +952,7 @@ uint CMemoryCardSys::CCardFileInfo::CalculateBannerDataSize() {
   } else {
     readIndex = slotA.mGeneration ^ slotB.mGeneration;
     RS_VERIFY_THROW(970, readIndex == 0 || readIndex == 1, false,
-                    CBasics::Stringize("Unexpected readIndex %d", readIndex))
+                    CBasics::Stringize("Unexpected readIndex %d", readIndex));
     mGeneration = readIndex == 0 ? 1 - slotA.mGeneration : slotB.mGeneration;
     rs_debugger_printf("ExtractUserData: Both User Areas Okay.  Read Toggle Bits (%d,%d) -> Read "
                        "Index %d.  Next Write index %d, next Write Toggle Bit %d\n",

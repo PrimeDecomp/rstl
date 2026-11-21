@@ -1,3 +1,4 @@
+#include "Kyoto/Alloc/Assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
@@ -195,10 +196,10 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('PSIV'): {
       CVectorElement* element = GetVectorElement(in);
       if (element != nullptr) {
-        gpfnWarningPrintf(
+        RS_WARNING_PRINT(
             "BUG THIS!:PSIV - Particle system initial velocity has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
-        rs_debugger_printf(
+        RS_DEBUGGER_PRINT(
             "BUG THIS!:PSIV - Particle system initial velocity has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
       }
@@ -213,10 +214,10 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('PSVM'): {
       CModVectorElement* element = GetModVectorElement(in);
       if (element != nullptr) {
-        gpfnWarningPrintf(
+        RS_WARNING_PRINT(
             "BUG THIS!:PSVM - Particle system velocity modifier has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
-        rs_debugger_printf(
+        RS_DEBUGGER_PRINT(
             "BUG THIS!:PSVM - Particle system velocity modifier has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
       }
@@ -231,10 +232,10 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('PSOV'): {
       CVectorElement* element = GetVectorElement(in);
       if (element != nullptr) {
-        gpfnWarningPrintf(
+        RS_WARNING_PRINT(
             "BUG THIS!:PSOV - Particle system orientation velocity has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
-        rs_debugger_printf(
+        RS_DEBUGGER_PRINT(
             "BUG THIS!:PSOV - Particle system orientation velocity has been depreciated %s.\n",
             resources.back().ToHexString().c_str());
       }
@@ -267,10 +268,10 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       break;
     case SBIG('AAPH'):
 #if RSTL_CORRUPTION
-      gpfnWarningPrintf(
+      RS_WARNING_PRINT(
           "BUG THIS!:AAPH - Particle system additive alpha has been depreciated %s.\n",
           resources.back().ToHexString().c_str());
-      rs_debugger_printf(
+      RS_DEBUGGER_PRINT(
           "BUG THIS!:AAPH - Particle system additive alpha has been depreciated %s.\n",
           resources.back().ToHexString().c_str());
       additiveAlpha = GetBool(in);
@@ -314,9 +315,9 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('ILOC'): {
       CVectorElement* element = GetVectorElement(in);
       if (element != nullptr) {
-        gpfnWarningPrintf("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
+        RS_WARNING_PRINT("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
                           resources.back().ToHexString().c_str());
-        rs_debugger_printf("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
+        RS_DEBUGGER_PRINT("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
                            resources.back().ToHexString().c_str());
       }
       delete element;
@@ -330,9 +331,9 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('IVEC'): {
       CVectorElement* element = GetVectorElement(in);
       if (element != nullptr) {
-        gpfnWarningPrintf("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
+        RS_WARNING_PRINT("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
                           resources.back().ToHexString().c_str());
-        rs_debugger_printf("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
+        RS_DEBUGGER_PRINT("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
                            resources.back().ToHexString().c_str());
       }
       delete element;

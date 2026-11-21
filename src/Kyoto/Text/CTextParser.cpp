@@ -325,7 +325,7 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
     int idx = string[6] - L'0';
     if (idx < 0 || idx > 9) {
 #if RSTL_CORRUPTION
-      gpfnWarningPrintf("Invalid color tag\n");
+      RS_WARNING_PRINT("Invalid color tag\n");
 #endif
       return;
     }

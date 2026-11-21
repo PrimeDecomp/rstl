@@ -9,7 +9,7 @@ CFIOOutStream::CFIOOutStream(const char* path, int bufferSize)
   const int error = CFIOFileSupport::Open(path, 2, &mFile);
   if (error != kFE_OK) {
     RS_VERIFY_FAILURE(15, "0", "kException_CannotOpen",
-                      CBasics::Stringize("Could not open file - '%s'\n", path))
+                      CBasics::Stringize("Could not open file - '%s'\n", path));
   }
 }
 

@@ -40,7 +40,7 @@ void CSpline::Initialise(const rstl::vector< CVector3f >& positions,
   if (positions.size() != orientations.size())
     RS_VERIFY_FAILURE(69, "false", "false",
                       "Number of motion knots != number of orientations in "
-                      "CSpline::Initialise()")
+                      "CSpline::Initialise()");
 #endif
   mOrientations.clear();
   mOrientations.reserve(orientations.size());
