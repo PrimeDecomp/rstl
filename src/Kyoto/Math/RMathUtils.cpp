@@ -160,7 +160,7 @@ CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b
   if (t >= 1.0f)
     return c;
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   const float t2 = t * t;
   const float t3 = t2 * t;
   return (
@@ -188,7 +188,7 @@ float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float 
   if (t >= 1.0f)
     return c;
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   const float t2 = t * t;
   const float t3 = t2 * t;
   return (
@@ -281,7 +281,7 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
 
 CVector3f CMath::GetBezierPoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,
                                 const CVector3f& d, float t) {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   const float inverse = 1.f - t;
   const float inverse2 = inverse * inverse;
   const float inverse3 = inverse * inverse2;
@@ -323,7 +323,7 @@ CVector3f CMath::GetBSplineTangent(const CVector3f& a, const CVector3f& b, const
                         (3.f + (-9.f * t2 + 6.f * t)) * c + (3.f * t2) * d);
 }
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
 bool CMath::IsWithinTolerance(float x, float y, float epsilon) {
   return AbsF(x - y) < epsilon;
 }
@@ -341,7 +341,7 @@ static float NoiseGradient3d(uint hash, float x, float y, float z) {
 }
 
 static float NoiseGradient4d(uint hash, float x, float y, float z, float w) {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   const int h = hash & 31;
   float u = x;
   float v = y;
@@ -679,7 +679,7 @@ int CMath::FloorLog2(uint v) {
   return ((1 - finalSig) >> 0x1f) + totalShift;
 }
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
 uint CMath::SolveQuadratic(float a, float b, float c, float* roots) {
   uint count = 0;
   if (0.f != a) {
@@ -701,6 +701,7 @@ uint CMath::SolveQuadratic(float a, float b, float c, float* roots) {
     roots[count++] = -c / b;
   }
   return count;
+}
 #else
 bool CMath::SolveQuadratic(float a, float b, float c, float& plus, float& minus) {
   const float discriminant = b * b - (4.f * a) * c;
@@ -711,11 +712,11 @@ bool CMath::SolveQuadratic(float a, float b, float c, float& plus, float& minus)
   plus = (-b + root) / (2.f * a);
   minus = (-b - root) / (2.f * a);
   return true;
-#endif
 }
+#endif
 
 uint CMath::SolveCubic(const float* coefficients, float* roots) {
-#if !RSTL_CORRUPTION
+#if !RSTL_KYOTO_MATH_PROTO_SOLVERS
   float* out;
 #endif
   uint count = 0;
@@ -731,7 +732,7 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
       const float negativeP3 = -p3;
       const float angle = acosf(Clamp(-1.f, q / SqrtF(negativeP3), 1.f));
       amplitude = 2.f * powf(negativeP3, 1.f / 6.f);
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
       for (float phase = 0.f; phase < 2.01f; phase += 1.f) {
         roots[count] = amplitude * cosf((M_PIF * (2.f * phase) + angle) / 3.f) - shift;
         ++count;
@@ -772,7 +773,7 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
                            derivative;
       }
     }
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   } else {
     count = SolveQuadratic(coefficients[2], coefficients[1], coefficients[0], roots);
 #else
@@ -791,7 +792,7 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
 #endif
   }
   for (uint i = 0; i < count; ++i) {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
     const float x = roots[i];
     const float value = x * ((coefficients[3] * x + coefficients[2]) * x + coefficients[1]);
     if (fabsf(coefficients[0] + value) > 0.0002f) {
@@ -805,14 +806,23 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
 }
 
 uint CMath::SolveQuartic(const float* coefficients, float* roots) {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   float resolvent[4];
 #endif
   uint count = 0;
   if (coefficients[4] == 0.f) {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
     return SolveCubic(coefficients, roots);
+#else
+    float cubic[4];
+    cubic[0] = coefficients[0];
+    cubic[1] = coefficients[1];
+    cubic[2] = coefficients[2];
+    cubic[3] = coefficients[3];
+    return SolveCubic(cubic, roots);
+#endif
   }
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
 
   if (coefficients[3] == 0.f && coefficients[1] == 0.f) {
     float squaredRoots[4];
@@ -857,19 +867,11 @@ uint CMath::SolveQuartic(const float* coefficients, float* roots) {
   const float quadratic = coefficients[2] * inverse;
   const float shift = (0.25f * coefficients[3]) * inverse;
 #else
-    float cubic[4];
-    cubic[0] = coefficients[0];
-    cubic[1] = coefficients[1];
-    cubic[2] = coefficients[2];
-    cubic[3] = coefficients[3];
-    return SolveCubic(cubic, roots);
-  }
-
   const float quadratic = coefficients[2] / coefficients[4];
   const float shift = coefficients[3] / (4.f * coefficients[4]);
 #endif
   const float p = (-6.f * shift) * shift + quadratic;
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
   const float q = shift * ((8.f * shift) * shift - (2.f * coefficients[2]) * inverse) + coefficients[1] * inverse;
   const float r = coefficients[0] * inverse +
                   shift * (shift * ((-3.f * shift) * shift + quadratic) - coefficients[1] * inverse);

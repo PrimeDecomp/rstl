@@ -8,12 +8,6 @@
 #include "Kyoto/PVS/CPVSVisSet.hpp"
 #include "rstl/auto_ptr.hpp"
 
-#if RSTL_CORRUPTION
-#define CPVSVISOCTREE_TRAVERSE_CONST
-#else
-#define CPVSVISOCTREE_TRAVERSE_CONST const
-#endif
-
 class CPVSVisOctree {
 public:
   CPVSVisOctree(const CAABox& bounds, int numObjects, int numLights, const char* data);
@@ -34,7 +28,7 @@ public:
 
   typedef void (*TLeafCallback)(const CPVSVisOctree&, const CAABox&, const CPVSVisSet&, int, int,
                                 void*);
-  void TraverseLeaves(TLeafCallback callback, void* userData) CPVSVISOCTREE_TRAVERSE_CONST;
+  void TraverseLeaves(TLeafCallback callback, void* userData) RSTL_KYOTO_SCALAR_PARAM_CONST;
 
 private:
   void TraverseLeavesRecursive(TLeafCallback callback, int depth, int child,

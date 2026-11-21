@@ -529,7 +529,7 @@
 #define RSTL_ECHOES_CONST const
 #define RSTL_PRIME1_INLINE
 #endif
-// The vector test Corruption calls `IsNormalizable` where Prime and Echoes call `CanBeNormalized`.
+// Two different vector tests: Corruption's `IsNormalizable` and the others' `CanBeNormalized`.
 #if RSTL_CORRUPTION
 #define RSTL_KYOTO_CAN_BE_NORMALIZED(v) (v).IsNormalizable()
 #else
@@ -541,6 +541,12 @@
 #else
 #define RSTL_KYOTO_SCALAR_PARAM_CONST const
 #endif
+// The prototype's PVS octree traversal and its leaf bounds helper.
+#define RSTL_KYOTO_PVS_PROTO_TRAVERSAL (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype's CMath solver and noise forms.
+#define RSTL_KYOTO_MATH_PROTO_SOLVERS (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype's TTokenSet exact-compare case order, lower-cased locals and by-value const char.
+#define RSTL_KYOTO_TOKEN_SET_PROTO_FORMS (RSTL_VERSION == RSTL_G2MEAB)
 // Small value types declare their rstl container copy policies.
 #define RSTL_KYOTO_CONSTRUCTION_POLICIES (!RSTL_PRIME1)
 // CAssetId is the prototype's class (Kyoto/CAssetId.hpp) instead of a `uint`.
@@ -723,10 +729,10 @@
 // Address queries follow the prototype's existing int interface.
 #define RSTL_KYOTO_REL_DEBUG_INT_ADDRESS (RSTL_VERSION == RSTL_G2MEAB)
 // TTokenSet::ToLower takes its character by const value (this changes the emitted code).
-#if RSTL_CORRUPTION
-#define RSTL_TOKEN_SET_CHAR_PARAM const char
+#if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
+#define RSTL_KYOTO_TOKEN_SET_CHAR_PARAM const char
 #else
-#define RSTL_TOKEN_SET_CHAR_PARAM char
+#define RSTL_KYOTO_TOKEN_SET_CHAR_PARAM char
 #endif
 // The fatal error handler switches to a clean OSContext and waits for controller port 1.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)

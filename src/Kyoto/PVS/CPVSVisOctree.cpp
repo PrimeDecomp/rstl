@@ -5,8 +5,8 @@
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#if RSTL_VERSION >= RSTL_R32J
 #include "string.h"
+#if RSTL_VERSION >= RSTL_R32J
 
 #include "CPVSVisOctree.inc"
 #endif
@@ -30,7 +30,7 @@ int CPVSVisOctree::IterateSearch(uchar octant, const CVector3f& pos) const {
   float minY, maxY;
   float minZ, maxZ;
   bool highX, highY, highZ;
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
   const float centerX = center[0];
   if (pos[0] > centerX) {
     minX = centerX;
@@ -41,7 +41,7 @@ int CPVSVisOctree::IterateSearch(uchar octant, const CVector3f& pos) const {
     maxX = mMax[0];
     highX = true;
   } else {
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
     maxX = centerX;
 #else
     maxX = center[0];
@@ -87,7 +87,7 @@ uint CPVSVisOctree::GetNumChildren(uchar octant) const {
   return childCount[octant & 7];
 }
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_PVS_PROTO_TRAVERSAL
 void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* userData) {
   mMin = mBounds.GetMinPoint();
   mMax = mBounds.GetMaxPoint();

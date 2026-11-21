@@ -1,6 +1,6 @@
 #include "Kyoto/PVS/CPVSVisOctree.hpp"
 
-#ifdef ENABLE_DEBUG_TOOLS
+#if defined(ENABLE_DEBUG_TOOLS) && !RSTL_KYOTO_PVS_PROTO_TRAVERSAL
 
 namespace {
 void TraversePVSNode(const CPVSVisOctree& tree, const uchar* node, const CAABox& bounds,
@@ -63,7 +63,7 @@ void TraversePVSNode(const CPVSVisOctree& tree, const uchar* node, const CAABox&
 }
 } // namespace
 
-void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* context) CPVSVISOCTREE_TRAVERSE_CONST {
+void CPVSVisOctree::TraverseLeaves(TLeafCallback callback, void* context) RSTL_KYOTO_SCALAR_PARAM_CONST {
   if (callback == nullptr || mOctreeData.get() == nullptr)
     return;
   int ordinal = 0;
