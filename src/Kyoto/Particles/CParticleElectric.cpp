@@ -163,12 +163,8 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   if (mElecDesc->mSSWH) {
     mHaveSSWH = true;
     for (int i = 0; i < mSCNT; ++i) {
-#if RSTL_CORRUPTION
       mSwooshGenerators.push_back(rs_new_line(251)
                                       CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
-#else
-      mSwooshGenerators.push_back(rs_new CParticleSwoosh(mElecDesc->mSSWH->GetToken(), mSSEG));
-#endif
       CParticleSwoosh& swoosh = *mSwooshGenerators.back();
       const int count = swoosh.GetSwooshCount();
       for (int j = 0; j < count; ++j) {
@@ -178,13 +174,8 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
     }
   }
   ++mSSEG;
-#if RSTL_CORRUPTION
-  mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(mSSEG, CVector3f::Zero(),
-                                                                        rstl::aligned_allocator());
-#else
   mCalculatedVerts = rstl::vector< CVector3f, rstl::aligned_allocator >(
       mSSEG, CVector3f::Zero(), rstl::aligned_allocator());
-#endif
   mFractalOffsets = rstl::vector< CVector3f >(mSSEG, CVector3f::Zero(), rstl::rmemory_allocator());
   mFractalMags = rstl::vector< float >(mSSEG, 0.f, rstl::rmemory_allocator());
   if (mElecDesc->mGPSM) {
@@ -224,11 +215,7 @@ CParticleElectric::CParticleElectric(TToken< CElectricDescription > desc)
   if (mElecDesc->mLWD1 || mElecDesc->mLWD2 || mElecDesc->mLWD3) {
     mHaveLWD = true;
     for (int i = 0; i < mSCNT; ++i) {
-#if RSTL_CORRUPTION
       mLineManagers.push_back(rs_new_line(299) CLineManager);
-#else
-      mLineManagers.push_back(rs_new CLineManager);
-#endif
     }
   }
 }

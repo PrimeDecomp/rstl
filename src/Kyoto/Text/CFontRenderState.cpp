@@ -5,15 +5,11 @@
 #include "Kyoto/Text/CFontRenderState.hpp"
 
 CFontRenderState::CFontRenderState()
-#if RSTL_CORRUPTION
-: mCurBlock(nullptr), mCurX(0), mCurY(0), mCurrentLineInst(nullptr), mLineInitialized(true) {
-#else
 : mCurBlock(nullptr)
 , mCurX(0)
 , mCurY(0)
 , mCurrentLineInst(nullptr)
 , mLineInitialized(true) {
-#endif
   GetColors()[0] = CTextColor(255, 255, 255, 255);
   GetColors()[1] = CTextColor(128, 128, 128, 255);
   GetColors()[2] = CTextColor(255, 255, 255, 255);

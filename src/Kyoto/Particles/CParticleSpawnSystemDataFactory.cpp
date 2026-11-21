@@ -51,11 +51,7 @@ CParticleSpawnSystemDataFactory::CreateGeneratorDescription(CInputStream& in, CS
   if (classId != 'SPSM') {
     return nullptr;
   }
-#if RSTL_CORRUPTION
   CSpawnSystemDescription* desc = rs_new_line(82) CSpawnSystemDescription();
-#else
-  CSpawnSystemDescription* desc = rs_new CSpawnSystemDescription();
-#endif
   CreateSPSM(desc, in, pool);
   return desc;
 }
@@ -131,11 +127,7 @@ bool CParticleSpawnSystemDataFactory::CreateSPSM(CSpawnSystemDescription* desc, 
     case 'SPWN': {
       const FourCC childId = CParticleDataFactory::GetClassID(in);
       if (childId == 'CNST') {
-#if RSTL_CORRUPTION
         desc->mSPWN = rs_new_line(207) CSpawnSystemKeyframeData(in);
-#else
-        desc->mSPWN = rs_new CSpawnSystemKeyframeData(in);
-#endif
         desc->mSPWN->LoadAllSpawnedSystemTokens(pool);
       }
       break;

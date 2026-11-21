@@ -34,17 +34,9 @@ rstl::rc_ptr< IMetaTrans > CMetaTransFactory::CreateMetaTrans(CInputStream& in) 
     return rs_new CMetaTransTrans(in);
 #endif
   case kMTT_PhaseTrans:
-#if RSTL_CORRUPTION
     return rs_new_line(32) CMetaTransPhaseTrans(in);
-#else
-    return rs_new CMetaTransPhaseTrans(in);
-#endif
   case kMTT_Snap:
-#if RSTL_CORRUPTION
     return rs_new_line(38) CMetaTransSnap;
-#else
-    return rs_new CMetaTransSnap;
-#endif
   default:
     return rstl::rc_ptr< IMetaTrans >();
   }

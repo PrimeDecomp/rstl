@@ -24,11 +24,7 @@
 CTextRenderBuffer::CTextRenderBuffer(EMode mode)
 : mMode(mode)
 , mBlobSize(0)
-#if RSTL_CORRUPTION
-, mCurrentBytecodeOffset(0)
-#else
 , mCurBytecodeOffset(0)
-#endif
 , mActiveFont(-1)
 , mActivePalette(-1)
 , mQueuedFont(-1)
@@ -186,12 +182,8 @@ void CTextRenderBuffer::AddFontChange(const TToken< CRasterFont >& font) {
       out.WriteUint8(kC_FontChange);
       out.WriteInt8(fontIndex);
     }
-#if RSTL_CORRUPTION
-    mCurrentBytecodeOffset += out.GetWrittenBytes();
-#else
     mCurBytecodeOffset += out.GetWrittenBytes();
 
-#endif
   } else {
     // Command + index
     mBlobSize += sizeof(char) + sizeof(char);
@@ -426,12 +418,8 @@ void CTextRenderBuffer::AddPaletteChange(const CGraphicsPalette& palette, EFontM
 
     out.WriteUint8(kC_PaletteChange);
     out.WriteInt8(paletteIndex);
-#if RSTL_CORRUPTION
-    mCurrentBytecodeOffset += out.GetWrittenBytes();
-#else
     mCurBytecodeOffset += out.GetWrittenBytes();
 
-#endif
   } else {
     // Command + index
     mBlobSize += sizeof(char) + sizeof(char);
@@ -442,9 +430,9 @@ void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint co
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
 #if RSTL_CORRUPTION
-    int tmp = mCurrentBytecodeOffset;
-    mPrimitiveOffsets.reserve(mPrimitiveOffsets.size() + 1);
-    mPrimitiveOffsets.push_back_unsafe(tmp);
+    int tmp = mCurBytecodeOffset;
+    mPrimOffsets.reserve(mPrimOffsets.size() + 1);
+    mPrimOffsets.push_back_unsafe(tmp);
 #else
     int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
@@ -461,7 +449,7 @@ void CTextRenderBuffer::AddCharacter(const CVector2i& offset, short chr, uint co
     out.WriteInt16(offset.GetY());
     out.WriteInt16(chr);
     out.WriteInt32(color);
-    mCurrentBytecodeOffset += out.GetWrittenBytes();
+    mCurBytecodeOffset += out.GetWrittenBytes();
 #else
 #if RSTL_PRIME1
     out.Put< short >(offset.GetX());
@@ -494,9 +482,9 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
   if (mMode == kM_BufferFill) {
     CMemoryStreamOut out(GetOutStream(), GetCurLen(), CMemoryStreamOut::kOS_NotOwned, 64);
 #if RSTL_CORRUPTION
-    const int tmp = mCurrentBytecodeOffset;
-    mPrimitiveOffsets.reserve(mPrimitiveOffsets.size() + 1);
-    mPrimitiveOffsets.push_back_unsafe(tmp);
+    const int tmp = mCurBytecodeOffset;
+    mPrimOffsets.reserve(mPrimOffsets.size() + 1);
+    mPrimOffsets.push_back_unsafe(tmp);
 #else
     const int tmp = mCurBytecodeOffset;
     mPrimOffsets.reserve(mPrimOffsets.size() + 1);
@@ -538,7 +526,7 @@ void CTextRenderBuffer::AddImage(const CVector2i& offset, const CFontImageDef& i
     out.WriteInt8(imageIdx);
 #if RSTL_CORRUPTION
     out.WriteUint32(CColor::White().GetColor_u32());
-    mCurrentBytecodeOffset += out.GetWrittenBytes();
+    mCurBytecodeOffset += out.GetWrittenBytes();
 #else
 #if RSTL_PRIME1
     out.Put< uint >(CColor::White().GetColor_u32());
@@ -816,28 +804,20 @@ void CTextRenderBuffer::SetMode(EMode mode) { mMode = mode; }
 
 void* CTextRenderBuffer::GetOutStream() {
   VerifyBuffer();
-#if RSTL_CORRUPTION
-  return mBytecode.data() + mCurrentBytecodeOffset;
-#else
   return mBytecode.data() + mCurBytecodeOffset;
 
-#endif
 }
 
 size_t CTextRenderBuffer::GetCurLen() {
   VerifyBuffer();
-#if RSTL_CORRUPTION
-  return mBlobSize - mCurrentBytecodeOffset;
-#else
   return mBlobSize - mCurBytecodeOffset;
 
-#endif
 }
 
 CTextRenderBuffer::Primitive CTextRenderBuffer::GetPrimitive(int index) const {
 #if RSTL_CORRUPTION
-  CMemoryInStream in(mBytecode.data() + mPrimitiveOffsets[index],
-                     mBlobSize - mPrimitiveOffsets[index]);
+  CMemoryInStream in(mBytecode.data() + mPrimOffsets[index],
+                     mBlobSize - mPrimOffsets[index]);
 #else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -870,14 +850,9 @@ CTextRenderBuffer::Primitive CTextRenderBuffer::GetPrimitive(int index) const {
 }
 
 void CTextRenderBuffer::SetPrimitive(const Primitive& prim, int index) {
-#if RSTL_CORRUPTION
-  CMemoryStreamOut out(mBytecode.data() + mPrimitiveOffsets[index],
-                       mBlobSize - mPrimitiveOffsets[index], CMemoryStreamOut::kOS_NotOwned, 64);
-#else
   CMemoryStreamOut out(mBytecode.data() + mPrimOffsets[index], mBlobSize - mPrimOffsets[index],
                        CMemoryStreamOut::kOS_NotOwned, 64);
 
-#endif
   switch (prim.mCmd) {
   case kC_CharacterRender:
     out.WriteUint8(kC_CharacterRender);
@@ -972,12 +947,8 @@ void CTextRenderBuffer::AccumulateTextBounds() {
   CVector2i min(INT_MAX, INT_MAX);
   CVector2i max(-INT_MAX - 1, -INT_MAX - 1);
   CMemoryInStream in(mBytecode.data(), mBlobSize, CMemoryInStream::kOS_NotOwned);
-#if RSTL_CORRUPTION
-  while (in.GetReadPosition() < mCurrentBytecodeOffset) {
-#else
   while (in.GetReadPosition() < mCurBytecodeOffset) {
 
-#endif
     switch (static_cast< ECmd >(in.Get< uchar >())) {
     case kC_CharacterRender: {
       short x = in.Get< short >();

@@ -1030,8 +1030,8 @@ void CRevolutionController::UpdateMotionButtons(int channel) {
 }
 
 #if RSTL_CORRUPTION
-void CRevolutionController::SetMotorState(EIOPort port, EMotorState state) {
-  if (!mGamepadStates[port].DeviceIsPresent()) {
+void CRevolutionController::SetMotorState(EIOPort channel, EMotorState state) {
+  if (!mGamepadStates[channel].DeviceIsPresent()) {
 #else
 void CRevolutionController::UpdateSwingButton(int channel, CControllerButton& button, uint mask) {
   if (!mInput[channel].DeviceIsPresent()) {
@@ -1049,7 +1049,7 @@ void CRevolutionController::UpdateSwingButton(int channel, CControllerButton& bu
 #endif
 
 #if RSTL_CORRUPTION
-  mMotorStates[port] = state;
+  mMotorStates[channel] = state;
 #else
 void CRevolutionController::UpdateSwingButtons(int channel) {
   CControllerData& input = mInput[channel];
@@ -1074,16 +1074,12 @@ void CRevolutionController::SetMotorState(int channel, EMotorState state) {
 #endif
       switch (state) {
       case kMS_Rumble:
-#if RSTL_CORRUPTION
-    WPADControlMotor(port, WPAD_MOTOR_RUMBLE);
-#else
         WPADControlMotor(channel, WPAD_MOTOR_RUMBLE);
-#endif
         break;
       case kMS_Stop:
 #if RSTL_CORRUPTION
   case kMS_StopHard:
-    WPADControlMotor(port, WPAD_MOTOR_STOP);
+    WPADControlMotor(channel, WPAD_MOTOR_STOP);
 #else
         WPADControlMotor(channel, WPAD_MOTOR_STOP);
 #endif

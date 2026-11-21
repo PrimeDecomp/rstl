@@ -22,11 +22,7 @@
 
 rstl::auto_ptr< uint > CFBStreamedCompression::GetRotationsAndOffsets(uint words,
                                                                       CInputStream& in) {
-#if RSTL_CORRUPTION
   rstl::auto_ptr< uint > data(rs_new_line(14) uint[words]);
-#else
-  rstl::auto_ptr< uint > data(rs_new uint[words]);
-#endif
   void* cursor = data.get();
   CStandardMultiFormatHeader* mainHeader = static_cast< CStandardMultiFormatHeader* >(cursor);
   new (mainHeader) CStandardMultiFormatHeader(in);

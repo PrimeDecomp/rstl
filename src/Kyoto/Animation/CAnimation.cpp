@@ -9,12 +9,6 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 
-#if RSTL_CORRUPTION
-
-
-CAnimation::CAnimation(CInputStream& in) : mName(in), mAnim(CMetaAnimFactory::CreateMetaAnim(in)) {}
-#else
 CAnimation::CAnimation(CInputStream& in)
 : mName(in)
 , mAnim(CMetaAnimFactory::CreateMetaAnim(in)) {}
-#endif

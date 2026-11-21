@@ -69,12 +69,7 @@ CSwooshDescription* CParticleSwooshDataFactory::CreateGeneratorDescription(CInpu
   if (classId != 'SWSH') {
     return nullptr;
   }
-#if RSTL_CORRUPTION
   CSwooshDescription* desc = rs_new_line(86) CSwooshDescription();
-#else
-  CSwooshDescription* desc = rs_new CSwooshDescription();
-
-#endif
   CreateWPSM(desc, in, pool);
 
   return desc;

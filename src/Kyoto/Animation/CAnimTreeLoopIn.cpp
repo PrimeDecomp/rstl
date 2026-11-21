@@ -174,13 +174,8 @@ rstl::ownership_transfer< IAnimReader > CAnimTreeLoopIn::VClone() const {
 rstl::rc_ptr< CAnimTreeNode > CAnimTreeLoopIn::VGetBestUnblendedChild() const {
   rstl::rc_ptr< CAnimTreeNode > child = mChild->GetBestUnblendedChild();
   if (child)
-#if RSTL_CORRUPTION
     return rs_new_line(272) CAnimTreeLoopIn(Cast(child->Clone()), mNextAnim, mDidLoopIn, mAnimCtx,
                                             mName, mFundamentals, mCurTime);
-#else
-    return rs_new CAnimTreeLoopIn(Cast(child->Clone()), mNextAnim, mDidLoopIn, mAnimCtx, mName,
-                                  mFundamentals, mCurTime);
-#endif
   return child;
 }
 

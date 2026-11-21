@@ -52,11 +52,7 @@ CParticleSortedSystemDataFactory::CreateGeneratorDescription(CInputStream& in, C
   if (classId != 'SRSM') {
     return nullptr;
   }
-#if RSTL_CORRUPTION
   CSortedParticleSystemDescription* desc = rs_new_line(82) CSortedParticleSystemDescription();
-#else
-  CSortedParticleSystemDescription* desc = rs_new CSortedParticleSystemDescription();
-#endif
   CreateSRSM(desc, in, pool);
   return desc;
 }
@@ -72,11 +68,7 @@ bool CParticleSortedSystemDataFactory::CreateSRSM(CSortedParticleSystemDescripti
     case 'SPWN': {
       const FourCC childId = CParticleDataFactory::GetClassID(in);
       if (childId == 'CNST') {
-#if RSTL_CORRUPTION
         desc->mSPWN = rs_new_line(107) CSpawnSystemKeyframeData(in);
-#else
-        desc->mSPWN = rs_new CSpawnSystemKeyframeData(in);
-#endif
         desc->mSPWN->LoadAllSpawnedSystemTokens(pool);
       }
       break;

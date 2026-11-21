@@ -46,11 +46,7 @@ CCharLayoutNode::CCharLayoutNode(CInputStream& in)
 
 CCharLayoutInfo::CCharLayoutInfo(CInputStream& in)
 : mNodes(rstl::ownership_transfer< TSegIdMap< CCharLayoutNode > >(
-#if RSTL_CORRUPTION
       rs_new_line(72) TSegIdMap< CCharLayoutNode >(in)))
-#else
-      rs_new TSegIdMap< CCharLayoutNode >(in)))
-#endif
 , mSegIdList(in)
 , mNameMap(in) {
 #if RSTL_CORRUPTION

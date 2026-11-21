@@ -24,13 +24,9 @@ CCharAnimTime CAnimTreeSingleChild::VGetTimeRemaining() const {
 #endif
 }
 
-#if RSTL_CORRUPTION
-bool CAnimTreeSingleChild::VHasOffset(const CSegId& seg) const { return mChild->VHasOffset(seg); }
-#else
 bool CAnimTreeSingleChild::VHasOffset(const CSegId& seg) const {
   return mChild->VHasOffset(seg);
 }
-#endif
 
 CVector3f CAnimTreeSingleChild::VGetOffset(const CSegId& seg) const {
   return mChild->VGetOffset(seg);

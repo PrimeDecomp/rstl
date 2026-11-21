@@ -128,12 +128,8 @@ public:
   size_t GetCurLen();
   void SetMode(EMode mode);
   void Render(const CColor& color, float time) const;
-#if RSTL_CORRUPTION
-  int GetNumPrimitives() const { return mPrimitiveOffsets.size(); }
-#else
   int GetNumPrimitives() const { return mPrimOffsets.size(); }
 
-#endif
   Primitive GetPrimitive(int index) const;
   void SetPrimitive(const Primitive& prim, int index);
   // Guessed name. Returns cached bounds, rebuilding them when dirty.
@@ -181,20 +177,12 @@ private:
   EMode mMode;
   rstl::vector< TToken< CRasterFont > > mFonts;
   rstl::vector< CFontImageDef > mImages;
-#if RSTL_CORRUPTION
-  rstl::vector< int > mPrimitiveOffsets;
-#else
   rstl::vector< int > mPrimOffsets;
 
-#endif
   rstl::vector< signed char > mBytecode;
   uint mBlobSize;
-#if RSTL_CORRUPTION
-  uint mCurrentBytecodeOffset;
-#else
   uint mCurBytecodeOffset;
 
-#endif
   mutable char mActiveFont;
   mutable char mActivePalette;
   mutable char mQueuedFont;

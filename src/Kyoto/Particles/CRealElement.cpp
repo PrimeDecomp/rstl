@@ -174,12 +174,8 @@ bool CRERandom::GetValue(int frame, float& valOut) const {
   return false;
 }
 
-#if RSTL_CORRUPTION
-CREInitialRandom::CREInitialRandom(CRealElement* min, CRealElement* max) : mMin(min), mMax(max) {}
-#else
 CREInitialRandom::CREInitialRandom(CRealElement* min, CRealElement* max)
 : mMin(min), mMax(max) {}
-#endif
 
 CREInitialRandom::~CREInitialRandom() {
   delete mMin;
@@ -215,12 +211,8 @@ bool CRETimeChain::GetValue(int frame, float& valOut) const {
   }
 }
 
-#if RSTL_CORRUPTION
-CREClamp::CREClamp(CRealElement* a, CRealElement* b, CRealElement* c) : mMin(a), mMax(b), mVal(c) {}
-#else
 CREClamp::CREClamp(CRealElement* a, CRealElement* b, CRealElement* c)
 : mMin(a), mMax(b), mVal(c) {}
-#endif
 
 CREClamp::~CREClamp() {
   delete mMin;

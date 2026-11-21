@@ -21,10 +21,6 @@ uint CParticleGen::sDrawMask;
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-void CParticleGen::AddModifier(CWarp* warp) { mModifiersList.push_back(warp); }
-#else
 void CParticleGen::AddModifier(CWarp* warp) {
   mModifiersList.push_back(warp);
 }
-#endif

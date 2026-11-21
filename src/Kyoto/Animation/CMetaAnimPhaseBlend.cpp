@@ -39,19 +39,11 @@ CMetaAnimPhaseBlend::VGetAnimationTree(const CAnimSysContext& animSys,
   rstl::ncrc_ptr< CAnimTreeNode > scaledA = rs_new_line(83) CAnimTreeTimeScale(
       a, scaleA,
       CAnimTreeTimeScale::CreatePrimitiveName(a, scaleA, CCharAnimTime::Infinity(), -1.f));
-#if RSTL_CORRUPTION
   rstl::ncrc_ptr< CAnimTreeNode > scaledB = rs_new_line(87) CAnimTreeTimeScale(
-#else
-  rstl::ncrc_ptr< CAnimTreeNode > scaledB = rs_new CAnimTreeTimeScale(
-#endif
       b, scaleB,
       CAnimTreeTimeScale::CreatePrimitiveName(b, scaleB, CCharAnimTime::Infinity(), -1.f));
-#if RSTL_CORRUPTION
   return rs_new_line(93)
       CAnimTreeBlend(mCharacterSpaceBlend, scaledA, scaledB, mBlend,
-#else
-  return rs_new CAnimTreeBlend(mCharacterSpaceBlend, scaledA, scaledB, mBlend,
-#endif
                                CAnimTreeBlend::CreatePrimitiveName(scaledA, scaledB, mBlend));
 }
 

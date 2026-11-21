@@ -135,21 +135,13 @@ CCharAnimTime CAnimSourceReader::VGetTimeRemaining() const {
   return mSource->GetAnimationDuration() - mCurTime;
 }
 
-#if RSTL_CORRUPTION
-CSteadyStateAnimInfo CAnimSourceReader::VGetSteadyStateAnimInfo() const { return mSteadyStateInfo; }
-#else
 CSteadyStateAnimInfo CAnimSourceReader::VGetSteadyStateAnimInfo() const {
   return mSteadyStateInfo;
 }
-#endif
 
-#if RSTL_CORRUPTION
-bool CAnimSourceReader::VHasOffset(const CSegId& seg) const { return mSource->HasOffset(seg); }
-#else
 bool CAnimSourceReader::VHasOffset(const CSegId& seg) const {
   return mSource->HasOffset(seg);
 }
-#endif
 
 CVector3f CAnimSourceReader::VGetOffset(const CSegId& seg) const {
   return mSource->GetOffset(seg, mCurTime);

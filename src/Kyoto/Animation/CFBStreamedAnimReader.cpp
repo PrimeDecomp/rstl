@@ -939,8 +939,8 @@ void CFBStreamedAnimReader::VSetPhase(float phase) {
 
 void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
 #if RSTL_CORRUPTION
-                                                CSegStatementSet& set) const {
-  VGetSegStatementSet(list, set, mCurTime);
+                                                CSegStatementSet& setOut) const {
+  VGetSegStatementSet(list, setOut, mCurTime);
 #else
                                                 CSegStatementSet& setOut) const {
 // TODO: verify that this Prime/Echoes difference is real
@@ -962,11 +962,7 @@ void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list,
 #endif
 }
 
-#if RSTL_CORRUPTION
-void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-#else
 void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-#endif
                                                 const CCharAnimTime& time) const {
   SetReadTime(time);
   if (!mTotals.Prior().AmCalculatedDown()) {
@@ -977,11 +973,7 @@ void CFBStreamedAnimReader::VGetSegStatementSet(const CSegIdList& list, CSegStat
   }
   const CSegIdList::const_iterator end = list.end();
   for (CSegIdList::const_iterator it = list.begin(); it != end; ++it) {
-#if RSTL_CORRUPTION
-    GetSegStatement(set[*it], *it);
-#else
     GetSegStatement(setOut[*it], *it);
-#endif
   }
 }
 

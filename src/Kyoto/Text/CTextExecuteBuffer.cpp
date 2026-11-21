@@ -47,10 +47,10 @@
 CTextExecuteBuffer::CTextExecuteBuffer()
 #if RSTL_CORRUPTION
 : mCurrentBlock(nullptr)
-, mCurrentLine(nullptr)
-, mCurrentWord(mInstructions.end())
-, mCurrentWordX(0)
-, mCurrentWordY(0)
+, mCurLine(nullptr)
+, mCurWordIt(mInstructions.end())
+, mCurWordX(0)
+, mCurWordY(0)
 #else
 : mCurBlock(nullptr)
 , mCurLine(nullptr)
@@ -66,10 +66,10 @@ void CTextExecuteBuffer::Clear() {
   mState = CSaveableState();
 #if RSTL_CORRUPTION
   mCurrentBlock = nullptr;
-  mCurrentLine = nullptr;
-  mCurrentWord = mInstructions.end();
-  mCurrentWordX = 0;
-  mCurrentWordY = 0;
+  mCurLine = nullptr;
+  mCurWordIt = mInstructions.end();
+  mCurWordX = 0;
+  mCurWordY = 0;
 #else
   mCurBlock = nullptr;
   mCurLine = nullptr;
@@ -82,7 +82,7 @@ void CTextExecuteBuffer::Clear() {
 
 void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool imageBaseline,
 #if RSTL_CORRUPTION
-                                    ETextDirection direction, EJustification justification,
+                                    ETextDirection dir, EJustification justification,
                                     EVerticalJustification verticalJustification) {
 #else
                                     ETextDirection dir, EJustification just,
@@ -91,7 +91,7 @@ void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool im
   mImageBaseline = imageBaseline;
 #if RSTL_CORRUPTION
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new_line(81)
-      CBlockInstruction(x, y, width, height, direction, justification, verticalJustification);
+      CBlockInstruction(x, y, width, height, dir, justification, verticalJustification);
   mCurrentBlock = static_cast< CBlockInstruction* >(instruction.GetPtr());
 #else
   const rstl::ncrc_ptr< CInstruction > instruction =
@@ -118,7 +118,7 @@ void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool im
   }
   Add(instruction);
 #if RSTL_CORRUPTION
-  mState.GetOptions().SetTextDirection(direction);
+  mState.GetOptions().SetTextDirection(dir);
   mState.SetJustification(justification);
   mState.SetVerticalJustification(verticalJustification);
 #else
@@ -130,7 +130,7 @@ void CTextExecuteBuffer::BeginBlock(int x, int y, int width, int height, bool im
 
 void CTextExecuteBuffer::EndBlock() {
 #if RSTL_CORRUPTION
-  if (mCurrentLine) {
+  if (mCurLine) {
     TerminateLine(true);
 #else
   if (mCurLine) {
@@ -143,7 +143,7 @@ void CTextExecuteBuffer::EndBlock() {
 #endif
   }
 #if RSTL_CORRUPTION
-  mCurrentLine = nullptr;
+  mCurLine = nullptr;
   mCurrentBlock = nullptr;
 #else
   mCurLine = nullptr;
@@ -185,8 +185,8 @@ void CTextExecuteBuffer::AddFont(const TToken< CRasterFont >& font) {
 #endif
     }
 #if RSTL_CORRUPTION
-    if (mCurrentLine) {
-      mCurrentLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
+    if (mCurLine) {
+      mCurLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
                                 mState.GetFont()->GetCarriageAdvance(),
                                 mState.GetFont()->GetBaseLine());
 #else
@@ -253,11 +253,7 @@ int CFontImageDef::GetHeight() const {
 #endif
 
 void CTextExecuteBuffer::AddImage(const CFontImageDef& image) {
-#if RSTL_CORRUPTION
-  if (!mCurrentLine) {
-#else
   if (!mCurLine) {
-#endif
     StartNewLine();
   }
 #if !RSTL_CORRUPTION
@@ -268,8 +264,8 @@ void CTextExecuteBuffer::AddImage(const CFontImageDef& image) {
   if (mCurrentBlock && image.IsLoaded()) {
     const bool newLine =
         mState.IsWordWrapping() &&
-        mCurrentLine->GetWidth() + image.GetWidth() > mCurrentBlock->GetOutputWidth() &&
-        mCurrentLine->GetWordCount() > 0;
+        mCurLine->GetWidth() + image.GetWidth() > mCurrentBlock->GetOutputWidth() &&
+        mCurLine->GetWordCount() > 0;
     if (newLine) {
 #else
 #if RSTL_PRIME1
@@ -295,12 +291,12 @@ void CTextExecuteBuffer::AddImage(const CFontImageDef& image) {
       StartNewLine();
     }
 #if RSTL_CORRUPTION
-    mCurrentLine->TestLargestImage(image.GetMonoWidth(), image.GetHeight(),
+    mCurLine->TestLargestImage(image.GetMonoWidth(), image.GetHeight(),
                                image.CalculateBaseline());
     if (mCurrentBlock->GetTextDirection() == kTD_Horizontal) {
-      mCurrentLine->AddWidth(image.GetWidth());
-      if (mCurrentLine->GetWidth() > image.GetWidth()) {
-        mCurrentBlock->SetWidth(mCurrentLine->GetWidth());
+      mCurLine->AddWidth(image.GetWidth());
+      if (mCurLine->GetWidth() > image.GetWidth()) {
+        mCurrentBlock->SetWidth(mCurLine->GetWidth());
 #else
 #if RSTL_VERSION < RSTL_GM8P_00
     mCurLine->TestLargestImage(image.GetMonoWidth(), image.GetMonoHeight(),
@@ -316,12 +312,8 @@ void CTextExecuteBuffer::AddImage(const CFontImageDef& image) {
       }
     }
   }
-#if RSTL_CORRUPTION
 
   const rstl::ncrc_ptr< CInstruction > instruction = rs_new_line(177) CImageInstruction(image);
-#else
-  const rstl::ncrc_ptr< CInstruction > instruction = rs_new CImageInstruction(image);
-#endif
   Add(instruction);
 }
 
@@ -426,8 +418,8 @@ void CTextExecuteBuffer::AddCharacterExtraSpace(int spacing) {
 #if RSTL_CORRUPTION
 void CTextExecuteBuffer::AddJustification(EJustification justification) {
   mState.SetJustification(justification);
-  if (mCurrentLine && mCurrentLine->GetWidth() == 0) {
-    mCurrentLine->SetJustification(justification);
+  if (mCurLine && mCurLine->GetWidth() == 0) {
+    mCurLine->SetJustification(justification);
 #else
 void CTextExecuteBuffer::AddJustification(EJustification just) {
   mState.SetJustification(just);
@@ -440,8 +432,8 @@ void CTextExecuteBuffer::AddJustification(EJustification just) {
 #if RSTL_CORRUPTION
 void CTextExecuteBuffer::AddVerticalJustification(EVerticalJustification justification) {
   mState.SetVerticalJustification(justification);
-  if (mCurrentLine && mCurrentLine->GetWidth() == 0) {
-    mCurrentLine->SetVerticalJustification(justification);
+  if (mCurLine && mCurLine->GetWidth() == 0) {
+    mCurLine->SetVerticalJustification(justification);
 #else
 void CTextExecuteBuffer::AddVerticalJustification(EVerticalJustification just) {
   mState.SetVerticalJustification(just);
@@ -483,23 +475,17 @@ void CTextExecuteBuffer::AddPopState() {
 #endif
   mState = mStateStack.front();
   mStateStack.pop_front();
-#if RSTL_CORRUPTION
-  if (mCurrentLine->GetWidth() == 0) {
-    mCurrentLine->SetJustification(mState.GetJustification());
-    mCurrentLine->SetVerticalJustification(mState.GetVerticalJustification());
-#else
   if (mCurLine->GetWidth() == 0) {
     mCurLine->SetJustification(mState.GetJustification());
     mCurLine->SetVerticalJustification(mState.GetVerticalJustification());
-#endif
   }
 }
 
 #if RSTL_CORRUPTION
 void CTextExecuteBuffer::TerminateLineLTR(bool lastLine) {
-  if (mCurrentLine->GetY() == 0 && mState.IsFinishedLoading()) {
-    mCurrentLine->SetHeight(
-        rstl::max_val(mState.GetFont()->GetCarriageAdvance(), mCurrentLine->GetHeight()));
+  if (mCurLine->GetY() == 0 && mState.IsFinishedLoading()) {
+    mCurLine->SetHeight(
+        rstl::max_val(mState.GetFont()->GetCarriageAdvance(), mCurLine->GetHeight()));
 #else
 void CTextExecuteBuffer::TerminateLineLTR(
 // TODO: verify that this Prime/Echoes difference is real
@@ -521,7 +507,7 @@ void CTextExecuteBuffer::TerminateLineLTR(
 #if RSTL_CORRUPTION
   mCurrentBlock->AddHeight(
       mCurrentBlock->GetVerticalJustification() == kVerticalJustification_Full || lastLine
-          ? mCurrentLine->GetY()
+          ? mCurLine->GetY()
 #else
   mCurBlock->AddHeight(mCurBlock->GetVerticalJustification() == kVerticalJustification_Full
 // TODO: verify that this Prime/Echoes difference is real
@@ -531,11 +517,7 @@ void CTextExecuteBuffer::TerminateLineLTR(
                            ? mCurLine->GetY()
 #endif
                            : mState.GetLineExtraSpacing() +
-#if RSTL_CORRUPTION
-                static_cast< int >(mCurrentLine->GetY() * mState.GetLineSpacing()));
-#else
                                  static_cast< int >(mCurLine->GetY() * mState.GetLineSpacing()));
-#endif
 }
 
 #if RSTL_CORRUPTION
@@ -563,12 +545,12 @@ void CTextExecuteBuffer::TerminateLine(
 void CTextExecuteBuffer::StartNewWord() {
 #if RSTL_CORRUPTION
   rstl::ncrc_ptr< CInstruction > instruction(rs_new_line(381) CWordInstruction());
-  mCurrentWord = Add(instruction);
+  mCurWordIt = Add(instruction);
   mCurrentX = 0;
   mCurrentY = 0;
-  mCurrentWordX = mCurrentLine->GetWidth();
-  mCurrentWordY = mCurrentLine->GetY();
-  mCurrentLine->IncWords();
+  mCurWordX = mCurLine->GetWidth();
+  mCurWordY = mCurLine->GetY();
+  mCurLine->IncWords();
 #else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -587,7 +569,7 @@ void CTextExecuteBuffer::StartNewWord() {
 
 void CTextExecuteBuffer::StartNewLine() {
 #if RSTL_CORRUPTION
-  if (mCurrentLine) {
+  if (mCurLine) {
     TerminateLine(false);
 #else
   if (mCurLine) {
@@ -603,8 +585,8 @@ void CTextExecuteBuffer::StartNewLine() {
   const rstl::ncrc_ptr< CInstruction > instruction =
       rstl::ncrc_ptr< CInstruction >(rs_new_line(404) CLineInstruction(
           0, 0, 0, mState.GetJustification(), mState.GetVerticalJustification(), mImageBaseline));
-  mCurrentWord = Add(instruction);
-  mCurrentLine = static_cast< CLineInstruction* >(instruction.GetPtr());
+  mCurWordIt = Add(instruction);
+  mCurLine = static_cast< CLineInstruction* >(instruction.GetPtr());
 #else
   const rstl::ncrc_ptr< CInstruction > instruction = rstl::ncrc_ptr< CInstruction >(
       rs_new CLineInstruction(0, 0, 0
@@ -667,9 +649,9 @@ CLineInstruction::CLineInstruction(int words, int width, int height, EJustificat
 
 void CTextExecuteBuffer::MoveWordLTR() {
 #if RSTL_CORRUPTION
-  mCurrentLine->SubWidth(mCurrentX + mSpaceDistance);
-  if (mCurrentLine->GetY() > mCurrentWordY) {
-    mCurrentLine->SetHeight(mCurrentWordY);
+  mCurLine->SubWidth(mCurrentX + mSpaceDistance);
+  if (mCurLine->GetY() > mCurWordY) {
+    mCurLine->SetHeight(mCurWordY);
 #else
   mCurLine->SubWidth(mCurX + mSpaceDistance);
   if (mCurLine->GetY() > mCurWordY) {
@@ -678,7 +660,7 @@ void CTextExecuteBuffer::MoveWordLTR() {
   }
   mSpaceDistance = 0;
 #if RSTL_CORRUPTION
-  mCurrentLine->DecWords();
+  mCurLine->DecWords();
   TerminateLineLTR(false);
 #else
   mCurLine->DecWords();
@@ -695,9 +677,9 @@ void CTextExecuteBuffer::MoveWordLTR() {
 #if RSTL_CORRUPTION
       rs_new_line(434) CLineInstruction(1, mCurrentX, mCurrentY, mState.GetJustification(),
                                         mState.GetVerticalJustification(), mImageBaseline);
-  mCurrentLine = static_cast< CLineInstruction* >(instruction.GetPtr());
-  mInstructions.insert(mCurrentWord, instruction);
-  mInstructions.insert(mCurrentWord, rs_new_line(437) CWordInstruction());
+  mCurLine = static_cast< CLineInstruction* >(instruction.GetPtr());
+  mInstructions.insert(mCurWordIt, instruction);
+  mInstructions.insert(mCurWordIt, rs_new_line(437) CWordInstruction());
   mCurrentBlock->IncLines();
 #else
       rs_new CLineInstruction(1, mCurX, mCurY
@@ -734,8 +716,8 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
 #endif
     if (mState.IsWordWrapping()) {
 #if RSTL_CORRUPTION
-      if (width + mCurrentLine->GetWidth() > mCurrentBlock->GetOutputWidth() &&
-          mCurrentLine->GetWordCount() > 1 && mCurrentX + width < mCurrentBlock->GetOutputWidth()) {
+      if (width + mCurLine->GetWidth() > mCurrentBlock->GetOutputWidth() &&
+          mCurLine->GetWordCount() > 1 && mCurrentX + width < mCurrentBlock->GetOutputWidth()) {
 #else
       if (width + mCurLine->GetWidth() > mCurBlock->GetOutputWidth() &&
           mCurLine->GetWordCount() > 1 && mCurX + width < mCurBlock->GetOutputWidth()) {
@@ -743,8 +725,8 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
         MoveWordLTR();
       }
 #if RSTL_CORRUPTION
-      if (width + mCurrentLine->GetWidth() > mCurrentBlock->GetOutputWidth() && len > 1) {
-        const int lineWidth = mCurrentLine->GetWidth();
+      if (width + mCurLine->GetWidth() > mCurrentBlock->GetOutputWidth() && len > 1) {
+        const int lineWidth = mCurLine->GetWidth();
         const int outputWidth = mCurrentBlock->GetOutputWidth();
         rem = rstl::max_val(1, rstl::min_val(len, 2 * ((outputWidth - lineWidth) /
                                                        mState.GetFont()->GetMonoWidth())));
@@ -763,7 +745,7 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
           --rem;
 #if RSTL_CORRUPTION
             mState.GetFont()->GetSize(mState.GetOptions(), width, height, str, rem);
-        } while (width + mCurrentLine->GetWidth() > mCurrentBlock->GetOutputWidth() && rem > 1);
+        } while (width + mCurLine->GetWidth() > mCurrentBlock->GetOutputWidth() && rem > 1);
 #else
           int endRank = rem > 1 ? CWordBreakTables::GetEndRank(str[rem - 1]) : 4;
           int beginRank = CWordBreakTables::GetBeginRank(str[rem]);
@@ -787,12 +769,12 @@ int CTextExecuteBuffer::WrapOneLTR(const wchar_t* str, int len) {
     if (mState.GetFont()->GetCarriageAdvance() > mCurrentY) {
       mCurrentY = mState.GetFont()->GetCarriageAdvance();
     }
-    mCurrentLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
+    mCurLine->TestLargestFont(mState.GetFont()->GetMonoWidth(),
                               mState.GetFont()->GetCarriageAdvance(),
                               mState.GetFont()->GetBaseLine());
-    mCurrentLine->AddWidth(width);
-    if (mCurrentLine->GetWidth() > mCurrentBlock->GetLineX()) {
-      mCurrentBlock->SetWidth(mCurrentLine->GetWidth());
+    mCurLine->AddWidth(width);
+    if (mCurLine->GetWidth() > mCurrentBlock->GetLineX()) {
+      mCurrentBlock->SetWidth(mCurLine->GetWidth());
 #else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -844,11 +826,7 @@ void CTextExecuteBuffer::AddStringFragment(const wchar_t* str, int len) {
 }
 
 void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
-#if RSTL_CORRUPTION
-  if (!mCurrentLine) {
-#else
   if (!mCurLine) {
-#endif
     StartNewLine();
   }
   int wordStart = 0;
@@ -878,18 +856,14 @@ void CTextExecuteBuffer::AddString(const wchar_t* str, int len) {
         }
 #if RSTL_CORRUPTION
         if (mCurrentBlock->GetTextDirection() == kTD_Horizontal) {
-          mCurrentLine->AddWidth(width);
+          mCurLine->AddWidth(width);
 #else
         if (mCurBlock->GetTextDirection() == kTD_Horizontal) {
           mCurLine->AddWidth(width);
 #endif
           mSpaceDistance = width;
         } else {
-#if RSTL_CORRUPTION
-          mCurrentLine->AddHeight(height);
-#else
           mCurLine->AddHeight(height);
-#endif
           mSpaceDistance = height;
         }
       }

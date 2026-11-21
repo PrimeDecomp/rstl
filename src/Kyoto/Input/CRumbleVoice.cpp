@@ -92,26 +92,16 @@ bool CRumbleVoice::UpdateChannel(SAdsrDelta& delta, const SAdsrData& data, float
     }
     break;
   case SAdsrDelta::kP_Attack:
-#if RSTL_CORRUPTION
-    UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mAttackTime, 0.f, delta.mAttackIntensity,
-                data.mAttackDur, SAdsrDelta::kP_Decay, dt);
-#else
     UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mAttackTime, 0.f,
                 delta.mAttackIntensity, data.mAttackDur, SAdsrDelta::kP_Decay, dt);
-#endif
     break;
   case SAdsrDelta::kP_Decay:
     if (data.mHasSustain) {
       UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime, delta.mAttackIntensity,
                   delta.mSustainIntensity, data.mDecayDur, SAdsrDelta::kP_Sustain, dt);
     } else {
-#if RSTL_CORRUPTION
-      UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime, delta.mAttackIntensity, 0.f,
-                  data.mDecayDur, SAdsrDelta::kP_Stop, dt);
-#else
       UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mDecayTime,
                   delta.mAttackIntensity, 0.f, data.mDecayDur, SAdsrDelta::kP_Stop, dt);
-#endif
       if (delta.mPhase != SAdsrDelta::kP_Decay) {
         delta.mPhase = SAdsrDelta::kP_Stop;
         return true;
@@ -120,13 +110,8 @@ bool CRumbleVoice::UpdateChannel(SAdsrDelta& delta, const SAdsrData& data, float
     break;
   case SAdsrDelta::kP_Release: {
     float a = data.mHasSustain ? delta.mSustainIntensity : 0.f;
-#if RSTL_CORRUPTION
-    UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mReleaseTime, a, 0.f, data.mReleaseDur,
-                SAdsrDelta::kP_Stop, dt);
-#else
     UpdateStage(delta.mPhase, delta.mCurIntensity, delta.mReleaseTime, a, 0.f,
                 data.mReleaseDur, SAdsrDelta::kP_Stop, dt);
-#endif
     if (delta.mPhase != SAdsrDelta::kP_Release) {
       delta.mPhase = SAdsrDelta::kP_Stop;
       return true;

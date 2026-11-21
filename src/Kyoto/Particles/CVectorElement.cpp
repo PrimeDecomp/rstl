@@ -74,12 +74,8 @@ static inline const CParticleElectric::CParticleElectricManager* GetCurrentElect
 #endif
 #endif
 
-#if RSTL_CORRUPTION
-CVEConstant::CVEConstant(CRealElement* x, CRealElement* y, CRealElement* z) : mX(x), mY(y), mZ(z) {}
-#else
 CVEConstant::CVEConstant(CRealElement* x, CRealElement* y, CRealElement* z)
 : mX(x), mY(y), mZ(z) {}
-#endif
 
 CVEConstant::~CVEConstant() {
   delete mX;

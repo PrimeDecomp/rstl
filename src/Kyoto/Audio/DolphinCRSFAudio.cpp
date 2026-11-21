@@ -116,11 +116,7 @@ CRSFAudio::CRSFAudio(const rstl::string& audioFile, const int loopStart, const i
   }
 }
 
-#if RSTL_CORRUPTION
 CRSFAudio::~CRSFAudio() { Stop(); }
-#else
-CRSFAudio::~CRSFAudio() { Stop(); }
-#endif
 
 const bool CRSFAudio::IsFullyLoaded() const {
   return !mDvdRequests.empty() ? mDvdRequests.back()->IsComplete() : true;

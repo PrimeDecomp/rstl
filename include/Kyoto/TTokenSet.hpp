@@ -33,9 +33,9 @@ struct TTokenSet {
   const char* GetNameByToken(T token) const {
     static const char* skBadString = "__BAD_TOKEN__";
 #if RSTL_CORRUPTION
-    for (const TTokenSet* it = this; it->mName != nullptr; ++it) {
-      if (it->mValue == token) {
-        return it->mName;
+    for (const TTokenSet* entry = this; entry->mName != nullptr; ++entry) {
+      if (entry->mValue == token) {
+        return entry->mName;
 #else
     for (const TTokenSet* entry = this; entry->mName != nullptr; ++entry) {
       if (entry->mToken == token) {
@@ -47,28 +47,19 @@ struct TTokenSet {
   }
 
   T GetToken(const char* name, ESens sens) const {
-#if RSTL_CORRUPTION
-    const TTokenSet* it = this;
-    for (; it->mName != nullptr; ++it) {
-#else
     const TTokenSet* entry = this;
     for (; entry->mName != nullptr; ++entry) {
-#endif
       bool match = false;
       if (name != nullptr) {
         switch (sens) {
 #if RSTL_CORRUPTION
         case kS_Exact:
-          match = strcmp(name, it->mName) == 0;
+          match = strcmp(name, entry->mName) == 0;
           break;
 #endif
         case kS_IgnoreCase: {
           const char* a = name;
-#if RSTL_CORRUPTION
-          const char* b = it->mName;
-#else
           const char* b = entry->mName;
-#endif
           for (; *a != 0 && *b != 0; ++a, ++b) {
 #if RSTL_CORRUPTION
             const int lowerA = ToLower(*a);
@@ -92,7 +83,7 @@ struct TTokenSet {
       }
       if (match) {
 #if RSTL_CORRUPTION
-          return it->mValue;
+          return entry->mValue;
 #else
         return entry->mToken;
 #endif
@@ -100,7 +91,7 @@ struct TTokenSet {
     }
 #if RSTL_CORRUPTION
     }
-    return it->mValue;
+    return entry->mValue;
 #else
     return entry->mToken;
 #endif

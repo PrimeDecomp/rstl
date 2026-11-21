@@ -143,12 +143,7 @@ RSTL_PRIME1_CONST CFactoryFnReturn AnimSourceFactory(const SObjectTag& tag, CInp
 #endif
 #endif
   IObjectStore* pool = static_cast< TObjOwnerParam< IObjectStore* >* >(obj.GetPtr())->GetData();
-#if RSTL_CORRUPTION
   return rs_new_line(86) CAllFormatsAnimSource(in, *pool, tag);
-#else
-
-  return rs_new CAllFormatsAnimSource(in, *pool, tag);
-#endif
 }
 
 rstl::ownership_transfer< IAnimReader >

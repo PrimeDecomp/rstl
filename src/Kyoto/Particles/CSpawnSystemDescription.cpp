@@ -4,29 +4,6 @@
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
 
 CSpawnSystemDescription::CSpawnSystemDescription()
-#if RSTL_CORRUPTION
-: mPSLT(nullptr)
-, mIVEC(nullptr)
-, mVBLN(nullptr)
-, mVLM1(nullptr)
-, mVLM2(nullptr)
-, mGIVL(nullptr)
-, mIGGT(false)
-, mIGLT(false)
-, mVMD1(false)
-, mVMD2(false)
-, mDEOL(false)
-, mFRCO(false)
-, mPCOL(nullptr)
-, mSCLE(nullptr)
-, mLSCL(nullptr)
-, mTRNL(nullptr)
-, mORNT(nullptr)
-, mGTRN(nullptr)
-, mGORN(nullptr)
-, mFROV(nullptr)
-, mSPWN(nullptr) {}
-#else
 : mPSLT(nullptr),
   mIVEC(nullptr),
   mVBLN(nullptr),
@@ -48,7 +25,6 @@ CSpawnSystemDescription::CSpawnSystemDescription()
   mGORN(nullptr),
   mFROV(nullptr),
   mSPWN(nullptr) {}
-#endif
 
 CSpawnSystemDescription::~CSpawnSystemDescription() {
   delete mPSLT;

@@ -55,13 +55,8 @@ CMetaAnimSequence::VGetAnimationTree(const CAnimSysContext& animSys,
 #endif
     ++it;
   }
-#if RSTL_CORRUPTION
   return rs_new_line(72)
       CAnimTreeSequence(mSequence, animSys, CAnimTreeSequence::CreatePrimitiveName(names));
-#else
-  return rs_new CAnimTreeSequence(mSequence, animSys,
-                                  CAnimTreeSequence::CreatePrimitiveName(names));
-#endif
 }
 
 void CMetaAnimSequence::GetUniquePrimitives(rstl::set< CPrimitive >& primsOut) const {

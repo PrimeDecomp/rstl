@@ -73,11 +73,7 @@ private:
 };
 
 #ifdef __MWERKS__
-#if RSTL_CORRUPTION
-#pragma cpp_extensions off
-#else
 #pragma cpp_extensions reset
-#endif
 #endif
 
 #endif // _CTEXTCOLOR

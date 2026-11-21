@@ -51,7 +51,7 @@ bool CCubeModel::sUsingPackedLightmaps = false;
 CCubeModel::CCubeModel(CSimplePool* pool, rstl::vector< void* >* surfaces,
                        const void* materialData, const void* positions, const void* normals,
                        const void* colors, const void* uvs, const CAABox& bounds,
-                       const uchar visorFlags, const bool deferTextureLoad, const uint idx)
+                       const uchar visorFlags, const bool texturesLoaded, const uint idx)
 : mInstance(*surfaces, materialData, positions, normals, colors, uvs)
 , mMaterials(CMaterialDataFactory::BuildMaterialRecords(materialData))
 , mTextureState(mMaterials, pool)
@@ -80,11 +80,7 @@ CCubeModel::CCubeModel(SurfaceList* surfaces, rstl::vector< TCachedToken< CTextu
 , mBounds(bounds)
 , mFirstUnsorted(nullptr)
 , mFirstSorted(nullptr)
-#if RSTL_CORRUPTION
-, mTexturesReady(static_cast< uchar >(!deferTextureLoad))
-#else
 , mLoadTextures(static_cast< uchar >(!texturesLoaded))
-#endif
 , mVisible(false)
 #if RSTL_CORRUPTION
 , x70_(0)
@@ -175,7 +171,7 @@ CCubeModel::CCubeModel(SurfaceList* surfaces, rstl::vector< TCachedToken< CTextu
 #endif
 
 #if RSTL_CORRUPTION
-  if (mTexturesReady) {
+  if (mLoadTextures) {
     mTextureState.LockTextures();
     mTextureState.TryCacheTextures();
 #else
@@ -654,11 +650,11 @@ void CCubeModel::DrawSurfaceWireframe(const CCubeSurface& surface) const {
 
 bool CCubeModel::TryLockTextures() const {
 #if RSTL_CORRUPTION
-  if (!mTexturesReady) {
+  if (!mLoadTextures) {
     CMaterialTextureState& textures = mTextureState;
     textures.LockTextures();
     if (textures.TryCacheTextures()) {
-      mTexturesReady = true;
+      mLoadTextures = true;
 #else
   if (!mLoadTextures) {
     bool texturesLoading = false;
@@ -674,7 +670,7 @@ bool CCubeModel::TryLockTextures() const {
       }
     }
 #if RSTL_CORRUPTION
-  return !!mTexturesReady;
+  return !!mLoadTextures;
 #else
 
     if (!texturesLoading) {

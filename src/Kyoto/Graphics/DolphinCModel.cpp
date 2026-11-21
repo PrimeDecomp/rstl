@@ -671,11 +671,7 @@ RSTL_PRIME1_CONST CFactoryFnReturn FModelFactory(const SObjectTag& tag,
   rstl::rc_ptr< IVParamObj > obj = xfer.GetObj();
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
   GXInvalidateVtxCache();
-#if RSTL_CORRUPTION
   return rs_new_line(335) CModel(ptr, len, *pool);
-#else
-  return rs_new CModel(ptr, len, *pool);
-#endif
 }
 
 const float* CModel::GetPositions() const {

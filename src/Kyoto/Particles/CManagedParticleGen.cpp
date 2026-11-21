@@ -186,38 +186,22 @@ void CManagedParticleGen::CreateGenerator() {
 #endif
   case 'PART': {
     TLockedToken< CGenDescription > desc(mEffect);
-#if RSTL_CORRUPTION
     gen = rs_new_line(431) CElementGen(desc, CElementGen::kMOT_Normal, CElementGen::kOSF_One);
-#else
-    gen = rs_new CElementGen(desc, CElementGen::kMOT_Normal, CElementGen::kOSF_One);
-#endif
     break;
   }
   case 'SWHC': {
     TToken< CSwooshDescription > desc(mEffect);
-#if RSTL_CORRUPTION
     gen = rs_new_line(438) CParticleSwoosh(desc, 0);
-#else
-    gen = rs_new CParticleSwoosh(desc, 0);
-#endif
     break;
   }
   case 'ELSC': {
     TToken< CElectricDescription > desc(mEffect);
-#if RSTL_CORRUPTION
     gen = rs_new_line(444) CParticleElectric(desc);
-#else
-    gen = rs_new CParticleElectric(desc);
-#endif
     break;
   }
   case 'SPSC': {
     TToken< CSpawnSystemDescription > desc(mEffect);
-#if RSTL_CORRUPTION
     gen = rs_new_line(450) CParticleSpawnSystem(desc, CElementGen::kOSF_One, false);
-#else
-    gen = rs_new CParticleSpawnSystem(desc, CElementGen::kOSF_One, false);
-#endif
     break;
   }
   case 'SRSC': {

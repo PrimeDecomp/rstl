@@ -646,15 +646,9 @@ CElementGen::CElementGen(TToken< CGenDescription > description, EModelOrientatio
   mFXLL = mLoadedGenDesc->mFXLL;
 
   if (mLoadedGenDesc->mLTYP) {
-#if RSTL_CORRUPTION
-    int lightType = 0;
-    mLoadedGenDesc->mLTYP->GetValue(mCurFrame, lightType);
-    switch (LightType(lightType)) {
-#else
     int ltypVal = 0;
     mLoadedGenDesc->mLTYP->GetValue(mCurFrame, ltypVal);
     switch (LightType(ltypVal)) {
-#endif
     case kLT_None:
       mLightType = kLT_None;
       break;
@@ -978,11 +972,11 @@ const bool CElementGen::Update(double dt) {
   if (mLoadedGenDesc->mPSWT && !mWarmedUp) {
     int warmUpFrames = 0;
     mLoadedGenDesc->mPSWT->GetValue(mCurFrame, warmUpFrames);
-    CStopwatch stopwatch;
+    CStopwatch sw;
     InternalUpdate(skTickTime * warmUpFrames);
     mWarmedUp = true;
     if (sLogSlowWarmup) {
-      const int micros = stopwatch.GetElapsedMicros();
+      const int micros = sw.GetElapsedMicros();
       if (micros >= 250) {
         const TToken< CGenDescription >& description = mGenDesc;
         RS_WARNING_DEBUGGER_PRINT(
@@ -1006,7 +1000,7 @@ const bool CElementGen::Update(double dt) {
 
 bool CElementGen::InternalUpdate(double dt) {
 #if RSTL_CORRUPTION
-  CStopwatch stopwatch;
+  CStopwatch sw;
   CGlobalRandom random(mRandState);
 #else
   CStopwatch sw;
@@ -1234,11 +1228,7 @@ bool CElementGen::InternalUpdate(double dt) {
 
 #endif
   BuildParticleSystemBounds();
-#if RSTL_CORRUPTION
-  mUpdateTime = stopwatch.GetElapsedTime();
-#else
   mUpdateTime = sw.GetElapsedTime();
-#endif
   return false;
 }
 
@@ -1259,10 +1249,10 @@ void CElementGen::UpdateLightParameters() {
 
 void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleFrame) {
 #if RSTL_CORRUPTION
-  float* parameters = mAdvValues[particleIndex].mValues;
-  CParticleGlobals::SetParticleAccessParameters(parameters);
+  float* params = mAdvValues[particleIndex].mValues;
+  CParticleGlobals::SetParticleAccessParameters(params);
   if (mLoadedGenDesc->mVAV1) {
-    mLoadedGenDesc->mVAV1->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters));
+    mLoadedGenDesc->mVAV1->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params));
   }
 #else
   float* params = mAdvValues[particleIndex].mValues;
@@ -1277,29 +1267,17 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
 #endif
 #endif
   if (mLoadedGenDesc->mADV1) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV1->GetValue(particleFrame, parameters[0]);
-#else
     mLoadedGenDesc->mADV1->GetValue(particleFrame, params[0]);
-#endif
   }
   if (mLoadedGenDesc->mADV2) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV2->GetValue(particleFrame, parameters[1]);
-#else
     mLoadedGenDesc->mADV2->GetValue(particleFrame, params[1]);
-#endif
   }
   if (mLoadedGenDesc->mADV3) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV3->GetValue(particleFrame, parameters[2]);
-#else
     mLoadedGenDesc->mADV3->GetValue(particleFrame, params[2]);
-#endif
   }
 #if RSTL_CORRUPTION
   if (mLoadedGenDesc->mVAV2) {
-    mLoadedGenDesc->mVAV2->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters + 3));
+    mLoadedGenDesc->mVAV2->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params + 3));
   }
 #else
 #if !RSTL_PRIME1
@@ -1309,29 +1287,17 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
 #endif
 #endif
   if (mLoadedGenDesc->mADV4) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV4->GetValue(particleFrame, parameters[3]);
-#else
     mLoadedGenDesc->mADV4->GetValue(particleFrame, params[3]);
-#endif
   }
   if (mLoadedGenDesc->mADV5) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV5->GetValue(particleFrame, parameters[4]);
-#else
     mLoadedGenDesc->mADV5->GetValue(particleFrame, params[4]);
-#endif
   }
   if (mLoadedGenDesc->mADV6) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV6->GetValue(particleFrame, parameters[5]);
-#else
     mLoadedGenDesc->mADV6->GetValue(particleFrame, params[5]);
-#endif
   }
 #if RSTL_CORRUPTION
   if (mLoadedGenDesc->mVAV3) {
-    mLoadedGenDesc->mVAV3->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(parameters + 6));
+    mLoadedGenDesc->mVAV3->GetValue(particleFrame, *reinterpret_cast< CVector3f* >(params + 6));
   }
 #else
 #if !RSTL_PRIME1
@@ -1341,22 +1307,14 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
 #endif
 #endif
   if (mLoadedGenDesc->mADV7) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV7->GetValue(particleFrame, parameters[6]);
-#else
     mLoadedGenDesc->mADV7->GetValue(particleFrame, params[6]);
-#endif
   }
   if (mLoadedGenDesc->mADV8) {
-#if RSTL_CORRUPTION
-    mLoadedGenDesc->mADV8->GetValue(particleFrame, parameters[7]);
-#else
     mLoadedGenDesc->mADV8->GetValue(particleFrame, params[7]);
-#endif
   }
 #if RSTL_CORRUPTION
   if (mLoadedGenDesc->mADV9) {
-    mLoadedGenDesc->mADV9->GetValue(particleFrame, parameters[8]);
+    mLoadedGenDesc->mADV9->GetValue(particleFrame, params[8]);
   }
 #else
 #if !RSTL_PRIME1
@@ -1368,13 +1326,13 @@ void CElementGen::UpdateAdvanceAccessParameters(int particleIndex, int particleF
 }
 
 #if RSTL_CORRUPTION
-bool CElementGen::UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle,
+bool CElementGen::UpdateVelocitySource(int velIdx, int particleFrame, CParticle& particle,
                                        const CVector3f& scaledTranslation) {
-  bool expired;
-  if (mHasVMD[sourceIndex]) {
+  bool reset;
+  if (mHasVMD[velIdx]) {
     CVector3f localVelocity = mOrientationInverse * particle.mVel;
     CVector3f localPosition = mOrientationInverse * (particle.mPos - scaledTranslation);
-    expired = mVELSources[sourceIndex]->GetValue(particleFrame, localVelocity, localPosition);
+    reset = mVELSources[velIdx]->GetValue(particleFrame, localVelocity, localPosition);
     particle.mVel = mOrientation.Rotate(localVelocity);
     particle.mPos = mOrientation.Rotate(localPosition) + scaledTranslation;
 #else
@@ -1405,16 +1363,12 @@ bool CElementGen::UpdateVelocitySource(int velIdx, int frame, CParticle& particl
 #endif
   } else {
 #if RSTL_CORRUPTION
-    expired = mVELSources[sourceIndex]->GetValue(particleFrame, particle.mVel, particle.mPos);
+    reset = mVELSources[velIdx]->GetValue(particleFrame, particle.mVel, particle.mPos);
 #else
     reset = mVELSources[velIdx]->GetValue(frame, particle.mVel, particle.mPos);
 #endif
   }
-#if RSTL_CORRUPTION
-  if (expired) {
-#else
   if (reset) {
-#endif
     particle.mEndFrame = -1;
     return true;
   }
@@ -2815,7 +2769,7 @@ void CElementGen::Render() {
   if (sDisableRendering) {
     return;
   }
-  CStopwatch stopwatch;
+  CStopwatch sw;
 #else
 #if RSTL_PRIME1
   if (!DEBUG_TOOLS_GET_BOOL(kDO_RenderParticles, true)) {
@@ -2920,7 +2874,7 @@ void CElementGen::Render() {
     }
   }
 #if RSTL_CORRUPTION
-  mRenderTime = stopwatch.GetElapsedTime();
+  mRenderTime = sw.GetElapsedTime();
 #else
   mRenderTime = timer.GetElapsedTime();
 // TODO: verify that this Prime/Echoes difference is real

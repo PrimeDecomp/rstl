@@ -59,11 +59,7 @@ CElectricDescription* CParticleElectricDataFactory::CreateGeneratorDescription(C
   if (classId != 'ELSM') {
     return nullptr;
   }
-#if RSTL_CORRUPTION
   CElectricDescription* desc = rs_new_line(90) CElectricDescription();
-#else
-  CElectricDescription* desc = rs_new CElectricDescription();
-#endif
   CreateELSM(desc, in, pool);
   LoadELSMTokens(desc);
   return desc;

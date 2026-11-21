@@ -38,15 +38,11 @@
 #include "rstl/vector.hpp"
 
 CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
-#if RSTL_CORRUPTION
-: mInitialized(false), mMonoWidth(16), mMonoHeight(16), mMode(kFM_OneLayer), mLineMargin(0) {
-#else
 : mInitialized(false)
 , mMonoWidth(16)
 , mMonoHeight(16)
 , mMode(kFM_OneLayer)
 , mLineMargin(0) {
-#endif
   if (in.ReadInt32() == 'FONT') {
     int version = in.ReadInt32();
 #if RSTL_CORRUPTION
@@ -444,11 +440,7 @@ RSTL_PRIME1_CONST CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, CIn
 #endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
 
-#if RSTL_CORRUPTION
   return rs_new_line(483) CRasterFont(in, pool);
-#else
-  return rs_new CRasterFont(in, pool);
-#endif
 }
 
 void CRasterFont::SetupRenderState() {

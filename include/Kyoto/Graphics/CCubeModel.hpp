@@ -238,7 +238,7 @@ public:
   const void* GetPositions() const { return mInstance.GetVertexPointer(); }
   const void* GetNormals() const { return mInstance.GetNormalPointer(); }
 #if RSTL_CORRUPTION
-  bool ShouldDeferTextureLoad() const { return !mTexturesReady; } // Guessed name
+  bool ShouldDeferTextureLoad() const { return !mLoadTextures; } // Guessed name
 #else
   bool AreTexturesLoaded() const { return !mLoadTextures; }
 #endif
@@ -305,11 +305,7 @@ private:
   CAABox mBounds;
   CCubeSurface mFirstUnsorted;
   CCubeSurface mFirstSorted;
-#if RSTL_CORRUPTION
-  mutable bool mTexturesReady : 1; // Guessed name
-#else
   mutable bool mLoadTextures : 1;
-#endif
   bool mVisible : 1;
 #if RSTL_CORRUPTION
   uchar x70_ : 6;

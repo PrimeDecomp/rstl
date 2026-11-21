@@ -462,13 +462,8 @@ public:
   bool VHasOffset(const CSegId& seg) const override;
   CVector3f VGetOffset(const CSegId& seg) const override;
   CQuaternion VGetRotation(const CSegId& seg) const override;
-#if RSTL_CORRUPTION
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set) const override;
-  void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& set,
-#else
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut) const override;
   void VGetSegStatementSet(const CSegIdList& list, CSegStatementSet& setOut,
-#endif
                            const CCharAnimTime& time) const override;
 #if RSTL_CORRUPTION
   void VGetJointData_Linear(const CCharLayoutInfo& layout, CJointData_LinearStorage& data,

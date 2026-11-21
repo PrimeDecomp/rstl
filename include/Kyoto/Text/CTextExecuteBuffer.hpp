@@ -49,13 +49,8 @@ public:
     AddColor(type, CTextColor(static_cast< uchar >(255.f * r), static_cast< uchar >(255.f * g),
                               static_cast< uchar >(255.f * b), static_cast< uchar >(255.f * a)));
   }
-#if RSTL_CORRUPTION
-  void AddColorOverride(int index, const CTextColor& color);
-  void AddRemoveColorOverride(int index);
-#else
   void AddColorOverride(int idx, const CTextColor& color);
   void AddRemoveColorOverride(int idx);
-#endif
   void AddLineSpacing(float spacing);
   void AddLineExtraSpace(int spacing);
   void AddCharacterExtraSpace(int spacing); // Guessed name
@@ -122,12 +117,12 @@ private:
   CSaveableState mState;
 #if RSTL_CORRUPTION
   CBlockInstruction* mCurrentBlock;
-  CLineInstruction* mCurrentLine;
-  InstList::iterator mCurrentWord;
+  CLineInstruction* mCurLine;
+  InstList::iterator mCurWordIt;
   int mCurrentY;
   int mCurrentX;
-  int mCurrentWordX;
-  int mCurrentWordY;
+  int mCurWordX;
+  int mCurWordY;
 #else
   CBlockInstruction* mCurBlock;
   CLineInstruction* mCurLine;
