@@ -143,20 +143,15 @@ CAssetId CTextParser::GetAssetIdFromString(
   if (textureMap) {
     typedef rstl::pair< CAssetId, CAssetId > AssetPair;
 #if RSTL_CORRUPTION
-    rstl::vector< AssetPair >::const_iterator it = rstl::binary_find(
+    rstl::vector< AssetPair >::const_iterator search = rstl::binary_find(
         textureMap->begin(), textureMap->end(), id,
 #else
     rstl::vector< AssetPair >::const_iterator search = rstl::binary_find(
         textureMap->begin(), textureMap->end(), static_cast< CAssetId >(id),
 #endif
         rstl::pair_sorter_finder< AssetPair, rstl::less< CAssetId > >(rstl::less< CAssetId >()));
-#if RSTL_CORRUPTION
-    if (it != textureMap->end()) {
-      return it->second;
-#else
     if (search != textureMap->end()) {
       return search->second;
-#endif
     }
   }
   return id;
@@ -398,14 +393,14 @@ void CTextParser::ParseTag(CTextExecuteBuffer& buffer, const wchar_t* string, in
 }
 
 #if RSTL_CORRUPTION
-bool CTextParser::BeginsWith(const wchar_t* str, int len, const wchar_t* prefix) {
+bool CTextParser::BeginsWith(const wchar_t* str, int len, const wchar_t* str2) {
 #else
 bool CTextParser::BeginsWith(const wchar_t* str1, int len, const wchar_t* str2) {
 #endif
   int i = 0;
 #if RSTL_CORRUPTION
-  for (; prefix[i] && i < len; ++i) {
-    if (str[i] != prefix[i]) {
+  for (; str2[i] && i < len; ++i) {
+    if (str[i] != str2[i]) {
 #else
   for (;
 // TODO: verify that this Prime/Echoes difference is real
@@ -421,11 +416,7 @@ bool CTextParser::BeginsWith(const wchar_t* str1, int len, const wchar_t* str2) 
       return false;
     }
   }
-#if RSTL_CORRUPTION
-  return prefix[i] == L'\0';
-#else
   return str2[i] == L'\0';
-#endif
 }
 
 #if RSTL_CORRUPTION
