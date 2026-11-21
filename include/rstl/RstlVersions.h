@@ -240,7 +240,9 @@
 // `__insertion_sort` computes `t1 = next - 1` (Wii steps `t1 = next; --t1;`).
 #define RSTL_INSERTION_SORT_NEXT_MINUS_ONE RSTL_ECHOES
 // The comparison sorts keep the comparison result in a bool local.
+#ifndef RSTL_SORT_LESS_LOCAL
 #define RSTL_SORT_LESS_LOCAL (!RSTL_CORRUPTION)
+#endif
 // `lower_bound` advances `start` itself with a loop-local iterator.
 #define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_P2ME)
 // `lower_bound` declares `halfDist` before its loop.
