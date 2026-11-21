@@ -27,9 +27,13 @@ static const GXVtxDescList skFontVertexDesc[] = {
 
 bool CFont::sFontInitialized = false;
 
+#if RSTL_KYOTO_SYSTEM_FONT_DATA
 unsigned char CFont::sSystemFont[65536] = {
 #include "Kyoto/Text/SystemFont.inc"
 };
+#else
+unsigned char CFont::sSystemFont[65536];
+#endif
 
 // Guessed name. Set up the native unlit, textured two-dimensional font pass.
 extern "C" CGraphics::SLightingState CFont_SetupDrawState() {

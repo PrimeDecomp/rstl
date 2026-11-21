@@ -545,6 +545,10 @@
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_CORRUPTION)
 // Debug build: asserts, debugger prints, source-line allocation tags and freed-block fills.
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
+// FMOD audio (and its SDK headers) is compiled only where the headers are available.
+#define RSTL_KYOTO_FMOD_AUDIO (RSTL_VERSION == RSTL_G2MEAB)
+// The system font bitmap is generated from the prototype's executable (Kyoto/Text/SystemFont.inc).
+#define RSTL_KYOTO_SYSTEM_FONT_DATA (RSTL_VERSION == RSTL_G2MEAB)
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
 #define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_CORRUPTION)
 

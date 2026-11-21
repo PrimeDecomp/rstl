@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Audio/CAudioSample.hpp"
 
@@ -102,3 +104,4 @@ CFactoryFnReturn AudioSampleFactory(const SObjectTag& tag, const rstl::auto_ptr<
                                     int size, const CVParamTransfer& param) {
   return rs_new_line(227) CAudioSample(data, size, tag);
 }
+#endif

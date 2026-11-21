@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Audio/CAudioChannel.hpp"
 
 #include "Kyoto/Math/CVector3f.hpp"
@@ -103,3 +105,4 @@ void CAudioChannel::SetDistanceRolloffPoints(FMOD_VECTOR* points, int count) {
     mChannel->set3DAttributes(&position, &velocity);
   }
 }
+#endif

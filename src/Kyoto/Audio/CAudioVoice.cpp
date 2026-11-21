@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Audio/CAudioVoice.hpp"
 
 #include "Kyoto/Audio/CAudioManager.hpp"
@@ -465,3 +467,4 @@ void CAudioVoice::SetMuted(bool muted) {
 int CAudioVoice::GetContext() const { return mContext; }
 
 bool CAudioVoice::IsStopping() const { return mStopping; }
+#endif

@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Audio/CAudioManager.hpp"
 
 #include "Kyoto/Audio/CAudioVoice.hpp"
@@ -327,3 +329,4 @@ int CAudioManager::AddLowPassAreaFilter(int frequency, float duration) { return 
 int CAudioManager::AddCameraLowPassFilter(int frequency, float duration) { return 0; }
 
 void CAudioManager::RemoveCameraLowPassFilter(int id) {}
+#endif

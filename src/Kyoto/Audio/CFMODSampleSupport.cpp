@@ -1,3 +1,5 @@
+#include "rstl/RstlVersions.h"
+#if RSTL_KYOTO_FMOD_AUDIO
 #include "Kyoto/Audio/CFMODSampleSupport.hpp"
 
 #include "string.h"
@@ -15,3 +17,4 @@ FMOD::Sound* CFMODSampleSupport::CreateSoundFromMemory(FMOD::System* system, con
                       &info, &sound);
   return sound;
 }
+#endif
