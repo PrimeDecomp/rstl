@@ -722,6 +722,12 @@
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_CORRUPTION)
 // Address queries follow the prototype's existing int interface.
 #define RSTL_KYOTO_REL_DEBUG_INT_ADDRESS (RSTL_VERSION == RSTL_G2MEAB)
+// TTokenSet::ToLower takes its character by const value (this changes the emitted code).
+#if RSTL_CORRUPTION
+#define RSTL_TOKEN_SET_CHAR_PARAM const char
+#else
+#define RSTL_TOKEN_SET_CHAR_PARAM char
+#endif
 // The fatal error handler switches to a clean OSContext and waits for controller port 1.
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
 // Echoes' fatal error handler: halts audio and DVD, resets when idle, names REL addresses.
