@@ -7,10 +7,9 @@
 #include "Kyoto/Math/CVector2f.hpp"
 
 #include "rstl/reserved_vector.hpp"
-#if RSTL_CORRUPTION
+#include "revolution/kpad.h"
 
-#include <revolution/kpad.h>
-
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
 namespace rstl {
 RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(EMotorState)
 
@@ -19,33 +18,30 @@ struct reserved_vector_fill_argument< EMotorState > {
   typedef EMotorState type;
 };
 } // namespace rstl
-
-// Reads up to four Revolution controllers through the wpadEmu KPAD library.
 #else
 #include "rstl/single_ptr.hpp"
 
-#include "revolution/kpad.h"
-
 class CScalarInputFilter;
 class CRevolutionMotionProcessor;
-
-// Some method names are inferred; the layout and virtual order come from Trilogy.
 #endif
+
 class CRevolutionController : public IController {
 public:
   CRevolutionController();
   ~CRevolutionController() override;
   void Poll() override;
+#if RSTL_CONTROLLER_WII
   void Update(float dt) override;
+#endif
   uint GetDeviceCount() const override;
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
   CControllerGamepadData& GetGamepadData(int controller) override;
   uint GetControllerType(int controller) const override;
   void SetMotorState(EIOPort port, EMotorState state) override;
-  int GetTrackingState(int controller) const override;
-  uint GetConsecutiveValidTrackingFrames(int controller) const override;
-  uint GetConsecutiveInvalidTrackingFrames(int controller) const override;
-  CVector2f GetTrackedPosition(int controller) const override;
+  int GetPointerState(int controller) const override;
+  uint GetPointerValidFrameCount(int controller) const override;
+  uint GetPointerInvalidFrameCount(int controller) const override;
+  CVector2f GetPointerPosition(int controller) const override;
 
 #else
   CControllerData& GetInput(uint channel) override;
@@ -75,13 +71,12 @@ public:
   bool IsControllerIdle(uint channel) const;
 #endif
 
-  CRevolutionController();
 #if RSTL_CONTROLLER_CHANNEL_LIMIT
   void SetMaxControllers(int count);
 #endif
 #endif
   bool Initialize();
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
   float GetAnalogStickMaxValue(EJoyAxis axis) const;
 #else
   bool IsPointerValid(int channel) const;
@@ -91,10 +86,10 @@ public:
 #endif
 
 private:
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
   void ProcessInputData();
-  void AdjustTrackedPositionScale(int controller); // Guessed name
-  void UpdateTrackedPosition(int controller);      // Guessed name
+  void ApplyPointerDistanceScale(int controller); // Guessed name
+  void UpdatePointerState(int controller);      // Guessed name
   void ProcessAxis(int controller, EJoyAxis axis, CControllerButton& negative,
                    CControllerButton& positive);
   void ProcessButtons(int controller);
@@ -159,7 +154,7 @@ private:
 #endif
 
   rstl::reserved_vector< KPADStatus, 4 > mStatus;
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
   rstl::reserved_vector< CControllerGamepadData, 4 > mGamepadStates;
   rstl::reserved_vector< EMotorState, 4 > mMotorStates;
   rstl::reserved_vector< uint, 4 > mDeviceTypes;                 // Guessed name
@@ -197,9 +192,8 @@ private:
 #endif
 #endif
 };
-#if RSTL_CORRUPTION
-
-CHECK_SIZEOF(CRevolutionController, 0x688);
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+CHECK_SIZEOF(CRevolutionController, 0x688)
 #else
 CHECK_SIZEOF(CRevolutionController, 0xc8c + 4 * (sizeof(KPADStatus) - 0x84) +
                                          4 * RSTL_CONTROLLER_EXTENDED_VIRTUALS +

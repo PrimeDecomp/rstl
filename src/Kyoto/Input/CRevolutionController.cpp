@@ -1,7 +1,7 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Input/CRevolutionController.hpp"
 
-#if RSTL_CORRUPTION
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Input/CFinalInput.hpp"
 #include "Kyoto/Math/CMath.hpp"
@@ -110,26 +110,26 @@ void CRevolutionController::Poll() {
   ProcessInputData();
 }
 
-int CRevolutionController::GetTrackingState(int controller) const {
+int CRevolutionController::GetPointerState(int controller) const {
   if (!mGamepadStates[controller].DeviceIsPresent()) {
     return 1;
   }
   return mTrackingStates[controller];
 }
 
-uint CRevolutionController::GetConsecutiveValidTrackingFrames(int controller) const {
+uint CRevolutionController::GetPointerValidFrameCount(int controller) const {
   return mConsecutiveValidFrames[controller];
 }
 
-uint CRevolutionController::GetConsecutiveInvalidTrackingFrames(int controller) const {
+uint CRevolutionController::GetPointerInvalidFrameCount(int controller) const {
   return mConsecutiveInvalidFrames[controller];
 }
 
-CVector2f CRevolutionController::GetTrackedPosition(int controller) const {
+CVector2f CRevolutionController::GetPointerPosition(int controller) const {
   return mTrackedPositions[controller];
 }
 
-void CRevolutionController::AdjustTrackedPositionScale(int controller) {
+void CRevolutionController::ApplyPointerDistanceScale(int controller) {
   KPADStatus& status = mStatus[controller];
   status.pos.x *= 1.33f;
   if (status.dpd_valid_fg > 0) {
@@ -142,7 +142,7 @@ void CRevolutionController::AdjustTrackedPositionScale(int controller) {
   status.pos.y = CMath::Limit(scale * status.pos.y, 1.f);
 }
 
-void CRevolutionController::UpdateTrackedPosition(int controller) {
+void CRevolutionController::UpdatePointerState(int controller) {
   KPADStatus& status = mStatus[controller];
   bool valid = status.dpd_valid_fg > 0;
   if (status.dev_type == WPAD_DEV_DOLPHIN) {
@@ -231,9 +231,9 @@ void CRevolutionController::ProcessInputData() {
     if (mGamepadStates[i].DeviceIsPresent()) {
       const u32 devType = mStatus[i].dev_type;
       if (devType == WPAD_DEV_CORE || devType == WPAD_DEV_FREESTYLE) {
-        AdjustTrackedPositionScale(i);
+        ApplyPointerDistanceScale(i);
       }
-      UpdateTrackedPosition(i);
+      UpdatePointerState(i);
     }
   }
 

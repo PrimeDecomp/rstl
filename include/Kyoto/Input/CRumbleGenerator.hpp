@@ -7,24 +7,13 @@
 
 #include "Kyoto/Input/CRumbleVoice.hpp"
 #include "Kyoto/Input/InputTypes.hpp"
-#if RSTL_CORRUPTION
-
-#else
 
 #if !RSTL_PRIME1
 class IController;
 #endif
 
-#endif
 class CRumbleGenerator {
 private:
-#if RSTL_CORRUPTION
-  CRumbleVoice mVoice;
-  float mPeriodTime;
-  float mOnTime;
-  EMotorState mCommand;
-  EIOPort mInputIndex;
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static const EMotorState kStopAll[4];
@@ -43,13 +32,9 @@ private:
   EIOPort mInputIndex;
 #endif
 
-#endif
   bool mDisabled : 1;
 
 public:
-#if RSTL_CORRUPTION
-  CRumbleGenerator(EIOPort inputIndex);
-#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CRumbleGenerator();
@@ -61,7 +46,6 @@ public:
 #endif
 #endif
 
-#endif
   ~CRumbleGenerator();
 
 // TODO: verify that this Prime/Echoes difference is real
@@ -81,7 +65,7 @@ public:
 
   void Update(float);
   void HardStopAll();
-  void SetDisabled(const bool disabled);
+  void SetDisabled(RSTL_KYOTO_CONST_UNLESS_WPAD_EMU bool disabled);
 
   bool GetDisabled() const { return mDisabled; }
 };

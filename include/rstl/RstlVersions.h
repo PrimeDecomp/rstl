@@ -831,6 +831,14 @@
 // The Revolution controller interface.
 #define RSTL_CONTROLLER_WII (RSTL_VERSION >= RSTL_RM3E)
 // Later controllers add acceptance and motion-activity slots.
+// The prototype reads its Revolution controllers through the wpadEmu KPAD library.
+#define RSTL_KYOTO_WPAD_EMU_CONTROLLER (RSTL_VERSION == RSTL_G2MEAB)
+// `const` by-value parameters that every build declares except the prototype's wpadEmu rumble.
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+#define RSTL_KYOTO_CONST_UNLESS_WPAD_EMU
+#else
+#define RSTL_KYOTO_CONST_UNLESS_WPAD_EMU const
+#endif
 #define RSTL_CONTROLLER_EXTENDED_VIRTUALS (RSTL_VERSION >= RSTL_RM3P)
 // CRevolutionController supports up to four channels (`SetMaxControllers`); Wii Echoes only.
 #if defined(PRIME2) && RSTL_VERSION >= RSTL_R32J
