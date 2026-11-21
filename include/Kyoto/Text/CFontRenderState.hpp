@@ -1,17 +1,17 @@
 #ifndef _CFONTRENDERSTATE
 #define _CFONTRENDERSTATE
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "rstl/list.hpp"
-
 #include "Kyoto/Text/CBlockInstruction.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
-
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
+#if !RSTL_CORRUPTION
 #include "rstl/vector.hpp"
+#endif
 
 class CBlockInstruction;
 class CLineInstruction;
@@ -25,6 +25,7 @@ public:
   void PopState();
   void SetColor(EColorType type, const CTextColor& color);
   void RefreshPalette();
+#if !RSTL_CORRUPTION
   TToken< CRasterFont >& GetFont() {
 #if RSTL_PRIME1
     return *mState.GetFont();
@@ -33,10 +34,13 @@ public:
 #endif
   }
 
+#endif
   bool IsFinishedLoading() { return mState.IsFinishedLoading(); }
   CDrawStringOptions& GetOptions() { return mState.GetOptions(); }
   void SetFont(const TToken< CRasterFont >& font) { mState.SetFont(font); }
-
+#if RSTL_CORRUPTION
+  TToken< CRasterFont >& GetFont() { return mState.GetFont(); }
+#endif
   rstl::vector< CTextColor >& GetColors() { return mState.GetColors(); }
   rstl::vector< bool >& GetOverride() { return mState.GetOverride(); }
   float GetLineSpacing() const { return mState.GetLineSpacing(); }

@@ -5,12 +5,10 @@
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Math/CMath.hpp"
+#include "Kyoto/Particles/CParticleGlobals.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CParticleElectric.hpp"
-
-#include "Kyoto/Particles/CParticleGlobals.hpp"
-
 #include "Kyoto/Streams/CInputStream.hpp"
 
 #include "rstl/math.hpp"
@@ -94,6 +92,26 @@ bool CIEMultiply::GetValue(int frame, int& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CIEDivide::CIEDivide(CIntElement* a, CIntElement* b) : x4_(a), x8_(b) {}
+
+CIEDivide::~CIEDivide() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CIEDivide::GetValue(int frame, int& valOut) const {
+  int a, b;
+  x4_->GetValue(frame, a);
+  x8_->GetValue(frame, b);
+  if (b != 0) {
+    valOut = a / b;
+  } else {
+    valOut = a;
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CIEDivide::CIEDivide(CIntElement* a, CIntElement* b) : mDividend(a), mDivisor(b) {}
 
@@ -113,6 +131,7 @@ bool CIEDivide::GetValue(int frame, int& valOut) const {
   }
   return false;
 }
+#endif
 #endif
 
 CIEModulo::CIEModulo(CIntElement* a, CIntElement* b) : mA(a), mB(b) {}
@@ -353,6 +372,38 @@ bool CIEKeyframeEmitter::GetValue(int frame, int& valOut) const {
   }
 }
 
+#if RSTL_CORRUPTION
+CIEKeyframeInput::CIEKeyframeInput(CInputStream& in)
+: mPercent(in.ReadInt32())
+, mUnk1(in.ReadInt32())
+, mLoop(in.ReadBool())
+, mUnk2(in.ReadBool())
+, mLoopEnd(in.ReadInt32())
+, mLoopStart(in.ReadInt32())
+, x18_(in.ReadFloat())
+, x1c_(in.ReadFloat())
+, mKeys(in)
+, x30_(CParticleDataFactory::GetRealElement(in)) {}
+
+CIEKeyframeInput::~CIEKeyframeInput() { delete x30_; }
+
+bool CIEKeyframeInput::GetValue(int frame, int& valOut) const {
+  if (mPercent == 2) {
+    float in = 0.0f;
+    x30_->GetValue(frame, in);
+    int idx =
+        GetKeyframeIndex(GetKeyframeTime(in, x18_, x1c_), mLoop, GetLoopStart(), GetLoopEnd());
+    bool lerp = idx > 0 && idx < mLoopEnd - 1;
+    if (lerp) {
+      float t = CMath::Clamp(0.0f, (in - x18_) - static_cast< float >(idx) / x1c_, 1.0f);
+      valOut = CCast::ToInt32((1.0f - t) * mKeys[idx] + t * mKeys[idx + 1]);
+    } else {
+      valOut = mKeys[idx];
+    }
+  }
+  return false;
+}
+#else
 #if !RSTL_PRIME1
 CIEKeyframeInput::CIEKeyframeInput(CInputStream& in)
 : mPercent(in.ReadInt32())
@@ -385,6 +436,7 @@ bool CIEKeyframeInput::GetValue(int frame, int& valOut) const {
   }
   return false;
 }
+#endif
 #endif
 
 CIESubtract::CIESubtract(CIntElement* a, CIntElement* b) : mA(a), mB(b) {}
@@ -451,6 +503,39 @@ bool CIEGetEmitterTime::GetValue(int frame, int& valOut) const {
   return false;
 }
 
+#if RSTL_CORRUPTION
+CIEInitialSwitch::CIEInitialSwitch(CIntElement* a, CIntElement* b) : x4_(a), x8_(b) {}
+
+CIEInitialSwitch::~CIEInitialSwitch() {
+  delete x4_;
+  delete x8_;
+}
+
+bool CIEInitialSwitch::GetValue(int frame, int& valOut) const {
+  if (frame == 0) {
+    x4_->GetValue(0, valOut);
+  } else {
+    x8_->GetValue(frame - 1, valOut);
+  }
+  return false;
+}
+
+CIEKeepInitial::CIEKeepInitial(CIntElement* a) : x4_(a) {}
+
+CIEKeepInitial::~CIEKeepInitial() { delete x4_; }
+
+bool CIEKeepInitial::GetValue(int frame, int& valOut) const {
+  if (frame == 0) {
+    x4_->GetValue(0, valOut);
+  }
+  return false;
+}
+
+bool CIEParticleCreationTime::GetValue(int frame, int& valOut) const {
+  valOut = CParticleGlobals::GetCurrentParticle()->mStartFrame;
+  return false;
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 CIEGetEmitterTime::~CIEGetEmitterTime() {}
@@ -488,4 +573,4 @@ bool CIEParticleCreationTime::GetValue(int frame, int& valOut) const {
   return false;
 }
 #endif
-
+#endif

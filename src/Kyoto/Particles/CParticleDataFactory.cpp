@@ -1,5 +1,7 @@
+#include "Kyoto/Alloc/Assert.hpp"
 #include "rstl/RstlVersions.h"
 #include "rstl/macros.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 
 #include "Kyoto/CFactoryFnReturn.hpp"
@@ -25,6 +27,7 @@
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "Kyoto/TToken.hpp"
 #include "dolphin/types.h"
 #include "rstl/algorithm.hpp"
@@ -89,6 +92,12 @@ void IElement::CElementAllocator::Free(void* ptr, size_t) {
   }
 }
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FParticleFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                  int size, const CVParamTransfer& xfer) {
+  CMemoryInStream in(buffer.get(), size);
+  rstl::rc_ptr< IVParamObj > obj = xfer.GetObj();
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInputStream& in,
                                                     const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -98,6 +107,7 @@ RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInpu
   rstl::rc_ptr< IVParamObj > obj = xfer.GetObj();
 #endif
 
+#endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -110,16 +120,26 @@ RSTL_PRIME1_CONST CFactoryFnReturn FParticleFactory(const SObjectTag& tag, CInpu
 }
 
 CGenDescription* CParticleDataFactory::GetGeneratorDesc(CInputStream& in, CSimplePool* pool,
+#if RSTL_CORRUPTION
+                                                        CAssetId id) {
+  rstl::vector< CAssetId > assets;
+#else
                                                         uint id) {
   rstl::vector< uint > assets;
+#endif
   assets.reserve(8);
   return CParticleDataFactory::CreateGeneratorDescription(in, assets, id, pool);
 }
 
 CGenDescription* CParticleDataFactory::CreateGeneratorDescription(CInputStream& in,
+#if RSTL_CORRUPTION
+                                                                  rstl::vector< CAssetId >& assets,
+                                                                  CAssetId id, CSimplePool* pool) {
+#else
                                                                   rstl::vector< uint >& assets,
                                                                   const uint id,
                                                                   CSimplePool* pool) {
+#endif
   if (rstl::count(assets.begin(), assets.end(), id) != 0) {
     return nullptr;
   }
@@ -134,7 +154,7 @@ CGenDescription* CParticleDataFactory::CreateGeneratorDescription(CInputStream& 
   if (clsId != SBIG('GPSM')) {
     return nullptr;
   }
-  CGenDescription* desc = rs_new CGenDescription;
+  CGenDescription* desc = rs_new_line(178) CGenDescription;
   CreateGPSM(desc, in, assets, pool);
   LoadGPSMTokens(desc);
   return desc;
@@ -163,18 +183,68 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
   bool done = false;
   CRandom16 random(99);
   CGlobalRandom context(random);
+#if RSTL_CORRUPTION
+  rstl::optional_object< bool > additiveAlpha;
+#endif
   while (!done) {
     FourCC clsId = GetClassID(in);
     switch (clsId) {
+#if RSTL_CORRUPTION
+    case SBIG('PSIV'): {
+      CVectorElement* element = GetVectorElement(in);
+      if (element != nullptr) {
+        RS_WARNING_PRINT(
+            "BUG THIS!:PSIV - Particle system initial velocity has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+        RS_DEBUGGER_PRINT(
+            "BUG THIS!:PSIV - Particle system initial velocity has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+      }
+      delete element;
+#else
     case SBIG('PSIV'):
       delete GetVectorElement(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    }
+    case SBIG('PSVM'): {
+      CModVectorElement* element = GetModVectorElement(in);
+      if (element != nullptr) {
+        RS_WARNING_PRINT(
+            "BUG THIS!:PSVM - Particle system velocity modifier has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+        RS_DEBUGGER_PRINT(
+            "BUG THIS!:PSVM - Particle system velocity modifier has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+      }
+      delete element;
+#else
     case SBIG('PSVM'):
       delete GetModVectorElement(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    }
+    case SBIG('PSOV'): {
+      CVectorElement* element = GetVectorElement(in);
+      if (element != nullptr) {
+        RS_WARNING_PRINT(
+            "BUG THIS!:PSOV - Particle system orientation velocity has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+        RS_DEBUGGER_PRINT(
+            "BUG THIS!:PSOV - Particle system orientation velocity has been depreciated %s.\n",
+            resources.back().ToHexString().c_str());
+      }
+      delete element;
+#else
     case SBIG('PSOV'):
       delete GetVectorElement(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    }
+#endif
     case SBIG('PSTS'):
       desc->mPSTS = GetRealElement(in);
       break;
@@ -194,12 +264,31 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       desc->mRSOP = GetBool(in);
       break;
     case SBIG('AAPH'):
+#if RSTL_CORRUPTION
+      RS_WARNING_PRINT(
+          "BUG THIS!:AAPH - Particle system additive alpha has been depreciated %s.\n",
+          resources.back().ToHexString().c_str());
+      RS_DEBUGGER_PRINT(
+          "BUG THIS!:AAPH - Particle system additive alpha has been depreciated %s.\n",
+          resources.back().ToHexString().c_str());
+      additiveAlpha = GetBool(in);
+#else
       desc->mAAPH = GetBool(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    case SBIG('PBDM'):
+      desc->mPBDM = GetIntElement(in);
+      break;
+    case SBIG('XTAD'):
+      desc->mXTAD = GetIntElement(in);
+      break;
+#else
 #if !RSTL_PRIME1
     case SBIG('XTAD'):
       desc->mXTAD = GetIntElement(in);
       break;
+#endif
 #endif
     case SBIG('ZBUF'):
       desc->mZBUF = GetBool(in);
@@ -219,12 +308,40 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('GRTE'):
       desc->mGRTE = GetRealElement(in);
       break;
+#if RSTL_CORRUPTION
+    case SBIG('ILOC'): {
+      CVectorElement* element = GetVectorElement(in);
+      if (element != nullptr) {
+        RS_WARNING_PRINT("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
+                          resources.back().ToHexString().c_str());
+        RS_DEBUGGER_PRINT("BUG THIS!:ILOC - Particle initial location has been depreciated %s.\n",
+                           resources.back().ToHexString().c_str());
+      }
+      delete element;
+#else
     case SBIG('ILOC'):
       delete GetVectorElement(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    }
+    case SBIG('IVEC'): {
+      CVectorElement* element = GetVectorElement(in);
+      if (element != nullptr) {
+        RS_WARNING_PRINT("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
+                          resources.back().ToHexString().c_str());
+        RS_DEBUGGER_PRINT("BUG THIS!:IVEC - Particle initial velocity has been depreciated %s.\n",
+                           resources.back().ToHexString().c_str());
+      }
+      delete element;
+#else
     case SBIG('IVEC'):
       delete GetVectorElement(in);
+#endif
       break;
+#if RSTL_CORRUPTION
+    }
+#endif
     case SBIG('EMTR'):
       desc->mEMTR = GetEmitterElement(in);
       break;
@@ -443,7 +560,7 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
       break;
     case SBIG('KSSM'):
       if (GetClassID(in) == SBIG('CNST')) {
-        desc->mKSSM = rs_new CSpawnSystemKeyframeData(in);
+        desc->mKSSM = rs_new_line(692) CSpawnSystemKeyframeData(in);
         desc->mKSSM->LoadAllSpawnedSystemTokens(pool);
       }
       break;
@@ -504,6 +621,38 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     case SBIG('ADV8'):
       desc->mADV8 = GetRealElement(in);
       break;
+#if RSTL_CORRUPTION
+    case SBIG('ADV9'):
+      desc->mADV9 = GetRealElement(in);
+      break;
+    case SBIG('VAV1'):
+      desc->mVAV1 = GetVectorElement(in);
+      break;
+    case SBIG('VAV2'):
+      desc->mVAV2 = GetVectorElement(in);
+      break;
+    case SBIG('VAV3'):
+      desc->mVAV3 = GetVectorElement(in);
+      break;
+    case SBIG('DFLG'):
+      desc->mDFLG = GetBitflag(in);
+      break;
+    case SBIG('FXBR'):
+      desc->mFXBR = GetRealElement(in);
+      break;
+    case SBIG('FXBO'):
+      desc->mFXBO = GetVectorElement(in);
+      break;
+    case SBIG('RDOP'):
+      desc->mRDOP = GetBool(in);
+      break;
+    case SBIG('ISVF'):
+      desc->mISVF = GetRealElement(in);
+      break;
+    case SBIG('SVEO'):
+      desc->mSVEO = GetRealElement(in);
+      break;
+#else
 #if !RSTL_PRIME1
     case SBIG('ADV9'):
       desc->mADV9 = GetRealElement(in);
@@ -535,6 +684,7 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
 #endif
 #endif
 
+#endif
     case SBIG('_END'):
       done = true;
       break;
@@ -543,6 +693,14 @@ bool CParticleDataFactory::CreateGPSM(CGenDescription* desc, CInputStream& in,
     }
   }
 
+#if RSTL_CORRUPTION
+  if (desc->mPBDM == nullptr) {
+    // Older data expresses the blend mode as the additive alpha flag.
+    const int additive = additiveAlpha.valid() ? (*additiveAlpha != 0) : 0;
+    desc->mPBDM = rs_new_line(893) CIEConstant(additive);
+  }
+
+#endif
   return true;
 }
 
@@ -580,41 +738,54 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
   FourCC clsId = GetClassID(in);
   switch (clsId) {
   case SBIG('CNST'): {
-    return rs_new CIEConstant(GetInt(in));
+    return rs_new_line(991) CIEConstant(GetInt(in));
   }
   case SBIG('KEYE'):
   case SBIG('KEYP'): {
-    return rs_new CIEKeyframeEmitter(in);
+    return rs_new_line(996) CIEKeyframeEmitter(in);
   }
+#if RSTL_CORRUPTION
+  case SBIG('KEYF'): {
+    return rs_new_line(1000) CIEKeyframeInput(in);
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('KEYF'): {
     return rs_new CIEKeyframeInput(in);
   }
 #endif
+#endif
   case SBIG('TSCL'): {
-    return rs_new CIETimescale(GetRealElement(in));
+    return rs_new_line(1004) CIETimescale(GetRealElement(in));
   }
   case SBIG('DETH'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIEDeath(a, b);
+    return rs_new_line(1012) CIEDeath(a, b);
   }
   case SBIG('CHAN'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     CIntElement* c = GetIntElement(in);
-    return rs_new CIETimeChain(a, b, c);
+    return rs_new_line(1022) CIETimeChain(a, b, c);
   }
   case SBIG('ADD_'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIEAdd(a, b);
+    return rs_new_line(1031) CIEAdd(a, b);
   }
   case SBIG('MULT'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIEMultiply(a, b);
+    return rs_new_line(1040) CIEMultiply(a, b);
   }
+#if RSTL_CORRUPTION
+  case SBIG('DIVD'): {
+    CIntElement* a = GetIntElement(in);
+    CIntElement* b = GetIntElement(in);
+    return rs_new_line(1049) CIEDivide(a, b);
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('DIVD'): {
     CIntElement* a = GetIntElement(in);
@@ -622,45 +793,46 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
     return rs_new CIEDivide(a, b);
   }
 #endif
+#endif
   case SBIG('MODU'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIEModulo(a, b);
+    return rs_new_line(1058) CIEModulo(a, b);
   }
   case SBIG('RAND'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIERandom(a, b);
+    return rs_new_line(1067) CIERandom(a, b);
   }
   case SBIG('IMPL'): {
-    return rs_new CIEImpulse(GetIntElement(in));
+    return rs_new_line(1073) CIEImpulse(GetIntElement(in));
   }
   case SBIG('ILPT'): {
-    return rs_new CIELifetimePercent(GetIntElement(in));
+    return rs_new_line(1079) CIELifetimePercent(GetIntElement(in));
   }
   case SBIG('SPAH'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     CIntElement* c = GetIntElement(in);
-    return rs_new CIESampleAndHold(c, a, b);
+    return rs_new_line(1089) CIESampleAndHold(c, a, b);
   }
   case SBIG('IRND'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIEInitialRandom(a, b);
+    return rs_new_line(1098) CIEInitialRandom(a, b);
   }
   case SBIG('CLMP'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     CIntElement* c = GetIntElement(in);
-    return rs_new CIEClamp(a, b, c);
+    return rs_new_line(1108) CIEClamp(a, b, c);
   }
   case SBIG('PULS'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     CIntElement* c = GetIntElement(in);
     CIntElement* d = GetIntElement(in);
-    return rs_new CIEPulse(a, b, c, d);
+    return rs_new_line(1119) CIEPulse(a, b, c, d);
   }
   case SBIG('NONE'): {
     return nullptr;
@@ -668,22 +840,39 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
   case SBIG('RTOI'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CIERealToInt(a, b);
+    return rs_new_line(1132) CIERealToInt(a, b);
   }
   case SBIG('SUB_'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
-    return rs_new CIESubtract(a, b);
+    return rs_new_line(1141) CIESubtract(a, b);
   }
   case SBIG('GTCP'): {
-    return rs_new CIEGetCumulativeParticleCount();
+    return rs_new_line(1147) CIEGetCumulativeParticleCount();
   }
   case SBIG('GAPC'): {
-    return rs_new CIEGetActiveParticleCount();
+    return rs_new_line(1153) CIEGetActiveParticleCount();
   }
   case SBIG('GEMT'): {
-    return rs_new CIEGetEmitterTime();
+    return rs_new_line(1159) CIEGetEmitterTime();
   }
+#if RSTL_CORRUPTION
+  case SBIG('ISWT'): {
+    CIntElement* a = GetIntElement(in);
+    CIntElement* b = GetIntElement(in);
+    return rs_new_line(1167) CIEInitialSwitch(a, b);
+  }
+  case SBIG('KPIN'): {
+    CIntElement* a = GetIntElement(in);
+    return rs_new_line(1174) CIEKeepInitial(a);
+  }
+  case SBIG('PCRT'): {
+    return rs_new_line(1180) CIEParticleCreationTime();
+  }
+  case SBIG('PDET'): {
+    return rs_new_line(1186) CIEParticleCreationTime();
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('ISWT'): {
     CIntElement* a = GetIntElement(in);
@@ -702,6 +891,7 @@ CIntElement* CParticleDataFactory::GetIntElement(CInputStream& in) {
   }
 #endif
 
+#endif
   }
   return nullptr;
 }
@@ -710,152 +900,164 @@ CRealElement* CParticleDataFactory::GetRealElement(CInputStream& in) {
   FourCC clsId = GetClassID(in);
   switch (clsId) {
   case SBIG('CNST'): {
-    return rs_new CREConstant(GetReal(in));
+    return rs_new_line(1208) CREConstant(GetReal(in));
   }
   case SBIG('NONE'): {
     return nullptr;
   }
   case SBIG('KEYE'):
   case SBIG('KEYP'): {
-    return rs_new CREKeyframeEmitter(in);
+    return rs_new_line(1217) CREKeyframeEmitter(in);
   }
+#if RSTL_CORRUPTION
+  case SBIG('KEYF'): {
+    return rs_new_line(1222) CREKeyframeInput(in);
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('KEYF'): {
     return rs_new CREKeyframeInput(in);
   }
 #endif
+#endif
   case SBIG('SCAL'): {
-    return rs_new CRETimeScale(GetRealElement(in));
+    return rs_new_line(1227) CRETimeScale(GetRealElement(in));
   }
   case SBIG('SINE'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
     CRealElement* c = GetRealElement(in);
-    return rs_new CRESineWave(c, a, b);
+    return rs_new_line(1236) CRESineWave(c, a, b);
   }
   case SBIG('ADD_'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CREAdd(a, b);
+    return rs_new_line(1245) CREAdd(a, b);
   }
   case SBIG('MULT'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CREMultiply(a, b);
+    return rs_new_line(1254) CREMultiply(a, b);
   }
   case SBIG('DOTP'): {
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
-    return rs_new CREDotProduct(a, b);
+    return rs_new_line(1263) CREDotProduct(a, b);
   }
   case SBIG('RAND'): {
     CRealElement* min = GetRealElement(in);
     CRealElement* max = GetRealElement(in);
-    return rs_new CRERandom(min, max);
+    return rs_new_line(1272) CRERandom(min, max);
   }
   case SBIG('IRND'): {
     CRealElement* min = GetRealElement(in);
     CRealElement* max = GetRealElement(in);
-    return rs_new CREInitialRandom(min, max);
+    return rs_new_line(1281) CREInitialRandom(min, max);
   }
   case SBIG('CHAN'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
     CIntElement* c = GetIntElement(in);
-    return rs_new CRETimeChain(a, b, c);
+    return rs_new_line(1291) CRETimeChain(a, b, c);
   }
   case SBIG('CLMP'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
     CRealElement* c = GetRealElement(in);
-    return rs_new CREClamp(a, b, c);
+    return rs_new_line(1301) CREClamp(a, b, c);
   }
   case SBIG('PULS'): {
     CIntElement* a = GetIntElement(in);
     CIntElement* b = GetIntElement(in);
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
-    return rs_new CREPulse(a, b, c, d);
+    return rs_new_line(1312) CREPulse(a, b, c, d);
   }
   case SBIG('RLPT'): {
     CRealElement* a = GetRealElement(in);
-    return rs_new CRELifetimePercent(a);
+    return rs_new_line(1320) CRELifetimePercent(a);
   }
   case SBIG('LFTW'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CRELifetimeTween(a, b);
+    return rs_new_line(1329) CRELifetimeTween(a, b);
   }
   case SBIG('PRLW'): {
-    return rs_new CREParticleRotationOrLineWidth();
+    return rs_new_line(1335) CREParticleRotationOrLineWidth();
   }
   case SBIG('PSLL'): {
-    return rs_new CREParticleSizeOrLineLength();
+    return rs_new_line(1341) CREParticleSizeOrLineLength();
   }
   case SBIG('PAP1'): {
-    return rs_new CREParticleAccessParameter1();
+    return rs_new_line(1347) CREParticleAccessParameter1();
   }
   case SBIG('PAP2'): {
-    return rs_new CREParticleAccessParameter2();
+    return rs_new_line(1353) CREParticleAccessParameter2();
   }
   case SBIG('PAP3'): {
-    return rs_new CREParticleAccessParameter3();
+    return rs_new_line(1359) CREParticleAccessParameter3();
   }
   case SBIG('PAP4'): {
-    return rs_new CREParticleAccessParameter4();
+    return rs_new_line(1365) CREParticleAccessParameter4();
   }
   case SBIG('PAP5'): {
-    return rs_new CREParticleAccessParameter5();
+    return rs_new_line(1371) CREParticleAccessParameter5();
   }
   case SBIG('PAP6'): {
-    return rs_new CREParticleAccessParameter6();
+    return rs_new_line(1377) CREParticleAccessParameter6();
   }
   case SBIG('PAP7'): {
-    return rs_new CREParticleAccessParameter7();
+    return rs_new_line(1383) CREParticleAccessParameter7();
   }
   case SBIG('PAP8'): {
-    return rs_new CREParticleAccessParameter8();
+    return rs_new_line(1389) CREParticleAccessParameter8();
   }
+#if RSTL_CORRUPTION
+  case SBIG('PAP9'): {
+    return rs_new_line(1395) CREParticleAccessParameter9();
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('PAP9'): {
     return rs_new CREParticleAccessParameter9();
   }
 #endif
 
+#endif
   case SBIG('VXTR'): {
     CVectorElement* a = GetVectorElement(in);
-    return rs_new CREVectorXToReal(a);
+    return rs_new_line(1402) CREVectorXToReal(a);
   }
   case SBIG('VYTR'): {
     CVectorElement* a = GetVectorElement(in);
-    return rs_new CREVectorYToReal(a);
+    return rs_new_line(1409) CREVectorYToReal(a);
   }
   case SBIG('VZTR'): {
     CVectorElement* a = GetVectorElement(in);
-    return rs_new CREVectorZToReal(a);
+    return rs_new_line(1416) CREVectorZToReal(a);
   }
   case SBIG('VMAG'): {
     CVectorElement* a = GetVectorElement(in);
-    return rs_new CREVectorMagnitude(a);
+    return rs_new_line(1423) CREVectorMagnitude(a);
   }
   case SBIG('ISWT'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CREInitialSwitch(a, b);
+    return rs_new_line(1431) CREInitialSwitch(a, b);
   }
   case SBIG('CLTN'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
-    return rs_new CRECompareLessThan(a, b, c, d);
+    return rs_new_line(1441) CRECompareLessThan(a, b, c, d);
   }
   case SBIG('CEQL'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
-    return rs_new CRECompareEqual(a, b, c, d);
+    return rs_new_line(1451) CRECompareEqual(a, b, c, d);
   }
   case SBIG('CRNG'): {
     CRealElement* a = GetRealElement(in);
@@ -863,38 +1065,106 @@ CRealElement* CParticleDataFactory::GetRealElement(CInputStream& in) {
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
     CRealElement* e = GetRealElement(in);
-    return rs_new CREConstantRange(a, b, c, d, e);
+    return rs_new_line(1462) CREConstantRange(a, b, c, d, e);
   }
   case SBIG('CEXT'): {
     CIntElement* a = GetIntElement(in);
-    return rs_new CREExternalVar(a);
+    return rs_new_line(1469) CREExternalVar(a);
   }
   case SBIG('ITRL'): {
     CIntElement* a = GetIntElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CREIntTimesReal(a, b);
+    return rs_new_line(1478) CREIntTimesReal(a, b);
   }
   case SBIG('SUB_'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    return rs_new CRESubtract(a, b);
+    return rs_new_line(1486) CRESubtract(a, b);
   }
   case SBIG('GTCR'): {
     CColorElement* alpha = GetColorElement(in);
-    return rs_new CREGetComponentRed(alpha);
+    return rs_new_line(1493) CREGetComponentRed(alpha);
   }
   case SBIG('GTCG'): {
     CColorElement* alpha = GetColorElement(in);
-    return rs_new CREGetComponentGreen(alpha);
+    return rs_new_line(1500) CREGetComponentGreen(alpha);
   }
   case SBIG('GTCB'): {
     CColorElement* alpha = GetColorElement(in);
-    return rs_new CREGetComponentBlue(alpha);
+    return rs_new_line(1507) CREGetComponentBlue(alpha);
   }
   case SBIG('GTCA'): {
     CColorElement* alpha = GetColorElement(in);
-    return rs_new CREGetComponentAlpha(alpha);
+    return rs_new_line(1514) CREGetComponentAlpha(alpha);
   }
+#if RSTL_CORRUPTION
+  case SBIG('GTCP'): {
+    return rs_new_line(1520) CREGetCumulativeParticleCount();
+  }
+  case SBIG('KPIN'): {
+    CRealElement* a = GetRealElement(in);
+    return rs_new_line(1527) CREKeepInitial(a);
+  }
+  case SBIG('OCSP'): {
+    CIntElement* a = GetIntElement(in);
+    return rs_new_line(1534) CREOscillatingSweep(a);
+  }
+  case SBIG('TOCS'): {
+    const bool a = GetBool(in);
+    CIntElement* b = GetIntElement(in);
+    CIntElement* c = GetIntElement(in);
+    CIntElement* d = GetIntElement(in);
+    return rs_new_line(1544) CRETimeOscillatingSweep(a, b, c, d);
+  }
+  case SBIG('PRN1'): {
+    CRealElement* a = GetRealElement(in);
+    return rs_new_line(1551) CREPerlinNoise1d(a);
+  }
+  case SBIG('PRN2'): {
+    CRealElement* a = GetRealElement(in);
+    CRealElement* b = GetRealElement(in);
+    return rs_new_line(1559) CREPerlinNoise2d(a, b);
+  }
+  case SBIG('PRN3'): {
+    CVectorElement* a = GetVectorElement(in);
+    return rs_new_line(1566) CREPerlinNoise3d(a);
+  }
+  case SBIG('PRN4'): {
+    CVectorElement* a = GetVectorElement(in);
+    CRealElement* b = GetRealElement(in);
+    return rs_new_line(1574) CREPerlinNoise4d(a, b);
+  }
+  case SBIG('PNO1'): {
+    CRealElement* a = GetRealElement(in);
+    CRealElement* b = GetRealElement(in);
+    CRealElement* c = GetRealElement(in);
+    CIntElement* d = GetIntElement(in);
+    return rs_new_line(1584) CREPerlinNoiseOctave1d(a, b, c, d);
+  }
+  case SBIG('PNO2'): {
+    CRealElement* a = GetRealElement(in);
+    CRealElement* b = GetRealElement(in);
+    CRealElement* c = GetRealElement(in);
+    CRealElement* d = GetRealElement(in);
+    CIntElement* e = GetIntElement(in);
+    return rs_new_line(1595) CREPerlinNoiseOctave2d(a, b, c, d, e);
+  }
+  case SBIG('PNO3'): {
+    CVectorElement* a = GetVectorElement(in);
+    CRealElement* b = GetRealElement(in);
+    CRealElement* c = GetRealElement(in);
+    CIntElement* d = GetIntElement(in);
+    return rs_new_line(1605) CREPerlinNoiseOctave3d(a, b, c, d);
+  }
+  case SBIG('PNO4'): {
+    CVectorElement* a = GetVectorElement(in);
+    CRealElement* b = GetRealElement(in);
+    CRealElement* c = GetRealElement(in);
+    CRealElement* d = GetRealElement(in);
+    CIntElement* e = GetIntElement(in);
+    return rs_new_line(1616) CREPerlinNoiseOctave4d(a, b, c, d, e);
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('GTCP'): {
     return rs_new CREGetCumulativeParticleCount();
@@ -964,6 +1234,7 @@ CRealElement* CParticleDataFactory::GetRealElement(CInputStream& in) {
   }
 #endif
 
+#endif
   }
   return nullptr;
 }
@@ -996,17 +1267,23 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
             allocationContext == IElement::CElementAllocator::GetCurrentChunk()) {
           allocationContext->Rewind(allocationContext->GetAllocatedSize() - initialSize);
         }
-        ret = rs_new CVEFastConstant(xf, yf, zf);
+        ret = rs_new_line(1670) CVEFastConstant(xf, yf, zf);
         break;
       }
     }
-    ret = rs_new CVEConstant(x, y, z);
+    ret = rs_new_line(1674) CVEConstant(x, y, z);
     break;
   }
   case SBIG('KEYE'):
   case SBIG('KEYP'):
-    ret = rs_new CVEKeyframeEmitter(in);
+    ret = rs_new_line(1681) CVEKeyframeEmitter(in);
     break;
+#if RSTL_CORRUPTION
+  case SBIG('KEYF'): {
+    ret = rs_new_line(1685) CVEKeyframeInput(in);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('KEYF'): {
     ret = rs_new CVEKeyframeInput(in);
@@ -1014,19 +1291,21 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
   }
 #endif
 
+#endif
   case SBIG('ANGC'): {
     CRealElement* angleXBias = GetRealElement(in);
     CRealElement* angleYBias = GetRealElement(in);
     CRealElement* angleXRange = GetRealElement(in);
     CRealElement* angleYRange = GetRealElement(in);
     CRealElement* magnitude = GetRealElement(in);
-    ret = rs_new CVEAngleCone(angleXBias, angleYBias, angleXRange, angleYRange, magnitude);
+    ret =
+        rs_new_line(1696) CVEAngleCone(angleXBias, angleYBias, angleXRange, angleYRange, magnitude);
     break;
   }
   case SBIG('CONE'): {
     CVectorElement* direction = GetVectorElement(in);
     CRealElement* baseRadius = GetRealElement(in);
-    ret = rs_new CVECone(direction, baseRadius);
+    ret = rs_new_line(1705) CVECone(direction, baseRadius);
     break;
   }
   case SBIG('CIRC'): {
@@ -1035,9 +1314,17 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
     CRealElement* angleConstant = GetRealElement(in);
     CRealElement* angleLinear = GetRealElement(in);
     CRealElement* radius = GetRealElement(in);
-    ret = rs_new CVECircle(circleOffset, circleNormal, angleConstant, angleLinear, radius);
+    ret =
+        rs_new_line(1717) CVECircle(circleOffset, circleNormal, angleConstant, angleLinear, radius);
     break;
   }
+#if RSTL_CORRUPTION
+  case SBIG('RNDV'): {
+    CRealElement* a = GetRealElement(in);
+    ret = rs_new_line(1725) CVERandomVector(a);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('RNDV'): {
     CRealElement* a = GetRealElement(in);
@@ -1045,25 +1332,26 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
     break;
   }
 #endif
+#endif
   case SBIG('CCLU'): {
     CVectorElement* circleOffset = GetVectorElement(in);
     CVectorElement* circleNormal = GetVectorElement(in);
     CIntElement* cycleFrames = GetIntElement(in);
     CRealElement* randomFactor = GetRealElement(in);
 
-    ret = rs_new CVECircleCluster(circleOffset, circleNormal, cycleFrames, randomFactor);
+    ret = rs_new_line(1736) CVECircleCluster(circleOffset, circleNormal, cycleFrames, randomFactor);
     break;
   }
   case SBIG('ADD_'): {
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
-    ret = rs_new CVEAdd(a, b);
+    ret = rs_new_line(1745) CVEAdd(a, b);
     break;
   }
   case SBIG('MULT'): {
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
-    ret = rs_new CVEMultiply(a, b);
+    ret = rs_new_line(1754) CVEMultiply(a, b);
     break;
   }
   case SBIG('CHAN'): {
@@ -1071,7 +1359,7 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
     CVectorElement* b = GetVectorElement(in);
     CIntElement* switchFrame = GetIntElement(in);
 
-    ret = rs_new CVETimeChain(a, b, switchFrame);
+    ret = rs_new_line(1764) CVETimeChain(a, b, switchFrame);
     break;
   }
   case SBIG('PULS'): {
@@ -1079,53 +1367,111 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
     CIntElement* durationB = GetIntElement(in);
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
-    ret = rs_new CVEPulse(durationA, durationB, a, b);
+    ret = rs_new_line(1775) CVEPulse(durationA, durationB, a, b);
     break;
   }
   case SBIG('RTOV'): {
     CRealElement* value = GetRealElement(in);
-    ret = rs_new CVERealToVector(value);
+    ret = rs_new_line(1782) CVERealToVector(value);
     break;
   }
   case SBIG('PLOC'): {
-    ret = rs_new CVEParticleLocation();
+    ret = rs_new_line(1788) CVEParticleLocation();
     break;
   }
   case SBIG('PLCO'): {
-    ret = rs_new CVEParticlePreviousLocation();
+    ret = rs_new_line(1794) CVEParticlePreviousLocation();
     break;
   }
   case SBIG('PVEL'): {
-    ret = rs_new CVEParticleVelocity();
+    ret = rs_new_line(1800) CVEParticleVelocity();
     break;
   }
   case SBIG('PSOF'): {
-    ret = rs_new CVEParticleSystemOrientationFront();
+    ret = rs_new_line(1806) CVEParticleSystemOrientationFront();
     break;
   }
   case SBIG('PSOU'): {
-    ret = rs_new CVEParticleSystemOrientationUp();
+    ret = rs_new_line(1812) CVEParticleSystemOrientationUp();
     break;
   }
   case SBIG('PSOR'): {
-    ret = rs_new CVEParticleSystemOrientationRight();
+    ret = rs_new_line(1818) CVEParticleSystemOrientationRight();
     break;
   }
   case SBIG('PSTR'): {
-    ret = rs_new CVEParticleSystemTranslation();
+    ret = rs_new_line(1824) CVEParticleSystemTranslation();
     break;
   }
   case SBIG('SUB_'): {
     CVectorElement* a = GetVectorElement(in);
     CVectorElement* b = GetVectorElement(in);
-    ret = rs_new CVESubtract(a, b);
+    ret = rs_new_line(1833) CVESubtract(a, b);
     break;
   }
   case SBIG('CTVC'): {
     CColorElement* value = GetColorElement(in);
-    ret = rs_new CVEColorToVector(value);
+    ret = rs_new_line(1841) CVEColorToVector(value);
     break;
   }
+#if RSTL_CORRUPTION
+  case SBIG('PNCV'): {
+    ret = rs_new_line(1847) CVENormalizedCompensatedVelocity();
+    break;
+  }
+  case SBIG('NORM'): {
+    CVectorElement* a = GetVectorElement(in);
+    ret = rs_new_line(1854) CVENormalize(a);
+    break;
+  }
+  case SBIG('PAP1'): {
+    ret = rs_new_line(1860) CVEParticleAccessParameter1();
+    break;
+  }
+  case SBIG('PAP2'): {
+    ret = rs_new_line(1866) CVEParticleAccessParameter2();
+    break;
+  }
+  case SBIG('PAP3'): {
+    ret = rs_new_line(1872) CVEParticleAccessParameter3();
+    break;
+  }
+  case SBIG('ISWT'): {
+    CVectorElement* a = GetVectorElement(in);
+    CVectorElement* b = GetVectorElement(in);
+    ret = rs_new_line(1880) CVEInitialSwitch(a, b);
+    break;
+  }
+  case SBIG('KPIN'): {
+    CVectorElement* a = GetVectorElement(in);
+    ret = rs_new_line(1887) CVEKeepInitial(a);
+    break;
+  }
+  case SBIG('PIVL'): {
+    ret = rs_new_line(1893) CVEParticleInitialVelocity();
+    break;
+  }
+  case SBIG('PINV'): {
+    ret = rs_new_line(1899) CVEParticleInitialNormalizedVelocity();
+    break;
+  }
+  case SBIG('PITR'): {
+    ret = rs_new_line(1905) CVEParticleInitialTranslation();
+    break;
+  }
+  case SBIG('PEVL'): {
+    ret = rs_new_line(1911) CVEParticleEndVelocity();
+    break;
+  }
+  case SBIG('PENV'): {
+    ret = rs_new_line(1917) CVEParticleEndNormalizedVelocity();
+    break;
+  }
+  case SBIG('PETR'): {
+    ret = rs_new_line(1923) CVEParticleEndTranslation();
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('PNCV'): {
     ret = rs_new CVENormalizedCompensatedVelocity();
@@ -1185,6 +1531,7 @@ CVectorElement* CParticleDataFactory::GetVectorElement(CInputStream& in) {
   }
 #endif
 
+#endif
   default:
     ret = nullptr;
     break;
@@ -1212,22 +1559,33 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
         valid = true;
       }
     }
-    ret = valid ? rs_new CEESimpleEmitter(pos, vel) : nullptr;
+    ret = valid ? rs_new_line(1966) CEESimpleEmitter(pos, vel) : nullptr;
     break;
   }
   case SBIG('SEMR'): {
     CVectorElement* pos = GetVectorElement(in);
     CVectorElement* vel = GetVectorElement(in);
-    ret = rs_new CEESimpleEmitter(pos, vel);
+    ret = rs_new_line(1975) CEESimpleEmitter(pos, vel);
     break;
   }
   case SBIG('SPHE'): {
     CVectorElement* origin = GetVectorElement(in);
     CRealElement* radius = GetRealElement(in);
     CRealElement* velocity = GetRealElement(in);
-    ret = rs_new CVESphere(origin, radius, velocity);
+    ret = rs_new_line(1985) CVESphere(origin, radius, velocity);
     break;
   }
+#if RSTL_CORRUPTION
+  case SBIG('ELPS'): {
+    CVectorElement* a = GetVectorElement(in);
+    CVectorElement* b = GetVectorElement(in);
+    CVectorElement* c = GetVectorElement(in);
+    CRealElement* d = GetRealElement(in);
+    bool e = GetBool(in);
+    ret = rs_new_line(1997) CVEEllipsoid(a, b, c, d, e);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('ELPS'): {
     CVectorElement* a = GetVectorElement(in);
@@ -1240,6 +1598,7 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
   }
 #endif
 
+#endif
   case SBIG('ASPH'): {
     CVectorElement* origin = GetVectorElement(in);
     CRealElement* angleXBias = GetRealElement(in);
@@ -1248,10 +1607,22 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
     CRealElement* angleYRange = GetRealElement(in);
     CRealElement* radius = GetRealElement(in);
     CRealElement* velocity = GetRealElement(in);
-    ret = rs_new CVEAngleSphere(origin, radius, velocity, angleXBias, angleYBias, angleXRange,
-                                angleYRange);
+    ret = rs_new_line(2011)
+        CVEAngleSphere(origin, radius, velocity, angleXBias, angleYBias, angleXRange, angleYRange);
     break;
   }
+#if RSTL_CORRUPTION
+  case SBIG('PLNE'): {
+    CVectorElement* a = GetVectorElement(in);
+    CVectorElement* b = GetVectorElement(in);
+    CVectorElement* c = GetVectorElement(in);
+    CRealElement* d = GetRealElement(in);
+    CRealElement* e = GetRealElement(in);
+    CRealElement* f = GetRealElement(in);
+    ret = rs_new_line(2024) CEEPlaneEmitter(a, b, c, d, e, f);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('PLNE'): {
     CVectorElement* a = GetVectorElement(in);
@@ -1263,6 +1634,7 @@ CEmitterElement* CParticleDataFactory::GetEmitterElement(CInputStream& in) {
     ret = rs_new CEEPlaneEmitter(a, b, c, d, e, f);
     break;
   }
+#endif
 #endif
   default:
     ret = nullptr;
@@ -1295,36 +1667,36 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
       a->GetValue(0, bf);
       a->GetValue(0, cf);
 #endif
-      ret = rs_new CMVEFastConstant(af, bf, cf);
+      ret = rs_new_line(2064) CMVEFastConstant(af, bf, cf);
       delete a;
       delete b;
       delete c;
     } else {
-      ret = rs_new CMVEConstant(a, b, c);
+      ret = rs_new_line(2072) CMVEConstant(a, b, c);
     }
     break;
   }
   case SBIG('GRAV'): {
-    ret = rs_new CMVEGravity(GetVectorElement(in));
+    ret = rs_new_line(2078) CMVEGravity(GetVectorElement(in));
     break;
   }
   case SBIG('WIND'): {
     CVectorElement* a = GetVectorElement(in);
     CRealElement* b = GetRealElement(in);
-    ret = rs_new CMVEWind(a, b);
+    ret = rs_new_line(2086) CMVEWind(a, b);
     break;
   }
   case SBIG('EXPL'): {
     CRealElement* a = GetRealElement(in);
     CRealElement* b = GetRealElement(in);
-    ret = rs_new CMVEExplode(a, b);
+    ret = rs_new_line(2095) CMVEExplode(a, b);
     break;
   }
   case SBIG('CHAN'): {
     CModVectorElement* a = GetModVectorElement(in);
     CModVectorElement* b = GetModVectorElement(in);
     CIntElement* c = GetIntElement(in);
-    ret = rs_new CMVETimeChain(a, b, c);
+    ret = rs_new_line(2105) CMVETimeChain(a, b, c);
     break;
   }
   case SBIG('PULS'): {
@@ -1332,7 +1704,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CIntElement* b = GetIntElement(in);
     CModVectorElement* c = GetModVectorElement(in);
     CModVectorElement* d = GetModVectorElement(in);
-    ret = rs_new CMVEPulse(a, b, c, d);
+    ret = rs_new_line(2116) CMVEPulse(a, b, c, d);
     break;
   }
   case SBIG('IMPL'): {
@@ -1341,7 +1713,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
     bool e = GetBool(in);
-    ret = rs_new CMVEImplosion(a, b, c, d, e);
+    ret = rs_new_line(2128) CMVEImplosion(a, b, c, d, e);
     break;
   }
   case SBIG('LMPL'): {
@@ -1350,7 +1722,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
     bool e = GetBool(in);
-    ret = rs_new CMVELinearImplosion(a, b, c, d, e);
+    ret = rs_new_line(2140) CMVELinearImplosion(a, b, c, d, e);
     break;
   }
   case SBIG('EMPL'): {
@@ -1359,7 +1731,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
     bool e = GetBool(in);
-    ret = rs_new CMVEExponentialImplosion(a, b, c, d, e);
+    ret = rs_new_line(2152) CMVEExponentialImplosion(a, b, c, d, e);
     break;
   }
   case SBIG('SWRL'): {
@@ -1367,7 +1739,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CVectorElement* b = GetVectorElement(in);
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
-    ret = rs_new CMVESwirl(a, b, c, d);
+    ret = rs_new_line(2163) CMVESwirl(a, b, c, d);
     break;
   }
   case SBIG('BNCE'): {
@@ -1375,14 +1747,41 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
     CVectorElement* b = GetVectorElement(in);
     CRealElement* c = GetRealElement(in);
     CRealElement* d = GetRealElement(in);
+#if RSTL_CORRUPTION
+    const bool e = GetBool(in);
+    ret = rs_new_line(2176) CMVEBounce(a, b, c, d, e);
+#else
     bool e = GetBool(in);
     ret = rs_new CMVEBounce(a, b, c, d, e);
+#endif
     break;
   }
   case SBIG('SPOS'): {
-    ret = rs_new CMVESetPosition(GetVectorElement(in));
+    ret = rs_new_line(2181) CMVESetPosition(GetVectorElement(in));
     break;
   }
+#if RSTL_CORRUPTION
+  case SBIG('SPHV'): {
+    CVectorElement* a = GetVectorElement(in);
+    CRealElement* b = GetRealElement(in);
+    CModVectorElement* c = GetModVectorElement(in);
+    ret = rs_new_line(2190) CMVESphereVolume(a, b, c);
+    break;
+  }
+  case SBIG('BOXV'): {
+    CVectorElement* a = GetVectorElement(in);
+    CVectorElement* b = GetVectorElement(in);
+    CModVectorElement* c = GetModVectorElement(in);
+    ret = rs_new_line(2200) CMVEBoxVolume(a, b, c);
+    break;
+  }
+  case SBIG('SWLC'): {
+    CRealElement* a = GetRealElement(in);
+    CRealElement* b = GetRealElement(in);
+    ret = rs_new_line(2209) CMVESweptLineCollision(a, b);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('SPHV'): {
     CVectorElement* a = GetVectorElement(in);
@@ -1400,6 +1799,7 @@ CModVectorElement* CParticleDataFactory::GetModVectorElement(CInputStream& in) {
   }
 #endif
 
+#endif
   default:
     return nullptr;
     break;
@@ -1435,17 +1835,23 @@ CColorElement* CParticleDataFactory::GetColorElement(CInputStream& in) {
             allocationContext == IElement::CElementAllocator::GetCurrentChunk()) {
           allocationContext->Rewind(allocationContext->GetAllocatedSize() - initialSize);
         }
-        ret = rs_new CCEFastConstant(rf, gf, bf, af);
+        ret = rs_new_line(2261) CCEFastConstant(rf, gf, bf, af);
         break;
       }
     }
-    ret = rs_new CCEConstant(r, g, b, a);
+    ret = rs_new_line(2265) CCEConstant(r, g, b, a);
     break;
   }
   case SBIG('KEYE'):
   case SBIG('KEYP'):
-    ret = rs_new CCEKeyframeEmitter(in);
+    ret = rs_new_line(2272) CCEKeyframeEmitter(in);
     break;
+#if RSTL_CORRUPTION
+  case SBIG('KEYF'): {
+    ret = rs_new_line(2276) CCEKeyframeInput(in);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('KEYF'): {
     ret = rs_new CCEKeyframeInput(in);
@@ -1453,11 +1859,12 @@ CColorElement* CParticleDataFactory::GetColorElement(CInputStream& in) {
   }
 #endif
 
+#endif
   case SBIG('FADE'): {
     CColorElement* a = GetColorElement(in);
     CColorElement* b = GetColorElement(in);
     CRealElement* end = GetRealElement(in);
-    ret = rs_new CCEFade(a, b, end);
+    ret = rs_new_line(2285) CCEFade(a, b, end);
     break;
   }
   case SBIG('CFDE'): {
@@ -1465,14 +1872,14 @@ CColorElement* CParticleDataFactory::GetColorElement(CInputStream& in) {
     CColorElement* b = GetColorElement(in);
     CRealElement* start = GetRealElement(in);
     CRealElement* end = GetRealElement(in);
-    ret = rs_new CCEFadeEnd(a, b, start, end);
+    ret = rs_new_line(2296) CCEFadeEnd(a, b, start, end);
     break;
   }
   case SBIG('CHAN'): {
     CColorElement* a = GetColorElement(in);
     CColorElement* b = GetColorElement(in);
     CIntElement* frame = GetIntElement(in);
-    ret = rs_new CCETimeChain(a, b, frame);
+    ret = rs_new_line(2306) CCETimeChain(a, b, frame);
     break;
   }
   case SBIG('PULS'): {
@@ -1480,12 +1887,43 @@ CColorElement* CParticleDataFactory::GetColorElement(CInputStream& in) {
     CIntElement* bDuration = GetIntElement(in);
     CColorElement* a = GetColorElement(in);
     CColorElement* b = GetColorElement(in);
-    ret = rs_new CCEPulse(aDuration, bDuration, a, b);
+    ret = rs_new_line(2317) CCEPulse(aDuration, bDuration, a, b);
     break;
   }
   case SBIG('PCOL'):
-    ret = rs_new CCEParticleColor();
+    ret = rs_new_line(2323) CCEParticleColor();
     break;
+#if RSTL_CORRUPTION
+  case SBIG('MULT'): {
+    CColorElement* a = GetColorElement(in);
+    CColorElement* b = GetColorElement(in);
+    ret = rs_new_line(2331) CCEMultiply(a, b);
+    break;
+  }
+  case SBIG('VRTC'): {
+    CVectorElement* a = GetVectorElement(in);
+    CRealElement* b = GetRealElement(in);
+    ret = rs_new_line(2339) CCEVectorAndRealToColor(a, b);
+    break;
+  }
+  case SBIG('ISWT'): {
+    CColorElement* a = GetColorElement(in);
+    CColorElement* b = GetColorElement(in);
+    ret = rs_new_line(2347) CCEInitialSwitch(a, b);
+    break;
+  }
+  case SBIG('KPIN'): {
+    CColorElement* a = GetColorElement(in);
+    ret = rs_new_line(2354) CCEKeepInitial(a);
+    break;
+  }
+  case SBIG('MDAO'): {
+    CColorElement* a = GetColorElement(in);
+    CRealElement* b = GetRealElement(in);
+    ret = rs_new_line(2362) CCEModifyAlphaOnly(a, b);
+    break;
+  }
+#else
 #if !RSTL_PRIME1
   case SBIG('MULT'): {
     CColorElement* a = GetColorElement(in);
@@ -1518,6 +1956,7 @@ CColorElement* CParticleDataFactory::GetColorElement(CInputStream& in) {
   }
 #endif
 
+#endif
   case SBIG('NONE'):
     ret = nullptr;
     break;
@@ -1536,27 +1975,47 @@ CUVElement* CParticleDataFactory::GetTextureElement(CInputStream& in, CSimplePoo
     ret = nullptr;
     break;
   case SBIG('CNST'): {
+#if RSTL_CORRUPTION
+    CAssetId id = kInvalidAssetId;
+#else
     CAssetId id = 0;
+#endif
     FourCC subId = GetClassID(in);
     if (subId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+      id = CAssetId(in);
+#else
       id = in.ReadLong();
 
+#endif
     }
+#if RSTL_CORRUPTION
+    if (id == kInvalidAssetId) {
+#else
     if (id == 0) {
+#endif
       TToken< CTexture > tex = CreateTexture(-1);
-      ret = rs_new CUVEConstant(tex);
+      ret = rs_new_line(2404) CUVEConstant(tex);
     } else {
       TToken< CTexture > tex = resPool->GetObj(SObjectTag(SBIG('TXTR'), id));
-      ret = rs_new CUVEConstant(tex);
+      ret = rs_new_line(2409) CUVEConstant(tex);
     }
     break;
   }
   case SBIG('ATEX'): {
+#if RSTL_CORRUPTION
+    CAssetId id = kInvalidAssetId;
+#else
     CAssetId id = 0;
+#endif
     FourCC subId = GetClassID(in);
     if (subId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+      id = CAssetId(in);
+#else
       id = in.ReadLong();
 
+#endif
     }
     CIntElement* tileW = GetIntElement(in);
     CIntElement* tileH = GetIntElement(in);
@@ -1564,12 +2023,40 @@ CUVElement* CParticleDataFactory::GetTextureElement(CInputStream& in, CSimplePoo
     CIntElement* strideH = GetIntElement(in);
     CIntElement* cycleFrames = GetIntElement(in);
     bool loop = GetBool(in);
+#if RSTL_CORRUPTION
+    if (id == kInvalidAssetId) {
+#else
     if (id == 0) {
+#endif
       TToken< CTexture > tex = CreateTexture(-1);
-      ret = rs_new CUVEAnimTexture(tex, tileW, tileH, strideW, strideH, cycleFrames, loop);
+      ret =
+          rs_new_line(2435) CUVEAnimTexture(tex, tileW, tileH, strideW, strideH, cycleFrames, loop);
     } else {
       TToken< CTexture > tex = resPool->GetObj(SObjectTag(SBIG('TXTR'), id));
+#if RSTL_CORRUPTION
+      ret =
+          rs_new_line(2440) CUVEAnimTexture(tex, tileW, tileH, strideW, strideH, cycleFrames, loop);
+    }
+    break;
+  }
+  case SBIG('TEXP'): {
+    CAssetId id = kInvalidAssetId;
+    FourCC subId = GetClassID(in);
+    if (subId != SBIG('NONE')) {
+      id = CAssetId(in);
+    }
+    CIntElement* a = GetIntElement(in);
+    CIntElement* b = GetIntElement(in);
+    CRealElement* c = GetRealElement(in);
+    if (id == kInvalidAssetId) {
+      TToken< CTexture > tex = CreateTexture(-1);
+      ret = rs_new_line(2462) CUVETEXP(tex, a, b, c);
+    } else {
+      TToken< CTexture > tex = resPool->GetObj(SObjectTag(SBIG('TXTR'), id));
+      ret = rs_new_line(2467) CUVETEXP(tex, a, b, c);
+#else
       ret = rs_new CUVEAnimTexture(tex, tileW, tileH, strideW, strideH, cycleFrames, loop);
+#endif
     }
     break;
   }
@@ -1585,6 +2072,9 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
   FourCC clsId = GetClassID(in);
   CAssetId id;
   if (clsId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+    id = CAssetId(in);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = in.Get< CAssetId >();
@@ -1592,6 +2082,7 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
     id = in.ReadInt32();
 #endif
 
+#endif
   } else {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1601,6 +2092,10 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
 #endif
 
   }
+#if RSTL_CORRUPTION
+  if (id == kInvalidAssetId) {
+    return rstl::optional_object< TToken< CGenDescription > >();
+#else
   if (id == 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1609,6 +2104,7 @@ CParticleDataFactory::GetChildGeneratorDesc(CInputStream& in, CSimplePool* pool,
     return rstl::optional_object< TToken< CGenDescription > >();
 #endif
 
+#endif
   }
   return GetChildGeneratorDesc(id, pool, resources);
 }
@@ -1639,6 +2135,9 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
   FourCC clsId = GetClassID(in);
   CAssetId id;
   if (clsId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+    id = CAssetId(in);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = in.Get< CAssetId >();
@@ -1646,6 +2145,7 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
     id = in.ReadInt32();
 #endif
 
+#endif
   } else {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1655,6 +2155,10 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
 #endif
 
   }
+#if RSTL_CORRUPTION
+  if (id == kInvalidAssetId) {
+    return rstl::optional_object< TToken< CSwooshDescription > >();
+#else
   if (id == 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1663,6 +2167,7 @@ CParticleDataFactory::GetSwooshGeneratorDesc(CInputStream& in, CSimplePool* pool
     return rstl::optional_object< TToken< CSwooshDescription > >();
 #endif
 
+#endif
   }
   return TToken< CSwooshDescription >(pool->GetObj(SObjectTag(SBIG('SWHC'), id)));
 }
@@ -1672,6 +2177,9 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
   FourCC clsId = GetClassID(in);
   CAssetId id;
   if (clsId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+    id = CAssetId(in);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = in.Get< CAssetId >();
@@ -1679,6 +2187,7 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
     id = in.ReadInt32();
 #endif
 
+#endif
   } else {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1688,6 +2197,10 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
 #endif
 
   }
+#if RSTL_CORRUPTION
+  if (id == kInvalidAssetId) {
+    return rstl::optional_object< TToken< CElectricDescription > >();
+#else
   if (id == 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1696,6 +2209,7 @@ CParticleDataFactory::GetElectricGeneratorDesc(CInputStream& in, CSimplePool* po
     return rstl::optional_object< TToken< CElectricDescription > >();
 #endif
 
+#endif
   }
   return TToken< CElectricDescription >(pool->GetObj(SObjectTag(SBIG('ELSC'), id)));
 }
@@ -1705,6 +2219,9 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
   FourCC clsId = GetClassID(in);
   CAssetId id;
   if (clsId != SBIG('NONE')) {
+#if RSTL_CORRUPTION
+    id = CAssetId(in);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     id = in.Get< CAssetId >();
@@ -1712,6 +2229,7 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
     id = in.ReadInt32();
 #endif
 
+#endif
   } else {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1721,6 +2239,10 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
 #endif
 
   }
+#if RSTL_CORRUPTION
+  if (id == kInvalidAssetId) {
+    return rstl::optional_object< TToken< CModel > >();
+#else
   if (id == 0) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -1729,12 +2251,13 @@ rstl::optional_object< TToken< CModel > > CParticleDataFactory::GetModel(CInputS
     return rstl::optional_object< TToken< CModel > >();
 #endif
 
+#endif
   }
   return TToken< CModel >(pool->GetObj(SObjectTag(SBIG('CMDL'), id)));
 }
 
 CTexture* CreateTexture(int value) {
-  CTexture* texture = rs_new CTexture(kTexelFormat_RGBA8, 4, 4, 1);
+  CTexture* texture = rs_new_line(2601) CTexture(kTexelFormat_RGBA8, 4, 4, 1);
   int* data = static_cast< int* >(texture->Lock());
   for (int i = 1; i <= 16; ++i) {
     data[i - 1] = value;
@@ -1742,4 +2265,3 @@ CTexture* CreateTexture(int value) {
   texture->UnLock();
   return texture;
 }
-

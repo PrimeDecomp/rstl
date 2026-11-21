@@ -1,7 +1,7 @@
 #ifndef _CELEMENTGEN
 #define _CELEMENTGEN
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "rstl/types.h"
 
@@ -9,7 +9,6 @@
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Graphics/CLight.hpp"
 #include "Kyoto/Math/CAABox.hpp"
-
 #include "Kyoto/Math/CMatrix3f.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
@@ -17,6 +16,12 @@
 #include "Kyoto/Particles/IElement.hpp"
 
 #include "Kyoto/TToken.hpp"
+#if RSTL_CORRUPTION
+
+#include "rstl/optional_object.hpp"
+
+
+#else
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3ME_00
 
@@ -24,6 +29,7 @@ namespace rstl {
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(CMatrix3f)
 } // namespace rstl
 
+#endif
 #endif
 #endif
 
@@ -38,6 +44,9 @@ class CModVectorElement;
 
 class CElementGen : public CParticleGen {
 public:
+#if RSTL_CORRUPTION
+  static FourCC ResType() { return 'PART'; }
+#else
 #if RSTL_PRIME1
   struct CParticleListItem {
     ushort mPartIdx;
@@ -55,6 +64,7 @@ public:
     explicit CTexturedParticleListItem(short texMapIdx, short partIdx, const CVector3f& viewPoint)
     : mTexMapIdx(texMapIdx), mPartIdx(partIdx), mViewPoint(viewPoint) {}
   };
+#endif
 #endif
 
   enum EModelOrientationType {
@@ -102,6 +112,9 @@ public:
     : mPos(CVector3f::Zero())
     , mPrevPos(mPos)
     , mVel(mPrevPos)
+#if RSTL_CORRUPTION
+    , mColor(0xffff00ff) {}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
     , mColor(static_cast< u8 >(0xFF), 0x00, 0xFF, 0xFF) {}
@@ -109,6 +122,7 @@ public:
     , mColor(static_cast< uchar >(255), 0, 255, 255) {}
 #endif
 
+#endif
   };
   // Guessed type name, based on Prime; Echoes adds ADV9 and VAV1/VAV2/VAV3.
   struct CAdvancedValues {
@@ -121,6 +135,26 @@ public:
     ];
   };
 
+#if RSTL_CORRUPTION
+  // Guessed names for the sorting record and model-render state.
+  struct CParticleListItem {
+    ushort mPartIdx;
+    CVector3f mViewPoint;
+  };
+  // Guessed name, correlated with Prime's multi-texture sorting record.
+  struct CTexturedParticleListItem {
+    ushort mTexMapIdx;
+    ushort mPartIdx;
+    CVector3f mViewPoint;
+  };
+  struct SModelRenderState {
+    SUVElementSet mUV;
+    SUVElementSet mIndirectUV;
+    int mBlendMode; // Guessed name
+    bool mConstantUV;
+    bool mConstantIndirectUV;
+  };
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   CElementGen();
@@ -156,6 +190,7 @@ public:
     }
   };
 #endif
+#endif
 
   CElementGen(TToken< CGenDescription >, EModelOrientationType = kMOT_Normal,
               EOptionalSystemFlags = kOSF_One);
@@ -170,10 +205,15 @@ public:
   virtual void SetGlobalTranslation(const CVector3f& translation) override;
   virtual void SetGlobalScale(const CVector3f& scale) override;
   virtual void SetLocalScale(const CVector3f& scale) override;
+#if RSTL_CORRUPTION
+  virtual void SetParticleEmission(bool emission) override;
+#else
   virtual void SetParticleEmission(RSTL_PRIME1_CONST bool emission) override;
 
+#endif
   virtual void SetModulationColor(const CColor& col) override;
   virtual void SetGeneratorRate(float rate) override;
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
   virtual const CVector3f& GetTranslation() const override { return mTranslation; }
 #endif
@@ -183,15 +223,33 @@ public:
   virtual const CVector3f& GetTranslation() const override { return mTranslation; }
 #endif
   virtual const CTransform4f& GetGlobalOrientation() const override;
+#endif
 
+#if RSTL_CORRUPTION
+  virtual const CTransform4f& GetOrientation() const override;
+  virtual const CVector3f& GetTranslation() const override { return mTranslation; }
+  virtual const CTransform4f& GetGlobalOrientation() const override { return mGlobalOrientation; }
+  virtual const CVector3f& GetGlobalTranslation() const override { return mGlobalTranslation; }
+  virtual const CVector3f& GetGlobalScale() const override;
+  virtual bool GetParticleEmission() const override { return mParticleEmission; }
+#else
   virtual const CVector3f& GetGlobalScale() const override { return mGlobalScale; }
   virtual bool GetParticleEmission() const override;
 
+#endif
   virtual const CColor& GetModulationColor() const override;
+#if RSTL_CORRUPTION
+  float GetGeneratorRate() const override;
+  int GetEmitterTime() const override;
+#else
   virtual float GetGeneratorRate() const override;
   int GetEmitterTime() const;
   int GetSystemCount() RSTL_ECHOES_CONST;
+#endif
 
+#if RSTL_CORRUPTION
+  int GetSystemCount() const override;
+#endif
   virtual bool IsSystemDeletable() const override;
   virtual rstl::optional_object< CAABox > GetBounds() const override;
   virtual int GetParticleCount() const override { return mActiveParticleCount; }
@@ -206,6 +264,12 @@ public:
 #endif
 
   void EndLifetime();
+#if RSTL_CORRUPTION
+  int GetParticleCountAll() const;
+  int GetParticleCountAllInternal() const;
+  void AccumulateBounds(const CVector3f& position, float size);
+  void BuildParticleSystemBounds();
+#else
   void ForceParticleCreation(int count);
 
   bool InternalUpdate(double dt);
@@ -219,7 +283,20 @@ public:
   );
   void UpdateExistingParticles();
   void CreateNewParticles(int count);
+#endif
   void UpdatePSTranslationAndOrientation();
+#if RSTL_CORRUPTION
+  void UpdateLightParameters();
+  bool InternalUpdate(double dt);
+  void UpdateAdvanceAccessParameters(int particleIndex, int particleFrame);
+  bool UpdateVelocitySource(int sourceIndex, int particleFrame, CParticle& particle,
+                            const CVector3f& scaledTranslation);
+  void UpdateExistingParticles();
+  void CreateNewParticles(int count, const CVector3f& emitterVelocity);
+  void SetEmitterVelocity(const CVector3f& velocity); // Guessed name
+  static void SetParticleBlendMode(int mode); // Guessed name
+  void ForceParticleCreation(int count);
+#else
 #if RSTL_PRIME1
   CElementGen* ConstructChildParticleSystem(TToken< CGenDescription >) const;
 #else
@@ -237,8 +314,20 @@ public:
                                const CTransform4f& globalOrientation, const CVector3f& globalScale,
                                const CColor& modulationColor, const CVector3f& localScale);
 #endif
+#endif
   void UpdateChildParticleSystems(double dt);
   void RenderModels();
+#if RSTL_CORRUPTION
+  // Guessed names; Echoes separates model setup, drawing and cleanup.
+  void BeginModelRender(SModelRenderState& state);
+  void BeginIndirectModelRender(SModelRenderState& state);
+  void RenderModelParticle(SModelRenderState& state, const CColor& color,
+                           const CParticle& particle);
+  void RenderIndirectModelParticle(SModelRenderState& state, const CColor& color,
+                                   const CParticle& particle);
+  void EndModelRender(const SModelRenderState& state);
+  void EndIndirectModelRender(const SModelRenderState& state);
+#else
 #if !RSTL_PRIME1
   // Guessed names; Echoes separates model setup, drawing and cleanup.
   void BeginModelRender(SModelRenderState& state);
@@ -250,8 +339,37 @@ public:
   void EndModelRender(const SModelRenderState& state) const;
   void EndIndirectModelRender(const SModelRenderState& state);
 #endif
+#endif
   void RenderLines();
+#if RSTL_CORRUPTION
+  void RenderParticles();
+#endif
   void RenderParticlesIndirectTexture();
+#if RSTL_CORRUPTION
+  static void RenderParticlesFlameThrower(CElementGen* const* gens, int count,
+                                          const CVector3f* globalTranslation,
+                                          const CTransform4f* globalOrientation,
+                                          const CVector3f* globalScale,
+                                          const CTransform4f* localScale);
+  // Guessed names, extending Prime's basic-render variants with modulation color.
+  void RenderBasicParticlesNoRotTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotNoTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotNoTS(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesNoRotNoTSModulated(const CTransform4f& xf) const;
+  void RenderBasicParticlesRotNoTSModulated(const CTransform4f& xf) const;
+  CParticleGen* ConstructChildParticleSystem(const CToken& description, uint type,
+                                             ushort seed) const;
+  static CParticleGen*
+  ConstructChildParticleSystem(const CToken& description, uint type, short seed,
+                               EOptionalSystemFlags flags, bool modelsUseLights, bool emission,
+                               const CVector3f& translation, const CTransform4f& orientation,
+                               const CVector3f& globalTranslation,
+                               const CTransform4f& globalOrientation, const CVector3f& globalScale,
+                               const CColor& modulationColor, const CVector3f& localScale);
+#else
   static void RenderParticlesFlameThrower(CElementGen* const* gens, int count
 #if !RSTL_PRIME1
                                           ,
@@ -281,20 +399,29 @@ public:
 
   int GetNumActiveChildParticles() const;
   CParticleGen* GetActiveChildParticle(int index) const;
+#endif
 
   int GetCumulativeParticleCount() const { return mCumulativeParticles; }
   int GetMaxParticles() const { return mMAXP; }
   double GetCurrentTime() const { return mCurSeconds; } // Guessed name
+#if !RSTL_CORRUPTION
   float GetTimeDeltaScale() const { return mTimeDeltaScale; } // Guessed name
+#endif
   bool IsIndirectTextured() const;
+#if !RSTL_CORRUPTION
   void SetExternalVar(int index, float val);
 
+#endif
   float GetExternalVar(int index) const;
   void SetExternalParam(uint index, float value);
   float GetGenerationRate();
   int GetNumSpawnedParticleSystems() const;
   CParticleGen* SpawnedParticleSystem(int index);
+#if RSTL_CORRUPTION
+  float* GetParticleAdditionalData(uint index); // Guessed name
+#else
   CAdvancedValues* ParticleAdditionalData(uint index);
+#endif
   const CAdvancedValues* GetParticleAdditionalData(uint index) const;
 
   static void Initialize();
@@ -341,7 +468,13 @@ public:
   short mRandomSeed;
   float mGeneratorRate;
   float mExternalVars[16];
+#if RSTL_CORRUPTION
+  rstl::optional_object< CVector3f > mPreviousTranslation; // Guessed name
+#endif
   CVector3f mTranslation;
+#if RSTL_CORRUPTION
+  CVector3f mTranslationVelocity; // Guessed name; displacement per 60 Hz frame
+#endif
   CVector3f mGlobalTranslation;
   CVector3f mPOFS;
   CVector3f mGlobalScale;
@@ -359,7 +492,9 @@ public:
   int mPSLT;
   bool mTranslationDirty : 1;
   bool mLIT_ : 1;
+#if !RSTL_CORRUPTION
   bool mAAPH : 1;
+#endif
   bool mZBUF : 1;
   bool mZTest : 1;
   bool mORNT : 1;
@@ -428,8 +563,17 @@ public:
   static double kTickTime;
 #endif
   static bool sSubtractBlend;
-
+  // Guessed names, correlated with Prime's seed and live-system accounting.
   static ushort sSeed;
+#if RSTL_CORRUPTION
+  static int mParticleAliveCount;
+  static int mParticleSystemAliveCount;
+
+public:
+  static void SetGlobalSeed(const ushort seed) { sSeed = seed; }
+
+  // Hypothesis: the sbss flag read by the G2ME01 CElementGen render paths.
+#else
   static int mParticleAliveCount;
   static int mParticleSystemAliveCount;
 #if !RSTL_PRIME1
@@ -440,14 +584,22 @@ public:
   // Hypothesis: the sbss flag read by the G2ME01 CElementGen render paths.
 #endif
 
+#endif
   static bool sMoveRedToAlphaBuffer;
+#if RSTL_CORRUPTION
+  static bool sDisableRendering; // Guessed name
+  static bool sLogSlowWarmup; // Guessed name
+#else
 #if !RSTL_PRIME1
   static bool sEnableAlphaModulation; // Guessed name; distinct from sMoveRedToAlphaBuffer.
 #endif
 
+#endif
 };
-CHECK_SIZEOF(CElementGen, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
+CHECK_SIZEOF(CElementGen, RSTL_CORRUPTION ? 0x350 :
+             RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_R3IJ ? 0x328 : 0x340) : 0x338)
 
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
 inline const CVector3f& CElementGen::GetGlobalTranslation() const { return mGlobalTranslation; }
 inline const CTransform4f& CElementGen::GetGlobalOrientation() const { return mGlobalOrientation; }
@@ -462,4 +614,5 @@ inline uint CElementGen::Get4CharId() const { return 'PART'; }
 #endif
 #endif
 
+#endif
 #endif // _CELEMENTGEN

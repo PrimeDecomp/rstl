@@ -20,6 +20,12 @@ enum EDimX { kDX = 0 };
 enum EDimY { kDY = 1 };
 enum EDimZ { kDZ = 2 };
 
+#if RSTL_CORRUPTION
+#define rs_can_normalize(vec) ((vec).IsNormalizable())
+#else
+#define rs_can_normalize(vec) ((vec).CanBeNormalized())
+#endif
+
 class CVector3f {
 public:
   CVector3f() {}

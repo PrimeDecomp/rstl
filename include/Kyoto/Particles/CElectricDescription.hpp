@@ -1,11 +1,13 @@
 #ifndef _CELECTRICDESCRIPTION
 #define _CELECTRICDESCRIPTION
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
+#if !RSTL_CORRUPTION
 #include "Kyoto/Particles/CGenDescription.hpp"
 #include "Kyoto/Particles/CParticleDataFactory.hpp"
 #include "Kyoto/Particles/CSwooshDescription.hpp"
+#endif
 #include "rstl/types.h"
 
 #include "Kyoto/TToken.hpp"
@@ -41,16 +43,22 @@ public:
   CColorElement* mLCL1;
   CColorElement* mLCL2;
   CColorElement* mLCL3;
+#if RSTL_CORRUPTION
+  CUVElement* mTEXR;
+  CIntElement* mBLDM;
+  int mDFLG;
+#else
 #if !RSTL_PRIME1
   CUVElement* mTEXR;
   int mDFLG;
 #endif
 
+#endif
   rstl::optional_object< TCachedToken< CSwooshDescription > > mSSWH;
   rstl::optional_object< TCachedToken< CGenDescription > > mGPSM;
   rstl::optional_object< TCachedToken< CGenDescription > > mEPSM;
   bool mZERY;
 };
-CHECK_SIZEOF(CElectricDescription, RSTL_PRIME1 ? 0x74 : 0x7c)
+CHECK_SIZEOF(CElectricDescription, RSTL_CORRUPTION ? 0x80 : RSTL_PRIME1 ? 0x74 : 0x7c)
 
 #endif // _CELECTRICDESCRIPTION

@@ -1,4 +1,9 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
+#define RSTL_INLINE_SWAP
+#endif
+#include "Kyoto/Alloc/CMemory.hpp"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Text/CRasterFont.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 
@@ -12,7 +17,7 @@
 #include "Kyoto/Graphics/CGraphicsPalette.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Graphics/CTexture.hpp"
-
+#include "Kyoto/Streams/CMemoryInStream.hpp"
 #include "Kyoto/Text/CDrawStringOptions.hpp"
 #include "Kyoto/Text/CTextRenderBuffer.hpp"
 #include "Kyoto/Text/TextCommon.hpp"
@@ -29,10 +34,16 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
 , mLineMargin(0) {
   if (in.ReadInt32() == 'FONT') {
     int version = in.ReadInt32();
+#if RSTL_CORRUPTION
+    if (version < 5) {
+      return;
+    }
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
     if (version >= 0 && version <= 4) {
 #else
     if (version >= 0 && version <= 2) {
+#endif
 #endif
       mMonoWidth = in.ReadInt32();
       mMonoHeight = in.ReadInt32();
@@ -51,7 +62,11 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
       int fInfoC = in.ReadInt32();
       int fontSize = in.ReadInt32();
       rstl::string fontName(in);
+#if RSTL_CORRUPTION
+    CAssetId fontId(in);
+#else
       CAssetId fontId = in.ReadInt32();
+#endif
 
       if (store != nullptr) {
         mTexture = store->GetObj(SObjectTag('TXTR', fontId));
@@ -68,6 +83,20 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
       case 1:
         mMode = kFM_OneLayerOutline;
         break;
+#if RSTL_CORRUPTION
+      case 2:
+        mMode = kFM_FourLayers;
+        break;
+      case 3:
+        mMode = kFM_TwoLayersOutline;
+        break;
+      case 4:
+        mMode = kFM_TwoLayers;
+        break;
+    default:
+      RS_VERIFY_THROW(118, false, false, "Unknown font mode");
+      break;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
       case 2:
         mMode = kFM_FourLayers;
@@ -78,6 +107,7 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
       case 4:
         mMode = kFM_TwoLayers;
         break;
+#endif
 #endif
       }
 
@@ -146,7 +176,9 @@ CRasterFont::CRasterFont(CInputStream& in, IObjectStore* store)
       }
 
       mInitialized = true;
+#if !RSTL_CORRUPTION
     }
+#endif
   }
 }
 
@@ -222,10 +254,17 @@ void CRasterFont::DrawString(const CDrawStringOptions& options, int x, int y, in
   if (buffer != nullptr) {
     CGraphicsPalette pal(kPaletteFormat_RGB5A3, 4);
     ushort* data = reinterpret_cast< ushort* >(pal.Lock());
+#if RSTL_CORRUPTION
+    data[0] = CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3();
+    data[1] = CColor(options.GetPaletteEntry(0)).ToRGB5A3();
+    data[2] = CColor(options.GetPaletteEntry(1)).ToRGB5A3();
+    data[3] = CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3();
+#else
     data[0] = CBasics::SwapBytes(CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3());
     data[1] = CBasics::SwapBytes(CColor(options.GetPaletteEntry(0)).ToRGB5A3());
     data[2] = CBasics::SwapBytes(CColor(options.GetPaletteEntry(1)).ToRGB5A3());
     data[3] = CBasics::SwapBytes(CColor(0.f, 0.f, 0.f, 0.f).ToRGB5A3());
+#endif
     pal.UnLock();
 #if RSTL_VERSION >= RSTL_GM8P_00
     buffer->AddPaletteChange(pal, GetMode());
@@ -325,6 +364,12 @@ const CGlyph* CRasterFont::InternalGetGlyph(const wchar_t chr) const {
   return &it->second;
 }
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                    int size, const CVParamTransfer& xfer) {
+  CMemoryInStream in(buffer.get(), size);
+  const rstl::rc_ptr< IVParamObj > obj = xfer.GetObj();
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, CInputStream& in,
                                                       const CVParamTransfer& xfer) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -334,9 +379,10 @@ RSTL_PRIME1_CONST CFactoryFnReturn FRasterFontFactory(const SObjectTag& tag, CIn
   const rstl::rc_ptr< IVParamObj > obj = xfer.GetObj();
 #endif
 
+#endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
 
-  return rs_new CRasterFont(in, pool);
+  return rs_new_line(483) CRasterFont(in, pool);
 }
 
 void CRasterFont::SetupRenderState() {
@@ -375,4 +421,3 @@ void CRasterFont::SetTexture(const TToken< CTexture >& texture) {
   mTexture = texture;
   mTexture->Lock();
 }
-

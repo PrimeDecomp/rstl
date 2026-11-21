@@ -1,11 +1,13 @@
 #ifndef _CMOTIONSPLINE
 #define _CMOTIONSPLINE
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
 #include "rstl/reserved_vector.hpp"
 #include "rstl/vector.hpp"
 
+class CColor;
 class CQuaternion;
 
 class CMotionSpline {
@@ -33,10 +35,16 @@ public:
   CVector3f GetPositionByLength(float distance) const; // Guessed name.
   CVector3f GetTangentByTime(float time) const;        // Guessed name.
   CVector3f GetTangentByLength(float distance) const;  // Guessed name.
+#if RSTL_CORRUPTION
+  // Guessed name
+  void Render(int segments, const CColor& color, int level) const;
+#endif
   void CalculateLength();
   void Reset(uint count);
+#if !RSTL_CORRUPTION
   void ResetKnots(uint count);
   void ResetControlPoints(uint count);
+#endif
   void AddKnotAndControlPoint(const CVector3f& point);
   void SetKnotAndControlPoint(uint index, const CVector3f& point, bool recalculateLength);
 
@@ -64,6 +72,10 @@ private:
   void SetKnot(uint index, CVector3f point, bool recalculateLength);
   void AddKnot(const CVector3f& point);
   void AddControlPoint(const CVector3f& point);
+#if RSTL_CORRUPTION
+  void ResetKnots(uint count);
+  void ResetControlPoints(uint count);
+#endif
   void GetSurroundingPoints(int index, rstl::reserved_vector< CVector3f, 4 >& points) const;
   float CalculateCatmullRomLength(int index) const;
   float CalculateRoundedCatmullRomLength(int index) const;

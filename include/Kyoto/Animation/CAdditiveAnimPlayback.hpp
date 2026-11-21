@@ -1,7 +1,7 @@
 #ifndef _CADDITIVEANIMPLAYBACK
 #define _CADDITIVEANIMPLAYBACK
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "rstl/types.h"
 
@@ -30,7 +30,13 @@ public:
   const rstl::rc_ptr< CAnimTreeNode >& GetAnimationTree() const { return mAnim; }
   rstl::ncrc_ptr< CAnimTreeNode >& AnimationTree() { return mAnim; }
 
-  float GetWeight() const { return mTargetWeight; }
+  float GetWeight() const {
+#if RSTL_CORRUPTION
+    return mCurWeight;
+#else
+    return mTargetWeight;
+#endif
+  }
   void SetWeight(float weight);
 
   EPlaybackPhase GetFadingMode() const { return mPhase; }

@@ -1,4 +1,6 @@
 #include "rstl/RstlVersions.h"
+#include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
 
 #include "Kyoto/Basics/CStopwatch.hpp"
@@ -45,6 +47,10 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 #endif
 
 , mOrientation(CTransform4f::Identity())
+#if RSTL_CORRUPTION
+, mRotation(CTransform4f::Identity())
+, mBaseOrientation(CTransform4f::Identity())
+#endif
 , mInvOrientation(CTransform4f::Identity())
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -76,6 +82,11 @@ CParticleSwoosh::CParticleSwoosh(const TToken< CSwooshDescription > desc, const 
 , mRand(mDesc->mCRND ? CCast::ToInt16(CStopwatch::GetGlobalMicros()) : CCast::ToInt16(99))
 , mUpdateTime(0.f)
 , mRenderTime(0.f)
+#if RSTL_CORRUPTION
+, mXROT(0.f)
+, mYROT(0.f)
+, mZROT(0.f)
+#endif
 , mEmitting(true)
 , mForceOneUpdate(false)
 , mRenderGaps(false)
@@ -229,6 +240,20 @@ const bool CParticleSwoosh::Update(double dt) {
       mCurParticle = 0;
     }
     if (mEmitting && mCurFrame < mPSLT) {
+#if RSTL_CORRUPTION
+      if (mDesc->mXROT) {
+        mDesc->mXROT->GetValue(mCurFrame, mXROT);
+      }
+      if (mDesc->mYROT) {
+        mDesc->mYROT->GetValue(mCurFrame, mYROT);
+      }
+      if (mDesc->mZROT) {
+        mDesc->mZROT->GetValue(mCurFrame, mZROT);
+      }
+      mRotation = CTransform4f::FromEulerAngles(mZROT * (M_PIF / 180.f), mYROT * (M_PIF / 180.f),
+                                                mXROT * (M_PIF / 180.f), CVector3f::Zero());
+      mOrientation = mBaseOrientation * mRotation;
+#endif
       UpdateSwooshTranslation(mTranslation);
       if (mDesc->mIROT) {
         mDesc->mIROT->GetValue(mCurFrame, mSwooshes[mCurParticle].mInitialRot);
@@ -279,8 +304,14 @@ const bool CParticleSwoosh::Update(double dt) {
 }
 
 void CParticleSwoosh::SetOrientation(const CTransform4f& orientation) {
+#if RSTL_CORRUPTION
+  mBaseOrientation = orientation;
+  mInvOrientation = orientation.GetQuickInverse();
+  mOrientation = mBaseOrientation * mRotation;
+#else
   mOrientation = orientation;
   mInvOrientation = mOrientation.GetQuickInverse();
+#endif
   mSwooshes[mCurParticle].mOrientation = mOrientation;
 }
 
@@ -289,8 +320,13 @@ void CParticleSwoosh::UpdateTranslationAndOrientation() {
     return;
   }
   mMaxRadius = 0.f;
+#if RSTL_CORRUPTION
+  mAabbMin = CVector3f(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+  mAabbMax = CVector3f(-3.4028235e38f, -3.4028235e38f, -3.4028235e38f);
+#else
   mAabbMin = CVector3f(RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX, RSTL_KYOTO_FLT_MAX);
   mAabbMax = CVector3f(-RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX, -RSTL_KYOTO_FLT_MAX);
+#endif
   CParticleGlobals::SetParticleLifetime(mLENG);
   CParticleGlobals::SetEmitterTime(mCurFrame);
   int i = 0;
@@ -402,6 +438,11 @@ bool CParticleSwoosh::IsSystemDeletable() const {
 }
 
 void CParticleSwoosh::Render() {
+#if RSTL_CORRUPTION
+  if (mLENG >= 2 && mParticleCount > 1 && ShouldDraw()) {
+    CGraphics::CAlphaContextsGuard alphaGuard;
+    CGraphics::DisableAlphaUpdate(0);
+#else
   if (mLENG >= 2 && mParticleCount > 1
 #if !RSTL_PRIME1
       && ShouldDraw()
@@ -413,10 +454,15 @@ void CParticleSwoosh::Render() {
     }
 #endif
 
+#endif
     CStopwatch timer;
     CParticleGlobals::SetParticleLifetime(mLENG);
     CGlobalRandom random(mRand);
+#if RSTL_CORRUPTION
+    CGraphics::SetLightingMode(0);
+#else
     CGraphics::DisableAllLights();
+#endif
     CGraphics::SetDepthWriteMode(true, kE_LEqual, mDesc->mZBUF);
     if (mAALP) {
       CGraphics::SetBlendMode(kBM_Blend, kBF_SrcAlpha, kBF_One, kLO_Clear);
@@ -486,12 +532,14 @@ void CParticleSwoosh::Render() {
     }
     mRenderTime = timer.GetElapsedTime();
     CGraphics::SetCullMode(kCM_Front);
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1
     if (CElementGen::sMoveRedToAlphaBuffer) {
       GXSetAlphaUpdate(GX_TRUE);
     }
 #endif
 
+#endif
   }
 }
 
@@ -603,6 +651,9 @@ static inline float fast_cosine(float x) {
 #endif
 
   power *= x2;
+#if RSTL_CORRUPTION
+  result += power * reinterpret_cast< const float& >(skCosX8);
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   result += power * c8;
@@ -616,6 +667,7 @@ static inline float fast_cosine(float x) {
 static inline float scaled(float value, float scale) {
   float result = value;
   result *= scale;
+#endif
   return result;
 }
 
@@ -624,7 +676,19 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
   int particleCount = mParticleCount;
   int curIdx = mCurParticle;
   float uvOffset = 0.f;
+#if RSTL_CORRUPTION
+  float angle = 0.f;
+  float cosine = 0.f;
+  float sine = 0.f;
+  float leftCos = 0.f;
+  float leftRadius = 0.f;
+  float leftSin = 0.f;
+  float rightRadius = 0.f;
+  float rightSin = 0.f;
+
+#else
   float rightRadius;
+#endif
   if (mDesc->mTEXR) {
     if (mDesc->mORNT) {
       const CTransform4f inverse =
@@ -650,7 +714,7 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           if (otherIdx == mCurParticle) {
             delta = swoosh.mTranslation - mSwooshes[(curIdx + 1) % mSwooshes.size()].mTranslation;
           }
-          if (delta.CanBeNormalized()) {
+          if (rs_can_normalize(delta)) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
             CVector3f deltaCross = CVector3f::Cross(delta, camToParticle - swoosh.mTranslation);
@@ -659,7 +723,7 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
             CVector3f deltaCross = CVector3f::Cross(delta, cameraDelta);
 #endif
 
-            if (deltaCross.CanBeNormalized()) {
+            if (rs_can_normalize(deltaCross)) {
               deltaCross.Normalize();
               dotVec = (CVector3f::Dot(deltaCross, dotVec) < 0.f ? -1.f : 1.f) * deltaCross;
               const CVector3f v0 =
@@ -706,6 +770,13 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
         }
         if (swoosh.mActive) {
           --particleCount;
+#if RSTL_CORRUPTION
+          angle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
+          angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
+          cosine = fast_cosine(angle);
+          sine = fast_sine(angle);
+          leftRadius = swoosh.mLeftRad;
+#else
           float angle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -717,10 +788,20 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
           const float cosine = fast_cosine(angle);
           const float sine = fast_sine(angle);
           const float leftRadius = swoosh.mLeftRad;
+#endif
           rightRadius = swoosh.mRightRad;
+#if RSTL_CORRUPTION
+          leftSin = leftRadius;
+          leftSin *= sine;
+          leftCos = leftRadius;
+          leftCos *= cosine;
+          rightSin = rightRadius;
+          rightSin *= -sine;
+#else
           const float leftCos = scaled(leftRadius, cosine);
           const float leftSin = scaled(leftRadius, sine);
           const float rightSin = scaled(rightRadius, -sine);
+#endif
           const CVector3f v0 = swoosh.mOrientation * CVector3f(leftCos, 0.f, leftSin) +
                                swoosh.mTranslation + swoosh.mUseOffset;
           const CVector3f v1 =
@@ -764,6 +845,13 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
         curIdx = mSwooshes.size() - 1;
       }
       if (swoosh.mActive) {
+#if RSTL_CORRUPTION
+        angle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
+        angle = CMath::AbsF(angle) > M_PIF ? CMath::WrapPi(angle) : angle;
+        cosine = fast_cosine(angle);
+        sine = fast_sine(angle);
+        leftRadius = swoosh.mLeftRad;
+#else
         float angle = M_PIF * (swoosh.mInitialRot + swoosh.mRotm) / 180.f;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -775,10 +863,20 @@ void CParticleSwoosh::Render2SidedNoSplineNoGaps() {
         const float cosine = fast_cosine(angle);
         const float sine = fast_sine(angle);
         const float leftRadius = swoosh.mLeftRad;
+#endif
         rightRadius = swoosh.mRightRad;
+#if RSTL_CORRUPTION
+        leftSin = leftRadius;
+        leftSin *= sine;
+        leftCos = leftRadius;
+        leftCos *= cosine;
+        rightSin = rightRadius;
+        rightSin *= -sine;
+#else
         const float leftCos = scaled(leftRadius, cosine);
         const float leftSin = scaled(leftRadius, sine);
         const float rightSin = scaled(rightRadius, -sine);
+#endif
         const CVector3f v0 = swoosh.mOrientation * CVector3f(leftCos, 0.f, leftSin) +
                              swoosh.mTranslation + swoosh.mUseOffset;
         const CVector3f v1 = swoosh.mOrientation * CVector3f(rightRadius * -cosine, 0.f, rightSin) +
@@ -883,11 +981,17 @@ void CParticleSwoosh::Render3SidedSolidNoSplineNoGaps() {
                                              {GX_VA_TEX0, GX_DIRECT},
                                              {GX_VA_NULL, GX_NONE}};
   CGX::SetVtxDescv(skDescList);
+#if !RSTL_CORRUPTION
   CGX::SetNumChans(1);
+#endif
   CGX::SetNumTexGens(1);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+#if RSTL_CORRUPTION
+  CGraphics::SetLightingMode(3);
+#else
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
   int cur = 0;
   int prev = 1;
@@ -933,13 +1037,18 @@ void CParticleSwoosh::Render3SidedSolidNoSplineNoGaps() {
     p1[cur] = swoosh.mOrientation * b + offset;
     p2[cur] = swoosh.mOrientation * c + offset;
     prevColor = color;
+#if RSTL_CORRUPTION
+    color = CColor::Modulate(swoosh.mColor, mModuColor).GetColor_u32();
+#endif
     if (!swoosh.mActive) {
       lastActive = false;
     } else if (!lastActive) {
       lastActive = true;
     } else {
       lastActive = true;
+#if !RSTL_CORRUPTION
       color = CColor::Modulate(swoosh.mColor, mModuColor).GetColor_u32();
+#endif
       const float prevUv = uv;
       uv += mUvSpan;
       CGX::Begin(GX_QUADS, GX_VTXFMT0, 12);
@@ -997,13 +1106,22 @@ void CParticleSwoosh::Render3SidedSolidSpline() {
                                              {GX_VA_TEX0, GX_DIRECT},
                                              {GX_VA_NULL, GX_NONE}};
   CGX::SetVtxDescv(skDescList);
+#if !RSTL_CORRUPTION
   CGX::SetNumChans(1);
+#endif
   CGX::SetNumTexGens(1);
   CGX::SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+#if RSTL_CORRUPTION
+  CGraphics::SetLightingMode(3);
+#else
   CGX::SetChanCtrl(CGX::Channel0, false, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE,
                    GX_AF_NONE);
+#endif
   CGX::SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
   float uvDelta;
+#if RSTL_CORRUPTION
+  uint priorColor;
+#endif
   uint prevColor = 0;
   uint color = 0;
   int curIdx = mCurParticle;
@@ -1059,7 +1177,11 @@ void CParticleSwoosh::Render3SidedSolidSpline() {
     mP0[0] = swoosh.mOrientation * a + offset;
     mP0[1] = swoosh.mOrientation * b + offset;
     mP0[2] = swoosh.mOrientation * c + offset;
+#if RSTL_CORRUPTION
+    priorColor = prevColor;
+#else
     const uint priorColor = prevColor;
+#endif
     prevColor = color;
     if (swoosh.mActive) {
       const float prevUvSpan = curUvSpan;
@@ -1385,6 +1507,24 @@ rstl::optional_object< CAABox > CParticleSwoosh::GetBounds() const {
                            mScaleXf);
 }
 
+#if RSTL_CORRUPTION
+void CParticleSwoosh::UpdateAllBounds() {
+  mMaxRadius = 0.f;
+  mAabbMin = CVector3f(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+  mAabbMax = CVector3f(-3.4028235e38f, -3.4028235e38f, -3.4028235e38f);
+  for (int i = 0; i < mSwooshes.capacity(); ++i) {
+    SSwooshData& swoosh = mSwooshes.data()[i];
+    if (!swoosh.mActive) {
+      continue;
+    }
+    UpdateMaxRadius(swoosh.mLeftRad);
+    if (!mLLRD) {
+      UpdateMaxRadius(swoosh.mRightRad);
+    }
+    UpdateBounds(swoosh.mTranslation + swoosh.mUseOffset);
+  }
+}
+#else
 #if !RSTL_PRIME1
 void CParticleSwoosh::UpdateAllBounds() {
   mMaxRadius = 0.f;
@@ -1402,6 +1542,7 @@ void CParticleSwoosh::UpdateAllBounds() {
     UpdateBounds(swoosh.mTranslation + swoosh.mUseOffset);
   }
 }
+#endif
 #endif
 
 void CParticleSwoosh::UpdateBounds(const CVector3f& pos) {
@@ -1421,6 +1562,7 @@ int CParticleSwoosh::GetEmitterTime() const { return mCurFrame; }
 #endif
 
 CLight CParticleSwoosh::GetLight() const {
+  RS_VERIFY_THROW(2263, false, 0, "Swooshes do not contain a light");
   return CLight::BuildLocalAmbient(CVector3f::Zero(), CColor::White());
 }
 

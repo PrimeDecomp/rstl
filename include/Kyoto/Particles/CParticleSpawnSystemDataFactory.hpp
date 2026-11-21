@@ -1,5 +1,6 @@
 #ifndef _CPARTICLESPAWNSYSTEMDATAFACTORY
 #define _CPARTICLESPAWNSYSTEMDATAFACTORY
+#include "rstl/RstlVersions.h"
 
 #include "rstl/types.h"
 #include "Kyoto/CFactoryMgr.hpp"
@@ -21,7 +22,12 @@ private:
 };
 
 // Guessed free-factory name, supported by the SPSC registration and parsed descriptor type.
+#if RSTL_CORRUPTION
+CFactoryFnReturn FSpawnParticleSystemDataFactory(const SObjectTag& tag,
+                                                 const rstl::auto_ptr< uchar >& buffer, int size,
+#else
 CFactoryFnReturn FSpawnParticleSystemDataFactory(const SObjectTag& tag, CInputStream& in,
+#endif
                                                 const CVParamTransfer& transfer);
 
 #endif // _CPARTICLESPAWNSYSTEMDATAFACTORY

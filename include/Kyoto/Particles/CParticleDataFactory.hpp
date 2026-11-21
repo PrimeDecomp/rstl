@@ -1,15 +1,14 @@
 #ifndef _CPARTICLEDATAFACTORY
 #define _CPARTICLEDATAFACTORY
 #include "rstl/RstlVersions.h"
-
 #include "Kyoto/CSimplePool.hpp"
 #include "Kyoto/Particles/CElectricDescription.hpp"
 #include "Kyoto/Particles/CGenDescription.hpp"
 
 #include "Kyoto/Particles/IElement.hpp"
+#include "Kyoto/SObjectTag.hpp"
 #include "Kyoto/TToken.hpp"
 
-#include "Kyoto/SObjectTag.hpp"
 #include "rstl/optional_object.hpp"
 #include "rstl/vector.hpp"
 
@@ -23,9 +22,16 @@ class CSwooshDescription;
 
 class CParticleDataFactory {
 public:
+#if RSTL_CORRUPTION
+  static CGenDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool, CAssetId id);
+  static CGenDescription* CreateGeneratorDescription(CInputStream&,
+                                                     rstl::vector< CAssetId >& assets, CAssetId id,
+                                                     CSimplePool* pool);
+#else
   static CGenDescription* GetGeneratorDesc(CInputStream& in, CSimplePool* pool, uint id);
   static CGenDescription* CreateGeneratorDescription(CInputStream&, rstl::vector< uint >& assets,
                                                      uint id, CSimplePool* pool);
+#endif
   static void LoadGPSMTokens(CGenDescription* desc);
   static bool CreateGPSM(CGenDescription* desc, CInputStream& in,
                          rstl::vector< CAssetId >& resources, CSimplePool* pool);

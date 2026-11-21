@@ -1,12 +1,11 @@
 #ifndef _CGENDESCRIPTION
 #define _CGENDESCRIPTION
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 #include "rstl/types.h"
 
 #include "Kyoto/CToken.hpp"
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
 
@@ -43,7 +42,9 @@ public:
   CEmitterElement* mEMTR;
   bool mLINE : 1;
   bool mFXLL : 1;
+#if !RSTL_CORRUPTION
   bool mAAPH : 1;
+#endif
   bool mZBUF : 1;
   bool mSORT : 1;
   bool mLIT_ : 1;
@@ -72,15 +73,26 @@ public:
 
   CIntElement* mMBSP;
   CRealElement* mSIZE;
+#if RSTL_CORRUPTION
+  CRealElement* mISVF;
+  CRealElement* mSVEO;
+#endif
   CRealElement* mROTA;
   CUVElement* mTEXR;
   CUVElement* mTIND;
+#if RSTL_CORRUPTION
+  CIntElement* mPBDM;
+  CIntElement* mXTAD;
+  CRealElement* mFXBR;
+  CVectorElement* mFXBO;
+#else
 #if !RSTL_PRIME1
   CIntElement* mXTAD;
 #endif
 #if RSTL_PARTICLE_BOUNDS_MODES
   CRealElement* mFXBR;
   CVectorElement* mFXBO;
+#endif
 #endif
   TParticleModel mPMDL;
 
@@ -146,6 +158,7 @@ public:
 #endif
 
 };
-CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
+CHECK_SIZEOF(CGenDescription, RSTL_CORRUPTION ? 0x15C :
+             RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
 
 #endif // _CGENDESCRIPTION

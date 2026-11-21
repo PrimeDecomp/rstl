@@ -8,6 +8,7 @@
 #include "rstl/construct.hpp"
 #include "rstl/string.hpp"
 
+#if RSTL_KYOTO_ASSET_ID_CLASS
 class CInputStream;
 class COutputStream;
 
@@ -39,5 +40,7 @@ RSTL_DECLARE_TRIVIALLY_CONSTRUCTIBLE(CAssetId)
 } // namespace rstl
 
 extern const CAssetId kInvalidAssetId; // Guessed name
+
+#endif // RSTL_KYOTO_ASSET_ID_CLASS
 
 #endif // _CASSETID

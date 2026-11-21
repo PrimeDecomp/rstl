@@ -1,7 +1,7 @@
 #ifndef _CRASTERFONT
 #define _CRASTERFONT
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "rstl/types.h"
 
@@ -162,6 +162,11 @@ public:
   CRasterFont(CInputStream& in, IObjectStore* store);
 
   EFontMode GetMode() const;
+#if RSTL_CORRUPTION
+  int GetMonoWidth() const { return mMonoWidth; }
+  int GetCarriageAdvance() const;
+  int GetBaseLine() const { return mBaseline; }
+#else
   int GetMonoWidth() const;
 #if RSTL_PRIME1
   int GetMonoHeight() const;
@@ -169,17 +174,28 @@ public:
   int GetCarriageAdvance() RSTL_ECHOES_CONST;
   int GetBaseLine() const;
 
+#endif
   void GetSize(const CDrawStringOptions&, int&, int&, const wchar_t*, int) const;
+#if RSTL_CORRUPTION
+  void SetTexture(const TToken< CTexture >& token);
+  const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
+#else
   void SetTexture(const TToken< CTexture >& texture);
 #if RSTL_PRIME1
   inline TToken< CTexture > GetTexture() { return *mTexture; }
 #else
   const TToken< CTexture >& GetTexture() const { return mTexture.data(); }
 #endif
+#endif
   bool IsFinishedLoading();
+#if RSTL_CORRUPTION
+  const CGlyph* GetGlyph(wchar_t chr) const { return InternalGetGlyph(chr); }
+  bool HasGlyph(wchar_t chr) const { return GetGlyph(chr) != nullptr; }
+#else
   const CGlyph* GetGlyph(wchar_t c) const;
   bool HasGlyph(wchar_t c) const { return GetGlyph(c) != nullptr; }
 
+#endif
   void DrawString(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
                   CTextRenderBuffer* buffer, const wchar_t* str, int length) const;
   void DrawSpace(const CDrawStringOptions& options, int x, int y, int& xOut, int& yOut,
@@ -205,12 +221,17 @@ private:
   int mBaseline;
   int mLineMargin;
 
+#if RSTL_CORRUPTION
+  static int KernLookup(const rstl::vector< CKernPair >& kerning, int start, int chr);
+#else
   static int KernLookup(const rstl::vector< CKernPair >& kerning, int start,
                         RSTL_PRIME1_CONST int chr);
+#endif
   const CGlyph* InternalGetGlyph(wchar_t chr) const;
 };
 CHECK_SIZEOF(CRasterFont, 0x94)
 
+#if !RSTL_CORRUPTION
 #if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_GM8P_00
 inline int CRasterFont::GetMonoWidth() const { return mMonoWidth; }
 inline int CRasterFont::GetBaseLine() const { return mBaseline; }
@@ -219,6 +240,7 @@ inline const CGlyph* CRasterFont::GetGlyph(wchar_t c) const { return InternalGet
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8P_00
 inline int CRasterFont::GetMonoHeight() const { return mMonoHeight; }
 inline int CRasterFont::GetLineMargin() { return mLineMargin; }
+#endif
 #endif
 
 #endif // _CRASTERFONT

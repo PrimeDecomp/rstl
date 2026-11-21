@@ -1,7 +1,7 @@
 #ifndef _CTEXTRENDERBUFFER
 #define _CTEXTRENDERBUFFER
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Graphics/CColor.hpp"
 
@@ -67,6 +67,9 @@ public:
 #endif
 
   explicit CTextRenderBuffer(EMode mode);
+#if RSTL_CORRUPTION
+  void AddPaletteChange(const CGraphicsPalette& palette, EFontMode mode);
+#else
 
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -85,8 +88,11 @@ public:
 #else
   void AddPaletteChange(const CGraphicsPalette& palette);
 #endif
+#endif
   void AddCharacter(const CVector2i& offset, short chr, uint color);
-
+#if RSTL_CORRUPTION
+  void AddFontChange(const TToken< CRasterFont >& font);
+#endif
   void AddImage(const CVector2i& offset, const CFontImageDef& image);
 
   void* GetOutStream();
@@ -97,7 +103,7 @@ public:
 
   Primitive GetPrimitive(int index) const;
   void SetPrimitive(const Primitive& prim, int index);
-// TODO: verify that this Prime/Echoes difference is real
+  // Guessed name. Returns cached bounds, rebuilding them when dirty.
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_GM8P_00
   const rstl::pair< CVector2i, CVector2i >& AccumulateTextBounds();
@@ -146,6 +152,10 @@ private:
 #endif
 
   mutable int mNextPalette;
+#if RSTL_CORRUPTION
+  rstl::pair< CVector2i, CVector2i > mTextBounds;
+  bool mTextBoundsDirty;
+#else
 #if RSTL_VERSION >= RSTL_GM8P_00
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -158,10 +168,15 @@ private:
 #endif
   bool mBoundsDirty;
 #endif
+#endif
 };
 
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CTextRenderBuffer, 0xb6c)
+#else
 CHECK_SIZEOF(CTextRenderBuffer, (RSTL_VERSION >= RSTL_GM8P_00 ? 0xb6c : 0x258))
 
+#endif
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, Primitive, 0x10)
 #if RSTL_VERSION >= RSTL_GM8P_00
 NESTED_CHECK_SIZEOF(CTextRenderBuffer, SFontPalette, 0x2c)

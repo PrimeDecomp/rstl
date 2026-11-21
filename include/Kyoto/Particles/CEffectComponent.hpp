@@ -1,7 +1,7 @@
 #ifndef _CEFFECTCOMPONENT
 #define _CEFFECTCOMPONENT
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Particles/CParticleData.hpp"
 #include "rstl/string.hpp"
@@ -18,6 +18,9 @@ public:
 #endif
 
   const SObjectTag& GetParticleTag() const { return mTag; }
+#if RSTL_CORRUPTION
+  CSegId GetSegmentId() const { return mBone; }
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   const rstl::string& GetSegmentName() const { return mBoneName; }
@@ -25,6 +28,7 @@ public:
   const CSegId& GetSegmentId() const { return mBone; }
 #endif
 
+#endif
   float GetScale() const { return mScale; }
   CParticleData::EParentedMode GetParentedMode() const { return mParentedMode; }
   uint GetFlags() const { return mFlags; }
@@ -53,7 +57,7 @@ private:
   uint mFlags;
 };
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CEffectComponent, 0x1c)
+CHECK_SIZEOF(CEffectComponent, RSTL_CORRUPTION ? 0x28 : 0x1c)
 #endif
 
 #endif // _CEFFECTCOMPONENT

@@ -1,4 +1,10 @@
 #include "rstl/RstlVersions.h"
+#if RSTL_CORRUPTION
+// Native float/pair swaps inline; the larger knot swaps remain out of line.
+#define RSTL_INLINE_SWAP
+#else
+#include "rstl/RstlVersions.h"
+#endif
 #include "Kyoto/Math/CMayaSpline.hpp"
 
 #include "Kyoto/Math/CMath.hpp"
@@ -11,6 +17,831 @@
 #include "math.h"
 
 // TODO: verify that this Prime/Echoes difference is real
+#if RSTL_CORRUPTION
+
+CMayaSplineKnot::CMayaSplineKnot(CInputStream& in)
+: mTime(in.ReadFloat())
+, mAmplitude(in.ReadFloat())
+, mFlagA(in.ReadInt8())
+, mFlagB(in.ReadInt8())
+, mDirty(true)
+, mCachedTangentA(CVector2f(0.f, 0.f))
+, mCachedTangentB(CVector2f(0.f, 0.f)) {
+  if (mFlagA == 5) {
+    float x = in.ReadFloat();
+    float y = in.ReadFloat();
+    mCachedTangentA.SetX(x);
+    mCachedTangentA.SetY(y);
+  }
+  if (mFlagB == 5) {
+    float x = in.ReadFloat();
+    float y = in.ReadFloat();
+    mCachedTangentB.SetX(x);
+    mCachedTangentB.SetY(y);
+  }
+}
+
+CMayaSplineKnot::CMayaSplineKnot(float time, float amplitude, int flagA, int flagB, const CAbsAngle& v1,
+                                 const CAbsAngle& v2)
+: mTime(time)
+, mAmplitude(amplitude)
+, mFlagA(flagA)
+, mFlagB(flagB)
+, mDirty(true)
+, mCachedTangentA(CVector2f(0.0f, 0.0f))
+, mCachedTangentB(CVector2f(0.0f, 0.0f)) {
+  if (flagA == 5) {
+    float s = sin(v1.AsRadians());
+    float c = cos(v1.AsRadians());
+    mCachedTangentA = CVector2f(3.0f * c, 3.0f * s);
+  }
+  if (flagB == 5) {
+    float s = sin(v2.AsRadians());
+    float c = cos(v2.AsRadians());
+    mCachedTangentB = CVector2f(3.0f * c, 3.0f * s);
+  }
+}
+
+void CMayaSplineKnot::GetTangents(const CMayaSplineKnot* prev, const CMayaSplineKnot* next,
+                                  CVector2f& tangentA, CVector2f& tangentB) const {
+  if (mDirty) {
+    CalculateTangents(prev, next);
+  }
+
+  tangentA = mCachedTangentA;
+  tangentB = mCachedTangentB;
+}
+
+void ValidateTangent(CVector2f& tangent) {
+  if (tangent.GetX() < 0.f) {
+    tangent.SetX(0.f);
+  }
+
+  const float mag = tangent.Magnitude();
+  if (mag != 0.f) {
+    tangent /= mag;
+  }
+
+  if (tangent.GetX() == 0.f && tangent.GetY() != 0.f) {
+    tangent.SetX(0.0001f);
+    tangent.SetY(5729578.0f * tangent.GetX() * (tangent.GetY() < 0.f ? -1.f : 1.f));
+  }
+}
+
+void CMayaSplineKnot::CalculateTangents(const CMayaSplineKnot* prev,
+                                        const CMayaSplineKnot* next) const {
+  mDirty = false;
+  bool calculateTangents = false;
+  if (mFlagA == 4 && prev != nullptr) {
+    float prevAmplitude = CMath::AbsF(prev->GetAmplitude() - GetAmplitude());
+    float nextAmplitude;
+    if (next != nullptr) {
+      nextAmplitude = CMath::AbsF(next->GetAmplitude() - GetAmplitude());
+    } else {
+      nextAmplitude = prevAmplitude;
+    }
+    if (nextAmplitude <= 0.05f || prevAmplitude <= 0.05f) {
+      mFlagA = 1;
+    }
+  }
+
+  switch (mFlagA) {
+  case 0:
+    if (prev == nullptr) {
+      mCachedTangentA = CVector2f(1.f, 0.f);
+    } else {
+      mCachedTangentA =
+          CVector2f(GetTime() - prev->GetTime(), GetAmplitude() - prev->GetAmplitude());
+    }
+    break;
+  case 1:
+    mCachedTangentA = CVector2f(prev != nullptr   ? GetTime() - prev->GetTime()
+                                : next != nullptr ? next->GetTime() - GetTime()
+                                                  : 0.f,
+                                0.f);
+    break;
+  case 3:
+    mCachedTangentA = CVector2f(1.f, 0.f);
+    break;
+  case 4:
+    mFlagA = 2;
+  case 2:
+    calculateTangents = true;
+    break;
+  case 5:
+    break;
+  }
+
+  if (mFlagB == 4 && next != nullptr) {
+    float nextAmplitude = CMath::AbsF(next->GetAmplitude() - GetAmplitude());
+    float prevAmplitude;
+    if (prev != nullptr) {
+      prevAmplitude = CMath::AbsF(prev->GetAmplitude() - GetAmplitude());
+    } else {
+      prevAmplitude = nextAmplitude;
+    }
+    if (nextAmplitude <= 0.05f || prevAmplitude <= 0.05f) {
+      mFlagB = 1;
+    }
+  }
+
+  switch (mFlagB) {
+  case 0:
+    if (next == nullptr) {
+      mCachedTangentB = CVector2f(1.f, 0.f);
+    } else {
+      mCachedTangentB =
+          CVector2f(next->GetTime() - GetTime(), next->GetAmplitude() - GetAmplitude());
+    }
+    break;
+  case 1:
+    mCachedTangentB = CVector2f(next != nullptr   ? next->GetTime() - GetTime()
+                                : prev != nullptr ? GetTime() - prev->GetTime()
+                                                  : 0.f,
+                                0.f);
+    break;
+  case 3:
+    mCachedTangentB = CVector2f(1.f, 0.f);
+    break;
+  case 4:
+    mFlagB = 2;
+  case 2:
+    calculateTangents = true;
+    break;
+  case 5:
+    break;
+  }
+
+  if (calculateTangents) {
+    CVector2f tangentA(0.f, 0.f);
+    CVector2f tangentB(0.f, 0.f);
+    if (prev == nullptr && next != nullptr) {
+      tangentA = tangentB =
+          CVector2f(next->GetTime() - GetTime(), next->GetAmplitude() - GetAmplitude());
+    } else if (prev != nullptr && next == nullptr) {
+      tangentA = tangentB =
+          CVector2f(GetTime() - prev->GetTime(), GetAmplitude() - prev->GetAmplitude());
+    } else if (prev != nullptr && next != nullptr) {
+      float timeDiff = next->GetTime() - prev->GetTime();
+      float amplitudeDiff = next->GetAmplitude() - prev->GetAmplitude();
+      float slope;
+      if (timeDiff < 0.0001f) {
+        slope = amplitudeDiff > 0.f ? 5729578.f : -5729578.f;
+      } else {
+        slope = amplitudeDiff / timeDiff;
+      }
+      float nextTime = next->GetTime() - GetTime();
+      float prevTime = GetTime() - prev->GetTime();
+      float nextAmplitude;
+      float prevAmplitude;
+      if (nextTime < 0.0001f) {
+        nextAmplitude = slope;
+        nextTime = 0.f;
+      } else {
+        nextAmplitude = nextTime * slope;
+      }
+      if (prevTime < 0.0001f) {
+        prevAmplitude = slope;
+        prevTime = 0.f;
+      } else {
+        prevAmplitude = prevTime * slope;
+      }
+      tangentB = CVector2f(prevTime, prevAmplitude);
+      tangentA = CVector2f(nextTime, nextAmplitude);
+    } else {
+      tangentA = CVector2f(1.f, 0.f);
+      tangentB = CVector2f(1.f, 0.f);
+    }
+    if (mFlagA == 2) {
+      mCachedTangentA = tangentA;
+    }
+    if (mFlagB == 2) {
+      mCachedTangentB = tangentB;
+    }
+  }
+  ValidateTangent(mCachedTangentA);
+  ValidateTangent(mCachedTangentB);
+}
+
+void CMayaSplineKnot::PutTo(COutputStream& out) const {
+  out.Put(mTime);
+  out.Put(mAmplitude);
+  out.WriteInt8(mFlagA);
+  out.WriteInt8(mFlagB);
+  if (mFlagA == 5) {
+    out.Put(mCachedTangentA.GetX());
+    out.Put(mCachedTangentA.GetY());
+  }
+  if (mFlagB == 5) {
+    out.Put(mCachedTangentB.GetX());
+    out.Put(mCachedTangentB.GetY());
+  }
+}
+
+void CMayaSpline::WriteToStream(COutputStream& out) const {
+  out.WriteInt8(mPreInfinity);
+  out.WriteInt8(mPostInfinity);
+  out.Put(mKnots);
+  out.WriteInt8(mClampMode);
+  out.Put(mMinAmplitude);
+  out.Put(mMaxAmplitude);
+}
+
+CMayaSpline::CMayaSpline(CInputStream& in)
+: mPreInfinity(in.ReadInt8())
+, mPostInfinity(in.ReadInt8())
+, mKnots(in)
+, mClampMode(in.ReadInt8())
+, mMinAmplitude(in.ReadFloat())
+, mMaxAmplitude(in.ReadFloat())
+, mCache() {}
+
+CMayaSpline::CMayaSpline() : mPreInfinity(0), mPostInfinity(0), mKnots(), mClampMode(0), mCache() {}
+
+static rstl::less< CMayaSplineKnot > sKnotLess; // Guessed name
+
+CMayaSpline::CMayaSpline(const rstl::vector< CMayaSplineKnot >& knots, int clampMode,
+                         int preInfinity, int postInfinity, float minAmplitudeTime,
+                         float maxAmplitudeTime)
+: mPreInfinity(preInfinity)
+, mPostInfinity(postInfinity)
+, mKnots(knots)
+, mClampMode(clampMode)
+, mMinAmplitude(minAmplitudeTime)
+, mMaxAmplitude(maxAmplitudeTime)
+, mCache() {
+  rstl::sort(mKnots.begin(), mKnots.end(), sKnotLess);
+}
+
+float CMayaSpline::EvaluateHermite(float time) const {
+  const float timeDiff = time - mCache.mMinTime;
+  return ((timeDiff * mCache.mHermiteCoefs[0] + mCache.mHermiteCoefs[1]) * timeDiff +
+          mCache.mHermiteCoefs[2]) *
+             timeDiff +
+         mCache.mHermiteCoefs[3];
+}
+
+float CMayaSpline::EvaluateInfinities(float time, bool pre) const {
+  if (mKnots.empty()) {
+    return 0.f;
+  }
+
+  int lastIdx = mKnots.size() - 1;
+  const CMayaSplineKnot* curKnot = &mKnots[0];
+  const float startTime = mKnots[0].GetTime();
+  const float endTime = mKnots[lastIdx].GetTime();
+  float center = endTime - startTime;
+
+  if (CMath::IsEpsilon(center, 0, 1.e-5f)) {
+    return curKnot->GetAmplitude();
+  }
+
+  double tmp;
+  float divTime;
+  if (time > endTime) {
+    divTime = CMath::AbsF(modf((time - endTime) / center, &tmp));
+  } else {
+    divTime = CMath::AbsF(modf((time - startTime) / center, &tmp));
+  }
+  center *= divTime;
+  tmp = 1.f + CMath::AbsF(tmp);
+
+  if (pre) {
+    if (mPreInfinity == 4) {
+      divTime = CMath::ModF(tmp, 2.f);
+      if (!CMath::IsEpsilon(divTime, 0.f, 1.e-5f)) {
+        center = startTime + center;
+      } else {
+        center = endTime - center;
+      }
+    } else if (mPreInfinity == 2 || mPreInfinity == 3) {
+      center = endTime - center;
+    } else if (mPreInfinity == 1) {
+      center = (startTime - time);
+      CVector2f tangentA(0.0f, 0.0f);
+      CVector2f tangentB(0.0f, 0.0f);
+      mKnots[0].GetTangents(nullptr, &mKnots[1], tangentA, tangentB);
+      const float amplitude = mKnots[0].GetAmplitude();
+      return !CMath::IsEpsilon(tangentA.GetX(), 0.f, 1.e-5f)
+                 ? amplitude - center * tangentA.GetY() / tangentA.GetX()
+                 : amplitude;
+    }
+  } else {
+    if (mPostInfinity == 4) {
+      divTime = CMath::ModF(tmp, 2.f);
+      if (!CMath::IsEpsilon(divTime, 0.f, 1.e-5f)) {
+        center = endTime - center;
+      } else {
+        center = startTime + center;
+      }
+    } else if (mPostInfinity == 2 || mPostInfinity == 3) {
+      center = startTime + center;
+    } else if (mPostInfinity == 1) {
+      center = time - endTime;
+      CVector2f tangentA(0.0f, 0.0f);
+      CVector2f tangentB(0.0f, 0.0f);
+      mKnots[lastIdx].GetTangents(lastIdx > 0 ? &mKnots[lastIdx - 1] : nullptr, nullptr, tangentA,
+                                  tangentB);
+      const float amplitude = mKnots[lastIdx].GetAmplitude();
+      return !CMath::IsEpsilon(tangentB.GetX(), 0.f, 1.e-5f)
+                 ? amplitude + center * tangentB.GetY() / tangentB.GetX()
+                 : amplitude;
+    }
+  }
+
+  float eval = EvaluateAt(center);
+  if (pre && mPreInfinity == 3) {
+    return eval - (float(tmp) * (mKnots[lastIdx].GetAmplitude() - mKnots[0].GetAmplitude()));
+  }
+
+  if (!pre && mPostInfinity == 3) {
+    return eval + (float(tmp) * (mKnots[lastIdx].GetAmplitude() - mKnots[0].GetAmplitude()));
+  }
+  return eval;
+}
+
+bool CMayaSpline::FindKnot(float time, int& knotIndex) const {
+  knotIndex = 0;
+  int count = mKnots.size();
+  if (count != 0) {
+    int lower = 0;
+    int upper = count - 1;
+    do {
+      int index = (lower + upper) >> 1;
+      const CMayaSplineKnot& knot = mKnots[index];
+      if (time < knot.GetTime()) {
+        upper = index - 1;
+      } else if (time > knot.GetTime()) {
+        lower = index + 1;
+      } else {
+        knotIndex = index;
+        return true;
+      }
+    } while (lower <= upper);
+    knotIndex = lower;
+  }
+
+  return false;
+}
+
+float CMayaSpline::EvaluateAt(float time) const {
+  const float amplitude = EvaluateAtUnclamped(time);
+  switch (mClampMode) {
+  case 0:
+    break;
+  case 1:
+    return CMath::Clamp(mMinAmplitude, amplitude, mMaxAmplitude);
+  case 2: {
+    const float range = mMaxAmplitude - mMinAmplitude;
+
+    if (range > 0.f) {
+      if (amplitude > FLT_EPSILON + mMaxAmplitude) {
+        return amplitude - range * (static_cast< int >((amplitude - mMaxAmplitude) / range) + 1);
+      }
+      if (amplitude < mMinAmplitude - FLT_EPSILON) {
+        return amplitude +
+               range * ((abs)(static_cast< int >((amplitude - mMinAmplitude) / range)) + 1);
+      }
+      return amplitude;
+    }
+    return mMinAmplitude;
+  }
+  }
+
+  return amplitude;
+}
+
+float CMayaSpline::EvaluateAtUnclamped(float time) const {
+  if (mKnots.empty()) {
+    return 0.f;
+  }
+
+  int lastIdx = mKnots.size() - 1;
+  if (time < mKnots[0].GetTime()) {
+    if (mPreInfinity == 0) {
+      return mKnots[0].GetAmplitude();
+    }
+    return EvaluateInfinities(time, true);
+  }
+
+  if (time > mKnots[lastIdx].GetTime()) {
+    if (mPostInfinity == 0) {
+      return mKnots[lastIdx].GetAmplitude();
+    }
+    return EvaluateInfinities(time, false);
+  }
+
+  int nextKnotIndex = -1;
+  bool segmentKnown = false;
+  const int& cachedKnotIndex = mCache.mKnotIndex;
+  if (cachedKnotIndex != -1) {
+    // The target compares against the last knot here, not the cached one.
+    if (cachedKnotIndex < lastIdx && time > mKnots[lastIdx].GetTime()) {
+      int next = cachedKnotIndex + 1;
+      float nextTime = mKnots[next].GetTime();
+      if (time == nextTime) {
+        mCache.mKnotIndex = lastIdx;
+        return mKnots[mCache.mKnotIndex].GetAmplitude();
+      }
+      if (time < nextTime) {
+        nextKnotIndex = next;
+        segmentKnown = true;
+      }
+    } else if (cachedKnotIndex > 0 && time < mKnots[cachedKnotIndex].GetTime()) {
+      int previousKnotIndex = cachedKnotIndex - 1;
+      if (time > mKnots[previousKnotIndex].GetTime()) {
+        nextKnotIndex = cachedKnotIndex;
+        segmentKnown = true;
+      }
+      if (time == mKnots[previousKnotIndex].GetTime()) {
+        mCache.mKnotIndex = previousKnotIndex;
+        return mKnots[mCache.mKnotIndex].GetAmplitude();
+      }
+    }
+  }
+
+  if (!segmentKnown && FindKnot(time, nextKnotIndex)) {
+    if (nextKnotIndex == 0) {
+      mCache.mKnotIndex = nextKnotIndex;
+      return mKnots[nextKnotIndex].GetAmplitude();
+    }
+    if (nextKnotIndex == mKnots.size()) {
+      mCache.mKnotIndex = 0;
+      return mKnots[lastIdx].GetAmplitude();
+    }
+  }
+
+  const int segment = nextKnotIndex - 1;
+  if (mCache.mSegmentIndex != segment) {
+    mCache.mKnotIndex = segment;
+    mCache.mSegmentIndex = segment;
+    if (mKnots[mCache.mKnotIndex].GetTangentModeB() == 3) {
+      mCache.mStepSegment = true;
+    } else {
+      mCache.mStepSegment = false;
+      rstl::reserved_vector< CVector2f, 4 > points;
+      FindControlPoints(mCache.mKnotIndex, points);
+      CalculateHermiteCoefficients(points, mCache.mHermiteCoefs);
+      mCache.mMinTime = points[0].GetX();
+    }
+  }
+
+  if (mCache.mStepSegment) {
+    return mKnots[mCache.mKnotIndex].GetAmplitude();
+  }
+  return EvaluateHermite(time);
+}
+
+CMayaSpline CMayaSpline::CreateFor(float timeA, float amplitudeA, float timeB, float amplitudeB) {
+  rstl::vector< CMayaSplineKnot > knots;
+  knots.reserve(2);
+  knots.push_back_unsafe(CMayaSplineKnot(timeA, amplitudeA, 2, 2, CAbsAngle::FromRadians(0.f), CAbsAngle::FromRadians(0.f)));
+  knots.push_back_unsafe(CMayaSplineKnot(timeB, amplitudeB, 2, 2, CAbsAngle::FromRadians(0.f), CAbsAngle::FromRadians(0.f)));
+  return CMayaSpline(knots, 0, 0, 0, -FLT_MAX, FLT_MAX);
+}
+
+const rstl::vector< CMayaSplineKnot >& CMayaSpline::GetKnots() const { return mKnots; }
+
+float CMayaSpline::GetMaxTime() const {
+  int count = mKnots.size();
+  if (count == 0) {
+    return 0.0f;
+  }
+  return mKnots[count - 1].GetTime();
+}
+
+float CMayaSpline::GetDuration() const {
+  if (mKnots.empty()) {
+    return 0.0f;
+  }
+  return GetMaxTime() - mKnots[0].GetTime();
+}
+
+size_t CMayaSpline::GetKnotCount() const { return mKnots.size(); }
+
+void CMayaSpline::FindControlPoints(int knotIndex,
+                                    rstl::reserved_vector< CVector2f, 4 >& controlPoints) const {
+  const CMayaSplineKnot* knot = &mKnots[knotIndex];
+  controlPoints.push_back(CVector2f(knot->GetTime(), knot->GetAmplitude()));
+
+  CVector2f tangentA(0.f, 0.f);
+  CVector2f tangentB(0.f, 0.f);
+  const CMayaSplineKnot* next = knotIndex + 1 < mKnots.size() ? &mKnots[knotIndex + 1] : nullptr;
+  const CMayaSplineKnot* prev = knotIndex - 1 >= 0 ? &mKnots[knotIndex - 1] : nullptr;
+  knot->GetTangents(prev, next, tangentA, tangentB);
+  controlPoints.push_back(controlPoints[0] + tangentB * (1.f / 3.f));
+
+  knot = &mKnots[knotIndex + 1];
+  CVector2f nextTangentA(0.f, 0.f);
+  CVector2f nextTangentB(0.f, 0.f);
+  next = knotIndex + 2 < mKnots.size() ? &mKnots[knotIndex + 2] : nullptr;
+  prev = knotIndex >= 0 ? &mKnots[knotIndex] : nullptr;
+  knot->GetTangents(prev, next, nextTangentA, nextTangentB);
+  CVector2f knotPoint(knot->GetTime(), knot->GetAmplitude());
+  controlPoints.push_back(knotPoint - nextTangentA * (1.f / 3.f));
+  controlPoints.push_back(knotPoint);
+}
+
+void CMayaSpline::CalculateHermiteCoefficients(
+    const rstl::reserved_vector< CVector2f, 4 >& controlPoints, float* coefs) const {
+  const CVector2f span = controlPoints[3] - controlPoints[0];
+  float slopeA = 5729578.f;
+  const CVector2f tangentA = controlPoints[1] - controlPoints[0];
+  if (tangentA[0] != 0.f) {
+    slopeA = tangentA[1] / tangentA[0];
+  }
+  float slopeB = 5729578.f;
+  const CVector2f tangentB = controlPoints[3] - controlPoints[2];
+  if (tangentB[0] != 0.f) {
+    slopeB = tangentB[1] / tangentB[0];
+  }
+  const float time = span[0];
+  const float amplitude = span[1];
+  const float invTimeSq = 1.f / (time * time);
+  const float amplitudeA = slopeA * time;
+  const float amplitudeB = slopeB * time;
+  coefs[0] = invTimeSq * ((amplitudeA + amplitudeB - amplitude) - amplitude) / time;
+  coefs[1] =
+      invTimeSq * (((amplitude + amplitude + amplitude - amplitudeA) - amplitudeA) - amplitudeB);
+  coefs[2] = slopeA;
+  coefs[3] = controlPoints[0].GetY();
+}
+
+void CMayaSpline::FindSegmentIntersections(float amplitude, int knotIndex,
+                                           rstl::reserved_vector< float, 3 >& intersections) const {
+  if (mKnots[knotIndex].GetTangentModeB() == 3) {
+    if (CMath::IsEpsilon(mKnots[knotIndex].GetAmplitude(), amplitude, 0.002f)) {
+      intersections.push_back(mKnots[knotIndex].GetTime());
+      intersections.push_back(mKnots[knotIndex + 1].GetTime());
+    }
+    return;
+  }
+
+  rstl::reserved_vector< CVector2f, 4 > points;
+  FindControlPoints(knotIndex, points);
+  float coefs[4];
+  CalculateHermiteCoefficients(points, coefs);
+  coefs[3] -= amplitude;
+  double roots[4];
+  int count = CMath::SolveCubicDouble(coefs[3], coefs[2], coefs[1], coefs[0], FLT_EPSILON, roots);
+  const float start = mKnots[knotIndex].GetTime();
+  const float end = mKnots[knotIndex + 1].GetTime();
+  if (count < 0 && CMath::IsEpsilon(mKnots[knotIndex].GetAmplitude(), amplitude, 0.002f)) {
+    count = 2;
+    roots[0] = 0.0;
+    roots[1] = end - start;
+  }
+  if (count > 0 && intersections.size() != 3) {
+    for (int i = 0; i < count; ++i) {
+      float time = start + float(roots[i]);
+      if (CMath::IsEpsilon(time, start, 0.002f)) {
+        time = start;
+      }
+      if (CMath::IsEpsilon(time, end, 0.002f)) {
+        time = end;
+      }
+      if (time >= start && time <= end) {
+        intersections.push_back(time);
+      }
+    }
+  }
+  rstl::sort(intersections.begin(), intersections.end());
+}
+
+void CMayaSpline::FindIntersections(float amplitude,
+                                    rstl::reserved_vector< float, 8 >& intersections) const {
+  if (mKnots.size() < 2) {
+    return;
+  }
+  rstl::reserved_vector< float, 3 > segmentIntersections;
+  for (int i = 0; i < mKnots.size() - 1; ++i) {
+    segmentIntersections.clear();
+    FindSegmentIntersections(amplitude, i, segmentIntersections);
+    if (!segmentIntersections.empty()) {
+      for (int j = 0; j < segmentIntersections.size(); ++j) {
+        if (intersections.size() != 8) {
+          intersections.push_back(segmentIntersections[j]);
+        }
+      }
+    }
+  }
+
+  float* last = intersections.begin();
+  for (float* next = intersections.begin() + 1; next <= intersections.end() - 1; ++next) {
+    if (!CMath::IsEpsilon(*next, *last, 0.002f)) {
+      *++last = *next;
+    }
+  }
+  const int count = last - intersections.begin() + 1;
+  intersections.resize(count, 0.f);
+}
+
+rstl::reserved_vector< float, 8 >
+CMayaSpline::FilterLeftIntersections(const rstl::reserved_vector< float, 8 >& intersections) const {
+  rstl::reserved_vector< float, 8 > result;
+  for (int i = 0; i <= intersections.size() - 1; ++i) {
+    const float time = intersections[i];
+    for (int j = 0; j < mKnots.size() - 1; ++j) {
+      bool atEndpoint = false;
+      if (CMath::IsEpsilon(time, mKnots[j].GetTime(), 0.002f) ||
+          CMath::IsEpsilon(time, mKnots[j + 1].GetTime(), 0.002f)) {
+        atEndpoint = true;
+      }
+      if (atEndpoint || (time >= mKnots[j].GetTime() && time <= mKnots[j + 1].GetTime())) {
+        CVector2f tangentA = CVector2f::Zero();
+        CVector2f tangentB = CVector2f::Zero();
+        const CMayaSplineKnot* next = &mKnots[j + 1];
+        mKnots[j].GetTangents(nullptr, next, tangentA, tangentB);
+        if (CMath::IsEpsilon(mKnots[j].GetAmplitude(), 0.f, 1.e-5f) && tangentB.GetY() < 0.f) {
+          tangentB.SetY(0.f);
+        }
+        if (CMath::IsEpsilon(mKnots[j].GetAmplitude(), 1.f, 1.e-5f) && tangentB.GetY() > 0.f) {
+          tangentB.SetY(0.f);
+        }
+        CVector2f nextTangentA = CVector2f::Zero();
+        CVector2f nextTangentB = CVector2f::Zero();
+        const CMayaSplineKnot* prev = &mKnots[j];
+        mKnots[j + 1].GetTangents(prev, nullptr, nextTangentA, nextTangentB);
+        if (CMath::IsEpsilon(mKnots[j + 1].GetAmplitude(), 0.f, 1.e-5f) &&
+            nextTangentA.GetY() > 0.f) {
+          nextTangentA.SetY(0.f);
+        }
+        if (CMath::IsEpsilon(mKnots[j + 1].GetAmplitude(), 1.f, 1.e-5f) &&
+            nextTangentA.GetY() < 0.f) {
+          nextTangentA.SetY(0.f);
+        }
+        if (mKnots[j].GetTangentModeB() == 3 ||
+            (CMath::IsEpsilon(mKnots[j].GetAmplitude(), mKnots[j + 1].GetAmplitude(), 1.e-5f) &&
+             CMath::IsEpsilon(tangentB.GetY(), 0.f, 1.e-5f) &&
+             CMath::IsEpsilon(nextTangentA.GetY(), 0.f, 1.e-5f))) {
+          if (!CMath::IsEpsilon(time, mKnots[j].GetTime(), 0.002f)) {
+            break;
+          }
+          result.push_back(time);
+          if (result.size() == 8) {
+            break;
+          }
+        } else {
+          result.push_back(time);
+          break;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+rstl::reserved_vector< float, 8 > CMayaSpline::FilterRightIntersections(
+    const rstl::reserved_vector< float, 8 >& intersections) const {
+  rstl::reserved_vector< float, 8 > result;
+  for (int i = 0; i <= intersections.size() - 1; ++i) {
+    const float time = intersections[i];
+    for (int j = mKnots.size() - 2; j >= 0; --j) {
+      bool atEndpoint = false;
+      if (CMath::IsEpsilon(time, mKnots[j].GetTime(), 0.002f) ||
+          CMath::IsEpsilon(time, mKnots[j + 1].GetTime(), 0.002f)) {
+        atEndpoint = true;
+      }
+      if (atEndpoint || (time >= mKnots[j].GetTime() && time <= mKnots[j + 1].GetTime())) {
+        if (IsSegmentConstant(j)) {
+          if (!CMath::IsEpsilon(time, mKnots[j + 1].GetTime(), 0.002f)) {
+            break;
+          }
+          result.push_back(time);
+        } else {
+          result.push_back(time);
+          break;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+bool CMayaSpline::IsSegmentConstant(int knotIndex) const {
+  if (knotIndex > mKnots.size() - 2) {
+    return false;
+  }
+  CVector2f tangentA = CVector2f::Zero();
+  CVector2f tangentB = CVector2f::Zero();
+  const CMayaSplineKnot* next = &mKnots[knotIndex + 1];
+  mKnots[knotIndex].GetTangents(nullptr, next, tangentA, tangentB);
+  if (CMath::IsEpsilon(mKnots[knotIndex].GetAmplitude(), 0.f, 1.e-5f) && tangentB.GetY() < 0.f) {
+    tangentB.SetY(0.f);
+  }
+  if (CMath::IsEpsilon(mKnots[knotIndex].GetAmplitude(), 1.f, 1.e-5f) && tangentB.GetY() > 0.f) {
+    tangentB.SetY(0.f);
+  }
+  CVector2f nextTangentA = CVector2f::Zero();
+  CVector2f nextTangentB = CVector2f::Zero();
+  const CMayaSplineKnot* prev = &mKnots[knotIndex];
+  mKnots[knotIndex + 1].GetTangents(prev, nullptr, nextTangentA, nextTangentB);
+  if (CMath::IsEpsilon(mKnots[knotIndex + 1].GetAmplitude(), 0.f, 1.e-5f) &&
+      nextTangentA.GetY() > 0.f) {
+    nextTangentA.SetY(0.f);
+  }
+  if (CMath::IsEpsilon(mKnots[knotIndex + 1].GetAmplitude(), 1.f, 1.e-5f) &&
+      nextTangentA.GetY() < 0.f) {
+    nextTangentA.SetY(0.f);
+  }
+  if (mKnots[knotIndex].GetTangentModeB() == 3 ||
+      (CMath::IsEpsilon(mKnots[knotIndex].GetAmplitude(), mKnots[knotIndex + 1].GetAmplitude(),
+                        1.e-5f) &&
+       CMath::IsEpsilon(tangentB.GetY(), 0.f, 1.e-5f) &&
+       CMath::IsEpsilon(nextTangentA.GetY(), 0.f, 1.e-5f))) {
+    return true;
+  }
+  return false;
+}
+
+void CMayaSpline::FindSegmentExtrema(
+    int knotIndex, rstl::reserved_vector< rstl::pair< float, float >, 2 >& extrema) const {
+  typedef rstl::pair< float, float > Point;
+  if (mKnots[knotIndex].GetTangentModeB() == 3) {
+    extrema.push_back(Point(mKnots[knotIndex].GetTime(), mKnots[knotIndex].GetAmplitude()));
+    extrema.push_back(Point(mKnots[knotIndex + 1].GetTime(), mKnots[knotIndex].GetAmplitude()));
+  } else if (mKnots[knotIndex].GetTangentModeB() == 0) {
+    extrema.push_back(Point(mKnots[knotIndex].GetTime(), mKnots[knotIndex].GetAmplitude()));
+    const CMayaSplineKnot& next = mKnots[knotIndex + 1];
+    extrema.push_back(Point(next.GetTime(), next.GetAmplitude()));
+  } else {
+    rstl::reserved_vector< CVector2f, 4 > points;
+    FindControlPoints(knotIndex, points);
+    float coefs[4];
+    CalculateHermiteCoefficients(points, coefs);
+    float roots[4];
+    uint count = CMath::SolveQuadratic(3.f * coefs[0], 2.f * coefs[1], coefs[2], roots);
+    const float start = mKnots[knotIndex].GetTime();
+    const float end = mKnots[knotIndex + 1].GetTime();
+    for (uint i = 0; i < count; ++i) {
+      float time = roots[i];
+      time += start;
+      if (CMath::IsEpsilon(time, start, 0.002f)) {
+        time = start;
+      }
+      if (CMath::IsEpsilon(time, end, 0.002f)) {
+        time = end;
+      }
+      if (time >= start && time <= end) {
+        extrema.push_back(Point(time, EvaluateAt(time)));
+      }
+    }
+    rstl::sort(extrema.begin(), extrema.end());
+  }
+}
+
+float CMayaSpline::FindFirstIntersection(float amplitude) const {
+  if (mKnots.size() < 2) {
+    return -1.f;
+  }
+  rstl::reserved_vector< float, 3 > intersections;
+  for (int i = 0; i < mKnots.size() - 1; ++i) {
+    intersections.clear();
+    FindSegmentIntersections(amplitude, i, intersections);
+    if (!intersections.empty()) {
+      return intersections.front();
+    }
+  }
+  return -1.f;
+}
+
+float CMayaSpline::FindLastIntersection(float amplitude) const {
+  if (mKnots.size() < 2) {
+    return -1.f;
+  }
+  rstl::reserved_vector< float, 3 > intersections;
+  for (int i = mKnots.size() - 2; i >= 0; --i) {
+    intersections.clear();
+    FindSegmentIntersections(amplitude, i, intersections);
+    if (!intersections.empty()) {
+      return intersections.back();
+    }
+  }
+  return -1.f;
+}
+
+rstl::pair< float, float > CMayaSpline::FindMaximumAmplitude() const {
+  rstl::pair< float, float > result(0.f, 0.f);
+  if (mKnots.size() < 2) {
+    return result;
+  }
+  rstl::reserved_vector< rstl::pair< float, float >, 2 > extrema;
+  for (int i = 0; i < mKnots.size() - 1; ++i) {
+    extrema.clear();
+    FindSegmentExtrema(i, extrema);
+    if (!extrema.empty()) {
+      for (int j = 0; j < extrema.size(); ++j) {
+        float amplitude = CMath::AbsF(extrema[j].second);
+        if (result.second < amplitude) {
+          result.first = extrema[j].first;
+          result.second = amplitude;
+        }
+      }
+    }
+  }
+  return result;
+}
+#else
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3IJ
 
@@ -749,7 +1580,7 @@ void CMayaSpline::operator=(const CMayaSpline& other) {
 
 CMayaSpline::CMayaSpline() : mPreInfinity(0), mPostInfinity(0), mKnots(), mClampMode(0), mCache() {}
 
-static rstl::less< CMayaSplineKnot > sKnotLess;
+static rstl::less< CMayaSplineKnot > sKnotLess; // Guessed name
 
 CMayaSpline::CMayaSpline(const rstl::vector< CMayaSplineKnot >& knots, int clampMode,
                          int preInfinity, int postInfinity, float minAmplitudeTime,
@@ -1355,4 +2186,4 @@ rstl::pair< float, float > CMayaSpline::FindMaximumAmplitude() const {
   return result;
 }
 #endif
-
+#endif

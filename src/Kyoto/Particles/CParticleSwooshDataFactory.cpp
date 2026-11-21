@@ -1,5 +1,7 @@
 #include "rstl/RstlVersions.h"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Particles/CParticleSwooshDataFactory.hpp"
+#include "Kyoto/Streams/CMemoryInStream.hpp"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/CVParamTransfer.hpp"
@@ -9,21 +11,33 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 
+#if !RSTL_CORRUPTION
 RSTL_PRIME1_CONST CFactoryFnReturn
 FParticleSwooshDataFactory(const SObjectTag& tag, CInputStream& in,
                            const CVParamTransfer& transfer) {
+#endif
 // TODO: verify that this Prime/Echoes difference is real
+#if !RSTL_CORRUPTION
 #if RSTL_PRIME1
   rstl::rc_ptr< IVParamObj > obj = transfer.mObj;
 #else
   rstl::rc_ptr< IVParamObj > obj = transfer.GetObj();
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FParticleSwooshDataFactory(const SObjectTag& tag,
+                                            const rstl::auto_ptr< uchar >& buffer, int size,
+                                            const CVParamTransfer& transfer) {
+  CMemoryInStream in(buffer.get(), size);
+  rstl::rc_ptr< IVParamObj > obj = transfer.GetObj();
+#endif
   CSimplePool* pool = static_cast< TObjOwnerParam< CSimplePool* >* >(obj.GetPtr())->GetData();
   CSwooshDescription* desc = CParticleSwooshDataFactory::GetGeneratorDesc(in, pool);
   return desc;
 }
 
+#if !RSTL_CORRUPTION
 // Force function ordering
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -34,9 +48,14 @@ static void hack(TObjOwnerDerivedFromIObj< CSwooshDescription >* obj) {
 static void hack() { TObjOwnerDerivedFromIObj< CSwooshDescription >::GetNewDerivedObject(nullptr); }
 #endif
 
+#endif
 CSwooshDescription* CParticleSwooshDataFactory::GetGeneratorDesc(CInputStream& in,
                                                                  CSimplePool* pool) {
+#if RSTL_CORRUPTION
+  rstl::vector< uint > ids;
+#else
   rstl::vector< CAssetId > ids;
+#endif
   return CreateGeneratorDescription(in, pool);
 }
 
@@ -46,8 +65,7 @@ CSwooshDescription* CParticleSwooshDataFactory::CreateGeneratorDescription(CInpu
   if (classId != 'SWSH') {
     return nullptr;
   }
-  CSwooshDescription* desc = rs_new CSwooshDescription();
-
+  CSwooshDescription* desc = rs_new_line(86) CSwooshDescription();
   CreateWPSM(desc, in, pool);
 
   return desc;
@@ -91,6 +109,17 @@ bool CParticleSwooshDataFactory::CreateWPSM(CSwooshDescription* desc, CInputStre
       break;
     case 'SROT':
       desc->mSROT = CParticleDataFactory::GetBool(in);
+#if RSTL_CORRUPTION
+      break;
+    case 'XROT':
+      desc->mXROT = CParticleDataFactory::GetRealElement(in);
+      break;
+    case 'YROT':
+      desc->mYROT = CParticleDataFactory::GetRealElement(in);
+      break;
+    case 'ZROT':
+      desc->mZROT = CParticleDataFactory::GetRealElement(in);
+#endif
       break;
     case 'IROT':
       desc->mIROT = CParticleDataFactory::GetRealElement(in);
@@ -166,4 +195,3 @@ bool CParticleSwooshDataFactory::CreateWPSM(CSwooshDescription* desc, CInputStre
 
   return true;
 }
-

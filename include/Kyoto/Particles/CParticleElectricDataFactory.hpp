@@ -20,8 +20,13 @@ private:
   static bool CreateELSM(CElectricDescription* desc, CInputStream& in, CSimplePool* pool);
 };
 
+#if RSTL_CORRUPTION
+CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag,
+                                              const rstl::auto_ptr< uchar >& buffer, int size,
+#else
 RSTL_PRIME1_CONST CFactoryFnReturn FParticleElectricDataFactory(const SObjectTag& tag, CInputStream& in,
 
+#endif
                                               const CVParamTransfer& transfer);
 
 #endif // _CPARTICLEELECTRICDATAFACTORY

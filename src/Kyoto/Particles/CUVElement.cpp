@@ -2,6 +2,7 @@
 #include "Kyoto/Particles/CUVElement.hpp"
 
 #include "Kyoto/Graphics/CTexture.hpp"
+#include "Kyoto/Math/CMath.hpp"
 #include "Kyoto/Basics/CCast.hpp"
 
 #include "rstl/math.hpp"
@@ -55,6 +56,13 @@ CUVEAnimTexture::CUVEAnimTexture(TToken< CTexture > tex, CIntElement* tileW, CIn
   for (y = yTiles - 1; y >= 0; --y) {
     for (x = 0; x < xTiles; ++x) {
       SUVElementSet uvs;
+#if RSTL_CORRUPTION
+      uvs.xMin = CCast::LtoF(mStrideW * x) / CCast::LtoF(width);
+      uvs.yMin = CCast::LtoF(mStrideH * y) / CCast::LtoF(height);
+      uvs.xMax = CCast::LtoF((mStrideW * x) + mTileW) / CCast::LtoF(width);
+      uvs.yMax = CCast::LtoF((mStrideH * y) + mTileH) / CCast::LtoF(height);
+      mUvElems.push_back_unsafe(uvs);
+#else
       uvs.xMin = CCast::ToReal32(mStrideW * x) / CCast::ToReal32(width);
       uvs.yMin = CCast::ToReal32(mStrideH * y) / CCast::ToReal32(height);
       uvs.xMax = CCast::ToReal32(mStrideW * x + mTileW) / CCast::ToReal32(width);
@@ -66,6 +74,7 @@ CUVEAnimTexture::CUVEAnimTexture(TToken< CTexture > tex, CIntElement* tileW, CIn
       mUvElems.push_back_unsafe(uvs);
 #endif
 
+#endif
     }
   }
 }
@@ -116,4 +125,54 @@ void CUVEAnimTexture::GetValueUV(int frame, SUVElementSet& valOut) const {
 }
 
 TLockedToken< CTexture > CUVEAnimTexture::GetValueTexture(int frame) const { return mTex; }
+#if RSTL_CORRUPTION
 
+CUVETEXP::CUVETEXP(TToken< CTexture > tex, CIntElement* tileW, CIntElement* tileH,
+                   CRealElement* tileSelection)
+: mTex(tex), mTileSelection(tileSelection) {
+  int result = 0;
+  tileW->GetValue(0, result);
+  mTileW = rstl::max_val(1, result);
+  delete tileW;
+
+  tileH->GetValue(0, result);
+  mTileH = rstl::max_val(1, result);
+  delete tileH;
+
+  const int width = mTex->GetWidth();
+  const int height = mTex->GetHeight();
+  const int xTiles = rstl::max_val(1, width / mTileW);
+  const int yTiles = rstl::max_val(1, height / mTileH);
+
+  mTiles = xTiles * yTiles;
+  mUvElems.reserve(xTiles * yTiles);
+
+  int x;
+  int y;
+  for (y = yTiles - 1; y >= 0; --y) {
+    for (x = 0; x < xTiles; ++x) {
+      SUVElementSet uvs;
+      uvs.xMin = CCast::LtoF(mTileW * x) / CCast::LtoF(width);
+      uvs.yMin = CCast::LtoF(mTileH * y) / CCast::LtoF(height);
+      uvs.xMax = CCast::LtoF(mTileW * x + mTileW) / CCast::LtoF(width);
+      uvs.yMax = CCast::LtoF(mTileH * y + mTileH) / CCast::LtoF(height);
+      mUvElems.push_back_unsafe(uvs);
+    }
+  }
+}
+
+CUVETEXP::~CUVETEXP() { delete mTileSelection; }
+
+void CUVETEXP::GetValueUV(int frame, SUVElementSet& valOut) const {
+  float selection = 0.f;
+  mTileSelection->GetValue(frame, selection);
+  const int tile = CMath::Clamp(0, static_cast< int >(selection * mTiles), mTiles - 1);
+  valOut = mUvElems[tile];
+}
+
+TLockedToken< CTexture > CUVETEXP::GetValueTexture(int frame) const { return mTex; }
+
+bool CUVETEXP::HasConstantUV() const { return false; }
+
+bool CUVETEXP::HasConstantTexture() const { return true; }
+#endif

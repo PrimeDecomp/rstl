@@ -1,10 +1,9 @@
 #ifndef _CTEXTEXECUTEBUFFER
 #define _CTEXTEXECUTEBUFFER
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Text/TextCommon.hpp"
-
 #include "rstl/list.hpp"
 #include "rstl/rc_ptr.hpp"
 #include "rstl/string.hpp"
@@ -12,6 +11,7 @@
 #include "Kyoto/Text/CSaveableState.hpp"
 #include "Kyoto/Text/CInstruction.hpp"
 
+class CInstruction;
 class CBlockInstruction;
 class CLineInstruction;
 class CFontImageDef;
@@ -39,18 +39,27 @@ public:
   void AddRemoveColorOverride(int idx);
   void AddLineSpacing(float spacing);
   void AddLineExtraSpace(int spacing);
-  void AddCharacterExtraSpace(int spacing);
+  void AddCharacterExtraSpace(int spacing); // Guessed name
   void AddJustification(EJustification justification);
   void AddVerticalJustification(EVerticalJustification justification);
+#if RSTL_CORRUPTION
+  void AddWordWrapping(bool wrap) { mState.SetWordWrapping(wrap); }
+#else
   void AddWordWrapping(RSTL_PRIME1_CONST bool wrap) { mState.SetWordWrapping(wrap); }
+#endif
   void AddPushState();
   void AddPopState();
   void AddString(const wchar_t* str, int len);
   void AddString(const rstl::wstring& str) { AddString(str.data(), str.size()); }
 
+#if RSTL_CORRUPTION
+  void BeginBlock(int x, int y, int width, int height, bool imageBaseline, ETextDirection direction,
+                  EJustification justification, EVerticalJustification verticalJustification);
+#else
   void BeginBlock(int x, int y, int width, int height, const bool imageBaseline, ETextDirection dir,
                   EJustification just, EVerticalJustification vjust);
 
+#endif
   void EndBlock();
 
   void Clear();

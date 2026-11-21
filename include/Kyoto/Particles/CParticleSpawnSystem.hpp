@@ -1,5 +1,6 @@
 #ifndef _CPARTICLESPAWNSYSTEM
 #define _CPARTICLESPAWNSYSTEM
+#include "rstl/RstlVersions.h"
 
 #include "rstl/static_assert.hpp"
 #include "rstl/types.h"
@@ -13,12 +14,20 @@ class CSpawnSystemDescription;
 // Constructor signature from the Echoes Wii SEL export; runtime layout is target-derived.
 class CParticleSpawnSystem : public CParticleGen {
 public:
+#if RSTL_CORRUPTION
+  static FourCC ResType() { return 'SPSC'; }
+
+#endif
   CParticleSpawnSystem(TToken< CSpawnSystemDescription > desc,
                        CElementGen::EOptionalSystemFlags flags, bool modelsUseLights);
   // CParticleGen
   ~CParticleSpawnSystem() override;
 
+#if RSTL_CORRUPTION
+  bool Update(double dt) override;
+#else
   const bool Update(double dt) override;
+#endif
   void Render() override;
   void SetOrientation(const CTransform4f& orientation) override;
   void SetTranslation(const CVector3f& translation) override;

@@ -1,17 +1,19 @@
 #ifndef _CSPAWNSYSTEMKEYFRAMEDATA
 #define _CSPAWNSYSTEMKEYFRAMEDATA
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 #include "rstl/types.h"
 
+#include "Kyoto/CAssetId.hpp"
 #include "Kyoto/CToken.hpp"
 
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
 #include "rstl/vector.hpp"
 
-class CInputStream;
 
+
+class CInputStream;
 class CSimplePool;
 class CSpawnSystemKeyframeData {
 public:
@@ -31,11 +33,19 @@ public:
 #endif
 
   private:
+#if RSTL_CORRUPTION
+    CAssetId mId;
+#else
     uint mId;
+#endif
     uint mType;
+#if !RSTL_CORRUPTION
     uint x8_;
+#endif
     uint xc_;
-
+#if RSTL_CORRUPTION
+    uint x10_;
+#endif
     rstl::optional_object< CToken > mToken;
   };
 
@@ -55,8 +65,13 @@ private:
   int xc_;
   rstl::vector< rstl::pair< uint, rstl::vector< CSpawnSystemKeyframeInfo > > > mFrames;
 };
+#if RSTL_CORRUPTION
+CHECK_SIZEOF(CSpawnSystemKeyframeData, 0x20)
+NESTED_CHECK_SIZEOF(CSpawnSystemKeyframeData, CSpawnSystemKeyframeInfo, 0x20)
+#else
 #if !RSTL_PRIME1
 CHECK_SIZEOF(CSpawnSystemKeyframeData, 0x20)
+#endif
 #endif
 
 #endif // _CSPAWNSYSTEMKEYFRAMEDATA

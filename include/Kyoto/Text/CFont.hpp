@@ -1,7 +1,7 @@
 #ifndef _CFONT
 #define _CFONT
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Graphics/CColor.hpp"
 
@@ -11,6 +11,11 @@ class CTexture;
 
 class CFont {
 public:
+#if RSTL_CORRUPTION
+  explicit CFont(float scale);
+  CFont(const CFont& other);
+  ~CFont();
+#else
   CFont(float scale);
   ~CFont();
 #if RSTL_PRIME1
@@ -20,12 +25,25 @@ public:
 #endif
 #endif
 
+#endif
   int CharWidth(char) const;
+#if RSTL_CORRUPTION
+  int CharsWidth(const char* text, unsigned int length) const;
+  int StringWidth(const char* text) const;
+#endif
   int GetFontSize() const { return mFontSize; }
 
   void DrawString(const char* str, long x, long y, const CColor& col) const;
 
 private:
+#if RSTL_CORRUPTION
+  static void BindSystemFont();
+  static void LinearToTile8(unsigned char* destination, unsigned char* source);
+  static void TileCopy8(unsigned char* destination, unsigned char* source);
+
+  static unsigned char sSystemFont[65536];
+  static bool sFontInitialized;
+#else
 #if RSTL_PRIME1
 #ifdef ENABLE_DEBUG_TOOLS
   static void TileCopy8(uchar* dst, const uchar* src);
@@ -33,6 +51,7 @@ private:
   static const uchar sSystemFont[65536];
   static int sNumInstances;
   static CTexture* mpTexture;
+#endif
 #endif
 #endif
 

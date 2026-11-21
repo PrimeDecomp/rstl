@@ -1,7 +1,7 @@
 #ifndef _CSWOOSHDESCRIPTION
 #define _CSWOOSHDESCRIPTION
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "rstl/types.h"
 
@@ -23,6 +23,11 @@ public:
   CIntElement* mLENG;
   CColorElement* mCOLR;
   CIntElement* mSIDE;
+#if RSTL_CORRUPTION
+  CRealElement* mZROT;
+  CRealElement* mYROT;
+  CRealElement* mXROT;
+#endif
   CRealElement* mIROT;
   CRealElement* mROTM;
   CVectorElement* mPOFS;
@@ -54,7 +59,7 @@ public:
 
 };
 #if !RSTL_PRIME1
-CHECK_SIZEOF(CSwooshDescription, 0x4c)
+CHECK_SIZEOF(CSwooshDescription, RSTL_CORRUPTION ? 0x58 : 0x4c)
 #endif
 
 #endif // _CSWOOSHDESCRIPTION

@@ -1,7 +1,7 @@
 #ifndef _CFONTIMAGEDEF
 #define _CFONTIMAGEDEF
-#include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 
 #include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/Math/CVector2f.hpp"

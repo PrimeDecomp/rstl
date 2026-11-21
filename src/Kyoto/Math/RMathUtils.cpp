@@ -2,11 +2,48 @@
 #if !RSTL_PRIME1
 #define MSL_NO_INLINE_SQRT
 #endif
-
 #include "Kyoto/Math/CMath.hpp"
 
 #include "Kyoto/Math/CVector3f.hpp"
 
+#if RSTL_CORRUPTION
+#include "Kyoto/Alloc/Assert.hpp"
+
+
+
+static const double skSqrtThree = CMath::SqrtD(3.0);
+
+// Guessed names for the Perlin-noise helpers and their permutation table.
+// Ken Perlin's reference permutation, stored twice so lookups never need to wrap.
+static uchar skNoisePermutation[512] = {
+    151, 160, 137, 91,  90,  15,  131, 13,  201, 95,  96,  53,  194, 233, 7,   225, 140, 36,  103,
+    30,  69,  142, 8,   99,  37,  240, 21,  10,  23,  190, 6,   148, 247, 120, 234, 75,  0,   26,
+    197, 62,  94,  252, 219, 203, 117, 35,  11,  32,  57,  177, 33,  88,  237, 149, 56,  87,  174,
+    20,  125, 136, 171, 168, 68,  175, 74,  165, 71,  134, 139, 48,  27,  166, 77,  146, 158, 231,
+    83,  111, 229, 122, 60,  211, 133, 230, 220, 105, 92,  41,  55,  46,  245, 40,  244, 102, 143,
+    54,  65,  25,  63,  161, 1,   216, 80,  73,  209, 76,  132, 187, 208, 89,  18,  169, 200, 196,
+    135, 130, 116, 188, 159, 86,  164, 100, 109, 198, 173, 186, 3,   64,  52,  217, 226, 250, 124,
+    123, 5,   202, 38,  147, 118, 126, 255, 82,  85,  212, 207, 206, 59,  227, 47,  16,  58,  17,
+    182, 189, 28,  42,  223, 183, 170, 213, 119, 248, 152, 2,   44,  154, 163, 70,  221, 153, 101,
+    155, 167, 43,  172, 9,   129, 22,  39,  253, 19,  98,  108, 110, 79,  113, 224, 232, 178, 185,
+    112, 104, 218, 246, 97,  228, 251, 34,  242, 193, 238, 210, 144, 12,  191, 179, 162, 241, 81,
+    51,  145, 235, 249, 14,  239, 107, 49,  192, 214, 31,  181, 199, 106, 157, 184, 84,  204, 176,
+    115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114, 67,  29,  24,  72,  243,
+    141, 128, 195, 78,  66,  215, 61,  156, 180, 151, 160, 137, 91,  90,  15,  131, 13,  201, 95,
+    96,  53,  194, 233, 7,   225, 140, 36,  103, 30,  69,  142, 8,   99,  37,  240, 21,  10,  23,
+    190, 6,   148, 247, 120, 234, 75,  0,   26,  197, 62,  94,  252, 219, 203, 117, 35,  11,  32,
+    57,  177, 33,  88,  237, 149, 56,  87,  174, 20,  125, 136, 171, 168, 68,  175, 74,  165, 71,
+    134, 139, 48,  27,  166, 77,  146, 158, 231, 83,  111, 229, 122, 60,  211, 133, 230, 220, 105,
+    92,  41,  55,  46,  245, 40,  244, 102, 143, 54,  65,  25,  63,  161, 1,   216, 80,  73,  209,
+    76,  132, 187, 208, 89,  18,  169, 200, 196, 135, 130, 116, 188, 159, 86,  164, 100, 109, 198,
+    173, 186, 3,   64,  52,  217, 226, 250, 124, 123, 5,   202, 38,  147, 118, 126, 255, 82,  85,
+    212, 207, 206, 59,  227, 47,  16,  58,  17,  182, 189, 28,  42,  223, 183, 170, 213, 119, 248,
+    152, 2,   44,  154, 163, 70,  221, 153, 101, 155, 167, 43,  172, 9,   129, 22,  39,  253, 19,
+    98,  108, 110, 79,  113, 224, 232, 178, 185, 112, 104, 218, 246, 97,  228, 251, 34,  242, 193,
+    238, 210, 144, 12,  191, 179, 162, 241, 81,  51,  145, 235, 249, 14,  239, 107, 49,  192, 214,
+    31,  181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236,
+    205, 93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
+#else
 #if !RSTL_PRIME1
 static const double skSqrtThree = CMath::SqrtD(3.0);
 
@@ -41,7 +78,32 @@ static uchar skNoisePermutation[512] = {
     31,  181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236,
     205, 93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
 #endif
+#endif
 
+#if RSTL_CORRUPTION
+static const uint skSinX1 = 0x3f7ff347;
+static const uint skSinX2 = 0xbe2a34ae;
+static const uint skSinX3 = 0x3c047fca;
+static const uint skSinX4 = 0xb9206873;
+
+static const uint skCosX1 = 0x3f800000;
+static const uint skCosX2 = 0xbefffd62;
+static const uint skCosX3 = 0x3d2a7a18;
+static const uint skCosX4 = 0xbab2bb2b;
+static const uint skCosX5 = 0x37a93188;
+
+static const uint skArcCosX1 = 0x3fc90fdb;
+static const uint skArcCosX2 = 0xbf7f8bd1;
+static const uint skArcCosX3 = 0xbe52ce8c;
+static const uint skArcCosX4 = 0x3de9fe20;
+static const uint skArcCosX5 = 0xbe980d88;
+
+float CMath::SqrtF(const float x) { return sqrt(x); }
+
+double CMath::SqrtD(const double x) { return sqrt(x); }
+
+float CMath::InvSqrtF(float x) { return 1.f / sqrt(x); }
+#else
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
 static inline double InvSqrtEstimate(double x) {
   double estimate = __frsqrte(x);
@@ -101,6 +163,7 @@ float CMath::SlowTangentR(float x) { return tan(x); }
 
 const float CMath::FloorF(float x) { return floor(x); }
 #endif
+#endif
 
 float CMath::CeilingF(float x) {
 // TODO: verify that this Prime/Echoes difference is real
@@ -159,9 +222,18 @@ CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b
   if (t >= 1.0f)
     return c;
 
+#if RSTL_CORRUPTION
+  const float t2 = t * t;
+  const float t3 = t2 * t;
+#endif
   return (
+#if RSTL_CORRUPTION
+      a * (-0.5f * t3 + t2 - 0.5f * t) + b * (1.5f * t3 + -2.5f * t2 + 1.0f) +
+      c * (-1.5f * t3 + 2.0f * t2 + 0.5f * t) + d * (0.5f * t3 - 0.5f * t2));
+#else
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -179,9 +251,18 @@ float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float 
   if (t >= 1.0f)
     return c;
 
+#if RSTL_CORRUPTION
+  const float t2 = t * t;
+  const float t3 = t2 * t;
+#endif
   return (
+#if RSTL_CORRUPTION
+      a * (-0.5f * t3 + t2 - 0.5f * t) + b * (1.5f * t3 + -2.5f * t2 + 1.0f) +
+      c * (-1.5f * t3 + 2.0f * t2 + 0.5f * t) + d * (0.5f * t3 - 0.5f * t2));
+#else
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -195,28 +276,28 @@ CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVect
   }
 
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!rs_can_normalize(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!rs_can_normalize(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (rs_can_normalize(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!rs_can_normalize(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (rs_can_normalize(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -230,28 +311,28 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
                                                    const CVector3f& c, const CVector3f& d,
                                                    float t) {
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!rs_can_normalize(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!rs_can_normalize(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (rs_can_normalize(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!rs_can_normalize(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (rs_can_normalize(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -264,13 +345,199 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
 
 CVector3f CMath::GetBezierPoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,
                                 const CVector3f& d, float t) {
+#if RSTL_CORRUPTION
+  const float inverse = 1.f - t;
+  const float inverse2 = inverse * inverse;
+  const float inverse3 = inverse * inverse2;
+  const float t2 = t * t;
+  const float t3 = t * t2;
+  return inverse3 * a + (3.f * t * inverse2) * b + (3.f * t2 * inverse) * c + t3 * d;
+#else
   CVector3f ab = CVector3f::Lerp(a, b, t);
   CVector3f bc = CVector3f::Lerp(b, c, t);
   CVector3f cd = CVector3f::Lerp(c, d, t);
 
   return CVector3f::Lerp(CVector3f::Lerp(ab, bc, t), CVector3f::Lerp(bc, cd, t), t);
+#endif
 }
 
+#if RSTL_CORRUPTION
+CVector3f CMath::GetBezierTangent(const CVector3f& a, const CVector3f& b, const CVector3f& c,
+                                  const CVector3f& d, float t) {
+  const float t2 = t * t;
+  return (-3.f + 6.f * t - 3.f * t2) * a + (-(12.f * t - 3.f) + 9.f * t2) * b +
+         (6.f * t - 9.f * t2) * c + (3.f * t2) * d;
+}
+
+CVector3f CMath::GetBSplinePoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,
+                                 const CVector3f& d, float t) {
+  const float clamped = Clamp(0.f, t, 1.f);
+  const float t2 = clamped * clamped;
+  const float t3 = t2 * clamped;
+  return (1.f / 6.f) *
+         ((1.f + (-3.f * t + (-t3 + 3.f * t2))) * a + (4.f + (3.f * t3 + -6.f * t2)) * b +
+          (1.f + (3.f * t + (-3.f * t3 + 3.f * t2))) * c + t3 * d);
+}
+
+CVector3f CMath::GetBSplineTangent(const CVector3f& a, const CVector3f& b, const CVector3f& c,
+                                   const CVector3f& d, float t) {
+  t = Clamp(0.f, t, 1.f);
+  const float t2 = t * t;
+  return (1.f / 6.f) * ((-3.f * t2 + 6.f * t - 3.f) * a + (9.f * t2 + -12.f * t) * b +
+                        (3.f + (-9.f * t2 + 6.f * t)) * c + (3.f * t2) * d);
+}
+
+bool CMath::IsWithinTolerance(float x, float y, float epsilon) {
+  return AbsF(x - y) < epsilon;
+}
+
+static float NoiseFade(float t) { return t * t * t * (t * (6.f * t - 15.f) + 10.f); }
+
+static float NoiseLerp(float t, float a, float b) { return a + t * (b - a); }
+
+static float NoiseGradient3d(uint hash, float x, float y, float z) {
+  const int h = hash & 15;
+  float u = h < 8 ? x : y;
+  float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
+  return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
+
+static float NoiseGradient4d(uint hash, float x, float y, float z, float w) {
+  const int h = hash & 31;
+  float u = x;
+  float v = y;
+  float s = z;
+  switch (h >> 3) {
+  case 1:
+    u = w;
+    v = x;
+    s = y;
+    break;
+  case 2:
+    u = z;
+    v = w;
+    s = x;
+    break;
+  case 3:
+    u = y;
+    v = z;
+    s = w;
+    break;
+  }
+  return ((h & 1) == 0 ? -s : s) +
+         (((h & 4) == 0 ? -u : u) + ((h & 2) == 0 ? -v : v));
+}
+
+static float PerlinNoise3d(float x, float y, float z) {
+  const float floorX = floorf(x);
+  const float floorY = floorf(y);
+  const float floorZ = floorf(z);
+  const int cellX = static_cast< int >(floorX) & 255;
+  const int cellY = static_cast< int >(floorY) & 255;
+  const int cellZ = static_cast< int >(floorZ) & 255;
+  x -= floorX;
+  y -= floorY;
+  z -= floorZ;
+
+  const float u = NoiseFade(x);
+  const float v = NoiseFade(y);
+  const float w = NoiseFade(z);
+  const int a = skNoisePermutation[cellX] + cellY;
+  const int aa = skNoisePermutation[a] + cellZ;
+  const int ab = skNoisePermutation[a + 1] + cellZ;
+  const int b = skNoisePermutation[cellX + 1] + cellY;
+  const int ba = skNoisePermutation[b] + cellZ;
+  const int bb = skNoisePermutation[b + 1] + cellZ;
+
+  return NoiseLerp(
+      w,
+      NoiseLerp(v,
+                NoiseLerp(u, NoiseGradient3d(skNoisePermutation[aa], x, y, z),
+                          NoiseGradient3d(skNoisePermutation[ba], x - 1.f, y, z)),
+                NoiseLerp(u, NoiseGradient3d(skNoisePermutation[ab], x, y - 1.f, z),
+                          NoiseGradient3d(skNoisePermutation[bb], x - 1.f, y - 1.f, z))),
+      NoiseLerp(v,
+                NoiseLerp(u, NoiseGradient3d(skNoisePermutation[aa + 1], x, y, z - 1.f),
+                          NoiseGradient3d(skNoisePermutation[ba + 1], x - 1.f, y, z - 1.f)),
+                NoiseLerp(u, NoiseGradient3d(skNoisePermutation[ab + 1], x, y - 1.f, z - 1.f),
+                          NoiseGradient3d(skNoisePermutation[bb + 1], x - 1.f, y - 1.f, z - 1.f))));
+}
+
+static float PerlinNoise4d(float x, float y, float z, float w) {
+  const float floorX = floorf(x);
+  const float floorY = floorf(y);
+  const float floorZ = floorf(z);
+  const float floorW = floorf(w);
+  const int cellX = static_cast< int >(floorX) & 255;
+  const int cellY = static_cast< int >(floorY) & 255;
+  const int cellZ = static_cast< int >(floorZ) & 255;
+  const int cellW = static_cast< int >(floorW) & 255;
+  x -= floorX;
+  y -= floorY;
+  z -= floorZ;
+  w -= floorW;
+
+  const float u = NoiseFade(x);
+  const float v = NoiseFade(y);
+  const float s = NoiseFade(z);
+  const float t = NoiseFade(w);
+  const int a = skNoisePermutation[cellX] + cellY;
+  const int aa = skNoisePermutation[a] + cellZ;
+  const int ab = skNoisePermutation[a + 1] + cellZ;
+  const int b = skNoisePermutation[cellX + 1] + cellY;
+  const int ba = skNoisePermutation[b] + cellZ;
+  const int bb = skNoisePermutation[b + 1] + cellZ;
+  const int aaa = skNoisePermutation[aa] + cellW;
+  const int aab = skNoisePermutation[aa + 1] + cellW;
+  const int aba = skNoisePermutation[ab] + cellW;
+  const int abb = skNoisePermutation[ab + 1] + cellW;
+  const int baa = skNoisePermutation[ba] + cellW;
+  const int bab = skNoisePermutation[ba + 1] + cellW;
+  const int bba = skNoisePermutation[bb] + cellW;
+  const int bbb = skNoisePermutation[bb + 1] + cellW;
+
+  return NoiseLerp(
+      t,
+      NoiseLerp(
+          s,
+          NoiseLerp(v,
+                    NoiseLerp(u, NoiseGradient4d(skNoisePermutation[aaa], x, y, z, w),
+                              NoiseGradient4d(skNoisePermutation[baa], x - 1.f, y, z, w)),
+                    NoiseLerp(u, NoiseGradient4d(skNoisePermutation[aba], x, y - 1.f, z, w),
+                              NoiseGradient4d(skNoisePermutation[bba], x - 1.f, y - 1.f, z, w))),
+          NoiseLerp(
+              v,
+              NoiseLerp(u, NoiseGradient4d(skNoisePermutation[aab], x, y, z - 1.f, w),
+                        NoiseGradient4d(skNoisePermutation[bab], x - 1.f, y, z - 1.f, w)),
+              NoiseLerp(u, NoiseGradient4d(skNoisePermutation[abb], x, y - 1.f, z - 1.f, w),
+                        NoiseGradient4d(skNoisePermutation[bbb], x - 1.f, y - 1.f, z - 1.f, w)))),
+      NoiseLerp(
+          s,
+          NoiseLerp(v,
+                    NoiseLerp(u, NoiseGradient4d(skNoisePermutation[aaa + 1], x, y, z, w - 1.f),
+                              NoiseGradient4d(skNoisePermutation[baa + 1], x - 1.f, y, z, w - 1.f)),
+                    NoiseLerp(u,
+                              NoiseGradient4d(skNoisePermutation[aba + 1], x, y - 1.f, z, w - 1.f),
+                              NoiseGradient4d(skNoisePermutation[bba + 1], x - 1.f, y - 1.f, z,
+                                              w - 1.f))),
+          NoiseLerp(
+              v,
+              NoiseLerp(u, NoiseGradient4d(skNoisePermutation[aab + 1], x, y, z - 1.f, w - 1.f),
+                        NoiseGradient4d(skNoisePermutation[bab + 1], x - 1.f, y, z - 1.f, w - 1.f)),
+              NoiseLerp(u,
+                        NoiseGradient4d(skNoisePermutation[abb + 1], x, y - 1.f, z - 1.f, w - 1.f),
+                        NoiseGradient4d(skNoisePermutation[bbb + 1], x - 1.f, y - 1.f, z - 1.f,
+                                        w - 1.f)))));
+}
+
+float CMath::Noise1d(float x) { return PerlinNoise3d(x, 0.f, 0.f); }
+
+float CMath::Noise2d(float x, float y) { return PerlinNoise3d(x, y, 0.f); }
+
+float CMath::Noise3d(float x, float y, float z) { return PerlinNoise3d(x, y, z); }
+
+float CMath::Noise4d(float x, float y, float z, float w) { return PerlinNoise4d(x, y, z, w); }
+#else
 #if !RSTL_PRIME1
 CVector3f CMath::GetBezierTangent(const CVector3f& a, const CVector3f& b, const CVector3f& c,
                                   const CVector3f& d, float t) {
@@ -448,17 +715,20 @@ float CMath::Noise3d(float x, float y, float z) { return PerlinNoise3d(x, y, z);
 
 float CMath::Noise4d(float x, float y, float z, float w) { return PerlinNoise4d(x, y, z, w); }
 #endif
+#endif
 
 CVector3f CMath::BaryToWorld(const CVector3f& p0, const CVector3f& p1, const CVector3f& p2,
                              const CVector3f& bary) {
   return bary.GetX() * p0 + bary.GetY() * p1 + bary.GetZ() * p2;
 }
 
+#if !RSTL_CORRUPTION
 static const uint skSinX1 = 0x3f7ff347; // 0.99980587f
 static const uint skSinX2 = 0xbe2a34ae; // -0.16621658f
 static const uint skSinX3 = 0x3c047fca; // 0.008087108f
 static const uint skSinX4 = 0xb9206873; // -0.000152977f
 
+#endif
 float CMath::FastSinR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -481,12 +751,14 @@ float CMath::FastSinR(float x) {
   return acc;
 }
 
+#if !RSTL_CORRUPTION
 static const uint skCosX1 = 0x3f800000; // 1.0f
 static const uint skCosX2 = 0xbefffd62; // -0.49998003f
 static const uint skCosX3 = 0x3d2a7a18; // 0.041620344f
 static const uint skCosX4 = 0xbab2bb2b; // -0.0013636103f
 static const uint skCosX5 = 0x37a93188; // 0.000020169435f
 
+#endif
 float CMath::FastCosR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -509,12 +781,14 @@ float CMath::FastCosR(float x) {
   return acc;
 }
 
+#if !RSTL_CORRUPTION
 static const uint skArcCosX1 = 0x3fc90fdb; // 1.5707964f (pi/2)
 static const uint skArcCosX2 = 0xbf7f8bd1; // -0.9982272f
 static const uint skArcCosX3 = 0xbe52ce8c; // -0.20586604f
 static const uint skArcCosX4 = 0x3de9fe20; // 0.114254236f
 static const uint skArcCosX5 = 0xbe980d88; // -0.29697824f
 
+#endif
 float CMath::FastArcCosR(float x) {
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
@@ -554,6 +828,362 @@ int CMath::FloorPowerOfTwo(int v) {
   return 1 << finalShift;
 }
 
+#if RSTL_CORRUPTION
+int CMath::FloorLog2(uint v) {
+  if (static_cast< int >(v) == 0) {
+    return 0;
+  }
+
+  const uint s1 = (0xffffU - v) >> 0x1b & 0x10;
+  const uint sb1 = v >> s1 & 0xffff;
+  const uint s2 = (0xff - sb1) >> 0x1c & 8;
+  const uint sb2 = sb1 >> s2 & 0xff;
+  const uint s3 = (0xf - sb2) >> 0x1d & 4;
+  const uint sb3 = sb2 >> s3 & 0xf;
+  const uint s4 = (3 - sb3) >> 0x1e & 2;
+  const uint finalSig = sb3 >> s4 & 3;
+  const uint totalShift = s1 + s2 + s3 + s4;
+  return ((1 - finalSig) >> 0x1f) + totalShift;
+}
+
+uint CMath::SolveQuadratic(float a, float b, float c, float* roots) {
+  uint count = 0;
+  if (0.f != a) {
+  const float discriminant = b * b - (4.f * a) * c;
+    if (discriminant >= 0.f) {
+  const float root = SqrtF(discriminant);
+      const float scale = 0.5f / a;
+      const float minus = scale * (-b - root);
+      const float plus = scale * (-b + root);
+      if (a < 0.f) {
+        roots[count++] = plus;
+        roots[count++] = minus;
+      } else {
+        roots[count++] = minus;
+        roots[count++] = plus;
+      }
+    }
+  } else if (0.f != b) {
+    roots[count++] = -c / b;
+  }
+  return count;
+}
+
+uint CMath::SolveCubic(const float* coefficients, float* roots) {
+  uint count = 0;
+  if (coefficients[3] != 0.f) {
+    const float shift = coefficients[2] / (3.f * coefficients[3]);
+    const float p = coefficients[1] / (3.f * coefficients[3]) - shift * shift;
+    const float p3 = p * (p * p);
+    float amplitude;
+    const float q = -0.5f * (shift * ((2.f * shift) * shift) -
+                             (coefficients[1] * shift - coefficients[0]) / coefficients[3]);
+    const float discriminant = q * q + p3;
+    if (discriminant < 0.f) {
+      const float negativeP3 = -p3;
+      const float angle = acosf(Clamp(-1.f, q / SqrtF(negativeP3), 1.f));
+      amplitude = 2.f * powf(negativeP3, 1.f / 6.f);
+      for (float phase = 0.f; phase < 2.01f; phase += 1.f) {
+        roots[count] = amplitude * cosf((M_PIF * (2.f * phase) + angle) / 3.f) - shift;
+        ++count;
+      }
+      if (roots[1] < roots[0]) {
+        Swap(roots[0], roots[1]);
+      }
+      if (roots[2] < roots[1]) {
+        Swap(roots[1], roots[2]);
+      }
+      if (roots[1] < roots[0]) {
+        Swap(roots[0], roots[1]);
+      }
+    } else {
+      const float root = SqrtF(discriminant);
+      float u = powf(fabsf(q + root), 1.f / 3.f);
+      float v = powf(fabsf(q - root), 1.f / 3.f);
+      v = q - root > 0.f ? v : -v;
+      u = q + root > 0.f ? u : -u;
+      roots[0] = u + v - shift;
+      count = 1;
+    }
+
+    for (uint i = 0; i < count; ++i) {
+      const float& x = roots[i];
+      const float slope = x * (2.f * coefficients[2] + coefficients[3] * (3.f * x));
+      const float derivative = coefficients[1] + slope;
+      if (derivative != 0.f) {
+        roots[i] = x - (((coefficients[3] * x + coefficients[2]) * x + coefficients[1]) * x +
+                        coefficients[0]) /
+                           derivative;
+      }
+    }
+  } else {
+    count = SolveQuadratic(coefficients[2], coefficients[1], coefficients[0], roots);
+  }
+  for (uint i = 0; i < count; ++i) {
+    const float x = roots[i];
+    const float value = x * ((coefficients[3] * x + coefficients[2]) * x + coefficients[1]);
+    if (fabsf(coefficients[0] + value) > 0.0002f) {
+      RS_DEBUGGER_PRINT("Cubic solver inaccurate!\n");
+    }
+  }
+  return count;
+}
+
+uint CMath::SolveQuartic(const float* coefficients, float* roots) {
+  float resolvent[4];
+  uint count = 0;
+  if (coefficients[4] == 0.f) {
+    return SolveCubic(coefficients, roots);
+  }
+
+  if (coefficients[3] == 0.f && coefficients[1] == 0.f) {
+    float squaredRoots[4];
+    const uint squaredCount =
+        SolveQuadratic(coefficients[4], coefficients[2], coefficients[0], squaredRoots);
+    if (squaredCount == 2) {
+      if (squaredRoots[1] > 0.f) {
+        const float root = SqrtF(squaredRoots[1]);
+        roots[0] = -root;
+        roots[1] = root;
+        count = 2;
+        if (squaredRoots[0] > 0.f) {
+          const float innerRoot = SqrtF(squaredRoots[0]);
+          roots[3] = roots[1];
+          roots[1] = -innerRoot;
+          roots[2] = innerRoot;
+          count = 4;
+        } else if (squaredRoots[0] == 0.f) {
+          roots[2] = roots[1];
+          roots[1] = 0.f;
+          count = 3;
+        }
+      } else if (squaredRoots[1] == 0.f) {
+        roots[0] = 0.f;
+        count = 1;
+      }
+    } else if (squaredCount == 1) {
+      if (squaredRoots[0] > 0.f) {
+        const float root = SqrtF(squaredRoots[0]);
+        roots[0] = -root;
+        roots[1] = root;
+        count = 2;
+      } else {
+        roots[0] = 0.f;
+        count = 1;
+      }
+    }
+    return count;
+  }
+
+  const float inverse = 1.f / coefficients[4];
+  const float quadratic = coefficients[2] * inverse;
+  const float shift = (0.25f * coefficients[3]) * inverse;
+  const float p = (-6.f * shift) * shift + quadratic;
+  const float q = shift * ((8.f * shift) * shift - (2.f * coefficients[2]) * inverse) + coefficients[1] * inverse;
+  const float r = coefficients[0] * inverse +
+                  shift * (shift * ((-3.f * shift) * shift + quadratic) - coefficients[1] * inverse);
+  resolvent[0] = (4.f * r) * p - q * q;
+  resolvent[1] = -8.f * r;
+  resolvent[2] = -4.f * p;
+  resolvent[3] = 8.f;
+  float cubicRoots[4];
+  const uint cubicCount = SolveCubic(resolvent, cubicRoots);
+  if (cubicCount != 0) {
+    const float y = cubicRoots[cubicCount - 1];
+    const float squaredU = 2.f * y - p;
+    const float u = SqrtF(squaredU);
+    float v;
+    if (u == 0.f) {
+      const float discriminant = y * y - r;
+      if (discriminant < 0.f) {
+        return 0;
+      }
+      v = SqrtF(discriminant);
+    } else {
+      v = q / (2.f * u);
+    }
+
+    const float firstDiscriminant = -(4.f * (y + v) - squaredU);
+    const float secondDiscriminant = -(4.f * (y - v) - squaredU);
+    if (firstDiscriminant >= 0.f) {
+      const float root = SqrtF(firstDiscriminant);
+      roots[count++] = 0.5f * (u - root) - shift;
+      roots[count++] = 0.5f * (u + root) - shift;
+    }
+    if (secondDiscriminant >= 0.f) {
+      const float root = SqrtF(secondDiscriminant);
+      roots[count++] = 0.5f * (-u - root) - shift;
+      roots[count++] = 0.5f * (-u + root) - shift;
+    }
+
+    for (uint i = 0; i < count; ++i) {
+      const float& x = roots[i];
+      const float slope =
+          x * (2.f * coefficients[2] + x * (3.f * coefficients[3] + coefficients[4] * (4.f * x)));
+      const float derivative = coefficients[1] + slope;
+      if (derivative != 0.f) {
+        roots[i] = x - (x * (x * (x * (coefficients[4] * x + coefficients[3]) + coefficients[2]) +
+                             coefficients[1]) +
+                        coefficients[0]) /
+                           derivative;
+      }
+    }
+
+    if (count > 2) {
+      if (roots[2] < roots[0]) {
+        Swap(roots[0], roots[2]);
+      }
+      if (roots[3] < roots[1]) {
+        Swap(roots[1], roots[3]);
+      }
+      if (roots[1] < roots[0]) {
+        Swap(roots[0], roots[1]);
+      }
+      if (roots[3] < roots[2]) {
+        Swap(roots[2], roots[3]);
+      }
+      if (roots[2] < roots[1]) {
+        Swap(roots[1], roots[2]);
+      }
+    }
+  }
+  return count;
+}
+
+int CMath::SolveCubicDouble(double c0, double c1, double c2, double c3, double epsilon,
+                            double* roots) {
+  if (fabs(c3) <= epsilon) {
+    if (fabs(c2) <= epsilon) {
+      if (fabs(c1) >= epsilon) {
+        roots[0] = -c0 / c1;
+        return 1;
+      }
+      return -1;
+    }
+
+    double discriminant = c1 * c1 - (4.0 * c0) * c2;
+    if (fabs(discriminant) <= epsilon) {
+      discriminant = 0.0;
+    }
+    if (discriminant < 0.0) {
+      return 0;
+    }
+    const double scale = 0.5 / c2;
+    if (discriminant > 0.0) {
+      const double root = SqrtD(discriminant);
+      roots[0] = scale * (-c1 - root);
+      roots[1] = scale * (-c1 + root);
+      return 2;
+    }
+    roots[0] = -scale * c1;
+    return 1;
+  }
+
+  c3 = 1.0 / c3;
+  const double b = c1 * c3;
+  const double a = c2 * c3;
+  double c = c0;
+  c *= c3;
+  const double shift = (1.0 / 3.0) * a;
+  const double p = -(a * shift - b);
+  double q = 0.5 * ((1.0 / 27.0) * (a * ((2.0 * a) * a - 9.0 * b)) + c);
+  double discriminant = q * q + (1.0 / 27.0) * (p * (p * p));
+  if (fabs(discriminant) <= epsilon) {
+    discriminant = 0.0;
+  }
+
+  if (discriminant > 0.0) {
+    const double root = SqrtD(discriminant);
+    q = -q;
+    double term = q + root;
+    if (term >= 0.0) {
+      roots[0] = pow(term, 1.0 / 3.0);
+    } else {
+      roots[0] = -pow(-term, 1.0 / 3.0);
+    }
+    term = q - root;
+    if (term >= 0.0) {
+      roots[0] += pow(term, 1.0 / 3.0);
+    } else {
+      roots[0] -= pow(-term, 1.0 / 3.0);
+    }
+    roots[0] -= shift;
+    return 1;
+  }
+  if (discriminant < 0.0) {
+    const double radius = SqrtD((-1.0 / 3.0) * p);
+    const double angle = (1.0 / 3.0) * atan2(SqrtD(-discriminant), -q);
+    const double cosine = cos(angle);
+    const double sine = sin(angle);
+    roots[0] = (2.0 * radius) * cosine - shift;
+    roots[1] = -radius * (skSqrtThree * sine + cosine) - shift;
+    roots[2] = -radius * (cosine - skSqrtThree * sine) - shift;
+    return 3;
+  }
+
+  const double root = q >= 0.0 ? -pow(q, 1.0 / 3.0) : pow(-q, 1.0 / 3.0);
+  roots[0] = 2.0 * root - shift;
+  roots[1] = -root - shift;
+  return 2;
+}
+
+float CMath::PhongBlob(float t, float exponent) {
+  t = Clamp(0.f, t, 1.f);
+  return pow(0.5f * (1.f + cosf(M_PIF * t)), exponent);
+}
+
+float CMath::EaseInOut(float t, EEaseTypes ease, float easeIn, float easeOut, float low, float high,
+                       float scale) {
+  const float minimum = FastMin(low, high);
+  const float maximum = FastMax(low, high);
+  const float range = maximum - minimum;
+  t = Clamp(0.f, t, 1.f);
+  easeIn = Clamp(0.f, easeIn, 1.f);
+  easeOut = Clamp(0.f, easeOut, 1.f);
+
+  switch (ease) {
+  case kET_Sinusoidal: {
+    const float easeInWeight = 2.f * easeIn / M_PIF;
+    float easeOutWeight;
+    const float middle = easeOut + easeInWeight - easeIn;
+    easeOutWeight = 2.f * (1.f - easeOut) / M_PIF;
+    const float total = middle + easeOutWeight;
+    if (t <= easeIn) {
+      t = easeInWeight * (1.f + sinf(M_PIF * 0.5f * (t / easeIn) - M_PIF * 0.5f)) / total;
+    } else if (t >= easeOut) {
+      t = (easeOutWeight * sinf(M_PIF * 0.5f * ((t - easeOut) / (1.f - easeOut))) + middle) / total;
+    } else {
+      t = (t + easeInWeight - easeIn) / total;
+    }
+    break;
+  }
+  case kET_Quadratic:
+    if (t <= easeIn) {
+      t = scale * (t * t / (2.f * easeIn));
+    } else if (t >= easeOut) {
+      const float delta = t - easeOut;
+      const float base = 0.5f * (scale * easeIn) + scale * (easeOut - easeIn);
+      const float falloff = -(0.5f * (scale * (delta / (1.f - easeOut))) - scale);
+      const float falloffTerm = falloff * delta;
+      t = base + falloffTerm;
+    } else {
+      t = scale * (0.5f * easeIn) + scale * (t - easeIn);
+    }
+    break;
+  default:
+    break;
+  }
+
+  return range * Clamp(0.f, t, 1.f) + minimum;
+}
+
+template < typename T >
+void CMath::Swap(T& a, T& b) {
+  T tmp = a;
+  a = b;
+  b = tmp;
+}
+#else
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1 && RSTL_VERSION >= RSTL_R3IJ
 float CMath::EaseInOut(float t, EEaseTypes type, float easeInEnd, float easeOutStart, float start,
@@ -923,4 +1553,4 @@ void CMath::Swap(T& a, T& b) {
   b = tmp;
 }
 #endif
-
+#endif

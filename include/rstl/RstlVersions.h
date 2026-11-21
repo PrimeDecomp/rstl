@@ -245,6 +245,8 @@
 #define RSTL_LOWER_BOUND_ADVANCES_START (RSTL_VERSION >= RSTL_P2ME)
 // `lower_bound` declares `halfDist` before its loop.
 #define RSTL_LOWER_BOUND_HOISTED_HALF_DIST (!RSTL_PRIME1)
+// The plain `lower_bound` declares `halfDist` and `it` inside its loop.
+#define RSTL_LOWER_BOUND_LOOP_LOCALS (RSTL_CORRUPTION)
 // The comparator `lower_bound` follows the comparator `sort`, before `__sort3`.
 #define RSTL_LOWER_BOUND_CMP_BEFORE_SORT3 (RSTL_CORRUPTION)
 // `binary_find` and `equal_range` keep named `lower` / `found` locals.
@@ -543,6 +545,19 @@
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_CORRUPTION)
 // Debug build: asserts, debugger prints, source-line allocation tags and freed-block fills.
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
+// FMOD audio (and its SDK headers) is compiled only where the headers are available.
+#define RSTL_KYOTO_FMOD_AUDIO (RSTL_VERSION == RSTL_G2MEAB)
+// Units whose text is valid for Prime, Echoes and the prototype only: retail Corruption (its own
+// PRIME3 build flag, on every version) is a different Wii-era code base that does not compile them.
+#if defined(PRIME3)
+#define RSTL_KYOTO_PROTO_UNIT (RSTL_VERSION == RSTL_G2MEAB)
+#else
+#define RSTL_KYOTO_PROTO_UNIT (!RSTL_CORRUPTION || RSTL_VERSION == RSTL_G2MEAB)
+#endif
+// The prototype game's own headers (Corruption/...) are available.
+#define RSTL_KYOTO_PROTO_GAME_HEADERS (RSTL_VERSION == RSTL_G2MEAB)
+// The system font bitmap is generated from the prototype's executable (Kyoto/Text/SystemFont.inc).
+#define RSTL_KYOTO_SYSTEM_FONT_DATA (RSTL_VERSION == RSTL_G2MEAB)
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
 #define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_CORRUPTION)
 
