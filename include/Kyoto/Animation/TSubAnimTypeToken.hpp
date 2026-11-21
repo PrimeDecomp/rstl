@@ -13,6 +13,8 @@ public:
 
   const T& operator*() const { return *mSource; }
 
+  operator const CToken&() const { return mToken; }
+
 private:
   // Source-format selection and construction belong to CAllFormatsAnimSource.
   TLockedToken< CAllFormatsAnimSource > mToken;
