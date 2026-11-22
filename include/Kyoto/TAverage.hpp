@@ -28,10 +28,14 @@ T GetAverageValue(const T* ptr, int count) {
 }
 
 template < typename T >
-class TAverage : rstl::vector< T > {
+class TAverage
+#if !RSTL_KYOTO_AVERAGE_MEMBER
+: rstl::vector< T >
+#endif
+{
 public:
   TAverage() {}
-  explicit TAverage(int capacity) { this->reserve(capacity); }
+  explicit TAverage(int capacity) { Values().reserve(capacity); }
   TAverage(int capacity, const T& value
 #if RSTL_PRIME1
                          = T()
@@ -40,26 +44,36 @@ public:
 
   void AddValue(const T& value);
   rstl::optional_object< T > GetAverage() const {
-    if (this->empty()) {
+    if (Values().empty()) {
       return rstl::optional_object_null();
     } else {
-      return GetAverageValue(this->data(), this->size());
+      return GetAverageValue(Values().data(), Values().size());
     }
   }
+
+private:
+#if RSTL_KYOTO_AVERAGE_MEMBER
+  rstl::vector< T > mValues;
+  rstl::vector< T >& Values() { return mValues; }
+  const rstl::vector< T >& Values() const { return mValues; }
+#else
+  rstl::vector< T >& Values() { return *this; }
+  const rstl::vector< T >& Values() const { return *this; }
+#endif
 };
 
 template < typename T >
 inline TAverage< T >::TAverage(int capacity, const T& value) {
-  this->resize(capacity, value);
+  Values().resize(capacity, value);
 }
 
 template < typename T >
 inline void TAverage< T >::AddValue(const T& value) {
-  if (this->size() == this->capacity()) {
+  if (Values().size() == Values().capacity()) {
     // TODO ?
-    this->mCount -= 1;
+    Values().mCount -= 1;
   }
-  this->insert(this->begin(), value);
+  Values().insert(Values().begin(), value);
 }
 
 #endif // _TAVERAGE
