@@ -786,6 +786,10 @@
   ((RSTL_VERSION >= RSTL_RM3E && RSTL_VERSION <= RSTL_RM3J) || RSTL_VERSION >= RSTL_R3IJ)
 // Display-list triangle loops keep the packet's 16-bit vertex count.
 #define RSTL_KYOTO_DISPLAY_LIST_SHORT_COUNT (RSTL_VERSION >= RSTL_RM3E)
+// The prototype keeps the material projection transform and INCA color beside the portal plane.
+#define RSTL_KYOTO_PORTAL_PLANE_MATERIAL_GLOBALS (RSTL_VERSION == RSTL_G2MEAB)
+// The prototype keeps the vertex stride in a local in the triangle and fan loops.
+#define RSTL_KYOTO_DISPLAY_LIST_STRIDE_LOCALS (RSTL_VERSION == RSTL_G2MEAB)
 // Corruption's CGX: extended GX state, out-of-line helpers, GXBool z mode, apply_fog in the
 // header and its own function order.
 #define RSTL_KYOTO_CGX_CORRUPTION (RSTL_CORRUPTION)
