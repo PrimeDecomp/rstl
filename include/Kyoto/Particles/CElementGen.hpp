@@ -15,8 +15,10 @@
 #include "Kyoto/Math/CVector3f.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/Particles/IElement.hpp"
+#include "Kyoto/Particles/CGenDescription.hpp"
 
 #include "Kyoto/TToken.hpp"
+
 #if RSTL_PRIME1
 #if RSTL_VERSION >= RSTL_R3ME_00
 

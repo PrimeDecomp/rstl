@@ -6,6 +6,7 @@
 
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"
+#include "Kyoto/Particles/CSpawnSystemDescription.hpp"
 #include "Kyoto/TToken.hpp"
 
 class CSpawnSystemDescription;

@@ -1,11 +1,12 @@
 #ifndef _CDEPENDENCYGROUPTOKEN
 #define _CDEPENDENCYGROUPTOKEN
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
+
+#include "Kyoto/CDependencyGroup.hpp"
 #include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
+#include "rstl/static_assert.hpp"
 #include "rstl/vector.hpp"
 
-class CDependencyGroup;
 class IObjectStore;
 
 // Guessed name. Owns the group token and its dependency tokens.

@@ -6,7 +6,7 @@
 #if !RSTL_PRIME1
 #include "Kyoto/Animation/CCEAnimationSet.hpp"
 #endif
-
+#include "Kyoto//Animation/CTransitionDatabase.hpp"
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/TToken.hpp"
 
