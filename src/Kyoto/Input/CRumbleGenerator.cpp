@@ -3,6 +3,10 @@
 
 #include "Kyoto/Input/IController.hpp"
 
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+#include <revolution/wpad.h>
+#endif
+
 #if RSTL_PRIME1
 const EMotorState CRumbleGenerator::kStopAll[4] = {
     kMS_StopHard,
@@ -144,7 +148,15 @@ void CRumbleGenerator::Update(float dt) {
       }
     }
     if (updated) {
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+      if (mCommand == kMS_Stop || mCommand == kMS_StopHard) {
+        WPADControlMotor(0, WPAD_MOTOR_STOP);
+      } else {
+        WPADControlMotor(0, WPAD_MOTOR_RUMBLE);
+      }
+#else
       PADControlMotor(mInputIndex, mCommand);
+#endif
     }
 #endif
 #endif
@@ -169,13 +181,15 @@ void CRumbleGenerator::HardStopAll() {
   mVoice.HardReset();
 #if RSTL_VERSION >= RSTL_R32J
   mController->SetMotorState(mInputIndex, kMS_Stop);
+#elif RSTL_KYOTO_WPAD_EMU_CONTROLLER
+  WPADControlMotor(0, WPAD_MOTOR_STOP);
 #else
   PADControlMotor(mInputIndex, kMS_StopHard);
 #endif
 #endif
 }
 
-void CRumbleGenerator::SetDisabled(const bool disabled) {
+void CRumbleGenerator::SetDisabled(RSTL_KYOTO_CONST_UNLESS_WPAD_EMU bool disabled) {
   if (disabled) {
     HardStopAll();
   }

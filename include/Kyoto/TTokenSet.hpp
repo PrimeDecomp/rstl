@@ -1,6 +1,7 @@
 #ifndef _TTOKENSET
 #define _TTOKENSET
 
+#include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
 #include <string.h>
@@ -33,25 +34,45 @@ struct TTokenSet {
       bool match = false;
       if (name != nullptr) {
         switch (sens) {
+#if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
+        case kS_Exact:
+          match = strcmp(name, entry->mName) == 0;
+          break;
+#endif
         case kS_IgnoreCase: {
           const char* a = name;
           const char* b = entry->mName;
           for (; *a != 0 && *b != 0; ++a, ++b) {
+#if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
+            const int lowerA = ToLower(*a);
+            const int lowerB = ToLower(*b);
+            if (lowerA != lowerB) {
+#else
             if (ToLower(*a) != ToLower(*b)) {
+#endif
               break;
             }
           }
           match = *a == 0 && *b == 0;
           break;
         }
+#if !RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
         case kS_Exact:
           match = strcmp(name, entry->mName) == 0;
           break;
+#endif
         }
+#if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
+        if (match) {
+          return entry->mToken;
+        }
+#endif
       }
+#if !RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
       if (match) {
         return entry->mToken;
       }
+#endif
     }
     return entry->mToken;
   }
@@ -59,7 +80,7 @@ struct TTokenSet {
   T GetTokenNoCase(const char* name) const { return GetToken(name, kS_IgnoreCase); }
 
 private:
-  static int ToLower(char c) { return c >= 'A' && c <= 'Z' ? c + 32 : c; } // Guessed name
+  static int ToLower(RSTL_KYOTO_TOKEN_SET_CHAR_PARAM c) { return c >= 'A' && c <= 'Z' ? c + 32 : c; } // Guessed name
 };
 
 #endif // _TTOKENSET
