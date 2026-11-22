@@ -816,7 +816,7 @@ void CTexture::ScheduleDeletion() {
 #if IS_TARGET_PC
   GXDestroyTexObj(&mTexObj);
   for (int i = 0; i < GX_MAX_TEXMAP; ++i) {
-    auto& tex = reinterpret_cast<CTexture*&>(sLoadedTextures[i]);
+    auto& tex = const_cast<CTexture*&>(reinterpret_cast<const CTexture*&>(sLoadedTextures[i]));
     if (tex == this) {
       tex = nullptr;
     }

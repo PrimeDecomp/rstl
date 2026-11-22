@@ -160,7 +160,7 @@ private:
 
 #if TARGET_LITTLE_ENDIAN
   // TODO: maybe this is in CCollisionPrimitiveData for Echoes?
-  rstl::vector< u64 > mNativeMaterials;
+  rstl::vector< IF_RSTL_PRIME1_ELSE(uint, u64) > mNativeMaterials;
   rstl::vector< uchar > mNativeVertexMaterials;
   rstl::vector< uchar > mNativeEdgeMaterials;
   rstl::vector< uchar > mNativeTriangleMaterials;
