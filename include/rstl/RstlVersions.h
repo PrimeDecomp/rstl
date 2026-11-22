@@ -962,6 +962,12 @@
 // Japanese GameCube Echoes and later builds use a line-spacing override.
 #define RSTL_GUI_TEXT_LINE_SPACING (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_G2MJ)
 
+// CStringTable has reload support
+#define RSTL_CSTRINGTABLE_RELOAD_SUPPORT (RSTL_VERSION >= RSTL_GM8P_00)
+
+// CStringTable has name tables
+#define RSTL_CSTRINGTABLE_NAME_TABLES (!RSTL_PRIME1)
+
 // ============================================================================================
 // WorldFormat
 // ============================================================================================

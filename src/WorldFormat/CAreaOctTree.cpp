@@ -171,9 +171,9 @@ void CAreaOctTree::MakeFromMemory(void* buffer, const uint bufferLength, CAreaOc
   tree->mEdges = tree->mNativeEdges.data();
   tree->mTriangleCount = tree->mNativeSurfaceIndices.size() / 3;
   tree->mSurfaceIndices = tree->mNativeSurfaceIndices.data();
-  if constexpr (!RSTL_PRIME1) {
+  #if !RSTL_PRIME1
     tree->x28_ = tree->mNativeExtraIndices.data();
-  }
+  #endif
   tree->mVertexCount = tree->mNativeVertices.size();
   tree->mVertices = tree->mNativeVertices.data();
   *treeOut = tree.release();

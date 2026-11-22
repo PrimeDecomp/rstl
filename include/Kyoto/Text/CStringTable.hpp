@@ -1,27 +1,26 @@
 #ifndef _CSTRINGTABLE
 #define _CSTRINGTABLE
 
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 #include "Kyoto/ByteOrder.hpp"
-#if RSTL_PRIME1
-#include "stdint.h"
-#endif
-
-#include "rstl/types.h"
-
+#include "Kyoto/CFactoryFnReturn.hpp"
 #include "Kyoto/SObjectTag.hpp"
-
+#include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/single_ptr.hpp"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 #include "rstl/vector.hpp"
 
-#include "Kyoto/CFactoryFnReturn.hpp"
+#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
+#define STRINGTABLE_NONMATCHING 1
+#else
+#define STRINGTABLE_NONMATCHING 0
+#endif
 
 class CInputStream;
-
 class CResFactory;
 class CDvdRequest;
+
 class CStringTable {
 public:
   struct SReloadData {
@@ -34,7 +33,7 @@ public:
   };
 
   CStringTable(CInputStream& in);
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
   ~CStringTable();
 #endif
 
@@ -52,42 +51,36 @@ public:
   int GetStringCount() const { return mStringCount; }
 
 private:
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  // Echoes STRG files can name strings; names are sorted for binary search.
+  void LoadStringsNative(CInputStream& in, uint size, uint version);
+
   struct SStringName {
     const char* mName;
     int mIndex;
   };
 
-#endif
   int mStringCount;
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
+#if RSTL_CSTRINGTABLE_NAME_TABLES
   int mNameCount;
 #endif
   rstl::single_ptr< uchar > mData;
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
+#if RSTL_CSTRINGTABLE_NAME_TABLES
   SStringName* mNames;
   const wchar_t** mStrings;
 #endif
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
   mutable rstl::single_ptr< SReloadData > mReloadData;
 #endif
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
+#if STRINGTABLE_NONMATCHING
+  rstl::vector< SStringName > mNativeNames;
   rstl::vector< rstl::vector< wchar_t > > mNativeStrings;
-#endif
 #endif
 };
 
-CHECK_SIZEOF(CStringTable, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_GM8P_00 ? 0xc : 0x8) : 0x18)
-
+CHECK_SIZEOF(CStringTable, RSTL_PRIME1 ? (RSTL_CSTRINGTABLE_RELOAD_SUPPORT ? 0xc : 0x8) : 0x18)
 NESTED_CHECK_SIZEOF(CStringTable, SReloadData, 0x10)
 
 extern CStringTable* gpStringTable;
+
 #if RSTL_KYOTO_BUFFER_FACTORIES
 CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
                                      int size, const CVParamTransfer& xfer);

@@ -1,51 +1,43 @@
 #define RS_TTOKEN_FILE "TToken.H"
-#include "rstl/RstlVersions.h"
+
 #include "Kyoto/Text/CStringTable.hpp"
 
 #include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/CDvdRequest.hpp"
-#include "Kyoto/CResFactory.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
-#include "Kyoto/Alloc/CMemory.hpp"
-
+#include "Kyoto/CResFactory.hpp"
 #include "Kyoto/Streams/CInputStream.hpp"
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#if RSTL_PRIME1
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
-#include "string.h"
-#endif
-#endif
-
-#include "rstl/pair.hpp"
-#include "rstl/vector.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/algorithm.hpp"
+#include "rstl/pair.hpp"
 #include "rstl/reserved_vector.hpp"
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
+#include "rstl/vector.hpp"
 #include "string.h"
-#endif
 
 namespace {
 const uint kCookie = 0x87654321;
 const uint kMinSupportedVersion = 0;
-const uint kVersion = 1;
+const uint kVersion = RSTL_CSTRINGTABLE_NAME_TABLES ? 1 : 0;
 } // namespace
 
 static const wchar_t skInvalidString[] = L"Invalid";
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
 const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
 static FourCC mCurrentLanguage = skLanguages[0];
 #else
 static FourCC mCurrentLanguage = 'ENGL';
 #endif
 
-#if !RSTL_PRIME1
 struct SLanguageInfo {
   FourCC mLanguage;
   uint mOffset;
+#if !RSTL_PRIME1
   uint mSize;
+#endif
 };
 
 struct SStringNameLess {
@@ -61,15 +53,11 @@ static inline It LowerBoundName(It begin, It end, const T& key) {
   SStringNameLess cmp;
   return rstl::lower_bound(begin, end, key, cmp);
 }
-#endif
 
-#if RSTL_VERSION >= RSTL_GM8P_00
 void CStringTable::SetLanguage(int language) { mCurrentLanguage = skLanguages[language]; }
-#endif
 
 CStringTable::CStringTable(CInputStream& in)
 : mStringCount(0)
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 , mData(NULL)
 #else
@@ -78,7 +66,7 @@ CStringTable::CStringTable(CInputStream& in)
 , mNames(nullptr)
 , mStrings(nullptr)
 #endif
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
 , mReloadData(nullptr) {
   Load(in);
 }
@@ -88,126 +76,84 @@ CStringTable::~CStringTable() {}
 void CStringTable::Load(CInputStream& in)
 #endif
 {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  in.ReadLong();
-  in.ReadLong();
-  int langCount = in.Get(TType< int >());
-  mStringCount = in.Get(TType< uint >());
-  rstl::vector< rstl::pair< FourCC, uint > > langOffsets(langCount);
-  for (int i = 0; i < langCount; ++i) {
-    langOffsets.push_back(in.Get(TType< rstl::pair< FourCC, uint > >()));
-  }
-
-  int offset = langOffsets.front().second;
-  for (int i = 0; i < langCount; ++i) {
-    if (langOffsets[i].first == mCurrentLanguage) {
-      offset = langOffsets[i].second;
-      break;
-    }
-  }
-  for (uint i = 0; i < offset; ++i) {
-    in.ReadChar();
-  }
-
-  uint dataLen = in.Get(TType< uint >());
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
-  mNativeStrings.clear();
-  rstl::vector< uchar > data(dataLen, uchar(0));
-  in.ReadBytes(data.data(), dataLen);
-  if (mStringCount < 0 || static_cast< uint >(mStringCount) > dataLen / sizeof(uint)) {
-    mStringCount = 0;
-    return;
-  }
-
-  CMemoryInStream offsets(data.data(), mStringCount * sizeof(uint));
-  mNativeStrings.reserve(mStringCount);
-  for (int i = 0; i < mStringCount; ++i) {
-    uint pos = offsets.ReadLong();
-    rstl::vector< wchar_t > text;
-    bool terminated = false;
-    while (pos <= dataLen && dataLen - pos >= sizeof(ushort)) {
-      ushort unit;
-      memcpy(&unit, data.data() + pos, sizeof(unit));
-      uint codepoint = CBasics::SwapBytes(unit);
-      pos += sizeof(unit);
-      if (codepoint == 0) {
-        terminated = true;
-        break;
-      }
-
-      // Preserve UTF-16 on 16-bit wchar_t hosts; combine surrogate pairs on
-      // hosts whose wide characters can hold a complete Unicode code point.
-      if (sizeof(wchar_t) > sizeof(ushort) && codepoint >= 0xd800 && codepoint <= 0xdbff &&
-          dataLen - pos >= sizeof(ushort)) {
-        memcpy(&unit, data.data() + pos, sizeof(unit));
-        const ushort low = CBasics::SwapBytes(unit);
-        if (low >= 0xdc00 && low <= 0xdfff) {
-          codepoint = 0x10000 + ((codepoint - 0xd800) << 10) + low - 0xdc00;
-          pos += sizeof(unit);
-        }
-      }
-      text.push_back(static_cast< wchar_t >(codepoint));
-    }
-    if (!terminated) {
-      text.clear();
-      for (const wchar_t* c = skInvalidString; *c; ++c) {
-        text.push_back(*c);
-      }
-    }
-    text.push_back(0);
-    mNativeStrings.push_back(text);
-  }
-#else
-  mData = rs_new uchar[dataLen];
-  in.ReadBytes(mData.get(), dataLen);
-#endif
-#else
   const uint header = in.ReadInt32();
   RS_VERIFY_THROW_DIRECT(84, header == kCookie, false, "Bad header for string table");
-  const uint version = in.Get(TType< uint >());
+  const uint version = in.Get< uint >();
   RS_VERIFY_THROW_DIRECT(
       88, version >= kMinSupportedVersion && version <= kVersion, false,
       CBasics::Stringize("Bad version for string table: expected %d, got %d", kVersion, version));
-  int numLanguages = in.Get(TType< int >());
+  int numLanguages = in.Get< int >();
   RS_VERIFY_THROW_DIRECT(91, numLanguages > 0, false,
                          "Fatal error: No languages specified for this string table.");
-  mStringCount = in.Get(TType< int >());
+  mStringCount = in.Get< int >();
   RS_VERIFY_THROW_DIRECT(94, numLanguages < COsContext::kLang_Count, false,
                          "Too many languages in string table!\n");
 
-  rstl::reserved_vector< SLanguageInfo, 7 > languages;
+  // Language Definitions
+#if RSTL_PRIME1
+  rstl::vector< rstl::pair< FourCC, uint > > langOffsets(numLanguages);
   for (int i = 0; i < numLanguages; ++i) {
-    FourCC language = in.Get(TType< FourCC >());
+    langOffsets.push_back(in.Get< rstl::pair< FourCC, uint > >());
+  }
+#define languages reinterpret_cast< SLanguageInfo* >(langOffsets.data())
+#else
+  rstl::reserved_vector< SLanguageInfo, COsContext::kLang_Count > languages;
+  for (int i = 0; i < numLanguages; ++i) {
+    FourCC language = in.Get< FourCC >();
     uint offset = in.ReadUint32();
-    uint size = version != 0 ? in.Get(TType< uint >()) : 0;
+    uint size = version != 0 ? in.Get< uint >() : 0;
     SLanguageInfo info = {language, offset, size};
     languages.push_back(info);
   }
+#endif
 
+  // Language Offsets
   uint offset = languages[0].mOffset;
-  uint size = languages[0].mSize;
+  IF_NOT_RSTL_PRIME1(uint size = languages[0].mSize);
   for (int i = 0; i < numLanguages; ++i) {
     if (languages[i].mLanguage == mCurrentLanguage) {
       offset = languages[i].mOffset;
-      size = languages[i].mSize;
+      IF_NOT_RSTL_PRIME1(size = languages[i].mSize);
       break;
     }
   }
 
+  // Name table
+#if RSTL_CSTRINGTABLE_NAME_TABLES
   if (version != 0) {
     mNameCount = in.Get(TType< int >());
     uint namesSize = in.Get(TType< uint >());
     mData = rs_new_line(136) uchar[namesSize + size];
+
+#if STRINGTABLE_NONMATCHING
+    in.ReadBytes(mData.get(), namesSize);
+    CMemoryInStream names(mData.get(), namesSize);
+    for (int i = 0; i < mNameCount; ++i) {
+      const uint nameOffset = names.ReadInt32();
+      const int index = names.ReadInt32();
+      SStringName entry = {reinterpret_cast< const char* >(mData.get()) + nameOffset, index};
+      mNativeNames.push_back(entry);
+    }
+    mNames = mNativeNames.data();
+#else
     mNames = reinterpret_cast< SStringName* >(mData.get());
     mStrings = reinterpret_cast< const wchar_t** >(mData.get() + namesSize);
     in.ReadBytes(mNames, namesSize);
+#endif
   }
+#endif
 
   for (uint i = 0; i < offset; ++i) {
-    in.ReadInt8();
+    in.ReadChar();
   }
 
+#if STRINGTABLE_NONMATCHING
+  LoadStringsNative(in, size, version);
+#elif RSTL_PRIME1
+  uint dataLen = in.Get< uint >();
+  mData = rs_new uchar[dataLen];
+  in.ReadBytes(mData.get(), dataLen);
+#else
   if (version == 0) {
     size = in.Get(TType< uint >());
     mData = rs_new_line(157) uchar[size];
@@ -229,24 +175,77 @@ void CStringTable::Load(CInputStream& in)
 #endif
 }
 
+#if STRINGTABLE_NONMATCHING
+void CStringTable::LoadStringsNative(CInputStream& in, uint size, uint version) {
+  mNativeStrings.clear();
+
+  if (version == 0) {
+    size = in.Get< uint >();
+  }
+  
+  rstl::vector< uchar > data(size, uchar(0));
+  in.ReadBytes(data.data(), size);
+  if (mStringCount < 0 || static_cast< uint >(mStringCount) > size / sizeof(uint)) {
+    mStringCount = 0;
+    return;
+  }
+
+  CMemoryInStream offsets(data.data(), mStringCount * sizeof(uint));
+  mNativeStrings.reserve(mStringCount);
+  for (int i = 0; i < mStringCount; ++i) {
+    uint pos = offsets.ReadLong();
+    rstl::vector< wchar_t > text;
+    bool terminated = false;
+    while (pos <= size && size - pos >= sizeof(ushort)) {
+      ushort unit;
+      memcpy(&unit, data.data() + pos, sizeof(unit));
+      uint codepoint = CBasics::SwapBytes(unit);
+      pos += sizeof(unit);
+      if (codepoint == 0) {
+        terminated = true;
+        break;
+      }
+
+      // Preserve UTF-16 on 16-bit wchar_t hosts; combine surrogate pairs on
+      // hosts whose wide characters can hold a complete Unicode code point.
+      if (sizeof(wchar_t) > sizeof(ushort) && codepoint >= 0xd800 && codepoint <= 0xdbff &&
+          size - pos >= sizeof(ushort)) {
+        memcpy(&unit, data.data() + pos, sizeof(unit));
+        const ushort low = CBasics::SwapBytes(unit);
+        if (low >= 0xdc00 && low <= 0xdfff) {
+          codepoint = 0x10000 + ((codepoint - 0xd800) << 10) + low - 0xdc00;
+          pos += sizeof(unit);
+        }
+      }
+      text.push_back(static_cast< wchar_t >(codepoint));
+    }
+    if (!terminated) {
+      text.clear();
+      for (const wchar_t* c = skInvalidString; *c; ++c) {
+        text.push_back(*c);
+      }
+    }
+    text.push_back(0);
+    mNativeStrings.push_back(text);
+  }
+}
+#endif
+
 const wchar_t* CStringTable::GetString(int idx) const {
   if (idx < 0 || idx >= mStringCount) {
     return skInvalidString;
   }
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
+#if STRINGTABLE_NONMATCHING
   return mNativeStrings[idx].data();
-#else
+#elif RSTL_PRIME1
   int offset = *(reinterpret_cast< const int* >(mData.get()) + idx);
   return reinterpret_cast< const wchar_t* >(mData.get() + offset);
-#endif
 #else
   return mStrings[idx];
 #endif
 }
 
-#if !RSTL_PRIME1
+#if RSTL_CSTRINGTABLE_NAME_TABLES
 int CStringTable::GetStringIndexByName(const char* name) const {
   SStringName* begin = mNames;
   if (mNameCount > 0 && *name != '\0') {
@@ -265,13 +264,12 @@ const wchar_t* CStringTable::GetStringByName(const char* name) const {
 }
 #endif
 
-#if RSTL_VERSION >= RSTL_GM8P_00
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
 void CStringTable::Reload(CAssetId id, CResFactory& factory) {
   mReloadData = nullptr;
   mReloadData = rs_new_line(267) SReloadData(id, factory);
 }
 
-#if RSTL_PRIME1
 void CStringTable::TryFinishReload() {
   SReloadData* data = mReloadData.get();
   if (data != nullptr && data->mRequest->IsComplete()) {
@@ -283,19 +281,16 @@ void CStringTable::TryFinishReload() {
 
 bool CStringTable::IsReloading() const { return !mReloadData.null(); }
 
-#endif
-CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory)
-: mRequest(nullptr) {
+CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory) : mRequest(nullptr) {
   const SObjectTag tag('STRG', id);
   mSize = factory.ResourceSize(tag);
   mBuffer = static_cast< uchar* >(rs_aligned_new_line(mSize, 298));
-  mRequest = factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mBuffer.get()));
+  mRequest =
+      factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mBuffer.get()));
 }
-#endif
 
-#if RSTL_VERSION >= RSTL_GM8P_00
 CStringTable::SReloadData::~SReloadData() {}
-#endif
+#endif // RSTL_CSTRINGTABLE_RELOAD_SUPPORT
 
 #if RSTL_KYOTO_BUFFER_FACTORIES
 CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
