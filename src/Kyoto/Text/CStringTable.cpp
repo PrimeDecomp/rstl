@@ -54,6 +54,13 @@ struct SStringNameLess {
     return strcmp(a.mName, b.mName) < 0;
   }
 };
+
+// Guessed name
+template < typename It, typename T >
+static inline It LowerBoundName(It begin, It end, const T& key) {
+  SStringNameLess cmp;
+  return rstl::lower_bound(begin, end, key, cmp);
+}
 #endif
 
 #if RSTL_VERSION >= RSTL_GM8P_00
@@ -245,8 +252,7 @@ int CStringTable::GetStringIndexByName(const char* name) const {
   if (mNameCount > 0 && *name != '\0') {
     SStringName* end = begin + mNameCount;
     SStringName key = {name};
-    SStringNameLess cmp;
-    SStringName* it = rstl::lower_bound(begin, end, key, cmp);
+    SStringName* it = LowerBoundName(begin, end, key);
     if (it != end && strcmp(it->mName, name) == 0) {
       return it->mIndex;
     }
