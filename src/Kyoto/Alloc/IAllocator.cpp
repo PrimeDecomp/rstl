@@ -14,41 +14,30 @@ IAllocator::SMetrics::SMetrics(
     uint mediumAllocatedBlocks, uint mediumAvailableBlocks, uint allocationsSinceLastSnapshot,
     uint heapPhysicalAddress, uint smallPoolReservedBytes, uint mediumPoolDataBytes, uint fakeStatics)
 : mHeapSize(heapSize)
-, x4_(totalHeapAllocations)
-, x8_(currentHeapAllocations)
-, xc_(requestedHeapBytes)
-, x10_(allocatedHeapBytes)
-, mHeapSize2(freeHeapBytes)
-, x18_(peakHeapAllocations)
-, x1c_(peakAllocatedHeapBytes)
+, mTotalHeapAllocations(totalHeapAllocations)
+, mCurrentHeapAllocations(currentHeapAllocations)
+, mRequestedHeapBytes(requestedHeapBytes)
+, mAllocatedHeapBytes(allocatedHeapBytes)
+, mFreeHeapBytes(freeHeapBytes)
+, mPeakHeapAllocations(peakHeapAllocations)
+, mPeakAllocatedHeapBytes(peakAllocatedHeapBytes)
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-, x20_(periodicPeakAllocatedHeapBytes)
-, x24_(minAllocationSize)
-, x28_(maxAllocationSize)
-, x2c_(averageAllocationSize)
-#else
-, x20_(minAllocationSize)
-, x24_(maxAllocationSize)
-, x28_(averageAllocationSize)
+, mPeriodicPeakAllocatedHeapBytes(periodicPeakAllocatedHeapBytes)
 #endif
+, mMinAllocationSize(minAllocationSize)
+, mMaxAllocationSize(maxAllocationSize)
+, mAverageAllocationSize(averageAllocationSize)
 , mSmallNumAllocs(smallNumAllocs)
-, mSmallAllocatedSize(smallAllocatedBlocks)
-, mSmallRemainingSize(smallAvailableBlocks)
+, mSmallAllocatedBlocks(smallAllocatedBlocks)
+, mSmallAvailableBlocks(smallAvailableBlocks)
 , mMediumNumAllocs(mediumNumAllocs)
-, mMediumAllocatedSize(mediumAllocatedBlocks)
+, mMediumAllocatedBlocks(mediumAllocatedBlocks)
 , mMediumBlocksAvailable(mediumAvailableBlocks)
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-, x48_(allocationsSinceLastSnapshot)
-, x4c_(heapPhysicalAddress)
-, x50_(smallPoolReservedBytes)
-#else
-, x44_(allocationsSinceLastSnapshot)
-, x48_(heapPhysicalAddress)
-, x4c_(smallPoolReservedBytes)
-#endif
-, mMediumTotalAllocated(mediumPoolDataBytes)
-, mFakeStatics(fakeStatics) {
-}
+, mAllocationsSinceLastSnapshot(allocationsSinceLastSnapshot)
+, mHeapPhysicalAddress(heapPhysicalAddress)
+, mSmallPoolReservedBytes(smallPoolReservedBytes)
+, mMediumPoolDataBytes(mediumPoolDataBytes)
+, mFakeStatics(fakeStatics) {}
 
 IAllocator::SAllocatorMetrics::SAllocatorMetrics(
     uint smallNumAllocs, uint smallAllocatedBlocks, uint smallAvailableBlocks, uint mediumNumAllocs,

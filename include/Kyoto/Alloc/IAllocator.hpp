@@ -32,36 +32,31 @@ public:
 
   struct SMetrics {
     uint mHeapSize;
-    uint x4_;
-    uint x8_;
-    uint xc_;
-    uint x10_;
-    uint mHeapSize2;
-    uint x18_;
-    uint x1c_;
-    uint x20_;
-    uint x24_;
-    uint x28_;
+    uint mTotalHeapAllocations;
+    uint mCurrentHeapAllocations;
+    uint mRequestedHeapBytes;
+    uint mAllocatedHeapBytes;
+    uint mFreeHeapBytes;
+    uint mPeakHeapAllocations;
+    uint mPeakAllocatedHeapBytes;
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    uint x2c_;
+    uint mPeriodicPeakAllocatedHeapBytes;
 #endif
+    uint mMinAllocationSize;
+    uint mMaxAllocationSize;
+    uint mAverageAllocationSize;
     uint mSmallNumAllocs;
-    uint mSmallAllocatedSize;
-    uint mSmallRemainingSize;
+    uint mSmallAllocatedBlocks;
+    uint mSmallAvailableBlocks;
     uint mMediumNumAllocs;
-    uint mMediumAllocatedSize;
+    uint mMediumAllocatedBlocks;
     uint mMediumBlocksAvailable;
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    uint x48_;
-    uint x4c_;
-    uint x50_;
-#else
-    uint x44_;
-    uint x48_;
-    uint x4c_;
-#endif
-    uint mMediumTotalAllocated;
+    uint mAllocationsSinceLastSnapshot;
+    uint mHeapPhysicalAddress;
+    uint mSmallPoolReservedBytes;
+    uint mMediumPoolDataBytes;
     uint mFakeStatics;
+
     SMetrics(uint heapSize, uint totalHeapAllocations, uint currentHeapAllocations,
              uint requestedHeapBytes, uint allocatedHeapBytes, uint freeHeapBytes,
              uint peakHeapAllocations, uint peakAllocatedHeapBytes,
@@ -76,42 +71,6 @@ public:
 #if RSTL_KYOTO_METRICS_COPY_CTOR
     SMetrics(const SMetrics& other);
 #endif
-
-    // Guessed names
-    uint GetCurrentHeapAllocations() const { return x8_; }
-    uint GetAllocatedHeapBytes() const { return x10_; }
-    uint GetFreeHeapBytes() const { return mHeapSize2; }
-    uint GetPeakAllocatedHeapBytes() const { return x1c_; }
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    uint GetPeriodicPeakAllocatedHeapBytes() const { return x20_; }
-#endif
-    uint GetSmallAllocatedBlocks() const { return mSmallAllocatedSize; }
-    uint GetSmallAvailableBlocks() const { return mSmallRemainingSize; }
-    uint GetMediumAllocatedBlocks() const { return mMediumAllocatedSize; }
-
-    uint GetAllocationsSinceLastSnapshot() const {
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-      return x48_;
-#else
-      return x44_;
-#endif
-    }
-
-    uint GetHeapPhysicalAddress() const {
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-      return x4c_;
-#else
-      return x48_;
-#endif
-    }
-
-    uint GetSmallPoolReservedBytes() const {
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-      return x50_;
-#else
-      return x4c_;
-#endif
-    }
   };
 
   struct SAllocatorMetrics { // Guessed name
