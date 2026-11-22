@@ -32,30 +32,25 @@ public:
     rstl::optional_object< CCollisionSurface > mSurface;
     float mT;
 
+    SRayResult()
+    : mPlane(
+      0.f, 
 #if RSTL_PRIME1
-    SRayResult() : mPlane(0.f, CUnitVector3f(1.f, 0.f, 0.f)), mT(0.f) {}
+CUnitVector3f(1.f, 0.f, 0.f)
 #else
-    SRayResult() : mPlane(0.f, CVector3f::Right()), mT(0.f) {}
+      CVector3f::Right()
 #endif
+    )
+    , mT(0.f)
+    {}
   };
 
   class TriListReference {
   public:
     explicit TriListReference(const void* data) : mData(reinterpret_cast< const ushort* >(data)) {}
     explicit TriListReference(const ushort* data) : mData(data) {}
-#if RSTL_PRIME1
-    const ushort GetAt(int index) const {
-#if TARGET_LITTLE_ENDIAN
-      return CBasics::SwapBytes(mData[index + kTriangleDataOffset]);
-#else
-      return mData[index + kTriangleDataOffset];
-#endif
-    }
-    const ushort GetSize() const { return CBasics::SwapBytes(mData[kTriangleCountOffset]); }
-#else
-    ushort GetSize() const { return CBasics::SwapBytes(mData[kTriangleCountOffset]); }
-    ushort GetAt(int index) const { return CBasics::SwapBytes(mData[kTriangleDataOffset + index]); }
-#endif
+    const ushort GetSize() const { return BE_SWAP(mData[kTriangleCountOffset]); }
+    const ushort GetAt(int index) const { return BE_SWAP(mData[index + kTriangleDataOffset]); }
 
   private:
     // Leaf records store bounds, then a ushort count followed by the triangle indices.
@@ -132,14 +127,14 @@ public:
   Node::ETreeType GetTreeType() const { return mTreeType; }
 #if RSTL_PRIME1
 
-  uint GetNumVerts() const { return mVertCount; }
+  uint GetNumVertices() const { return mVertexCount; }
   uint GetNumEdges() const { return mEdgeCount; }
-  uint GetNumTriangles() const { return mPolyCount; }
-  const CVector3f& GetVert(int idx) const { return mVerts[idx]; }
+  uint GetNumTriangles() const { return mTriangleCount; }
+  const CVector3f& GetVert(int idx) const { return mVertices[idx]; }
   const CCollisionEdge& GetEdge(int idx) const { return mEdges[idx]; }
-  uint GetVertMaterial(int idx) const { return mMaterials[mVertMats[idx]]; }
-  uint GetEdgeMaterial(int idx) const { return mMaterials[mEdgeMats[idx]]; }
-  uint GetTriangleMaterial(int idx) const { return mMaterials[mPolyMats[idx]]; }
+  uint GetVertMaterial(int idx) const { return mMaterials[mVertexMaterials[idx]]; }
+  uint GetEdgeMaterial(int idx) const { return mMaterials[mEdgeMaterials[idx]]; }
+  uint GetTriangleMaterial(int idx) const { return mMaterials[mSurfaceMaterials[idx]]; }
   void GetTriangleVertexIndices(ushort idx, ushort indicesOut[3]) const;
   const ushort* GetTriangleEdgeIndices(ushort idx) const;
 #endif
@@ -150,33 +145,33 @@ private:
   const uchar* mBuf;
   const void* mTreeBuf;
 #if RSTL_PRIME1
-  uint mMatCount;
+  uint mMaterialCount;
   const uint* mMaterials;
-  const uchar* mVertMats;
-  const uchar* mEdgeMats;
-  const uchar* mPolyMats;
+  const uchar* mVertexMaterials;
+  const uchar* mEdgeMaterials;
+  const uchar* mSurfaceMaterials;
   uint mEdgeCount;
   const CCollisionEdge* mEdges;
-  uint mPolyCount;
-  const ushort* mPolyEdges;
-  uint mVertCount;
-  const CVector3f* mVerts;
+  uint mTriangleCount;
+  const ushort* mSurfaceIndices;
+  uint mVertexCount;
+  const CVector3f* mVertices;
+#endif
 
 #if TARGET_LITTLE_ENDIAN
-  rstl::vector< uint > mNativeMaterials;
+  // TODO: maybe this is in CCollisionPrimitiveData for Echoes?
+  rstl::vector< u64 > mNativeMaterials;
   rstl::vector< uchar > mNativeVertexMaterials;
   rstl::vector< uchar > mNativeEdgeMaterials;
   rstl::vector< uchar > mNativeTriangleMaterials;
   rstl::vector< CCollisionEdge > mNativeEdges;
-  rstl::vector< ushort > mNativeTriangleEdges;
+  rstl::vector< ushort > mNativeSurfaceIndices;
+  rstl::vector< ushort > mNativeExtraIndices; // For Echoes+
   rstl::vector< CVector3f > mNativeVertices;
-#endif
 #endif
 };
 #if RSTL_PRIME1
-#if TARGET_BIG_ENDIAN
 CHECK_SIZEOF(CAreaOctTree, 0x50)
-#endif
 #else
 CHECK_CHILD_SIZEOF(CAreaOctTree, CCollisionPrimitiveData, 0x24)
 #endif
