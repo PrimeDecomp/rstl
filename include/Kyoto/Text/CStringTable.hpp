@@ -88,13 +88,13 @@ CHECK_SIZEOF(CStringTable, RSTL_PRIME1 ? (RSTL_VERSION >= RSTL_GM8P_00 ? 0xc : 0
 NESTED_CHECK_SIZEOF(CStringTable, SReloadData, 0x10)
 
 extern CStringTable* gpStringTable;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-                                           const CVParamTransfer& xfer);
+#if RSTL_KYOTO_BUFFER_FACTORIES
+CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                     int size, const CVParamTransfer& xfer);
+#else
+RSTL_PRIME1_CONST CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
+                                                       const CVParamTransfer& xfer);
 #endif
-#if RSTL_KYOTO_STRING_TABLE_LANGUAGES_EXTERN
 extern const FourCC skLanguages[7]; // Shared resource language codes.
-#endif
 
 #endif // _CSTRINGTABLE

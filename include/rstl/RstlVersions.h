@@ -551,10 +551,6 @@
 #define RSTL_KYOTO_ASSET_ID_CLASS (RSTL_CORRUPTION)
 // Resource factories receive the loaded buffer and size instead of a CInputStream.
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_CORRUPTION)
-// CStringTable defines Reload.
-// CStringTable's language table has external linkage and is used by other units.
-#define RSTL_KYOTO_STRING_TABLE_LANGUAGES_EXTERN (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
-#define RSTL_KYOTO_STRING_TABLE_RELOAD                                                               ((RSTL_PRIME1 && RSTL_VERSION >= RSTL_GM8P_00) || RSTL_VERSION == RSTL_G2MEAB)
 // Debug build: asserts, debugger prints, source-line allocation tags and freed-block fills.
 #define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.

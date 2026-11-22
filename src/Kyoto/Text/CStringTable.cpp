@@ -35,9 +35,6 @@ const uint kVersion = 1;
 
 static const wchar_t skInvalidString[] = L"Invalid";
 #if RSTL_VERSION >= RSTL_GM8P_00
-#if !RSTL_KYOTO_STRING_TABLE_LANGUAGES_EXTERN
-static
-#endif
 const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
 static FourCC mCurrentLanguage = skLanguages[0];
 #else
@@ -262,7 +259,7 @@ const wchar_t* CStringTable::GetStringByName(const char* name) const {
 }
 #endif
 
-#if RSTL_KYOTO_STRING_TABLE_RELOAD
+#if RSTL_VERSION >= RSTL_GM8P_00
 void CStringTable::Reload(CAssetId id, CResFactory& factory) {
   mReloadData = nullptr;
   mReloadData = rs_new_line(267) SReloadData(id, factory);
