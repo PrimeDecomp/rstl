@@ -25,7 +25,7 @@ const uint kVersion = RSTL_CSTRINGTABLE_NAME_TABLES ? 1 : 0;
 } // namespace
 
 static const wchar_t skInvalidString[] = L"Invalid";
-#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT
+#if RSTL_CSTRINGTABLE_RELOAD_SUPPORT || NONMATCHING
 const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
 static FourCC mCurrentLanguage = skLanguages[0];
 #else
@@ -148,6 +148,7 @@ void CStringTable::Load(CInputStream& in)
   }
 
 #if STRINGTABLE_NONMATCHING
+  IF_RSTL_PRIME1(uint size = 0);
   LoadStringsNative(in, size, version);
 #elif RSTL_PRIME1
   uint dataLen = in.Get< uint >();

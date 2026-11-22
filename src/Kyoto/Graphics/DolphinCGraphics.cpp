@@ -2994,7 +2994,7 @@ void CGraphics::SetUseNormalMatrix(bool enabled) {
 void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = enabled; }
 #endif
 
-#if IS_TARGET_PC
+#if !RSTL_PRIME1 && IS_TARGET_PC
 CGraphicsSys::CGraphicsSys(const COsContext& osContext) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext);
@@ -3010,8 +3010,8 @@ CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memory
 }
 #endif
 
-#if RSTL_PRIME1 && !IS_TARGET_PC
-CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, uint fifoSize, void* fifoBase) {
+#if RSTL_PRIME1
+CGraphicsSys::CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_DECL, uint fifoSize, void* fifoBase) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext, fifoSize, fifoBase);
   }
