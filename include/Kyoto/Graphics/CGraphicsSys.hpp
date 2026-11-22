@@ -10,10 +10,9 @@ class CMemorySys;
 
 class CGraphicsSys {
 public:
-  explicit CGraphicsSys(const COsContext& osContext); // PC-specific
-  CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_DECL, uint, void*);
-  CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys);
-  CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive);
+  CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL);
+  CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL, uint, void*);
+  CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL, bool progressive);
   ~CGraphicsSys();
   // Guessed name
   static bool IsInitialized() { return mGraphicsInitialized; }

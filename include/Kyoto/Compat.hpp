@@ -5,9 +5,11 @@
 
 #if IS_TARGET_PC
 #define MEMORY_SYS_ARGUMENT_DECL
+#define MEMORY_SYS_ARGUMENT_CONST_DECL
 #define MEMORY_SYS_ARGUMENT_VAL
 #else
 #define MEMORY_SYS_ARGUMENT_DECL , CMemorySys& memorySys
+#define MEMORY_SYS_ARGUMENT_CONST_DECL , const CMemorySys& memorySys
 #define MEMORY_SYS_ARGUMENT_VAL  , memorySys
 #endif
 
