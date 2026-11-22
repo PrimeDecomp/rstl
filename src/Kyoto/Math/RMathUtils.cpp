@@ -8,6 +8,7 @@
 #include "Kyoto/Math/CVector3f.hpp"
 
 #if !RSTL_PRIME1
+#include "Kyoto/Alloc/Assert.hpp"
 static const double skSqrtThree = CMath::SqrtD(3.0);
 
 // Guessed names for the Perlin-noise helpers and their permutation table.
@@ -159,9 +160,17 @@ CVector3f CMath::GetCatmullRomSplinePoint(const CVector3f& a, const CVector3f& b
   if (t >= 1.0f)
     return c;
 
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  const float t2 = t * t;
+  const float t3 = t2 * t;
+  return (
+      a * (-0.5f * t3 + t2 - 0.5f * t) + b * (1.5f * t3 + -2.5f * t2 + 1.0f) +
+      c * (-1.5f * t3 + 2.0f * t2 + 0.5f * t) + d * (0.5f * t3 - 0.5f * t2));
+#else
   return (
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -179,9 +188,17 @@ float CMath::GetCatmullRomSplinePoint(float a, float b, float c, float d, float 
   if (t >= 1.0f)
     return c;
 
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  const float t2 = t * t;
+  const float t3 = t2 * t;
+  return (
+      a * (-0.5f * t3 + t2 - 0.5f * t) + b * (1.5f * t3 + -2.5f * t2 + 1.0f) +
+      c * (-1.5f * t3 + 2.0f * t2 + 0.5f * t) + d * (0.5f * t3 - 0.5f * t2));
+#else
   return (
       a * (-0.5f * t * t * t + t * t - 0.5f * t) + b * (1.5f * t * t * t + -2.5f * t * t + 1.0f) +
       c * (-1.5f * t * t * t + 2.0f * t * t + 0.5f * t) + d * (0.5f * t * t * t - 0.5f * t * t));
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -195,28 +212,28 @@ CVector3f CMath::GetRoundedCatmullRomSplinePoint(const CVector3f& a, const CVect
   }
 
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -230,28 +247,28 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
                                                    const CVector3f& c, const CVector3f& d,
                                                    float t) {
   const CVector3f span = c - b;
-  if (!span.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(span)) {
     return b;
   }
 
   CVector3f incoming = a - b;
-  if (!incoming.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(incoming)) {
     incoming = CVector3f(0.f, 1.f, 0.f);
   }
   CVector3f tangentA = span.AsNormalized() - incoming.AsNormalized();
-  if (tangentA.CanBeNormalized()) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangentA)) {
     tangentA.Normalize();
   } else {
     tangentA = CVector3f(0.f, 1.f, 0.f);
   }
 
   CVector3f outgoing = d - c;
-  if (!outgoing.CanBeNormalized()) {
+  if (!RSTL_KYOTO_CAN_BE_NORMALIZED(outgoing)) {
     outgoing = CVector3f(0.f, 1.f, 0.f);
   }
   const CVector3f backwardSpan = -span;
   CVector3f tangentB = outgoing.AsNormalized() - backwardSpan.AsNormalized();
-  if (tangentB.CanBeNormalized()) {
+  if (RSTL_KYOTO_CAN_BE_NORMALIZED(tangentB)) {
     tangentB.Normalize();
   } else {
     tangentB = CVector3f(0.f, 1.f, 0.f);
@@ -264,11 +281,20 @@ CVector3f CMath::GetRoundedCatmullRomSplineTangent(const CVector3f& a, const CVe
 
 CVector3f CMath::GetBezierPoint(const CVector3f& a, const CVector3f& b, const CVector3f& c,
                                 const CVector3f& d, float t) {
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  const float inverse = 1.f - t;
+  const float inverse2 = inverse * inverse;
+  const float inverse3 = inverse * inverse2;
+  const float t2 = t * t;
+  const float t3 = t * t2;
+  return inverse3 * a + (3.f * t * inverse2) * b + (3.f * t2 * inverse) * c + t3 * d;
+#else
   CVector3f ab = CVector3f::Lerp(a, b, t);
   CVector3f bc = CVector3f::Lerp(b, c, t);
   CVector3f cd = CVector3f::Lerp(c, d, t);
 
   return CVector3f::Lerp(CVector3f::Lerp(ab, bc, t), CVector3f::Lerp(bc, cd, t), t);
+#endif
 }
 
 #if !RSTL_PRIME1
@@ -297,6 +323,12 @@ CVector3f CMath::GetBSplineTangent(const CVector3f& a, const CVector3f& b, const
                         (3.f + (-9.f * t2 + 6.f * t)) * c + (3.f * t2) * d);
 }
 
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+bool CMath::IsWithinTolerance(float x, float y, float epsilon) {
+  return AbsF(x - y) < epsilon;
+}
+
+#endif
 static float NoiseFade(float t) { return t * t * t * (t * (6.f * t - 15.f) + 10.f); }
 
 static float NoiseLerp(float t, float a, float b) { return a + t * (b - a); }
@@ -309,6 +341,30 @@ static float NoiseGradient3d(uint hash, float x, float y, float z) {
 }
 
 static float NoiseGradient4d(uint hash, float x, float y, float z, float w) {
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  const int h = hash & 31;
+  float u = x;
+  float v = y;
+  float s = z;
+  switch (h >> 3) {
+  case 1:
+    u = w;
+    v = x;
+    s = y;
+    break;
+  case 2:
+    u = z;
+    v = w;
+    s = x;
+    break;
+  case 3:
+    u = y;
+    v = z;
+    s = w;
+    break;
+  }
+  return ((h & 1) == 0 ? -s : s) + (((h & 4) == 0 ? -u : u) + ((h & 2) == 0 ? -v : v));
+#else
   int h = hash & 31;
   float b = y;
   switch (h >> 3) {
@@ -336,6 +392,7 @@ static float NoiseGradient4d(uint hash, float x, float y, float z, float w) {
     w = -w;
   }
   return w + (b + z);
+#endif
 }
 
 static float PerlinNoise3d(float x, float y, float z) {
@@ -622,6 +679,30 @@ int CMath::FloorLog2(uint v) {
   return ((1 - finalSig) >> 0x1f) + totalShift;
 }
 
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+uint CMath::SolveQuadratic(float a, float b, float c, float* roots) {
+  uint count = 0;
+  if (0.f != a) {
+    const float discriminant = b * b - (4.f * a) * c;
+    if (discriminant >= 0.f) {
+      const float root = SqrtF(discriminant);
+      const float scale = 0.5f / a;
+      const float minus = scale * (-b - root);
+      const float plus = scale * (-b + root);
+      if (a < 0.f) {
+        roots[count++] = plus;
+        roots[count++] = minus;
+      } else {
+        roots[count++] = minus;
+        roots[count++] = plus;
+      }
+    }
+  } else if (0.f != b) {
+    roots[count++] = -c / b;
+  }
+  return count;
+}
+#else
 bool CMath::SolveQuadratic(float a, float b, float c, float& plus, float& minus) {
   const float discriminant = b * b - (4.f * a) * c;
   if (discriminant < FLT_EPSILON || fabsf(a) < FLT_EPSILON) {
@@ -632,9 +713,12 @@ bool CMath::SolveQuadratic(float a, float b, float c, float& plus, float& minus)
   minus = (-b - root) / (2.f * a);
   return true;
 }
+#endif
 
 uint CMath::SolveCubic(const float* coefficients, float* roots) {
+#if !RSTL_KYOTO_MATH_PROTO_SOLVERS
   float* out;
+#endif
   uint count = 0;
   if (coefficients[3] != 0.f) {
     const float shift = coefficients[2] / (3.f * coefficients[3]);
@@ -648,11 +732,18 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
       const float negativeP3 = -p3;
       const float angle = acosf(Clamp(-1.f, q / SqrtF(negativeP3), 1.f));
       amplitude = 2.f * powf(negativeP3, 1.f / 6.f);
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+      for (float phase = 0.f; phase < 2.01f; phase += 1.f) {
+        roots[count] = amplitude * cosf((M_PIF * (2.f * phase) + angle) / 3.f) - shift;
+        ++count;
+      }
+#else
       out = roots;
       for (float phase = 0.f; phase < 2.01f; phase += 1.f) {
         *out++ = amplitude * cosf((M_PIF * (2.f * phase) + angle) / 3.f) - shift;
         ++count;
       }
+#endif
       if (roots[1] < roots[0]) {
         Swap(roots[0], roots[1]);
       }
@@ -682,6 +773,10 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
                            derivative;
       }
     }
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  } else {
+    count = SolveQuadratic(coefficients[2], coefficients[1], coefficients[0], roots);
+#else
   } else if (coefficients[2] != 0.f) {
     const float halfB = (0.5f * coefficients[1]) / coefficients[2];
     const float discriminant = halfB * halfB - coefficients[0] / coefficients[2];
@@ -694,33 +789,100 @@ uint CMath::SolveCubic(const float* coefficients, float* roots) {
   } else if (coefficients[1] != 0.f) {
     roots[0] = -coefficients[0] / coefficients[1];
     count = 1;
+#endif
   }
   for (uint i = 0; i < count; ++i) {
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+    const float x = roots[i];
+    const float value = x * ((coefficients[3] * x + coefficients[2]) * x + coefficients[1]);
+    if (fabsf(coefficients[0] + value) > 0.0002f) {
+      rs_debugger_printf("Cubic solver inaccurate!\n");
+    }
+#else
     // Native retains a pass over the roots; its original purpose is unresolved.
+#endif
   }
   return count;
 }
 
 uint CMath::SolveQuartic(const float* coefficients, float* roots) {
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  float resolvent[4];
+#endif
   uint count = 0;
   if (coefficients[4] == 0.f) {
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+    return SolveCubic(coefficients, roots);
+#else
     float cubic[4];
     cubic[0] = coefficients[0];
     cubic[1] = coefficients[1];
     cubic[2] = coefficients[2];
     cubic[3] = coefficients[3];
     return SolveCubic(cubic, roots);
+#endif
+  }
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+
+  if (coefficients[3] == 0.f && coefficients[1] == 0.f) {
+    float squaredRoots[4];
+    const uint squaredCount =
+        SolveQuadratic(coefficients[4], coefficients[2], coefficients[0], squaredRoots);
+    if (squaredCount == 2) {
+      if (squaredRoots[1] > 0.f) {
+        const float root = SqrtF(squaredRoots[1]);
+        roots[0] = -root;
+        roots[1] = root;
+        count = 2;
+        if (squaredRoots[0] > 0.f) {
+          const float innerRoot = SqrtF(squaredRoots[0]);
+          roots[3] = roots[1];
+          roots[1] = -innerRoot;
+          roots[2] = innerRoot;
+          count = 4;
+        } else if (squaredRoots[0] == 0.f) {
+          roots[2] = roots[1];
+          roots[1] = 0.f;
+          count = 3;
+        }
+      } else if (squaredRoots[1] == 0.f) {
+        roots[0] = 0.f;
+        count = 1;
+      }
+    } else if (squaredCount == 1) {
+      if (squaredRoots[0] > 0.f) {
+        const float root = SqrtF(squaredRoots[0]);
+        roots[0] = -root;
+        roots[1] = root;
+        count = 2;
+      } else {
+        roots[0] = 0.f;
+        count = 1;
+      }
+    }
+    return count;
   }
 
+  const float inverse = 1.f / coefficients[4];
+  const float quadratic = coefficients[2] * inverse;
+  const float shift = (0.25f * coefficients[3]) * inverse;
+#else
   const float quadratic = coefficients[2] / coefficients[4];
   const float shift = coefficients[3] / (4.f * coefficients[4]);
+#endif
   const float p = (-6.f * shift) * shift + quadratic;
+#if RSTL_KYOTO_MATH_PROTO_SOLVERS
+  const float q = shift * ((8.f * shift) * shift - (2.f * coefficients[2]) * inverse) + coefficients[1] * inverse;
+  const float r = coefficients[0] * inverse +
+                  shift * (shift * ((-3.f * shift) * shift + quadratic) - coefficients[1] * inverse);
+#else
   const float q = shift * ((8.f * shift) * shift - (2.f * coefficients[2]) / coefficients[4]) +
                   coefficients[1] / coefficients[4];
   const float r =
       shift * (shift * ((-3.f * shift) * shift + quadratic) - coefficients[1] / coefficients[4]) +
       coefficients[0] / coefficients[4];
   float resolvent[4];
+#endif
   resolvent[0] = (4.f * r) * p - q * q;
   resolvent[1] = -8.f * r;
   resolvent[2] = -4.f * p;

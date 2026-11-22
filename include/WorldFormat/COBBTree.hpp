@@ -130,7 +130,7 @@ public:
 #if RSTL_PRIME1
   const CNode& GetRoot() const { return *mRoot; }
   bool HasRoot() const { return mRoot != nullptr; }
-  int GetNumVerts() const { return mIndexData.mVertices.size(); }
+  int GetNumVertices() const { return mIndexData.mVertices.size(); }
 
   CCollisionSurface GetSurface(ushort idx) const;
   CCollisionSurface GetTransformedSurface(const ushort idx, const CTransform4f& xf) const;

@@ -64,9 +64,6 @@ private:
 CHECK_SIZEOF(CFactoryMgr, RSTL_KYOTO_BUFFER_FACTORIES ? 0x14 : 0x28)
 
 #if RSTL_KYOTO_BUFFER_FACTORIES
-CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
-                                     int size, const CVParamTransfer& xfer);
-
 CFactoryFnReturn FSaveWorldFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
                                    int size, const CVParamTransfer& xfer);
 
@@ -74,9 +71,6 @@ CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag,
                                          const rstl::auto_ptr< uchar >& buffer, int size,
                                          const CVParamTransfer& xfer);
 #else
-RSTL_PRIME1_CONST CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-                                                       const CVParamTransfer& xfer);
-
 RSTL_PRIME1_CONST CFactoryFnReturn FDependencyGroupFactory(const SObjectTag& tag, CInputStream& in,
                                                            const CVParamTransfer& xfer);
 #endif

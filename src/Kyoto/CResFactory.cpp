@@ -61,7 +61,7 @@ static bool StrippedIsLoading(
   return map.find(tag) != map.end();
 }
 
-#if !defined(TARGET_PC)
+#if !RSTL_PRIME1 || !defined(TARGET_PC)
 rstl::auto_ptr< IObj > CResFactory::Build(const SObjectTag& tag, const CVParamTransfer& params) {
   AUTO(it, FindInLoadList(tag));
 #if RSTL_KYOTO_DEBUG_BUILD

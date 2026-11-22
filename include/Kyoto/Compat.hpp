@@ -11,4 +11,11 @@
 #define MEMORY_SYS_ARGUMENT_VAL  , memorySys
 #endif
 
+#if defined(__cplusplus) && __cplusplus < 201103L
+// Define constexpr as nothing
+#ifndef constexpr
+#define constexpr
+#endif
+#endif // defined(__cplusplus) && __cplusplus < 201103L
+
 #endif // _COMPAT_H_

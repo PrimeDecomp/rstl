@@ -7,10 +7,15 @@
 
 #include "Kyoto/Input/CControllerGamepadData.hpp"
 #include "Kyoto/Input/CControllerData.hpp"
-
 #include "Kyoto/Input/InputTypes.hpp"
+#include "Kyoto/Math/CVector2f.hpp"
 
 class COsContext;
+
+extern const uint kControllerTypeUnknown; // Guessed name
+extern const uint kControllerTypeCube;    // Guessed name
+extern const uint kControllerTypeRevn;    // Guessed name
+extern const uint kControllerTypeChak;    // Guessed name
 
 class IController {
 protected:
@@ -43,7 +48,6 @@ public:
 #if RSTL_CONTROLLER_WII
   virtual void Update(float dt) = 0;
 #endif
-
   virtual uint GetDeviceCount() const = 0;
 #if RSTL_CONTROLLER_WII
   virtual CControllerData& GetInput(uint channel) = 0;
@@ -69,6 +73,12 @@ public:
   virtual CControllerGamepadData& GetGamepadData(int controller) = 0;
   virtual uint GetControllerType(int) const = 0;
   virtual void SetMotorState(EIOPort port, EMotorState state) = 0;
+#if RSTL_KYOTO_WPAD_EMU_CONTROLLER
+  virtual int GetPointerState(int controller) const = 0;
+  virtual uint GetPointerValidFrameCount(int controller) const = 0;
+  virtual uint GetPointerInvalidFrameCount(int controller) const = 0;
+  virtual CVector2f GetPointerPosition(int controller) const = 0;
+#endif
 #endif
 
   static IController* Create(const COsContext& ctx);
@@ -76,5 +86,7 @@ public:
 #if RSTL_PRIME1
 CHECK_SIZEOF(IController, 0x4)
 #endif
+
+extern IController* gpController;
 
 #endif // _ICONTROLLER

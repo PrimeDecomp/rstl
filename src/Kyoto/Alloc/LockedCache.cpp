@@ -1,7 +1,13 @@
 #include "Kyoto/Alloc/LockedCache.hpp"
 
 // Guessed descriptive names for the target's temporary locked-cache allocator state.
+#ifdef TARGET_PC
+// TODO: maybe not fixed size? send somewhere else?
+alignas(32) static uchar sLockedCacheStorage[0x4000];
+static uchar* sAllocationBase = sLockedCacheStorage;
+#else
 static uchar* sAllocationBase = reinterpret_cast< uchar* >(0xe0000000);
+#endif
 static void* sAllocations[16];
 static uint sAllocatedBytes;
 static uint sAllocationCount;
