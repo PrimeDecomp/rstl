@@ -3,55 +3,41 @@
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Basics/COsContext.hpp"
 
+IAllocator::SMetrics::SMetrics(
+    uint heapSize, uint totalHeapAllocations, uint currentHeapAllocations, uint requestedHeapBytes,
+    uint allocatedHeapBytes, uint freeHeapBytes, uint peakHeapAllocations, uint peakAllocatedHeapBytes,
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-IAllocator::SMetrics::SMetrics(uint heapSize, uint unk1, uint unk2, uint unk3, uint unk4,
-                               uint heapSize2, uint unk5, uint unk6, uint unk7, uint unk8,
-                               uint unk9, uint unk10, uint smallAllocNumAllocs,
-                               uint smallAllocAllocatedSize, uint smallAllocRemainingSize,
-                               uint mediumAllocNumAllocs, uint mediumAllocAllocatedSize,
-                               uint mediumAllocBlocksAvailable, uint unk11, uint unk12, uint unk13,
-                               uint mediumAllocTotalAllocated, uint fakeStatics)
-#else
-IAllocator::SMetrics::SMetrics(uint heapSize, uint unk1, uint unk2, uint unk3, uint unk4,
-                               uint heapSize2, uint unk5, uint unk6, uint unk7, uint unk8,
-                               uint unk9, uint smallAllocNumAllocs, uint smallAllocAllocatedSize,
-                               uint smallAllocRemainingSize, uint mediumAllocNumAllocs,
-                               uint mediumAllocAllocatedSize, uint mediumAllocBlocksAvailable,
-                               uint unk10, uint unk11, uint unk12, uint mediumAllocTotalAllocated,
-                               uint fakeStatics)
+    uint periodicPeakAllocatedHeapBytes,
 #endif
+    uint minAllocationSize, uint maxAllocationSize, uint averageAllocationSize, uint smallNumAllocs,
+    uint smallAllocatedBlocks, uint smallAvailableBlocks, uint mediumNumAllocs,
+    uint mediumAllocatedBlocks, uint mediumAvailableBlocks, uint allocationsSinceLastSnapshot,
+    uint heapPhysicalAddress, uint smallPoolReservedBytes, uint mediumPoolDataBytes, uint fakeStatics)
 : mHeapSize(heapSize)
-, x4_(unk1)
-, x8_(unk2)
-, xc_(unk3)
-, x10_(unk4)
-, mHeapSize2(heapSize2)
-, x18_(unk5)
-, x1c_(unk6)
-, x20_(unk7)
-, x24_(unk8)
-, x28_(unk9)
+, mTotalHeapAllocations(totalHeapAllocations)
+, mCurrentHeapAllocations(currentHeapAllocations)
+, mRequestedHeapBytes(requestedHeapBytes)
+, mAllocatedHeapBytes(allocatedHeapBytes)
+, mFreeHeapBytes(freeHeapBytes)
+, mPeakHeapAllocations(peakHeapAllocations)
+, mPeakAllocatedHeapBytes(peakAllocatedHeapBytes)
 #if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-, x2c_(unk10)
+, mPeriodicPeakAllocatedHeapBytes(periodicPeakAllocatedHeapBytes)
 #endif
-, mSmallNumAllocs(smallAllocNumAllocs)
-, mSmallAllocatedSize(smallAllocAllocatedSize)
-, mSmallRemainingSize(smallAllocRemainingSize)
-, mMediumNumAllocs(mediumAllocNumAllocs)
-, mMediumAllocatedSize(mediumAllocAllocatedSize)
-, mMediumBlocksAvailable(mediumAllocBlocksAvailable)
-#if RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-, x48_(unk11)
-, x4c_(unk12)
-, x50_(unk13)
-#else
-, x44_(unk10)
-, x48_(unk11)
-, x4c_(unk12)
-#endif
-, mMediumTotalAllocated(mediumAllocTotalAllocated)
-, mFakeStatics(fakeStatics) {
-}
+, mMinAllocationSize(minAllocationSize)
+, mMaxAllocationSize(maxAllocationSize)
+, mAverageAllocationSize(averageAllocationSize)
+, mSmallNumAllocs(smallNumAllocs)
+, mSmallAllocatedBlocks(smallAllocatedBlocks)
+, mSmallAvailableBlocks(smallAvailableBlocks)
+, mMediumNumAllocs(mediumNumAllocs)
+, mMediumAllocatedBlocks(mediumAllocatedBlocks)
+, mMediumBlocksAvailable(mediumAvailableBlocks)
+, mAllocationsSinceLastSnapshot(allocationsSinceLastSnapshot)
+, mHeapPhysicalAddress(heapPhysicalAddress)
+, mSmallPoolReservedBytes(smallPoolReservedBytes)
+, mMediumPoolDataBytes(mediumPoolDataBytes)
+, mFakeStatics(fakeStatics) {}
 
 IAllocator::SAllocatorMetrics::SAllocatorMetrics(
     uint smallNumAllocs, uint smallAllocatedBlocks, uint smallAvailableBlocks, uint mediumNumAllocs,

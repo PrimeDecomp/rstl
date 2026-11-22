@@ -64,9 +64,9 @@ void CMemory::Shutdown() {
     liveAllocations += mpAllocator->GetHeapMetrics(i, 0).mCurrentHeapAllocations;
   }
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-  const uint liveAllocations = mpAllocator->GetMetrics(0, false).x8_;
+  const uint liveAllocations = mpAllocator->GetMetrics(false, false).mCurrentHeapAllocations;
 #else
-  const uint liveAllocations = mpAllocator->GetMetrics().x8_;
+  const uint liveAllocations = mpAllocator->GetMetrics().mCurrentHeapAllocations;
 #endif
   RS_DEBUGGER_PRINT("CMemory: Shutting down...  %d allocations\n", liveAllocations);
   if (liveAllocations != 0) {
@@ -108,9 +108,9 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
     rs_debugger_printf("***************** Alloc Failed! ******************\n");
     rs_debugger_printf("Size:%d\n", len);
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-    const IAllocator::SMetrics metrics = mpAllocator->GetMetrics(0, false);
-    rs_debugger_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len, metrics.x10_,
-                       metrics.mHeapSize2);
+    const IAllocator::SMetrics metrics = mpAllocator->GetMetrics(false, false);
+    rs_debugger_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len,
+                       metrics.mAllocatedHeapBytes, metrics.mFreeHeapBytes);
 #else
     rs_debugger_printf("Alloc failed - Size: %d", len);
 #endif
@@ -150,8 +150,8 @@ int CMemory::EnumAllocations(IAllocator::FEnumAllocationsCb callback, const void
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 IAllocator::SAllocatorMetrics CMemory::GetMetrics() { return mpAllocator->GetMetrics(); }
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
-IAllocator::SMetrics CMemory::GetMetrics(bool unk1, bool unk2) {
-  return mpAllocator->GetMetrics(unk1, unk2);
+IAllocator::SMetrics CMemory::GetMetrics(bool resetPeriodicPeak, bool resetPeak) {
+  return mpAllocator->GetMetrics(resetPeriodicPeak, resetPeak);
 }
 #endif
 
