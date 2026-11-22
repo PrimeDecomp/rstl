@@ -1,34 +1,29 @@
 #ifndef _CSKINNEDMODEL
 #define _CSKINNEDMODEL
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#include "rstl/types.h"
-
-#include "Kyoto/TToken.hpp"
-#if RSTL_PRIME1
+#include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/Animation/CSkinRules.hpp"
 #include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Graphics/ModelTypes.hpp"
-
+#include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/optional_object.hpp"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 #if NONMATCHING
 #include "Kyoto/Animation/CVertexMorphEffect.hpp"
-#endif
+#else
+class CVertexMorphEffect; // This must be a forward declaration for GC matching
 #endif
 
 class CModel;
 class CSkinRules;
-class CCharLayoutInfo;
-
 class CModelFlags;
 class CPoseAsTransforms;
 class CTransform4f;
-
 class CVector3f;
-class CVertexMorphEffect; // This must be a forward declaration for GC matching
 
 #if !RSTL_PRIME1
 class CPoseAsTransforms_Linear;
@@ -105,9 +100,8 @@ public:
                      : TModelPositions{};
   }
   TModelNormals GetNormalView(const float* normals) const {
-    return normals
-               ? TModelNormals(normals, static_cast< size_t >(mSkinRules->GetNumNormals()) * 3)
-               : TModelNormals{};
+    return normals ? TModelNormals(normals, static_cast< size_t >(mSkinRules->GetNumNormals()) * 3)
+                   : TModelNormals{};
   }
 #endif
   void Draw(TDrawFunc func, void* data);

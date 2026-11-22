@@ -2995,7 +2995,7 @@ void CGraphics::SetUseStreamVertexDelay(bool enabled) { sUseStreamVertexDelay = 
 #endif
 
 #if !RSTL_PRIME1 && IS_TARGET_PC
-CGraphicsSys::CGraphicsSys(const COsContext& osContext) {
+CGraphicsSys::CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext);
   }
@@ -3003,7 +3003,7 @@ CGraphicsSys::CGraphicsSys(const COsContext& osContext) {
 #endif
 
 #if !RSTL_PRIME1 && !IS_TARGET_PC
-CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memorySys, bool progressive){
+CGraphicsSys::CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL, bool progressive){
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext, progressive);
   }
@@ -3011,7 +3011,7 @@ CGraphicsSys::CGraphicsSys(const COsContext& osContext, const CMemorySys& memory
 #endif
 
 #if RSTL_PRIME1
-CGraphicsSys::CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_DECL, uint fifoSize, void* fifoBase) {
+CGraphicsSys::CGraphicsSys(const COsContext& osContext MEMORY_SYS_ARGUMENT_CONST_DECL, uint fifoSize, void* fifoBase) {
   if (mGraphicsInitialized != true) {
     mGraphicsInitialized = CGraphics::Startup(osContext, fifoSize, fifoBase);
   }

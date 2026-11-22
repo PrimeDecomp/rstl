@@ -1,23 +1,21 @@
 #ifndef _CGENDESCRIPTION
 #define _CGENDESCRIPTION
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
-#include "rstl/types.h"
 
 #include "Kyoto/CToken.hpp"
+#include "Kyoto/Graphics/CModel.hpp"
 #include "Kyoto/Particles/CSpawnSystemKeyframeData.hpp"
-
+#include "Kyoto/Particles/CSwooshDescription.hpp"
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
-
+#include "rstl/RstlVersions.h"
 #include "rstl/optional_object.hpp"
 #include "rstl/single_ptr.hpp"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 
 class CElectricDescription;
 class CModel;
 class CSpawnSystemKeyframeData;
-
-class CSwooshDescription;
 
 class CGenDescription {
 public:
@@ -144,7 +142,6 @@ public:
   CVectorElement* mVAV3;
   int mDFLG;
 #endif
-
 };
 CHECK_SIZEOF(CGenDescription, RSTL_PRIME1 ? 0x12c : RSTL_PARTICLE_BOUNDS_MODES ? 0x150 : 0x148)
 

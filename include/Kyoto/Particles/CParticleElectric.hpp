@@ -1,22 +1,21 @@
 #ifndef _CPARTICLEELECTRIC
 #define _CPARTICLEELECTRIC
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
-
-#include "Kyoto/Particles/CParticleGen.hpp"
 
 #include "Kyoto/CRandom16.hpp"
 #include "Kyoto/Graphics/CColor.hpp"
 #include "Kyoto/Math/CAABox.hpp"
 #include "Kyoto/Math/CTransform4f.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
+#include "Kyoto/Particles/CElectricDescription.hpp"
+#include "Kyoto/Particles/CParticleGen.hpp"
 #include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/auto_ptr.hpp"
 #include "rstl/list.hpp"
 #include "rstl/reserved_vector.hpp"
+#include "rstl/static_assert.hpp"
 #include "rstl/vector.hpp"
 
-class CElectricDescription;
 class CElementGen;
 class CParticleSwoosh;
 struct SUVElementSet;
@@ -111,7 +110,6 @@ public:
     const CVector3f& GetFinalPos() const { return mFinalPos; }
     const CVector3f& GetFinalVel() const { return mFinalVel; }
 #endif
-
   };
 
   void ForceParticleCreation(int count);

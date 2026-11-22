@@ -1,18 +1,16 @@
 #ifndef _CRASTERFONT
 #define _CRASTERFONT
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
-#include "rstl/types.h"
-
+#include "Kyoto/Graphics/CTexture.hpp"
 #include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
+#include "rstl/static_assert.hpp"
+#include "rstl/types.h"
 #include "rstl/vector.hpp"
-
 #include "string.h"
 
-class CTexture;
 class CDrawStringOptions;
 class CTextRenderBuffer;
 class IObjectStore;
@@ -43,9 +41,7 @@ public:
 
 #if RSTL_PRIME1
   CKernPair(const CKernPair& other)
-  : mFirst(other.mFirst)
-  , mSecond(other.mSecond)
-  , mHowMuch(other.mHowMuch) {}
+  : mFirst(other.mFirst), mSecond(other.mSecond), mHowMuch(other.mHowMuch) {}
 #endif
 
   wchar_t GetFirst() const { return mFirst; }
@@ -71,7 +67,8 @@ public:
          const int cellWidth, const int cellHeight, const int baseline, const int kernStart
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
-         , const uchar layer = 0
+         ,
+         const uchar layer = 0
 #endif
          )
   : mA(a)
@@ -87,7 +84,8 @@ public:
   , mCellWidth(cellWidth)
   , mCellHeight(cellHeight)
   , mBaseline(baseline)
-  , mKernStart(kernStart) {}
+  , mKernStart(kernStart) {
+  }
 
   short GetA() const { return mA; }
   short GetB() const { return mB; }

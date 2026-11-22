@@ -4,6 +4,7 @@
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Particles/CElementGen.hpp"
 #include "Kyoto/Particles/CParticleGen.hpp"
+#include "Kyoto/Particles/CSortedParticleSystemDescription.hpp"
 #include "Kyoto/TToken.hpp"
 
 #include "rstl/reserved_vector.hpp"

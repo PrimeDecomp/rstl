@@ -13,7 +13,6 @@
 
 class CColorElement;
 class CEmitterElement;
-class CGenDescription;
 
 class CIntElement;
 class CRealElement;

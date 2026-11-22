@@ -1,13 +1,13 @@
 #ifndef _CLAYOUTDESCRIPTION
 #define _CLAYOUTDESCRIPTION
-#include "rstl/static_assert.hpp"
-#include "rstl/RstlVersions.h"
 
+#include "Kyoto/Animation/CCharLayoutInfo.hpp"
 #include "Kyoto/TToken.hpp"
+#include "rstl/RstlVersions.h"
 #include "rstl/optional_object.hpp"
 #include "rstl/pair.hpp"
+#include "rstl/static_assert.hpp"
 
-class CCharLayoutInfo;
 class CLayoutScaleInfo;
 
 class CLayoutDescription {

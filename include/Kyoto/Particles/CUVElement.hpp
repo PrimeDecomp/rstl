@@ -5,8 +5,7 @@
 
 #include "Kyoto/Particles/IElement.hpp"
 #include "Kyoto/TToken.hpp"
-
-class CTexture;
+#include "Kyoto/Graphics/CTexture.hpp"
 
 class CUVEConstant : public CUVElement {
   TLockedToken< CTexture > mTex;
