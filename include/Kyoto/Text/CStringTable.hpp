@@ -73,7 +73,7 @@ private:
   const wchar_t** mStrings;
 #endif
 #if RSTL_VERSION >= RSTL_GM8P_00
-  rstl::single_ptr< SReloadData > mReloadData;
+  mutable rstl::single_ptr< SReloadData > mReloadData;
 #endif
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
