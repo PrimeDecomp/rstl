@@ -726,6 +726,8 @@
 #define RSTL_KYOTO_STRINGIZE_DELEGATES (RSTL_CORRUPTION)
 // Address queries follow the prototype's existing int interface.
 #define RSTL_KYOTO_REL_DEBUG_INT_ADDRESS (RSTL_VERSION == RSTL_G2MEAB)
+// TAverage holds its values in a member vector instead of deriving from it.
+#define RSTL_KYOTO_AVERAGE_MEMBER (!RSTL_PRIME1)
 // TTokenSet::ToLower takes its character by const value (this changes the emitted code).
 #if RSTL_KYOTO_TOKEN_SET_PROTO_FORMS
 #define RSTL_KYOTO_TOKEN_SET_CHAR_PARAM const char
