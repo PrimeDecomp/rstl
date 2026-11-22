@@ -1,15 +1,18 @@
+#define RS_TTOKEN_FILE "TToken.H"
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Text/CStringTable.hpp"
 
+#include "Kyoto/Alloc/Assert.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
+#include "Kyoto/Basics/COsContext.hpp"
 #include "Kyoto/CDvdRequest.hpp"
 #include "Kyoto/CResFactory.hpp"
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"
 
 #include "Kyoto/Streams/CInputStream.hpp"
-#if RSTL_PRIME1
 #include "Kyoto/Streams/CMemoryInStream.hpp"
-#include "Kyoto/Basics/CBasics.hpp"
+#if RSTL_PRIME1
 #if TARGET_LITTLE_ENDIAN || WCHAR_MAX > 0xffff
 #include "string.h"
 #endif
@@ -24,10 +27,15 @@
 #include "string.h"
 #endif
 
+namespace {
+const uint kCookie = 0x87654321;
+const uint kMinSupportedVersion = 0;
+const uint kVersion = 1;
+} // namespace
+
 static const wchar_t skInvalidString[] = L"Invalid";
 #if RSTL_VERSION >= RSTL_GM8P_00
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
+#if !RSTL_KYOTO_STRING_TABLE_LANGUAGES_EXTERN
 static
 #endif
 const FourCC skLanguages[] = {'ENGL', 'GERM', 'FREN', 'SPAN', 'ITAL', 'DUTC', 'JAPN'};
@@ -151,13 +159,21 @@ void CStringTable::Load(CInputStream& in)
   in.ReadBytes(mData.get(), dataLen);
 #endif
 #else
-  in.ReadInt32();
-  uint version = in.ReadInt32();
-  int langCount = in.Get(TType< int >());
+  const uint header = in.ReadInt32();
+  RS_VERIFY_THROW_DIRECT(84, header == kCookie, false, "Bad header for string table");
+  const uint version = in.Get(TType< uint >());
+  RS_VERIFY_THROW_DIRECT(
+      88, version >= kMinSupportedVersion && version <= kVersion, false,
+      CBasics::Stringize("Bad version for string table: expected %d, got %d", kVersion, version));
+  int numLanguages = in.Get(TType< int >());
+  RS_VERIFY_THROW_DIRECT(91, numLanguages > 0, false,
+                         "Fatal error: No languages specified for this string table.");
   mStringCount = in.Get(TType< int >());
+  RS_VERIFY_THROW_DIRECT(94, numLanguages < COsContext::kLang_Count, false,
+                         "Too many languages in string table!\n");
 
   rstl::reserved_vector< SLanguageInfo, 7 > languages;
-  for (int i = 0; i < langCount; ++i) {
+  for (int i = 0; i < numLanguages; ++i) {
     FourCC language = in.Get(TType< FourCC >());
     uint offset = in.ReadUint32();
     uint size = version != 0 ? in.Get(TType< uint >()) : 0;
@@ -167,17 +183,18 @@ void CStringTable::Load(CInputStream& in)
 
   uint offset = languages[0].mOffset;
   uint size = languages[0].mSize;
-  for (int i = 0; i < langCount; ++i) {
+  for (int i = 0; i < numLanguages; ++i) {
     if (languages[i].mLanguage == mCurrentLanguage) {
       offset = languages[i].mOffset;
       size = languages[i].mSize;
       break;
     }
   }
+
   if (version != 0) {
     mNameCount = in.Get(TType< int >());
     uint namesSize = in.Get(TType< uint >());
-    mData = rs_new uchar[namesSize + size];
+    mData = rs_new_line(136) uchar[namesSize + size];
     mNames = reinterpret_cast< SStringName* >(mData.get());
     mStrings = reinterpret_cast< const wchar_t** >(mData.get() + namesSize);
     in.ReadBytes(mNames, namesSize);
@@ -189,7 +206,7 @@ void CStringTable::Load(CInputStream& in)
 
   if (version == 0) {
     size = in.Get(TType< uint >());
-    mData = rs_new uchar[size];
+    mData = rs_new_line(157) uchar[size];
     mStrings = reinterpret_cast< const wchar_t** >(mData.get());
   }
   in.ReadBytes(mStrings, size);
@@ -225,34 +242,7 @@ const wchar_t* CStringTable::GetString(int idx) const {
 #endif
 }
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-#if RSTL_VERSION >= RSTL_GM8P_00
-void CStringTable::Reload(CAssetId id, CResFactory& factory) {
-  mReloadData = nullptr;
-  mReloadData = rs_new SReloadData(id, factory);
-}
-
-void CStringTable::TryFinishReload() {
-  SReloadData* data = mReloadData.get();
-  if (data != nullptr && data->mRequest->IsComplete()) {
-    CMemoryInStream in(data->mBuffer.get(), data->mSize);
-    Load(in);
-    mReloadData = nullptr;
-  }
-}
-
-bool CStringTable::IsReloading() const { return !mReloadData.null(); }
-
-CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory)
-: mRequest(nullptr) {
-  const SObjectTag tag('STRG', id);
-  mSize = factory.ResourceSize(tag);
-  mBuffer = static_cast< uchar* >(CMemory::Alloc(mSize, IAllocator::kHI_RoundUpLen));
-  mRequest = factory.LoadResourceAsync(tag, mBuffer.get());
-}
-#endif
-#else
+#if !RSTL_PRIME1
 int CStringTable::GetStringIndexByName(const char* name) const {
   SStringName* begin = mNames;
   if (mNameCount > 0 && *name != '\0') {
@@ -272,15 +262,47 @@ const wchar_t* CStringTable::GetStringByName(const char* name) const {
 }
 #endif
 
+#if RSTL_KYOTO_STRING_TABLE_RELOAD
+void CStringTable::Reload(CAssetId id, CResFactory& factory) {
+  mReloadData = nullptr;
+  mReloadData = rs_new_line(267) SReloadData(id, factory);
+}
+
+#if RSTL_PRIME1
+void CStringTable::TryFinishReload() {
+  SReloadData* data = mReloadData.get();
+  if (data != nullptr && data->mRequest->IsComplete()) {
+    CMemoryInStream in(data->mBuffer.get(), data->mSize);
+    Load(in);
+    mReloadData = nullptr;
+  }
+}
+
+bool CStringTable::IsReloading() const { return !mReloadData.null(); }
+
+#endif
+CStringTable::SReloadData::SReloadData(CAssetId id, CResFactory& factory)
+: mRequest(nullptr) {
+  const SObjectTag tag('STRG', id);
+  mSize = factory.ResourceSize(tag);
+  mBuffer = static_cast< uchar* >(rs_aligned_new_line(mSize, 298));
+  mRequest = factory.GetResLoader().LoadResourceAsync(tag, reinterpret_cast< char* >(mBuffer.get()));
+}
+#endif
+
 #if RSTL_VERSION >= RSTL_GM8P_00
 CStringTable::SReloadData::~SReloadData() {}
 #endif
 
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-const
-#endif
-CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
-                                     const CVParamTransfer& xfer) {
+#if RSTL_KYOTO_BUFFER_FACTORIES
+CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, const rstl::auto_ptr< uchar >& buffer,
+                                     int size, const CVParamTransfer& xfer) {
+  CMemoryInStream in(buffer.get(), size);
+  return rs_new_line(313) CStringTable(in);
+}
+#else
+RSTL_PRIME1_CONST CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
+                                                       const CVParamTransfer& xfer) {
   return rs_new CStringTable(in);
 }
+#endif

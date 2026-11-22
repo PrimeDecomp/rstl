@@ -92,7 +92,8 @@ extern CStringTable* gpStringTable;
 #if RSTL_PRIME1
 const CFactoryFnReturn FStringTableFactory(const SObjectTag& tag, CInputStream& in,
                                            const CVParamTransfer& xfer);
-#else
+#endif
+#if RSTL_KYOTO_STRING_TABLE_LANGUAGES_EXTERN
 extern const FourCC skLanguages[7]; // Shared resource language codes.
 #endif
 
