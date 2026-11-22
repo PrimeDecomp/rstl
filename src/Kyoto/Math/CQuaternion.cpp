@@ -304,11 +304,7 @@ CQuaternion CQuaternion::ShortestRotationArc(const CVector3f& from, const CVecto
     if (CVector3f::Dot(fromUnit, toUnit) > 0.f) {
       return NoRotation();
     }
-#if RSTL_KYOTO_VECTOR3F_CORRUPTION
-    const bool normalizable = cross.IsNormalizable();
-#else
-    const bool normalizable = cross.CanBeNormalized();
-#endif
+    const bool normalizable = RSTL_KYOTO_CAN_BE_NORMALIZED(cross);
     if (normalizable) {
       return CQuaternion(0.f, cross.AsNormalized());
     }
