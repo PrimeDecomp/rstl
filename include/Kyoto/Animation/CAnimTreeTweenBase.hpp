@@ -74,7 +74,7 @@ public:
 protected:
   int mFlags;
   s32 mCharacterSpaceBlend : 1;
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
   u32 mCullSelector : 2;
 #else
   s32 mCullSelector : 2;

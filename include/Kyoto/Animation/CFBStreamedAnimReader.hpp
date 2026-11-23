@@ -69,11 +69,8 @@ public:
   uint GetSegId(uint index) const { return mSegIds[index]; }
 #if !RSTL_PRIME1
   const bool* GetRotationFlags() const { return mHasRotation; } // Guessed name.
-
   const bool* GetOffsetFlags() const { return mHasOffset; } // Guessed name.
-
   const bool* GetScaleFlags() const { return mHasScale; } // Guessed name.
-
   bool HasRotation(uint index) const { return mHasRotation[index]; }
 #endif
   bool HasOffset(uint index) const { return mHasOffset[index]; }
@@ -201,14 +198,10 @@ class CMemoryInputToBitLevelLoader {
   friend class CBitLevelLoader< CMemoryInputToBitLevelLoader >;
 
 public:
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
   CMemoryInputToBitLevelLoader(const uint* data) : mData(reinterpret_cast< const uchar* >(data)) {}
 #else
-// TODO: verify that this Prime/Echoes difference is real
-#if !RSTL_PRIME1
-  explicit
-#endif
-  CMemoryInputToBitLevelLoader(const uint* data)
+  explicit CMemoryInputToBitLevelLoader(const uint* data)
   : mData(reinterpret_cast< const uchar* >(data) - sizeof(uint)) {}
 #endif
 
@@ -239,7 +232,7 @@ RSTL_KYOTO_ANIMATION_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
   uint result = 0;
   uint shift = 0;
   while (remaining != 0) {
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
@@ -251,7 +244,7 @@ RSTL_KYOTO_ANIMATION_INLINE uint CBitLevelLoader< T >::LoadUnsigned(uint bits) {
     mBit += count;
     shift += count;
     remaining -= count;
-#if !(RSTL_PRIME1 && NONMATCHING)
+#if !NONMATCHING
     if (mBit == 32) {
       mBit = 0;
       mWord = Input(*mInput);
@@ -267,7 +260,7 @@ RSTL_KYOTO_ANIMATION_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
     return 0;
   }
   uint value = LoadUnsigned(bits);
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
   if (bits < 32 && (value & (1u << (bits - 1)))) {
 #else
   if (value & (1 << (bits - 1))) {
@@ -280,7 +273,7 @@ RSTL_KYOTO_ANIMATION_INLINE int CBitLevelLoader< T >::LoadSigned(uint bits) {
 template <>
 inline uint
 CBitLevelLoader< CMemoryInputToBitLevelLoader >::Input(CMemoryInputToBitLevelLoader& input) {
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
   uint value = TLoadedVal< uint >::Read(input.mData);
   input.mData += sizeof(uint);
   return value;

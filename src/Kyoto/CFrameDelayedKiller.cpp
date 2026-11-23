@@ -96,7 +96,7 @@ bool CElementAllocationChunk::CanAllocate(uint size) const {
 }
 
 bool CElementAllocationChunk::Contains(const void* ptr) const {
-#if RSTL_PRIME1 && NONMATCHING
+#if NONMATCHING
   return reinterpret_cast< uintptr_t >(ptr) - reinterpret_cast< uintptr_t >(mData) < sizeof(mData);
 #else
   int offset = static_cast< const char* >(ptr) - reinterpret_cast< const char* >(mData);
