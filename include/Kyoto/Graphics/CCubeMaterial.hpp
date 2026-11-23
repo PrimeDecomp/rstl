@@ -7,9 +7,7 @@
 
 #include "Kyoto/Graphics/CModelFlags.hpp"
 #include "Kyoto/Math/CVector3f.hpp"
-#if !RSTL_PRIME1
 #include "dolphin/gx.h"
-#endif
 
 enum EStateFlags {
   kStateFlag_KonstValues = (1 << 3),
@@ -47,28 +45,11 @@ public:
 
   uint GetFlags() const { return CBasics::SwapBytes(*reinterpret_cast< const uint* >(GetData())); }
   bool IsFlagSet(const EStateFlags flag) const { return (GetFlags() & flag) != 0; }
-  uint GetTextureCount() const {
-#if RSTL_PRIME1
-    const uchar* data = GetData();
-    data += sizeof(uint);
-    const int ret = CBasics::SwapBytes(*reinterpret_cast< const uint* >(data));
-    return ret;
-#else
-    return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]);
-#endif
-  }
+  uint GetTextureCount() const { return CBasics::SwapBytes(static_cast< const uint* >(mData)[1]); }
 
   uint GetVertexDesc() const {
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-    const uchar* data = GetData();
-    data += (GetTextureCount() * sizeof(uint));
-    data += sizeof(uint) + sizeof(uint);
-    return CBasics::SwapBytes(*reinterpret_cast< const uint* >(data));
-#else
     const uint* words = static_cast< const uint* >(mData);
     return CBasics::SwapBytes(words[GetTextureCount() + 2]);
-#endif
   }
 
   // TODO: Figure out wtf is going on here
@@ -82,7 +63,8 @@ public:
     const uint* words = static_cast< const uint* >(mData) + GetTextureCount() + 3;
     return (static_cast< u64 >(BE_SWAP(words[0])) << 32) | BE_SWAP(words[1]);
 #else
-    return *reinterpret_cast< const u64* >(static_cast< const uint* >(mData) + GetTextureCount() + 3);
+    return *reinterpret_cast< const u64* >(static_cast< const uint* >(mData) + GetTextureCount() +
+                                           3);
 #endif
   }
 #endif
@@ -97,7 +79,6 @@ public:
 
 private:
   static void SetupBlendMode(uint blendFactors, const CModelFlags& flags, bool alphaTest);
-// TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
   static uint HandleReflection(bool usesTevReg2, GXTexMapID indTexSlot, int indMtxScaleExp,
                                uint tevCount, uint texCount, uint tcgCount, uint finalKColorCount,
