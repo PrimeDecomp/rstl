@@ -873,6 +873,9 @@
 #define RSTL_KYOTO_VECTOR3F_CORRUPTION (RSTL_CORRUPTION)
 // CVector3f declares reserved_vector, optional and vector construction policies.
 #define RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// CVector3f's binary `+` and `-` read the members on every GameCube-era build; the Wii builds call
+// the getters.
+#define RSTL_KYOTO_VECTOR3F_MEMBER_ARITHMETIC (RSTL_VERSION < RSTL_R3IJ)
 // CVector3f has the component-wise `operator*`.
 #define RSTL_KYOTO_VECTOR3F_ELEMENTWISE_MULTIPLY (RSTL_PRIME1 || RSTL_CORRUPTION)
 // CVector3d has compound assignment, scalar multiplication and equality operators.

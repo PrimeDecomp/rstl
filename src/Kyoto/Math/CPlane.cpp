@@ -11,8 +11,8 @@ CPlane::CPlane(CInputStream& in)
 #endif
 
 float CPlane::ClipLineSegment(const CVector3f& start, const CVector3f& end) const {
-  float dist = -(CVector3f::Dot(start, GetNormal()) - GetConstant()) /
-               CVector3f::Dot(end - start, GetNormal());
+  const float denom = CVector3f::Dot(end - start, GetNormal());
+  float dist = -(CVector3f::Dot(start, GetNormal()) - GetConstant()) / denom;
   return dist <= 0.f ? 0.f : (dist >= 1.f ? 1.f : dist);
 }
 

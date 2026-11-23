@@ -139,7 +139,7 @@ public:
   static const CUnitVector3f& Forward();
   static const CUnitVector3f& Back();
 
-#if RSTL_PRIME1
+#if RSTL_PRIME1 || RSTL_KYOTO_VECTOR3F_MEMBER_ARITHMETIC
   friend CVector3f operator-(const CVector3f& lhs, const CVector3f& rhs);
   friend CVector3f operator+(const CVector3f& lhs, const CVector3f& rhs);
   friend CVector3f operator*(const CVector3f& lhs, const CVector3f& rhs);
@@ -214,7 +214,7 @@ inline bool operator!=(const CVector3f& lhs, const CVector3f& rhs) {
 }
 
 inline CVector3f operator-(const CVector3f& lhs, const CVector3f& rhs) {
-#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ
+#if !RSTL_KYOTO_VECTOR3F_MEMBER_ARITHMETIC
   float x = lhs.GetX() - rhs.GetX();
   float y = lhs.GetY() - rhs.GetY();
   float z = lhs.GetZ() - rhs.GetZ();
@@ -227,7 +227,7 @@ inline CVector3f operator-(const CVector3f& lhs, const CVector3f& rhs) {
 }
 
 inline CVector3f operator+(const CVector3f& lhs, const CVector3f& rhs) {
-#if !RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ
+#if !RSTL_KYOTO_VECTOR3F_MEMBER_ARITHMETIC
   float x = lhs.GetX() + rhs.GetX();
   float y = lhs.GetY() + rhs.GetY();
   float z = lhs.GetZ() + rhs.GetZ();

@@ -67,8 +67,8 @@ static float PlaneIntersectionFraction(const CVector3f& start, const CVector3f& 
 // Guessed name
 static float PlaneIntersectionFraction(const CVector3f& start, const CVector3f& end,
                                        const CPlane& plane) {
-  return -(CVector3f::Dot(start, plane.GetNormal()) - plane.GetConstant()) /
-         CVector3f::Dot(end - start, plane.GetNormal());
+  const float denom = CVector3f::Dot(end - start, plane.GetNormal());
+  return -(CVector3f::Dot(start, plane.GetNormal()) - plane.GetConstant()) / denom;
 }
 #endif
 
