@@ -191,8 +191,8 @@ public:
 
   virtual const CColor& GetModulationColor() const override;
   virtual float GetGeneratorRate() const override;
-  int GetEmitterTime() const;
-  int GetSystemCount() RSTL_ECHOES_CONST;
+  int GetEmitterTime() const override;
+  int GetSystemCount() RSTL_ECHOES_CONST override;
 
   virtual bool IsSystemDeletable() const override;
   virtual rstl::optional_object< CAABox > GetBounds() const override;

@@ -12,9 +12,9 @@ namespace rstl {
 template < typename T >
 class single_ptr {
 #if RSTL_SINGLE_PTR_MUTABLE
-  mutable T* mPtr;
+  mutable typename pointer_traits<T>::alloc_type mPtr;
 #else
-  T* mPtr;
+  typename pointer_traits<T>::alloc_type mPtr;
 #endif
 
 public:
@@ -22,12 +22,12 @@ public:
   single_ptr(T* ptr = nullptr) : mPtr(ptr) {}
 #else
   single_ptr() : mPtr(nullptr) {}
-  single_ptr(T* ptr) : mPtr(ptr) {}
+  single_ptr(T* ptr) : mPtr(static_cast<typename pointer_traits<T>::alloc_type>(ptr)) {}
 #endif
 #if RSTL_SINGLE_PTR_TRANSFER
   single_ptr(const single_ptr& other) : mPtr(other.mPtr) {
 #if RSTL_SINGLE_PTR_MUTABLE
-    other.mPtr = nullptr; 
+    other.mPtr = nullptr;
 #else
     const_cast< single_ptr& >(other).mPtr = nullptr;
 #endif

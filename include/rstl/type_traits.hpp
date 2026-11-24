@@ -86,6 +86,7 @@ struct type_traits {
 template < typename T >
 struct pointer_traits {
   typedef T* get_type;
+  typedef T* alloc_type;
 
   typedef T& dereference_type;
 #if RSTL_SINGLE_PTR_PLAIN_ACCESS
@@ -104,6 +105,12 @@ struct pointer_traits {
 template <>
 struct pointer_traits< void > {
   typedef void* get_type;
+#ifdef __MWERKS__
+  typedef void* alloc_type;
+#else
+  typedef uchar* alloc_type;
+#endif
+
 
   typedef void* dereference_type;
 #if RSTL_SINGLE_PTR_PLAIN_ACCESS

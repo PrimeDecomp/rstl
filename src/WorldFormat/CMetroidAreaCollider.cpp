@@ -15,6 +15,7 @@
 
 #include "Kyoto/Math/CMath.hpp"
 
+#include "rstl/locked_cache_allocator_impl.hpp"
 #include <math.h>
 #include <string.h>
 

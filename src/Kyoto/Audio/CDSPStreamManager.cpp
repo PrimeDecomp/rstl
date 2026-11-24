@@ -140,7 +140,7 @@ void CDSPStreamManager::Initialize() {
 void CDSPStreamManager::Shutdown() {
 #if defined(TARGET_PC)
   #if RSTL_PRIME1
-  
+
   {
     metaforce::AudioLockGuard lock;
     for (auto& stream : g_Streams) stream.mHeaderReadCancelled = true;
@@ -359,7 +359,7 @@ int CDSPStreamManager::AllocateVoice(int volume, uchar pan, SND_ADPCMSTREAM_INFO
     it->mStreamId = sndStreamAllocEx(0xFF, voice.mBuffer.get(), voice.mNumSamples,
                                      mHeader.mSampleRate, volume, voice.mPan, 0, 0, 0, 0, 0x30001,
                                      primary ? UpdateStream : UpdateSecondaryStream,
-                                     reinterpret_cast< u32 >(this), nullptr);
+                                     reinterpret_cast< ptrdiff_t >(this), nullptr);
     sndStreamADPCMParameter(it->mStreamId, info);
     return idx;
   }
@@ -798,9 +798,9 @@ void CDSPStreamManager::HeaderReadComplete(s32 result, DVDFileInfo* fileInfo) {
       CInterruptGuard interrupts;
 
       #if (IS_TARGET_PC)
-        if (result != 0x60 
-            || !metaforce::ReadDSPHeader({reinterpret_cast<const u8*>(&stream->mHeader), 0x60}, stream->mHeader) 
-            || fileInfo->length < 0x60 
+        if (result != 0x60
+            || !metaforce::ReadDSPHeader({reinterpret_cast<const u8*>(&stream->mHeader), 0x60}, stream->mHeader)
+            || fileInfo->length < 0x60
             || (u64(stream->mHeader.mNumNibbles) + 1) / 2 > fileInfo->length - 0x60) {
           *stream = CDSPStreamManager();
           return;

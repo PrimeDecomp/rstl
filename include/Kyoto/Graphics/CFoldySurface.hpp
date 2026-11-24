@@ -39,7 +39,7 @@ private:
   TCachedToken< CModel > mModel;
   rstl::single_ptr< CVector3f > mPositions;
   int mVertexCount;
-  rstl::single_ptr< void > mDisplayLists[kS_Count];
+  rstl::single_ptr< uchar > mDisplayLists[kS_Count];
   uint mDisplayListSize;
 };
 CHECK_SIZEOF(CFoldySurface, 0x24)

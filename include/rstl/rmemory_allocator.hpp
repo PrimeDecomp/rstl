@@ -171,7 +171,7 @@ template < typename T >
 struct pointer_deleter {
   static void destroy(T* ptr) {
     using Value = std::remove_cv_t< T >;
-    
+
     // Metaforce allocates buffers of these scalar types with operator new[].
     if constexpr (std::is_same_v< Value, char > || std::is_same_v< Value, unsigned char > ||
                   std::is_same_v< Value, unsigned short > ||
@@ -180,6 +180,14 @@ struct pointer_deleter {
     } else {
       delete ptr;
     }
+  }
+};
+
+
+template <>
+struct pointer_deleter<void> {
+  static void destroy(void* ptr) {
+    pointer_deleter<char>::destroy(static_cast<char*>(ptr));
   }
 };
 

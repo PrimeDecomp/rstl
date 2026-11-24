@@ -16,8 +16,6 @@ class CPoseAsTransforms;
 
 class CVertexMorphEffect {
 public:
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
   CVertexMorphEffect(const CUnitVector3f& dir, const CVector3f& pos, float duration,
                      float diagExtent, CRandom16& random)
   : mDir(dir)
@@ -32,9 +30,6 @@ public:
                      const TLockedToken< CSkinRules >& skinRules, const CPoseAsTransforms& pose,
                      uint vertexCount) const;
   void Reset(const CUnitVector3f& dir, const CVector3f& pos, float duration);
-#else
-  ~CVertexMorphEffect() {}
-#endif
 
 private:
   CUnitVector3f mDir;

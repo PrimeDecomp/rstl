@@ -15,6 +15,7 @@
 #endif
 #include "WorldFormat/CCollisionSurface.hpp"
 
+#include "rstl/locked_cache_allocator_impl.hpp"
 #include <math.h>
 
 #if !RSTL_PRIME1
