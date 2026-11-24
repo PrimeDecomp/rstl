@@ -672,6 +672,12 @@
 #endif
 // CSegIdList's destructor is defined in CSegIdList.cpp.
 #define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_CORRUPTION)
+// Corruption reserves two 150-statement slots in locked cache.
+#if RSTL_CORRUPTION || (RSTL_VERSION >= RSTL_R3ME_00 && !RSTL_PRIME1 && !defined(PRIME2))
+#define RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET 1
+#else
+#define RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET 0
+#endif
 // CAdvancementDeltas defines the translation-only and rotation-only blends.
 #define RSTL_KYOTO_ADVANCEMENT_PARTIAL_BLENDS (RSTL_CORRUPTION)
 // 

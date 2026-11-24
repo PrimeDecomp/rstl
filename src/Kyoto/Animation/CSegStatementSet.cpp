@@ -7,14 +7,14 @@
 #include "dolphin/os/OSCache.h"
 
 namespace {
-const int kSegmentCount = 100;
+const int kSegmentCount = RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET ? 150 : 100;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 enum { kSegmentSetSize = kSegmentCount * sizeof(CSegStatement) };
 volatile int sFreeSegments = 31;
 #else
 const int kSegmentSetSize = kSegmentCount * sizeof(CSegStatement);
-const int kCacheSlotCount = 3;
+const int kCacheSlotCount = RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET ? 2 : 3;
 int sFreeSegments = (1 << kCacheSlotCount) - 1;
 #endif
 
@@ -58,7 +58,8 @@ inline void* AllocateSegment() {
     }
   }
 #endif
-  return CMemory::Alloc(kSegmentSetSize);
+  return CMemory::Alloc(kSegmentSetSize, IAllocator::kHI_None, IAllocator::kSC_Unk1,
+                        IAllocator::kTP_Heap, rs_callstack_line_in("CSegStatementSet.cpp", 213));
 }
 
 inline void FreeSegment(CSegStatement* seg) {
