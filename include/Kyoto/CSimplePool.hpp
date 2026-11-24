@@ -49,11 +49,7 @@ public:
   bool HasObject(const SObjectTag& tag) const override;
   bool ObjectIsLive(const SObjectTag& tag) const override;
   IFactory& GetFactory() RSTL_PRIME1_CONST override {
-#if RSTL_PRIME1
-    return mFactory;
-#else
     return *mFactory;
-#endif
   }
   void Flush() override;
   void ObjectUnreferenced(const SObjectTag& tag) override;
@@ -62,12 +58,7 @@ public:
 
 private:
   ResourceMap mResources;
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  IFactory& mFactory;
-#else
   IFactory* mFactory;
-#endif
 
   CVParamTransfer mParamXfr;
 };

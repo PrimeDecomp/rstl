@@ -4,6 +4,8 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
+#include "Kyoto/Alloc/CCallStack.hpp"
+
 #include "dolphin/os.h"
 
 #define BUILD_INFO_TAG "!#$MetroidBuildInfo!#$"
@@ -32,7 +34,7 @@ void SetErrorHandlers();
 #if RSTL_KYOTO_SCREEN_ASSERTIONS
 // Guessed name
 #endif
-void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...);
+extern "C" void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...);
 
 #if RSTL_KYOTO_SCREEN_ASSERTIONS
 // Guessed name
@@ -60,5 +62,10 @@ void rs_halt_cpu();
 
 // Guessed name
 extern "C" void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...);
+
+extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* source, int line,
+                                      const char* kind, const char* condition, const char* message);
+extern "C" void rs_halt_cpu();
+
 
 #endif // _RASSERTDOLPHIN

@@ -2,16 +2,12 @@
 #define KYOTO_ALLOC_ASSERT_HPP
 
 #include "Kyoto/Alloc/CCallStack.hpp"
+#include "Kyoto/Basics/RAssertDolphin.hpp"
 #include "rstl/RstlVersions.h"
 
 // Verify asserts and debugger warnings. Every game's Kyoto has them; only the prototype (a debug
 // build) compiles them in.
 #if RSTL_KYOTO_DEBUG_BUILD
-
-extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* source, int line,
-                                      const char* kind, const char* condition, const char* message);
-extern "C" void rs_debugger_printf(const char* format, ...);
-extern "C" void rs_halt_cpu();
 
 // Guessed name. 0x80796BF0: initialized to rs_debugger_printf.
 extern void (*gpfnWarningPrintf)(const char* format, ...);

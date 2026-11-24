@@ -192,8 +192,8 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
 #else
   const bool hasMessage = rs_debugger_buffer_size > 0;
 #endif
-  OSPanic(__FILE__, __LINE__, "Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
-          hasMessage ? ": " : "", hasMessage ? rs_debugger_buffer : "");
+  OSReport("Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
+           hasMessage ? ": " : "", hasMessage ? rs_debugger_buffer : "");
 #else
 #if RSTL_KYOTO_REL_ERROR_HANDLER
   char buffer[1024];

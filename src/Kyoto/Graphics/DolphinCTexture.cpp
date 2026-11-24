@@ -838,6 +838,7 @@ void CTexture::InvalidateTexmaps() const {
     }
   }
 }
+#endif
 
 #if RSTL_KYOTO_DEBUG_BUILD
 void CTexture::VerifyBitmapDataAvailable() const {
@@ -850,11 +851,12 @@ void CTexture::VerifyBitmapDataAvailable() const {
     RS_VERIFY_THROW(947, mARAMToken.GetStatus() != CARAMToken::kStatus_Unowned, false,
                     CBasics::Stringize("Tried to load texture (id %s) whose bitmap data has "
                                        "been dumped from memory!  Please bug this!",
-                                       textureId.ToHexString().c_str()));
+                                       ASSET_ID_TO_HEX_STRING(textureId)));
   }
 }
 #endif
 
+#if !RSTL_PRIME1
 int CTexture::GetBindCount() { return sTextureLoadCount; }
 
 void CTexture::SetBindCount(int count) { sTextureLoadCount = count; }

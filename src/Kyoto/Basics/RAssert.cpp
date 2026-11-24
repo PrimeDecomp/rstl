@@ -2,6 +2,7 @@
 
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 
+
 // Guessed name for the two local string helpers.
 static inline bool HasText(const char* text) { return text != nullptr && *text != '\0'; }
 
