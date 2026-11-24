@@ -1,7 +1,7 @@
 #include "Kyoto/Basics/RAssertDolphin.hpp"
 
 #include "Kyoto/CRelFileDebugInfo.hpp"
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#if RSTL_KYOTO_DEBUG_BUILD
 #include "Kyoto/Graphics/CGX.hpp"
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Graphics/CGraphicsSys.hpp"
@@ -21,11 +21,11 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#if RSTL_KYOTO_DEBUG_BUILD
 #define RASSERT_BUILD_NAME "Release"
 static bool sDebuggerChecked; // Guessed name
 static bool sDebuggerPresent; // Guessed name
-TRAssertDiagnosticPrintCallback gpfnWarningPrintf = rs_debugger_printf;
+TRAssertDiagnosticPrintCallback rs_console_printf = rs_debugger_printf;
 #else
 #define RASSERT_BUILD_NAME "Production"
 #endif
@@ -35,12 +35,15 @@ TRAssertDiagnosticPrintCallback gpfnWarningPrintf = rs_debugger_printf;
 
 // Fatal printing formats the message on its own stack; ErrorHandler copies it into buffer.
 static bool SkipFatal = false;
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
-static TRAssertDebuggerPrintCallback sDebuggerPrintCallback; // Guessed name
+#if RSTL_KYOTO_DEBUG_BUILD
+static TRAssertDebuggerPrintCallback gpUserDebugMsgFunc; // Name from Prime's map
 #endif
 static char* rs_debugger_buffer = nullptr;
 // Stack frames to leave out of the backtrace, from a "SKIP<n>" message prefix.
 static int rs_debugger_size = 0;
+#if RSTL_KYOTO_FATAL_STORED_CONTEXT
+static OSContext* sFatalContext = nullptr; // Guessed name
+#endif
 #define FATAL_MESSAGE buffer
 #define BACKTRACE_FRAMES (rs_debugger_size + 16)
 #else
@@ -53,7 +56,7 @@ static int rs_debugger_buffer_size;
 #endif
 static const GXColor bg = {128, 0, 0, 0};
 static const GXColor fg = {255, 255, 255, 0};
-#if !RSTL_KYOTO_SCREEN_ASSERTIONS
+#if !RSTL_KYOTO_DEBUG_BUILD
 static const uchar ExitButtons[4] = {PAD_BUTTON_RIGHT, PAD_BUTTON_LEFT, PAD_BUTTON_DOWN,
                                      PAD_BUTTON_UP};
 #define INITIAL_COMBO (PAD_BUTTON_X | PAD_BUTTON_Y | PAD_TRIGGER_Z)
@@ -69,8 +72,8 @@ static void hack() {
 
 #endif
 
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
-bool RAssert_IsDebuggerPresentCached() {
+#if RSTL_KYOTO_DEBUG_BUILD
+bool rs_debugger_is_active() {
   if (!sDebuggerChecked) {
     sDebuggerChecked = true;
     sDebuggerPresent = DBIsDebuggerPresent() != 0;
@@ -79,9 +82,9 @@ bool RAssert_IsDebuggerPresentCached() {
 }
 
 TRAssertDiagnosticPrintCallback
-RAssert_SetDiagnosticPrintCallback(TRAssertDiagnosticPrintCallback callback) {
-  TRAssertDiagnosticPrintCallback old = gpfnWarningPrintf;
-  gpfnWarningPrintf = callback;
+rs_set_console_printf_func(TRAssertDiagnosticPrintCallback callback) {
+  TRAssertDiagnosticPrintCallback old = rs_console_printf;
+  rs_console_printf = callback;
   return old;
 }
 
@@ -91,8 +94,8 @@ void RAssert_DiscardDiagnosticCallback(const char*, ...) {}
 
 TRAssertDebuggerPrintCallback
 RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback) {
-  TRAssertDebuggerPrintCallback old = sDebuggerPrintCallback;
-  sDebuggerPrintCallback = callback;
+  TRAssertDebuggerPrintCallback old = gpUserDebugMsgFunc;
+  gpUserDebugMsgFunc = callback;
   return old;
 }
 
@@ -103,8 +106,8 @@ void rs_debugger_printf(const char* format, ...) {
   vsnprintf(buffer, sizeof(buffer), format, arg);
   va_end(arg);
 
-  if (sDebuggerPrintCallback != nullptr) {
-    if (sDebuggerPrintCallback(buffer) == 0) {
+  if (gpUserDebugMsgFunc != nullptr) {
+    if (gpUserDebugMsgFunc(buffer) == 0) {
       OSReport("%s", buffer);
     }
   } else {
@@ -117,7 +120,7 @@ void rs_halt_cpu() {
   asm { opword 0 }
 }
 
-void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...) {
+void rs_fatal_printf(const char* format, ...) {
   va_list arg;
   char buffer[1024];
   va_start(arg, format);
@@ -125,7 +128,7 @@ void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...) 
   va_end(arg);
   OSReport("%s", buffer);
 
-  if (CGraphicsSys::IsInitialized() && !RAssert_IsDebuggerPresentCached()) {
+  if (CGraphicsSys::IsInitialized() && !rs_debugger_is_active()) {
     CGraphics::BeginScene();
     const GXRenderModeObj& mode = CGraphics::GetRenderMode();
     CGraphics::SetViewport(0, 0, mode.fbWidth, mode.xfbHeight);
@@ -226,7 +229,7 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
   AIStartDMA();
   DVDCancelAllAsync(nullptr);
 #endif
-#if !RSTL_KYOTO_SCREEN_ASSERTIONS
+#if !RSTL_KYOTO_DEBUG_BUILD
   loopExitCriteria = 0;
   PADControlMotor(0, 0);
   VISetBlack(1);
@@ -394,7 +397,7 @@ void SetErrorHandlers() {
 #endif
 }
 
-void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...) {
+void rs_reallyfatal_printf(const char* format, ...) {
   va_list arg;
 
 #if RSTL_KYOTO_REL_ERROR_HANDLER
@@ -422,6 +425,12 @@ void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...) {
   rs_debugger_buffer = buffer;
 #endif
 
+#if RSTL_KYOTO_FATAL_STORED_CONTEXT
+  if (sFatalContext != nullptr) {
+    ErrorHandler(0xff, sFatalContext, 0, 0xd1dd0d1e);
+    return;
+  }
+#endif
   OSContext context;
   OSSaveContext(&context);
   ErrorHandler(0xff, &context, 0, 0xd1dd0d1e);

@@ -10,7 +10,7 @@ static inline const char* TextOrEmpty(const char* text) { return HasText(text) ?
 extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* source, int line,
                                       const char* kind, const char* condition,
                                       const char* message) {
-  RAssert_PrintFormattedMessageAndBacktraceToScreen(
+  rs_fatal_printf(
       "****** Assertion Failure ******\n%s(%d): %s%s%s%s%s%s\n", source, line, TextOrEmpty(kind),
       HasText(kind) ? " " : "", TextOrEmpty(condition), HasText(condition) ? "" : "",
       HasText(message) ? ">>> " : "", TextOrEmpty(message));

@@ -191,7 +191,7 @@ CAudioGrpSetLoc::CAudioGrpSetLoc(const rstl::auto_ptr< uchar >& data, int length
           CStringExtras::IndexOfSubstring(name, rstl::string_l("Multiplayer")) != -1) {
         char* str = static_cast< char* >(__alloca(name.size() + 1));
         strcpy(str, name.data());
-        rs_debugger_printf("Multi sound %s in single", str);
+        rs_reallyfatal_printf("Multi sound %s in single", str);
       }
     }
 #endif
