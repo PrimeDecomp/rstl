@@ -569,14 +569,16 @@ RSTL_CONSTRUCT_INLINE void destroy(T* begin, T* end) {
 }
 #endif
 
-#if RSTL_RANGE_DESTRUCTION_CHECKS
+#if !RSTL_PRIME1
 template < typename It >
 RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
+#if RSTL_RANGE_DESTRUCTION_CHECKS
   if (range_destruction_checks< typename iterator_traits< It >::value_type >::value) {
     // Retain the two release statements; the original checks are unknown.
     ((void)0);
     ((void)0);
   }
+#endif
   if (is_trivially_destructible< typename iterator_traits< It >::value_type >::value) {
     return;
   }
