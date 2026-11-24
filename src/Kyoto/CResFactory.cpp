@@ -68,10 +68,10 @@ rstl::auto_ptr< IObj > CResFactory::Build(const SObjectTag& tag, const CVParamTr
   if (gResFactoryBuildLogMode != 0) {
     const bool inAram = mResLoader.ContainsResourceInAramPaks(tag);
     if (!inAram || gResFactoryBuildLogMode == 2) {
-      RS_DEBUGGER_PRINT("Sync build of %s(%s) - %s\n", tag.GetId().ToHexString().c_str(),
+      RS_DEBUGGER_PRINT("Sync build of %s(%s) - %s\n", ASSET_ID_TO_HEX_STRING(tag.GetId()),
                         SObjectTag::Type2Text(tag.GetType()), inAram ? "ARAM" : "DVD(BUG!)");
       if (!inAram) {
-        RS_WARNING_PRINT("BUG THIS!  DVD Sync build of %s(%s)\n", tag.GetId().ToHexString().c_str(),
+        RS_WARNING_PRINT("BUG THIS!  DVD Sync build of %s(%s)\n", ASSET_ID_TO_HEX_STRING(tag.GetId()),
                          SObjectTag::Type2Text(tag.GetType()));
       }
     }

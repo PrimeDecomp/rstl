@@ -4,6 +4,8 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
+#include "Kyoto/Alloc/CCallStack.hpp"
+
 #include "dolphin/os.h"
 
 #define BUILD_INFO_TAG "!#$MetroidBuildInfo!#$"
@@ -55,9 +57,12 @@ RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback);
 #endif
 
 // Prints through the debugger callback (debug builds only; retail has no such function).
-extern "C" void rs_debugger_printf(const char* format, ...);
+void rs_debugger_printf(const char* format, ...);
 
 // Name from Prime's map (secondary evidence).
-extern "C" void rs_fatal_printf(const char* format, ...);
+void rs_fatal_printf(const char* format, ...);
+
+void rs_halt_cpu();
+
 
 #endif // _RASSERTDOLPHIN
