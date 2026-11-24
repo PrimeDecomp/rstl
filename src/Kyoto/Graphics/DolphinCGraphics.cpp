@@ -514,10 +514,10 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     break;
 #else
   case VI_MPAL:
-    RSTL_KYOTO_FATAL_PRINTF_NAME("MPAL TV Format not compatible with PAL build");
+    rs_reallyfatal_printf("MPAL TV Format not compatible with PAL build");
     break;
   case VI_NTSC:
-    RSTL_KYOTO_FATAL_PRINTF_NAME("NTSC TV Format not compatible with PAL build");
+    rs_reallyfatal_printf("NTSC TV Format not compatible with PAL build");
     break;
 #endif
   case VI_PAL:
@@ -566,7 +566,7 @@ void CGraphics::ConfigureVideoMode(bool initial, TVideoModeFlag progressive) {
     break;
   case VI_PAL:
   case VI_EURGB60:
-    RSTL_KYOTO_FATAL_PRINTF_NAME("PAL TV Format not compatible with NTSC build");
+    rs_reallyfatal_printf("PAL TV Format not compatible with NTSC build");
     break;
   }
 #endif

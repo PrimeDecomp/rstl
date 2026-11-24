@@ -29,23 +29,21 @@ typedef int ErrorDataAddress;
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar);
 void SetErrorHandlers();
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
-// Guessed name
-#endif
-void RSTL_KYOTO_FATAL_PRINTF_NAME(const char* format, ...);
+// Formats the message and reports it through ErrorHandler.
+void rs_reallyfatal_printf(const char* format, ...);
 
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
+#if RSTL_KYOTO_DEBUG_BUILD
 // Guessed name
 typedef int (*TRAssertDebuggerPrintCallback)(const char* message);
 // Guessed name
 typedef void (*TRAssertDiagnosticPrintCallback)(const char* format, ...);
 
 extern "C" {
-// Guessed name
-bool RAssert_IsDebuggerPresentCached();
-// Guessed name
+// Name from Prime's map (secondary evidence).
+bool rs_debugger_is_active();
+// Name from Prime's map (secondary evidence).
 TRAssertDiagnosticPrintCallback
-RAssert_SetDiagnosticPrintCallback(TRAssertDiagnosticPrintCallback callback);
+rs_set_console_printf_func(TRAssertDiagnosticPrintCallback callback);
 // Guessed name
 int RAssert_ConsumeDebuggerPrintCallback(const char* message);
 // Guessed name
@@ -53,12 +51,13 @@ void RAssert_DiscardDiagnosticCallback(const char* format, ...);
 // Guessed name
 TRAssertDebuggerPrintCallback
 RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback);
-void rs_debugger_printf(const char* format, ...);
-void rs_halt_cpu();
 }
 #endif
 
-// Guessed name
-extern "C" void RAssert_PrintFormattedMessageAndBacktraceToScreen(const char* format, ...);
+// Prints through the debugger callback (debug builds only; retail has no such function).
+extern "C" void rs_debugger_printf(const char* format, ...);
+
+// Name from Prime's map (secondary evidence).
+extern "C" void rs_fatal_printf(const char* format, ...);
 
 #endif // _RASSERTDOLPHIN

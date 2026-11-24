@@ -9,10 +9,6 @@
 
 #include "dolphin/os.h"
 
-#if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
-void rs_reallyfatal_printf(const char* format, ...);
-#endif
-
 static CGameAllocator gGameAllocator;
 IAllocator* CMemory::mpAllocator = &gGameAllocator;
 bool CMemory::mInitialized;
@@ -109,10 +105,10 @@ void* CMemory::Alloc(size_t len, IAllocator::EHint hint, IAllocator::EScope scop
     rs_debugger_printf("Size:%d\n", len);
 #elif RSTL_KYOTO_ALLOCATOR_METRICS_RESET
     const IAllocator::SMetrics metrics = mpAllocator->GetMetrics(false, false);
-    rs_debugger_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len,
-                       metrics.mAllocatedHeapBytes, metrics.mFreeHeapBytes);
+    rs_reallyfatal_printf("Alloc failed - Size: %d, Used: %d, Free: %d", len,
+                          metrics.mAllocatedHeapBytes, metrics.mFreeHeapBytes);
 #else
-    rs_debugger_printf("Alloc failed - Size: %d", len);
+    rs_reallyfatal_printf("Alloc failed - Size: %d", len);
 #endif
     RS_VERIFY_THROW(239, false, kXCP_BadAlloc, "kXCP_BadAlloc");
   }
