@@ -22,13 +22,15 @@ private:
   const char* mType;
 };
 
+#if NONMATCHING
+#define RS_LINE_WRAPPER(line) __LINE__
+#else
+#define RS_LINE_WRAPPER(line) line
+#endif
+
 // The "File.cpp(line) : " text that debug builds record for asserts and allocations.
 #define RS_STRINGIZE_IMPL(x) #x
 #define RS_STRINGIZE(x) RS_STRINGIZE_IMPL(x)
-#if NONMATCHING
-#define RS_SOURCE_POSITION(file, line) __FILE__ "(" RS_STRINGIZE(__LINE__) ") : "
-#else
-#define RS_SOURCE_POSITION(file, line) file "(" RS_STRINGIZE(line) ") : "
-#endif
+#define RS_SOURCE_POSITION(file, line) file "(" RS_STRINGIZE(RS_LINE_WRAPPER(line)) ") : "
 
 #endif // _CCALLSTACK

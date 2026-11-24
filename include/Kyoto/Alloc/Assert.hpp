@@ -52,7 +52,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 #define RS_VERIFY_FAILURE_IN(file, line, conditionText, exceptionText, message)                    \
   {                                                                                                \
     CCallStack stack(0, RS_SOURCE_POSITION(file, line), gkUnknownType);                            \
-    rs_log_assert_failure(&stack, file, line, "Verify", conditionText, message);                   \
+    rs_log_assert_failure(&stack, file, RS_LINE_WRAPPER(line), "Verify", conditionText, message);  \
     rs_debugger_printf("Would have thrown exception: %s\n", exceptionText);                        \
     rs_halt_cpu();                                                                                 \
   }
@@ -61,7 +61,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 // as DolphinCGraphics.cpp's arena asserts do. The macro name is guessed.
 #define RS_VERIFY_THROW_DIRECT(line, condition, exception, message)                                \
   if (!(condition))                                                                                \
-  RS_VERIFY_FAILURE(line, #condition, #exception, message)
+    RS_VERIFY_FAILURE(line, #condition, #exception, message)
 
 // The condition is stored in a bool before the test: CObjectListSmall::AddObject (0x80262294)
 // materializes the comparison result rather than branching on it directly.
@@ -92,7 +92,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 // Like RS_VERIFY_THROW_DIRECT, reporting the given source file name.
 #define RS_VERIFY_THROW_DIRECT_IN(file, line, condition, exception, message)                       \
   if (!(condition))                                                                                \
-  RS_VERIFY_FAILURE_IN(file, line, #condition, #exception, message)
+    RS_VERIFY_FAILURE_IN(file, line, #condition, #exception, message)
 #else
 // Builds without asserts keep every assert in the source; each one compiles to nothing and does
 // not evaluate its arguments.

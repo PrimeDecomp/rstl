@@ -20,7 +20,7 @@ typedef uint FourCC;
 #if RSTL_KYOTO_ASSET_ID_CLASS
 #define ASSET_ID_TO_HEX_STRING(id) (id).ToHexString().data()
 #else
-#define ASSET_ID_TO_HEX_STRING(id) (CBasics::Stringize("%d", (id)))
+#define ASSET_ID_TO_HEX_STRING(id) (CBasics::Stringize("0x%08X", (id)))
 #endif
 
 struct SObjectTag {
