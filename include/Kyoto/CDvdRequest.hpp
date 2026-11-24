@@ -42,7 +42,7 @@ private:
 };
 CHECK_CHILD_SIZEOF(CRealDvdRequest, CDvdRequest, 0x3c)
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 // Guessed name.
 class CDummyDvdRequest : public CDvdRequest {
 public:

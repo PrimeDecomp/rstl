@@ -4,7 +4,7 @@
 
 #if RSTL_PRIME1
 #include "Kyoto/CResFactory.hpp"
-#elif RSTL_CORRUPTION
+#elif RSTL_CORRUPTION_STANDALONE
 #include "Kyoto/CFactoryMgr.hpp"
 #include "Kyoto/IObjectStore.hpp"
 #include "Kyoto/Alloc/CMemory.hpp"

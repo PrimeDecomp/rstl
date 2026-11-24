@@ -2,7 +2,7 @@
 #include "rstl/string.hpp"
 #include "rstl/math.hpp"
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 #include "Kyoto/Alloc/CMemory.hpp"
 #endif
 

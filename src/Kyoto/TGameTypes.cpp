@@ -2,7 +2,7 @@
 
 #include "Kyoto/Streams/CInputStream.hpp"
 
-#if !RSTL_CORRUPTION
+#if !RSTL_CORRUPTION_STANDALONE
 const TEditorId kInvalidEditorId = TEditorId(-1);
 const TUniqueId kInvalidUniqueId = TUniqueId(-1, -1);
 const TAreaId kInvalidAreaId = TAreaId(-1);

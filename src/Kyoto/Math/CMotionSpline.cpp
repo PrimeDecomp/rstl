@@ -5,7 +5,7 @@
 #include "Kyoto/Math/CUnitVector3f.hpp"
 #include "Kyoto/Math/CloseEnough.hpp"
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 #define CMOTIONSPLINE_CONST_PARAM
 #else
 #define CMOTIONSPLINE_CONST_PARAM const
@@ -220,7 +220,7 @@ void CMotionSpline::GetSurroundingPoints(int index,
           } else {
             points.push_back(mControlPoints[idx - count]);
           }
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
         } else {
           switch (mType) {
           case kST_Bezier:
@@ -261,7 +261,7 @@ void CMotionSpline::GetSurroundingPoints(int index,
     } else if (mClosedLoop) {
       points.push_back(mControlPoints[count + idx]);
     } else {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
       switch (mType) {
       case kST_CatmullRom:
         points.push_back(0.5f *
@@ -449,7 +449,7 @@ void CMotionSpline::CalculateLength() {
         }
         break;
       case kST_Bezier: {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
         const uint segments = (count - 1) / 3;
 #else
         const uint segments = count / 4;
@@ -463,7 +463,7 @@ void CMotionSpline::CalculateLength() {
           }
           mKnotDistances.push_back_unsafe(length);
         }
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
         const uint remainder = mControlPoints.size() - (segments * 3 + 1);
 #else
         const uint remainder = mControlPoints.size() - segments * 4;
@@ -490,7 +490,7 @@ void CMotionSpline::CalculateLength() {
       }
     }
   } else if (count == 1) {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
     mKnotDistances.push_back_unsafe(length);
 #else
     mKnotDistances.push_back_unsafe(0.f);
@@ -546,7 +546,7 @@ CVector3f CMotionSpline::GetPositionInSegment(uint index, float t) const {
       return a + t * (b - a);
     }
     if (mType == kST_Bezier) {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
       segment = ((segment - 1) / 3) * 3;
 #else
       segment = (segment / 3) * 3;
@@ -658,7 +658,7 @@ float CMotionSpline::GetSegmentParameter(float distance, uint index) const {
 CVector3f CMotionSpline::GetPositionByLength(CMOTIONSPLINE_CONST_PARAM float inputDistance) const {
   const int count = mKnots.size();
   float distance = inputDistance;
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
   if (close_enough(inputDistance, 0.f, 0.001f)) {
 #else
   if (close_enough(distance, 0.f, 0.001f)) {
@@ -694,7 +694,7 @@ CVector3f CMotionSpline::GetPositionByLength(CMOTIONSPLINE_CONST_PARAM float inp
       return first + t * (second - first);
     }
     if (mType == kST_Bezier) {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
       index = ((index - 1) / 3) * 3;
 #else
       index = (index / 3) * 3;
@@ -1006,7 +1006,7 @@ CVector3f CMotionSpline::GetTangentByLength(float distance) const {
   CVector3f tangent = CVector3f::Forward();
   int index = GetKnotIndexByLength(distance);
   if (mType == kST_Bezier) {
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
     index = ((index - 1) / 3) * 3;
 #else
     index = (index / 3) * 3;

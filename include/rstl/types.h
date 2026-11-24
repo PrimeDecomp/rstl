@@ -12,7 +12,7 @@ extern "C" {
 
 // FIXME: NULL is being defined as 0 or 0L depending on the inclusion order, and different games are breaking in different ways.
 // Corruption proto wants 0L, but prime/echoes wants 0 due to reserved_vector constructor.
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 #include <stddef.h>
 #endif
 #include <dolphin/types.h>

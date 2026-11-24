@@ -1,5 +1,5 @@
 #include "rstl/RstlVersions.h"
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 #define RSTL_INLINE_SWAP
 #endif
 #include "Kyoto/Math/CMayaSpline.hpp"
@@ -725,7 +725,7 @@ void CMayaSplineKnot::CalculateTangents(const CMayaSplineKnot* prev,
   ValidateTangent(mCachedTangentB);
 }
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 void CMayaSplineKnot::PutTo(COutputStream& out) const {
   out.Put(mTime);
   out.Put(mAmplitude);
@@ -920,7 +920,7 @@ float CMayaSpline::EvaluateAt(float time) const {
       }
       if (amplitude < mMinAmplitude - FLT_EPSILON) {
         return amplitude +
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
                range * ((abs)(static_cast< int >((amplitude - mMinAmplitude) / range)) + 1);
 #else
                range * (abs(static_cast< int >((amplitude - mMinAmplitude) / range)) + 1);
@@ -1061,7 +1061,7 @@ void CMayaSpline::FindControlPoints(int knotIndex,
 
   CVector2f tangentA(0.f, 0.f);
   CVector2f tangentB(0.f, 0.f);
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
   const CMayaSplineKnot* next = knotIndex + 1 < mKnots.size() ? &mKnots[knotIndex + 1] : nullptr;
   const CMayaSplineKnot* prev = knotIndex - 1 >= 0 ? &mKnots[knotIndex - 1] : nullptr;
   knot->GetTangents(prev, next, tangentA, tangentB);
@@ -1072,7 +1072,7 @@ void CMayaSpline::FindControlPoints(int knotIndex,
 #endif
   controlPoints.push_back(controlPoints[0] + tangentB * (1.f / 3.f));
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
   knot = &mKnots[knotIndex + 1];
   CVector2f nextTangentA(0.f, 0.f);
   CVector2f nextTangentB(0.f, 0.f);
@@ -1320,7 +1320,7 @@ void CMayaSpline::FindSegmentExtrema(
     FindControlPoints(knotIndex, points);
     float coefs[4];
     CalculateHermiteCoefficients(points, coefs);
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
     float roots[4];
     uint count = CMath::SolveQuadratic(3.f * coefs[0], 2.f * coefs[1], coefs[2], roots);
     const float start = mKnots[knotIndex].GetTime();

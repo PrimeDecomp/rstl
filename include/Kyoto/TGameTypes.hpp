@@ -71,7 +71,7 @@ CHECK_SIZEOF(TLayerId, 0x4)
 typedef ushort TSfxId;
 const TSfxId InvalidSfxId = 0xFFFFu;
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 
 // Every TU that includes this header has these in consecutive order. Fun!
 static const TEditorId kInvalidEditorId(-1);

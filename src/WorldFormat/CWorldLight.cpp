@@ -6,7 +6,7 @@
 
 const CVector3f CWorldLight::kDefaultPosition(0.f, 0.f, 0.f);
 const CVector3f CWorldLight::kDefaultDirection(0.f, 1.f, 0.f);
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 const CVector3f CWorldLight::kDefaultUp(0.f, 1.f, 0.f);
 #endif
 
@@ -15,7 +15,7 @@ CWorldLight::CWorldLight(CInputStream& in)
 , mColor(in)
 , mPosition(in)
 , mDirection(in)
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 , mUp(in)
 #endif
 , mQ(in.Get< float >())
@@ -25,7 +25,7 @@ CWorldLight::CWorldLight(CInputStream& in)
 , mUnknownFloat1(in.Get< float >())
 , mFalloff(static_cast< EFalloffType >(in.Get< uint >()))
 , mUnknownFloat2(in.Get< float >())
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 , mAlphaOffset(in.Get< float >())
 , mAlphaScale(in.Get< float >())
 , mSpot2ScaleX(in.Get< float >())
@@ -35,7 +35,7 @@ CWorldLight::CWorldLight(CInputStream& in)
 {
 }
 
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
 CLight CWorldLight::GetAsCGraphicsLight() const {
   float q = mQ;
   if (mQ < FLT_EPSILON) {

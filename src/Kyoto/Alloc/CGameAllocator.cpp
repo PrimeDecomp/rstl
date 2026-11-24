@@ -2,7 +2,7 @@
 #include "rstl/RstlVersions.h"
 #if RSTL_KYOTO_ALLOCATOR_MULTIPLE_HEAPS
 #include "dolphin/os/OSArena.h"
-#if RSTL_CORRUPTION || RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
+#if RSTL_CORRUPTION_STANDALONE || RSTL_KYOTO_ALLOCATOR_EXTENDED_MEDIUM_POOL
 #include "dolphin/dvd.h"
 #endif
 #endif
@@ -894,7 +894,7 @@ bool CGameAllocator::Initialize(COsContext& ctx) {
   mAllowMem2Fallback = DVDConvertPathToEntrynum("AllowMem1SpillOver.txt") != -1;
 #else
   mAllowMem2Fallback = true;
-#if RSTL_CORRUPTION
+#if RSTL_CORRUPTION_STANDALONE
   mem1Reserve = DVDConvertPathToEntrynum("IncreaseRSOHeap.txt") != -1 ? 0x200000 : 0x180000;
 #endif
 #endif
