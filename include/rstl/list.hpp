@@ -161,17 +161,23 @@ public:
 #if RSTL_ALLOCATOR_INSTANCE
     GetAllocator().allocate(n, 1);
     RSTL_PRECONDITION(n != nullptr);
+#else
+    Alloc::allocate(n, 1);
+#endif
+
 #if RSTL_LIST_CREATE_NODE_SETTERS
     n->set_prev(prev);
     n->set_next(next);
-#else
+#elif RSTL_ALLOCATOR_INSTANCE || RSTL_LIST_NODE_PLAIN
     n->mPrev = prev;
     n->mNext = next;
+#else
+    new (n) node(prev, next);
 #endif
+
+#if RSTL_ALLOCATOR_INSTANCE
     construct(n->get_value(), val);
 #else
-    Alloc::allocate(n, 1);
-    new (n) node(prev, next);
     new (n->get_value()) T(val);
 #endif
     return n;

@@ -62,7 +62,7 @@ struct is_trivially_destructible {
   enum { value = false };
 };
 
-#if RSTL_SCALAR_TYPE_TRAITS
+#if RSTL_SCALAR_TYPE_TRAITS || RSTL_TRIVIAL_POINTERS
 template < typename T >
 struct is_trivially_destructible< T* > {
   enum { value = true };
@@ -192,13 +192,6 @@ void bitwise_copy(void* dest, const void* src) {
   RSTL_DECLARE_BITWISE_CONSTRUCTION(ECHOES_NAMESPACE T)                                            \
   }                                                                                                \
   START_ECHOES_NAMESPACE
-
-#if RSTL_TRIVIAL_POINTERS
-template < typename T >
-struct is_trivially_destructible< T* > {
-  enum { value = true };
-};
-#endif
 
 #if RSTL_TRIVIAL_UINT_DESTRUCTION
 RSTL_DECLARE_TRIVIALLY_DESTRUCTIBLE(uint)
@@ -576,14 +569,16 @@ RSTL_CONSTRUCT_INLINE void destroy(T* begin, T* end) {
 }
 #endif
 
-#if RSTL_RANGE_DESTRUCTION_CHECKS
+#if !RSTL_PRIME1
 template < typename It >
 RSTL_CONSTRUCT_INLINE void destroy_impl(It begin, It end) {
+#if RSTL_RANGE_DESTRUCTION_CHECKS
   if (range_destruction_checks< typename iterator_traits< It >::value_type >::value) {
     // Retain the two release statements; the original checks are unknown.
     ((void)0);
     ((void)0);
   }
+#endif
   if (is_trivially_destructible< typename iterator_traits< It >::value_type >::value) {
     return;
   }

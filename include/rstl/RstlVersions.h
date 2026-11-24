@@ -53,9 +53,15 @@
 #define RSTL_ECHOES_GC (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION <= RSTL_G2MJ)
 // The Echoes-era library: GameCube Echoes and Corruption (prototype and retail).
 #define RSTL_ECHOES (RSTL_VERSION >= RSTL_P2ME && RSTL_VERSION < RSTL_R3IJ)
-// The Corruption prototype and retail. Retail (no build) provisionally takes the prototype forms;
-// record a retail difference by excluding RSTL_RM3E/P/J from the macro concerned.
-#define RSTL_CORRUPTION (RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J)
+// The Corruption component of Trilogy.
+#if defined(PRIME3) && (RSTL_VERSION == RSTL_R3ME_00 || RSTL_VERSION == RSTL_R3MP_00)
+#define RSTL_TRILOGY_CORRUPTION 1
+#else
+#define RSTL_TRILOGY_CORRUPTION 0
+#endif
+// Metroid Prime 3: Corruption, including its prototype and its component of Trilogy.
+#define RSTL_CORRUPTION                                                                            \
+  ((RSTL_VERSION >= RSTL_G2MEAB && RSTL_VERSION <= RSTL_RM3J) || RSTL_TRILOGY_CORRUPTION)
 // CAABox::GetEdgeIndices looks its corners up in a static table and returns a reference (retail
 // Corruption and Trilogy); the other builds return the pair from a switch.
 #define RSTL_CAABOX_EDGE_TABLE                                                                     \
@@ -137,7 +143,7 @@
 // The direct `destroy(T*)` carries the (empty) null precondition.
 #define RSTL_DESTROY_PRECONDITION (RSTL_VERSION < RSTL_GM8P_00)
 // `destroy(T*)` and `destroy(begin, end)` forward to `destroy_impl`.
-#define RSTL_DESTROY_VIA_IMPL (RSTL_CORRUPTION)
+#define RSTL_DESTROY_VIA_IMPL (RSTL_VERSION == RSTL_G2MEAB)
 // A non-inline declaration gives the single-element `destroy_impl` helpers weak linkage.
 #define RSTL_DESTROY_IMPL_EXTERN_DECL (RSTL_VERSION == RSTL_G2MEAB)
 // `destroy(begin, end)` over iterators tests `begin != end` before looping.
@@ -250,7 +256,7 @@
 // `find_if` takes its predicate by value.
 #define RSTL_FIND_IF_PRED_BY_VALUE (RSTL_CORRUPTION)
 // `swap` / `iter_swap` are inline only under `RSTL_INLINE_SWAP`, and `swap` has no precondition.
-#define RSTL_SWAP_OPTIONAL_INLINE (RSTL_CORRUPTION)
+#define RSTL_SWAP_OPTIONAL_INLINE (RSTL_VERSION == RSTL_G2MEAB)
 
 // ============================================================================================
 // rstl: vector
@@ -283,12 +289,12 @@
 // `assign` and CStringExtras fill with `push_back_unsafe`.
 #define RSTL_VECTOR_PUSH_BACK_UNSAFE (RSTL_VERSION >= RSTL_P2ME)
 // `push_back` appends without growing or checking capacity.
-#define RSTL_VECTOR_UNCHECKED_PUSH_BACK (RSTL_VERSION >= RSTL_R3IJ)
+#define RSTL_VECTOR_UNCHECKED_PUSH_BACK (RSTL_VERSION >= RSTL_RM3E)
 // `push_back` grows the storage, followed by `push_back_unsafe` and `pop_back`.
 #define RSTL_VECTOR_GROWING_PUSH_BACK                                                              \
   (RSTL_VERSION >= RSTL_P2ME && !RSTL_VECTOR_UNCHECKED_PUSH_BACK)
 // `push_back` asserts through `verify_capacity_failed`, with a `push_back_checked` wrapper.
-#define RSTL_VECTOR_VERIFIED_PUSH_BACK (RSTL_CORRUPTION)
+#define RSTL_VECTOR_VERIFIED_PUSH_BACK (RSTL_VERSION == RSTL_G2MEAB)
 // `resize_uninitialized` compares against `mCount` in a braced block.
 #define RSTL_VECTOR_RESIZE_UNINITIALIZED_COUNT_CHECK (RSTL_CORRUPTION)
 // The `erase` move loop declares its destination iterator before the source.
@@ -419,9 +425,9 @@
 // ============================================================================================
 
 // Storage is an aligned `uchar` array and an aligned `bool` (otherwise a `uint` array).
-#define RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE RSTL_ECHOES
+#define RSTL_OPTIONAL_OBJECT_ALIGNED_STORAGE RSTL_ECHOES_GC
 // Storage is a plain `uchar` array followed by `bool m_valid ATTRIBUTE_ALIGN(4)`.
-#define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_CORRUPTION)
+#define RSTL_OPTIONAL_OBJECT_PLAIN_STORAGE (RSTL_VERSION == RSTL_G2MEAB)
 // `optional_storage::m_data` carries `ALIGNAS(T)`.
 #define RSTL_OPTIONAL_STORAGE_ALIGNED (!RSTL_CORRUPTION)
 // The destructor destroys the value directly instead of calling `clear()`.
@@ -672,6 +678,14 @@
 #endif
 // CSegIdList's destructor is defined in CSegIdList.cpp.
 #define RSTL_KYOTO_SEGIDLIST_OUT_OF_LINE_DTOR (RSTL_CORRUPTION)
+// Statement count per set and number of locked-cache slots.
+#if RSTL_CORRUPTION
+#define RSTL_KYOTO_SEGMENT_COUNT 150
+#define RSTL_KYOTO_SEGMENT_SLOT_COUNT 2
+#else
+#define RSTL_KYOTO_SEGMENT_COUNT 100
+#define RSTL_KYOTO_SEGMENT_SLOT_COUNT (RSTL_PRIME1 ? 5 : 3)
+#endif
 // CAdvancementDeltas defines the translation-only and rotation-only blends.
 #define RSTL_KYOTO_ADVANCEMENT_PARTIAL_BLENDS (RSTL_CORRUPTION)
 // 
@@ -787,9 +801,11 @@
 #define RSTL_KYOTO_PORTAL_PLANE_MATERIAL_GLOBALS (RSTL_VERSION == RSTL_G2MEAB)
 // The prototype keeps the vertex stride in a local in the triangle and fan loops.
 #define RSTL_KYOTO_DISPLAY_LIST_STRIDE_LOCALS (RSTL_VERSION == RSTL_G2MEAB)
-// Corruption's CGX: extended GX state, out-of-line helpers, GXBool z mode, apply_fog in the
-// header and its own function order.
+// Corruption's CGX: extended GX state, out-of-line helpers, apply_fog in the header and its own
+// function order.
 #define RSTL_KYOTO_CGX_CORRUPTION (RSTL_CORRUPTION)
+// CGX::SetZMode takes GXBool arguments instead of bool.
+#define RSTL_KYOTO_CGX_ZMODE_GXBOOL (RSTL_VERSION == RSTL_G2MEAB)
 // CGX_Impl.hpp gives its includers inline TEV, channel, alpha-compare and texture-coordinate
 // setters. From PAL Prime on they are defined only in CGX.cpp, so callers no longer inline them.
 #define RSTL_KYOTO_CGX_INLINE_SETTERS (RSTL_PRIME1 && RSTL_VERSION < RSTL_GM8P_00)
@@ -864,10 +880,14 @@
 // Kyoto/Math
 // ============================================================================================
 
-// Corruption's CVector3f: Normalize returns the magnitude and Cross is out of line.
+// Corruption's CVector3f: Normalize returns the magnitude and Slerp handles degenerate vectors.
 #define RSTL_KYOTO_VECTOR3F_CORRUPTION (RSTL_CORRUPTION)
-// CVector3f declares reserved_vector, optional and vector construction policies.
+// CVector3f::Cross is defined out of line.
+#define RSTL_KYOTO_VECTOR3F_CROSS_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
+// CVector3f declares reserved_vector and optional construction policies.
 #define RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
+// vector<CVector3f> constructs elements through component assignment.
+#define RSTL_KYOTO_VECTOR3F_VECTOR_CONSTRUCTION (!RSTL_PRIME1 && RSTL_VERSION != RSTL_G2MEAB)
 // CVector3f's binary `+` and `-` read the members on every GameCube-era build; the Wii builds call
 // the getters.
 #define RSTL_KYOTO_VECTOR3F_MEMBER_ARITHMETIC (RSTL_VERSION < RSTL_R3IJ)

@@ -28,7 +28,7 @@ public:
 #if RSTL_PRIME1
     return CSegId(0);
 #else
-    return CSegId(99);
+    return CSegId(RSTL_KYOTO_SEGMENT_COUNT - 1);
 #endif
   }
   static CSegId Invalid() {
