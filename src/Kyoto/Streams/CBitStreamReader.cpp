@@ -15,6 +15,21 @@ static inline uint GetBitMask(const uint& bits) {
 }
 
 uint CBitStreamReader::ReadBits(uint bitCount) {
+  if (NONMATCHING) {
+    uint result = 0;
+    for (uint i = 0; i < bitCount; ++i) {
+      if (mBitOffset == 0) {
+        uchar byte;
+        mStream.Get(&byte, 1);
+        mBitWord = uint(byte) << 24;
+        mBitOffset = 8;
+      }
+      result = (result << 1) | (mBitWord >> 31);
+      mBitWord <<= 1;
+      --mBitOffset;
+    }
+    return result;
+  }
   if (mBitOffset >= bitCount) {
     uint bwShift = 32 - bitCount;
     uint mask = GetBitMask(bitCount);
