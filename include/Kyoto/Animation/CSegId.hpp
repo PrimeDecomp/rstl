@@ -28,7 +28,7 @@ public:
 #if RSTL_PRIME1
     return CSegId(0);
 #else
-    return CSegId(RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET ? 149 : 99);
+    return CSegId(RSTL_KYOTO_SEGMENT_COUNT - 1);
 #endif
   }
   static CSegId Invalid() {

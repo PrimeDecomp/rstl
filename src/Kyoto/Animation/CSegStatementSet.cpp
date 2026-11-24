@@ -7,14 +7,14 @@
 #include "dolphin/os/OSCache.h"
 
 namespace {
-const int kSegmentCount = RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET ? 150 : 100;
+const int kSegmentCount = RSTL_KYOTO_SEGMENT_COUNT;
+const int kCacheSlotCount = RSTL_KYOTO_SEGMENT_SLOT_COUNT;
 // TODO: verify that this Prime/Echoes difference is real
 #if RSTL_PRIME1
 enum { kSegmentSetSize = kSegmentCount * sizeof(CSegStatement) };
-volatile int sFreeSegments = 31;
+volatile int sFreeSegments = (1 << kCacheSlotCount) - 1;
 #else
 const int kSegmentSetSize = kSegmentCount * sizeof(CSegStatement);
-const int kCacheSlotCount = RSTL_KYOTO_LARGE_SEGMENT_STATEMENT_SET ? 2 : 3;
 int sFreeSegments = (1 << kCacheSlotCount) - 1;
 #endif
 
@@ -24,7 +24,7 @@ inline void* AllocateSegment() {
 #if RSTL_PRIME1
   const int freeMask = sFreeSegments;
   if (freeMask) {
-    for (__REGISTER uint i = 0; i < 5; ++i) {
+    for (__REGISTER uint i = 0; i < kCacheSlotCount; ++i) {
       const uint bit = 1 << i;
       if (freeMask & bit) {
         int mask = sFreeSegments;
@@ -59,7 +59,7 @@ inline void* AllocateSegment() {
   }
 #endif
   return CMemory::Alloc(kSegmentSetSize, IAllocator::kHI_None, IAllocator::kSC_Unk1,
-                        IAllocator::kTP_Heap, rs_callstack_line_in("CSegStatementSet.cpp", 213));
+                        IAllocator::kTP_Heap, rs_callstack_line(213));
 }
 
 inline void FreeSegment(CSegStatement* seg) {
@@ -75,12 +75,7 @@ inline void FreeSegment(CSegStatement* seg) {
   char* base = static_cast< char* >(LCGetBase());
 #endif
   char* ptr = reinterpret_cast< char* >(seg);
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-  if (ptr >= base && ptr < base + 5 * kSegmentSetSize) {
-#else
   if (ptr >= base && ptr < base + kCacheSlotCount * kSegmentSetSize) {
-#endif
     int index = (ptr - base) / kSegmentSetSize;
     sFreeSegments |= 1 << index;
   } else {
