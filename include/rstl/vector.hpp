@@ -5,7 +5,7 @@
 
 #include "rstl/types.h"
 
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
 #include "Kyoto/Alloc/Assert.hpp"
 #include "Kyoto/Basics/CBasics.hpp"
 #endif
@@ -368,7 +368,7 @@ inline vector< T, Alloc >::vector(const vector& other)
 #endif
 mCount(other.mCount)
 , mCapacity(other.mCapacity) {
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
   if (other.mCapacity == 0 && other.mCount == 0) {
 #else
   if (other.mCount == 0 && other.mCapacity == 0) {

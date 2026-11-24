@@ -19,7 +19,7 @@ enum EMotorState {
   kMS_StopHard = PAD_MOTOR_STOP_HARD,
 };
 
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
 // G2MEAB's ten axes. CRevolutionController feeds 0-3 from the nunchuk stick and the pointer
 // (or a GameCube pad's C-stick) and 6-9 from a GameCube pad's sticks; nothing in it feeds 4-5.
 enum EJoyAxis {

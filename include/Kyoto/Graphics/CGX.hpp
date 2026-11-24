@@ -21,7 +21,7 @@ class CColor;
 #define CGX_STATE (CGX::sGXState)
 #endif
 
-#if RSTL_KYOTO_CGX_CORRUPTION
+#if RSTL_KYOTO_CGX_ZMODE_GXBOOL
 typedef GXBool TZModeFlag;
 #else
 typedef bool TZModeFlag;

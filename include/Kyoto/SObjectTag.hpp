@@ -53,7 +53,7 @@ struct SObjectTag {
     return type < other.type;
   }
 
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
   const FourCC& GetType() const { return type; }
 #else
   RSTL_PRIME1_CONST FourCC GetType() const { return type; }

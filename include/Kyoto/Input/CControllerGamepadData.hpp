@@ -41,7 +41,7 @@ private:
   CControllerButton mButtons[kBU_MAX];
 };
 
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
 CHECK_SIZEOF(CControllerGamepadData, 0x100);
 #endif
 

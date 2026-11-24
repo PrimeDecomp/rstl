@@ -25,7 +25,7 @@ private:
 };
 CHECK_SIZEOF(CGameSplineDesc, 0x50)
 
-#if !RSTL_CORRUPTION_STANDALONE
+#if !RSTL_CORRUPTION
 inline CGameSplineDesc::CGameSplineDesc(const SLdrSpline& spline, CMotionSpline::ESplineType type,
                                         const float duration, const bool closedLoop)
 : mSpline(spline), mType(type), mDuration(duration), mClosedLoop(closedLoop) {}

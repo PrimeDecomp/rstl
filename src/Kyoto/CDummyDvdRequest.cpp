@@ -2,7 +2,7 @@
 
 #include "Kyoto/Alloc/CMemory.hpp"
 // Prototype-only: Prime and Echoes have no dummy request.
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
 int CDummyDvdRequest::GetMediaType() const { return 1; }
 
 void CDummyDvdRequest::PostCancelRequest() {}

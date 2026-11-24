@@ -1733,7 +1733,7 @@ void CGraphics::SetBlendMode(ERglBlendMode mode, ERglBlendFactor src, ERglBlendF
 
 void CGraphics::SetAlphaCompare(ERglAlphaFunc comp0, uchar ref0, ERglAlphaOp op,
                                 ERglAlphaFunc comp1, uchar ref1) {
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
   CGX::SetAlphaCompare(static_cast< GXCompare >(comp0), ref0, static_cast< GXAlphaOp >(op),
                        static_cast< GXCompare >(comp1), ref1);
 #else

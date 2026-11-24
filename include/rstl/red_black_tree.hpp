@@ -73,7 +73,7 @@ private:
 #endif
     }
     ~node() {
-#if RSTL_CORRUPTION_STANDALONE
+#if RSTL_CORRUPTION
       rstl::destroy(reinterpret_cast< P* >(mValue));
 #else
       reinterpret_cast< P* >(mValue)->~P();
