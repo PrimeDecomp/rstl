@@ -13,27 +13,27 @@ extern "C" void rs_log_assert_failure(const CCallStack* stack, const char* sourc
 extern "C" void rs_debugger_printf(const char* format, ...);
 extern "C" void rs_halt_cpu();
 
-// Guessed name. 0x80796BF0: initialized to rs_debugger_printf.
-extern void (*gpfnWarningPrintf)(const char* format, ...);
+// Name from Prime's map (secondary evidence). 0x80796BF0: initialized to rs_debugger_printf.
+extern void (*rs_console_printf)(const char* format, ...);
 
 // Guessed name. Reports a message, with optional format arguments, to the debugger and then to
 // the warning callback, as every "BUG THIS" site does.
 #define RS_DEBUGGER_WARNING(...)                                                                   \
   do {                                                                                             \
     rs_debugger_printf(__VA_ARGS__);                                                               \
-    gpfnWarningPrintf(__VA_ARGS__);                                                                \
+    rs_console_printf(__VA_ARGS__);                                                                \
   } while (0)
 
 // Guessed name. The warning callback followed by the debugger, with a format and optional
 // arguments, as the map station "BUG THIS" sites do.
 #define RS_WARNING_DEBUGGER_PRINT(...)                                                             \
   do {                                                                                             \
-    gpfnWarningPrintf(__VA_ARGS__);                                                                \
+    rs_console_printf(__VA_ARGS__);                                                                \
     rs_debugger_printf(__VA_ARGS__);                                                               \
   } while (0)
 
 // Guessed name. Only the warning callback, with a format and optional arguments.
-#define RS_WARNING_PRINT(...) gpfnWarningPrintf(__VA_ARGS__)
+#define RS_WARNING_PRINT(...) rs_console_printf(__VA_ARGS__)
 
 // Guessed name. Only the debugger, with a format and optional arguments.
 #define RS_DEBUGGER_PRINT(...) rs_debugger_printf(__VA_ARGS__)
@@ -42,7 +42,7 @@ extern void (*gpfnWarningPrintf)(const char* format, ...);
 #define RS_DEBUGGER_WARNING_ARG(message, arg)                                                      \
   do {                                                                                             \
     rs_debugger_printf(message);                                                                   \
-    gpfnWarningPrintf(message, arg);                                                               \
+    rs_console_printf(message, arg);                                                               \
   } while (0)
 
 // The failure path every G2MEAB "Verify" assert expands to. The exception is only stringized:

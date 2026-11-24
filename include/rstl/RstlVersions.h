@@ -724,14 +724,6 @@
 #define RSTL_KYOTO_CAST_UINT32_INT (RSTL_CORRUPTION)
 // CStopwatch::Wait skips waits at or below FLT_EPSILON.
 #define RSTL_KYOTO_STOPWATCH_EPSILON_WAIT (!RSTL_PRIME1)
-// The prototype has diagnostic callbacks and a graphics assertion screen.
-#define RSTL_KYOTO_SCREEN_ASSERTIONS (RSTL_VERSION == RSTL_G2MEAB)
-// Select the fatal entry separately from the prototype's debug-print API.
-#if RSTL_KYOTO_SCREEN_ASSERTIONS
-#define RSTL_KYOTO_FATAL_PRINTF_NAME RAssert_PrintFatalMessage
-#else
-#define RSTL_KYOTO_FATAL_PRINTF_NAME rs_debugger_printf
-#endif
 // Stringize uses `vsnprintf` instead of `vsprintf`.
 #define RSTL_KYOTO_STRINGIZE_VSNPRINTF (!RSTL_PRIME1 || RSTL_VERSION >= RSTL_R3IJ)
 // Stringize has a `va_list` overload.
@@ -752,6 +744,9 @@
 #define RSTL_KYOTO_ERROR_HANDLER_NEW_CONTEXT (RSTL_VERSION >= RSTL_GM8E_01)
 // Echoes' fatal error handler: halts audio and DVD, resets when idle, names REL addresses.
 #define RSTL_KYOTO_REL_ERROR_HANDLER (!RSTL_PRIME1)
+// The fatal print entry reports through a stored OSContext when one is set, and only saves the
+// current context otherwise (Wii Echoes and MP3).
+#define RSTL_KYOTO_FATAL_STORED_CONTEXT (!RSTL_PRIME1 && RSTL_VERSION >= RSTL_R32J)
 // BUILD_TIME_DUMMY holds a real build string instead of padding.
 #define RSTL_KYOTO_BUILD_TIME_STRING (!RSTL_PRIME1)
 // Echoes PAL's build string.
