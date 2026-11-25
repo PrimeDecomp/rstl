@@ -255,8 +255,8 @@
 #define RSTL_NAMED_SEARCH_LOCALS (RSTL_VERSION >= RSTL_R3IJ)
 // `find_if` takes its predicate by value.
 #define RSTL_FIND_IF_PRED_BY_VALUE (RSTL_CORRUPTION)
-// `swap` / `iter_swap` are inline only under `RSTL_INLINE_SWAP`, and `swap` has no precondition.
-#define RSTL_SWAP_OPTIONAL_INLINE (RSTL_VERSION == RSTL_G2MEAB)
+// Check that swap receives two distinct objects.
+#define RSTL_SWAP_PRECONDITION (RSTL_VERSION != RSTL_G2MEAB)
 
 // ============================================================================================
 // rstl: vector
