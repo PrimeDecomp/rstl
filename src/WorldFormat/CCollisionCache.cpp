@@ -9,6 +9,9 @@
 #include <string.h>
 
 namespace {
+// How many words a pointer occupies in the halfword stream.
+const int kPointerWords = sizeof(void*) / sizeof(ushort);
+
 // Guessed names for the shared stream helpers.
 // Packed halfwords have no destructors; do not zero-fill the retained payload.
 inline void Truncate(rstl::vector< ushort, rstl::locked_cache_allocator >& data, int size) {
@@ -26,7 +29,14 @@ inline void PushWord(rstl::vector< ushort, rstl::locked_cache_allocator >& data,
 
 inline void PushWord(rstl::vector< ushort, rstl::locked_cache_allocator >& data,
                      const void* const& word) {
-  PushWord(data, *reinterpret_cast< const uint* >(&word));
+  if (kPointerWords == 2) {
+    PushWord(data, *reinterpret_cast< const uint* >(&word));
+  } else {
+    for (int i = 0; i < kPointerWords; ++i) {
+      data.push_back_unsafe(0);
+    }
+    *reinterpret_cast< uintptr_t* >(&data[data.size() - kPointerWords]) = reinterpret_cast<uintptr_t>(word);
+  }
 }
 
 // Reconstructed command names for the native halfword stream.
@@ -105,7 +115,7 @@ CCollisionCacheIterator::CCollisionCacheIterator() {
 }
 
 CCollisionCache::CCollisionCache(const CAABox& bounds, EGeometryMode dynamicGeometryMode,
-                                 EStorageMode storageMode, ushort x34)
+                                 EStorageMode storageMode, ushort ownerId)
 : mBounds(bounds)
 , mData(rstl::vector< ushort, rstl::locked_cache_allocator >(rstl::locked_cache_allocator(
       storageMode == kSM_PreferHeap ? rstl::locked_cache_allocator::kM_HeapOnly
@@ -113,7 +123,7 @@ CCollisionCache::CCollisionCache(const CAABox& bounds, EGeometryMode dynamicGeom
 , mMetadataWords(0)
 , mGeometryMode(dynamicGeometryMode)
 , mStorageMode(storageMode)
-, mOwnerId(x34)
+, mOwnerId(ownerId)
 , mGeometryRevision(CollisionPrimitiveDataCache::gGeometryRevision) {
   mData.reserve(storageMode == kSM_PreferHeap            ? 0x400
                 : storageMode == kSM_LockedCacheThenHeap ? 0x1000
@@ -147,6 +157,8 @@ void CCollisionCache::ReadLeaf(CCollisionCacheIterator& iterator) {
 }
 
 uint CCollisionCache::ReadGeometry(CCollisionCacheIterator& iterator) {
+  #define SIZEOF(T) (sizeof(T) / sizeof(*words))
+
   int commands = 4;
   const ushort* words = mData.data() + iterator.mOffset;
   ushort id = 0;
@@ -168,24 +180,24 @@ uint CCollisionCache::ReadGeometry(CCollisionCacheIterator& iterator) {
       ++iterator.mOffset;
       break;
     case kCC_NoTransform:
-      iterator.mTransform = 0;
+      iterator.mTransform = nullptr;
       break;
     case kCC_Transform:
-      iterator.mTransform = reinterpret_cast< const CTransform4f* >(words);
-      words += 24;
-      iterator.mOffset += 24;
+      iterator.mTransform = reinterpret_cast< CTransform4f const* >(words);
+      words += SIZEOF(CTransform4f);
+      iterator.mOffset += SIZEOF(CTransform4f);
       break;
     case kCC_Geometry:
-      iterator.mGeometry = *reinterpret_cast< const CCollisionPrimitiveData* const* >(words);
-      id = words[2];
-      generation = words[3];
-      words += 4;
-      iterator.mOffset += 4;
+      iterator.mGeometry = *reinterpret_cast< CCollisionPrimitiveData const* const* >(words);
+      id = words[kPointerWords];
+      generation = words[kPointerWords + 1];
+      words += kPointerWords + 2; // the two ids
+      iterator.mOffset += kPointerWords + 2;
       break;
     case kCC_Material:
       iterator.mMaterialFlags = *reinterpret_cast< const u64* >(words);
-      words += 4;
-      iterator.mOffset += 4;
+      words += SIZEOF(u64);
+      iterator.mOffset += SIZEOF(u64);
       break;
     case kCC_NoMaterial:
       iterator.mMaterialFlags = 0;
@@ -198,6 +210,8 @@ uint CCollisionCache::ReadGeometry(CCollisionCacheIterator& iterator) {
     ++iterator.mOffset;
   }
   return id | (generation << 16);
+
+  #undef SIZEOF
 }
 
 uint CCollisionCache::SkipGeometry(CCollisionCacheIterator& iterator) {
@@ -229,10 +243,10 @@ void CCollisionCache::RemoveGeometry(CCollisionCacheIterator& iterator) {
       removed - iterator.mGeometryTriangleCount * (sizeof(SCachedCollisionSlot) / sizeof(ushort));
   iterator.mOffset = iterator.mEnd;
   iterator.mObjectId = -1;
-  iterator.mTransform = 0;
-  iterator.mGeometry = 0;
+  iterator.mTransform = nullptr;
+  iterator.mGeometry = nullptr;
   iterator.mMaterialFlags = 0;
-  iterator.mLeafBounds = 0;
+  iterator.mLeafBounds = nullptr;
   iterator.mTrianglesRemaining = 0;
   iterator.mLeavesRemaining = 0;
   iterator.mLeafExhausted = true;
@@ -271,12 +285,12 @@ void CCollisionCacheWriter::BeginGeometry(const CCollisionPrimitiveData& geometr
                                           const CTransform4f* transform, ushort id, u64 flags) {
   FinishLeaf();
   mGeometryStart = mCache.mData.size();
-  ReserveWords(40);
+  ReserveWords(38 + kPointerWords);
   mCache.mData.push_back_unsafe(kCC_Geometry);
   PushWord(mCache.mData, &geometry);
   mCache.mData.push_back_unsafe(geometry.GetCacheId());
   mCache.mData.push_back_unsafe(CollisionPrimitiveDataCache::GetGeneration(geometry.GetCacheId()));
-  mCache.mMetadataWords += 5;
+  mCache.mMetadataWords += 3 + kPointerWords;
   if (transform != 0) {
     if ((mCache.mData.size() & 1) == 0) {
       mCache.mData.push_back_unsafe(kCC_Padding);

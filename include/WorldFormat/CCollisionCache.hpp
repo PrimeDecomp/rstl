@@ -103,7 +103,7 @@ public:
   };
 
 
-  CCollisionCache(const CAABox& bounds, EGeometryMode geometryMode, EStorageMode storageMode = kSM_LockedCacheThenHeap, ushort x34 = 0xffff);
+  CCollisionCache(const CAABox& bounds, EGeometryMode geometryMode, EStorageMode storageMode = kSM_LockedCacheThenHeap, ushort ownerId = 0xffff);
   // Guessed reconstruction: the member-wise copy is written out in the class.
   CCollisionCache(const CCollisionCache& other)
   : mBounds(other.mBounds)
