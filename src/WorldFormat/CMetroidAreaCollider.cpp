@@ -954,8 +954,8 @@ bool CMetroidAreaCollider::MovingSphereCollisionCheck_Cached(
   return ret;
 }
 
-bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
 #if !RSTL_PRIME1
+bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
     CCollisionCache& cache, const CAABox& aabb, const CMaterialFilter& filter,
     const CMaterialList& matList, CVector3f dir, float mag, CCollisionInfo& infoOut, double& dOut) {
 
@@ -1063,9 +1063,9 @@ bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
   }
   return ret;
 }
+#endif
 
 bool CMetroidAreaCollider::MovingAABoxCollisionCheck_Cached(
-#endif
     const COctreeLeafCache& leafCache, const CAABox& aabb, const CMaterialFilter& filter,
     const CMaterialList& matList, CVector3f dir, float mag, CCollisionInfo& infoOut, double& dOut) {
   dOut = mag;
