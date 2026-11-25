@@ -34,7 +34,15 @@ public:
   // TODO: Fake?
 #if !RSTL_PRIME1
   // Guessed names, corroborated by later-engine metadata.
-  void SetCenter(CVector3f point) { mConstant = CVector3f::Dot(point, mNormal); }
+  void SetCenter(
+#if RSTL_KYOTO_PLANE_CENTER_BY_REFERENCE
+      const CVector3f& point
+#else
+      CVector3f point
+#endif
+  ) {
+    mConstant = CVector3f::Dot(point, mNormal);
+  }
   void SetNormal(const CUnitVector3f& normal) { mNormal = normal; }
 #endif
 

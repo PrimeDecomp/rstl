@@ -908,6 +908,8 @@
 #define RSTL_KYOTO_NUQUATERNION_TRIVIAL_CONSTRUCTION (RSTL_CORRUPTION)
 // CPlane declares trivial destruction and reserved_vector push construction.
 #define RSTL_KYOTO_PLANE_PUSH_CONSTRUCTION (RSTL_CORRUPTION)
+// The prototype passes the new plane center by const reference.
+#define RSTL_KYOTO_PLANE_CENTER_BY_REFERENCE (RSTL_VERSION == RSTL_G2MEAB)
 // CFrustumPlanes passes the far plane's constant straight to CPlane (no local).
 #define RSTL_KYOTO_FRUSTUM_FAR_CONSTANT_INLINE (RSTL_CORRUPTION)
 // CSphere defines its bounding boxes.
