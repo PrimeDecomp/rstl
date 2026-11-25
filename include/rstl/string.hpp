@@ -130,7 +130,7 @@ public:
     return *this;
   }
   bool operator==(const reverse_iterator& other) const { return mIt == other.mIt; }
-  bool operator!=(const reverse_iterator& other) const { return !(mIt == other.mIt); }
+  bool operator!=(const reverse_iterator& other) const { return mIt != other.mIt; }
 
 private:
   It mIt;
