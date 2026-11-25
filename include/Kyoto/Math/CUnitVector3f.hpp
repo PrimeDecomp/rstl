@@ -8,6 +8,10 @@
 #include "rstl/RstlVersions.h"
 
 class CUnitVector3f : public CVector3f {
+  friend class CPlane;
+
+  CUnitVector3f() {}
+
 public:
 #if RSTL_KYOTO_UNIT_VECTOR_FLAG_ENUM
   enum ENormalize {
