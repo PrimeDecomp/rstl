@@ -257,36 +257,40 @@ public:
 
   template < typename Cmp >
   void sort(Cmp cmp) {
+#if RSTL_LIST_SORT_NODE_CURSOR
+    for (node* it = mStart; it != mEnd;) {
+      node* selected = it;
+      for (node* cur = it->get_next(); cur != mEnd; cur = cur->get_next()) {
+        if (cmp(*selected->get_value(), *cur->get_value())) {
+          selected = cur;
+        }
+      }
+
+      node* next = it->get_next();
+      exchange(it, selected);
+      it = next;
+    }
+#else
     iterator it = begin();
     while (it != end()) {
       iterator min = it;
       iterator next = it;
       ++next;
-#if RSTL_LIST_SORT_NODE_CURSOR
       for (node* cur = next.get_node(); cur != end().get_node(); cur = cur->get_next()) {
         if (cmp(*min, *cur->get_value())) {
           min = cur;
         }
       }
-#else
-      for (; next != end(); ++next) {
-        if (cmp(*min, *next)) {
-          min = next;
-        }
-      }
-#endif
 
       next = it;
       ++next;
       exchange(it.get_node(), min.get_node());
       it = next;
     }
+#endif
   }
 
-#if !RSTL_LIST_EXCHANGE_DIRECT
-  inline
-#endif
-  void exchange(node* nodeA, node* nodeB);
+  inline void exchange(node* nodeA, node* nodeB);
 
 public:
   class const_iterator {
