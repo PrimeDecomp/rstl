@@ -130,7 +130,7 @@ public:
     return *this;
   }
   bool operator==(const reverse_iterator& other) const { return mIt == other.mIt; }
-  bool operator!=(const reverse_iterator& other) const { return !(mIt == other.mIt); }
+  bool operator!=(const reverse_iterator& other) const { return mIt != other.mIt; }
 
 private:
   It mIt;
@@ -263,10 +263,7 @@ public:
 
   basic_string& assign(const basic_string&);
   basic_string& assign(const _CharTp*, int = -1);
-  basic_string& operator=(const basic_string& other) {
-    assign(other);
-    return *this;
-  }
+  basic_string& operator=(const basic_string& other) { return assign(other); }
   basic_string& operator+=(const _CharTp* other) {
     append(other, -1);
     return *this;
