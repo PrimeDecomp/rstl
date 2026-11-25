@@ -55,8 +55,8 @@ void TOneStatic< T >::operator delete(void* p) {
   uint& refCount = ReferenceCount();
   RS_VERIFY_THROW_DIRECT_IN("TOneStatic.h", 81, refCount == 1, false,
                             "Bad reference count for static delete'd class");
-  RS_VERIFY_THROW_DIRECT_IN("TOneStatic.h", 82, p == GetAllocSpace (), false,
-                            "ERROR - Trying to delete the wrong pointer!");
+  RS_VERIFY_THROW_IN("TOneStatic.h", 82, p == GetAllocSpace (), false,
+                     "ERROR - Trying to delete the wrong pointer!");
   --refCount;
 }
 
