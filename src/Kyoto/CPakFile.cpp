@@ -58,9 +58,11 @@ CPakFile::CResInfo::CResInfo(CAssetId id, uint type, uint offset, uint size,
                   "Offset too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
   RS_VERIFY_THROW(81, size == GetSize(), false,
                   "Size too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
+#if !RSTL_PRIME1
   RS_VERIFY_THROW(
       83, lookaheadAfterResourceSize == GetLookaheadAfterResourceSize(), false,
       "Lookahead size too large or not 32 byte aligned in CPakFile::CResInfo::CResInfo.");
+#endif
 }
 
 #if RSTL_KYOTO_PAK_FILE_CORRUPTION

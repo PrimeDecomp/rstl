@@ -115,11 +115,14 @@ void rs_debugger_printf(const char* format, ...) {
   }
 }
 
+#ifdef __MWERKS__
 void rs_halt_cpu() {
   SkipFatal = true;
   asm { opword 0 }
 }
+#endif
 
+#if !IS_TARGET_PC
 void rs_fatal_printf(const char* format, ...) {
   va_list arg;
   char buffer[1024];
@@ -187,6 +190,7 @@ void rs_fatal_printf(const char* format, ...) {
   }
 }
 #endif
+#endif
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar) {
 #if defined(TARGET_PC)
@@ -195,8 +199,8 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
 #else
   const bool hasMessage = rs_debugger_buffer_size > 0;
 #endif
-  OSPanic(__FILE__, __LINE__, "Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
-          hasMessage ? ": " : "", hasMessage ? rs_debugger_buffer : "");
+  OSReport("Game error %d (DSISR %08x, DAR %08x)%s%s", code, dsisr, dar,
+           hasMessage ? ": " : "", hasMessage ? rs_debugger_buffer : "");
 #else
 #if RSTL_KYOTO_REL_ERROR_HANDLER
   char buffer[1024];

@@ -94,7 +94,7 @@ CPakFile* CResLoader::FindResourceForLoad(const SObjectTag& tag) {
     strcpy(wantedType, SObjectTag::Type2Text(tag.GetType()));
     RS_VERIFY_FAILURE(189, "false", "false",
                       CBasics::Stringize("Error loading resource %s - Wanted type %s, got type %s",
-                                         tag.GetId().ToHexString().c_str(), wantedType, gotType));
+                                         ASSET_ID_TO_HEX_STRING(tag.GetId()), wantedType, gotType));
   }
 
   return pak;

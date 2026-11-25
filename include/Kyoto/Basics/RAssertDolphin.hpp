@@ -4,6 +4,8 @@
 #include "rstl/RstlVersions.h"
 #include "rstl/types.h"
 
+#include "Kyoto/Alloc/CCallStack.hpp"
+
 #include "dolphin/os.h"
 
 #define BUILD_INFO_TAG "!#$MetroidBuildInfo!#$"
@@ -31,6 +33,8 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
 void SetErrorHandlers();
 // Formats the message and reports it through ErrorHandler.
 void rs_reallyfatal_printf(const char* format, ...);
+void rs_log_assert_failure(const CCallStack* stack, const char* source, int line, const char* kind,
+                           const char* condition, const char* message);
 
 #if RSTL_KYOTO_DEBUG_BUILD
 // Guessed name
@@ -55,9 +59,11 @@ RAssert_SetDebuggerPrintCallback(TRAssertDebuggerPrintCallback callback);
 #endif
 
 // Prints through the debugger callback (debug builds only; retail has no such function).
-extern "C" void rs_debugger_printf(const char* format, ...);
+void rs_debugger_printf(const char* format, ...);
 
 // Name from Prime's map (secondary evidence).
-extern "C" void rs_fatal_printf(const char* format, ...);
+void rs_fatal_printf(const char* format, ...);
+
+void rs_halt_cpu();
 
 #endif // _RASSERTDOLPHIN

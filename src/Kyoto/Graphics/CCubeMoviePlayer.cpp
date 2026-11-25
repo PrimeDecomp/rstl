@@ -400,9 +400,12 @@ bool CMoviePlayer::ContinueLoading() {
       mAudioInfo.sndFrequency = CBasics::SwapBytes(static_cast< uint >(mAudioInfo.sndFrequency));
       mAudioInfo.sndNumSamples =
           CBasics::SwapBytes(static_cast< uint >(mAudioInfo.sndNumSamples));
+
+#if RSTL_CORRUPTION
       RS_VERIFY_THROW(527, mAudioInfo.sndNumTracks <= 1, false,
                       CBasics::Stringize("Can't support multiple audio tracks in movie %s",
                                          mDvdFile.GetFilename().data()));
+#endif
     }
   }
   default:;
