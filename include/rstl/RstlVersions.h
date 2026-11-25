@@ -171,6 +171,9 @@
 #define RSTL_SCALAR_FILL_HELPERS (RSTL_VERSION >= RSTL_R3IJ)
 // The prototype passes builtin fill values by value only for `signed char`.
 #define RSTL_BYTE_FILL_VALUE (RSTL_CORRUPTION)
+
+// Early Corruption byte vectors fill their newly resized storage by value.
+#define RSTL_BYTE_VECTOR_RESIZE_FILL_VALUE (RSTL_BYTE_FILL_VALUE && !RSTL_SCALAR_FILL_HELPERS)
 // `uninitialized_fill_n` advances `dest` itself, and `bit_vector::insert` uses counted loops.
 #define RSTL_COUNTED_FILL_LOOPS (RSTL_VERSION >= RSTL_R3ME_00)
 // Container fills, `resize` and `assign` take builtin values and pointers by value.

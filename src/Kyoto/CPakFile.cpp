@@ -489,8 +489,9 @@ void CPakFile::RebuildResourceLists(const ResListType& sortedResources) {
   for (ResListType::const_iterator it = sortedResources.begin(); it != sortedResources.end(); ++it)
     ++bucketCounts[GetBucketForId(it->GetId())];
 #if RSTL_KYOTO_PAK_FILE_CORRUPTION
+  int firstOffset = 0;
+  mBucketOffsets.push_back_unsafe(firstOffset);
   uint offset = 0;
-  mBucketOffsets.push_back_unsafe(offset);
   for (int i = 0; i < 256; ++i) {
     offset += bucketCounts[i];
     bucketCounts[i] = 0;
