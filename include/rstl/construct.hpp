@@ -674,10 +674,13 @@ static inline void uninitialized_fill_n(T** dest, int n, T* const& value) {
 // Builtin values are filled by value with plain assignment.
 #define RSTL_FILL_BY_VALUE(T)                                                                        static inline void uninitialized_fill_n(T* dest, int n, T value) {                                   for (int i = 0; i < n; ++i, ++dest) {                                                                *dest = value;                                                                                   }                                                                                                }
 RSTL_FILL_BY_VALUE(signed char)
+namespace vector_detail {
+RSTL_FILL_BY_VALUE(unsigned char)
+} // namespace vector_detail
 #if RSTL_SCALAR_FILL_HELPERS
+using vector_detail::uninitialized_fill_n;
 RSTL_FILL_BY_VALUE(bool)
 RSTL_FILL_BY_VALUE(char)
-RSTL_FILL_BY_VALUE(unsigned char)
 RSTL_FILL_BY_VALUE(short)
 RSTL_FILL_BY_VALUE(unsigned short)
 RSTL_FILL_BY_VALUE(int)

@@ -434,15 +434,9 @@ void vector< T, Alloc >::assign(int size, typename type_traits< T >::vector_fill
   }
 }
 
-#if RSTL_BYTE_VECTOR_RESIZE_FILL_VALUE
+#if !RSTL_SCALAR_FILL_HELPERS
 namespace vector_detail {
 using rstl::uninitialized_fill_n;
-
-static inline void uninitialized_fill_n(unsigned char* dest, int n, unsigned char value) {
-  for (int i = 0; i < n; ++i, ++dest) {
-    *dest = value;
-  }
-}
 } // namespace vector_detail
 #endif
 
@@ -451,7 +445,7 @@ inline void vector< T, Alloc >::resize(int size, typename type_traits< T >::vect
   if (mCount != size) {
     if (size > mCount) {
       reserve(size);
-#if RSTL_BYTE_VECTOR_RESIZE_FILL_VALUE
+#if !RSTL_SCALAR_FILL_HELPERS
       using vector_detail::uninitialized_fill_n;
 #endif
       uninitialized_fill_n(mItems + mCount, size - mCount, in);
