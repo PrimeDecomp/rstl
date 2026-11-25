@@ -355,10 +355,10 @@
 #define RSTL_LIST_CREATE_NODE_SETTERS (RSTL_VERSION == RSTL_G2MEAB)
 // Insertion helpers take pointer elements by value.
 #define RSTL_LIST_POINTER_VALUE_PARAM (RSTL_CORRUPTION)
-// `exchange` is a plain member that links nodes through `mPrev` / `mNext`.
+// `exchange` links nodes through `mPrev` / `mNext`.
 #define RSTL_LIST_EXCHANGE_DIRECT (RSTL_CORRUPTION)
-// `sort`'s inner loop walks a plain node cursor (all but Trilogy).
-#define RSTL_LIST_SORT_NODE_CURSOR (RSTL_VERSION < RSTL_R3ME_00)
+// `sort` uses node cursors for both loops.
+#define RSTL_LIST_SORT_NODE_CURSOR (RSTL_VERSION >= RSTL_G2MEAB)
 // `listpool` holds an `Alloc mAllocator` member instead of deriving from `Alloc`.
 #define RSTL_LISTPOOL_ALLOCATOR_MEMBER (RSTL_CORRUPTION)
 
