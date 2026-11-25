@@ -21,6 +21,8 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+
 #if RSTL_KYOTO_DEBUG_BUILD
 #define RASSERT_BUILD_NAME "Release"
 static bool sDebuggerChecked; // Guessed name
@@ -30,14 +32,13 @@ TRAssertDiagnosticPrintCallback rs_console_printf = rs_debugger_printf;
 #define RASSERT_BUILD_NAME "Production"
 #endif
 
-#if RSTL_KYOTO_REL_ERROR_HANDLER
-#include <string.h>
-
 // Fatal printing formats the message on its own stack; ErrorHandler copies it into buffer.
 static bool SkipFatal = false;
 #if RSTL_KYOTO_DEBUG_BUILD
 static TRAssertDebuggerPrintCallback gpUserDebugMsgFunc; // Name from Prime's map
 #endif
+
+#if RSTL_KYOTO_REL_ERROR_HANDLER
 static char* rs_debugger_buffer = nullptr;
 // Stack frames to leave out of the backtrace, from a "SKIP<n>" message prefix.
 static int rs_debugger_size = 0;
