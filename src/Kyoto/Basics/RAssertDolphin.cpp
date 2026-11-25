@@ -115,11 +115,14 @@ void rs_debugger_printf(const char* format, ...) {
   }
 }
 
+#ifdef __MWERKS__
 void rs_halt_cpu() {
   SkipFatal = true;
   asm { opword 0 }
 }
+#endif
 
+#if !IS_TARGET_PC
 void rs_fatal_printf(const char* format, ...) {
   va_list arg;
   char buffer[1024];
@@ -186,6 +189,7 @@ void rs_fatal_printf(const char* format, ...) {
     VIWaitForRetrace();
   }
 }
+#endif
 #endif
 
 void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress dar) {
