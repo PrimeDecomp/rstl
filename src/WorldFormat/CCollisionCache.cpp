@@ -104,17 +104,20 @@ CCollisionCacheIterator::CCollisionCacheIterator() {
   mGeometryTriangleCount = 0;
 }
 
-CCollisionCache::CCollisionCache(const CAABox& bounds, int x2c, int x30, ushort x34)
+CCollisionCache::CCollisionCache(const CAABox& bounds, EGeometryMode dynamicGeometryMode,
+                                 EStorageMode storageMode, ushort x34)
 : mBounds(bounds)
-, mData(rstl::vector< ushort, rstl::locked_cache_allocator >(
-      rstl::locked_cache_allocator(x30 == 2 ? rstl::locked_cache_allocator::kM_HeapOnly
-                                            : rstl::locked_cache_allocator::kM_CacheThenHeap)))
+, mData(rstl::vector< ushort, rstl::locked_cache_allocator >(rstl::locked_cache_allocator(
+      storageMode == kSM_PreferHeap ? rstl::locked_cache_allocator::kM_HeapOnly
+                                    : rstl::locked_cache_allocator::kM_CacheThenHeap)))
 , mMetadataWords(0)
-, mDynamicGeometryMode(x2c)
-, x30_unknown(x30)
+, mGeometryMode(dynamicGeometryMode)
+, mStorageMode(storageMode)
 , mOwnerId(x34)
 , mGeometryRevision(CollisionPrimitiveDataCache::gGeometryRevision) {
-  mData.reserve(x30 == 2 ? 0x400 : x30 == 0 ? 0x1000 : 0x800);
+  mData.reserve(storageMode == kSM_PreferHeap            ? 0x400
+                : storageMode == kSM_LockedCacheThenHeap ? 0x1000
+                                                         : 0x800);
 }
 
 void CCollisionCache::SetBounds(const CAABox& bounds) { mBounds = bounds; }
@@ -122,10 +125,12 @@ void CCollisionCache::SetBounds(const CAABox& bounds) { mBounds = bounds; }
 void CCollisionCache::Reset() {
   mData.clear();
   mData = rstl::vector< ushort, rstl::locked_cache_allocator >(rstl::locked_cache_allocator(
-      x30_unknown == 2 ? rstl::locked_cache_allocator::kM_HeapOnly
-                       : rstl::locked_cache_allocator::kM_CacheThenHeap));
+      mStorageMode == kSM_PreferHeap ? rstl::locked_cache_allocator::kM_HeapOnly
+                                     : rstl::locked_cache_allocator::kM_CacheThenHeap));
   mMetadataWords = 0;
-  mData.reserve(x30_unknown == 2 ? 0x400 : x30_unknown == 0 ? 0x1000 : 0x800);
+  mData.reserve(mStorageMode == kSM_PreferHeap            ? 0x400
+                : mStorageMode == kSM_LockedCacheThenHeap ? 0x1000
+                                                          : 0x800);
   mGeometryRevision = CollisionPrimitiveDataCache::gGeometryRevision;
 }
 
@@ -251,10 +256,14 @@ inline void CCollisionCacheWriter::ReserveWords(int count) {
     mCache.mData.reserve(capacity > count ? capacity : count * 2);
     // Translate packed cursors as addresses, including the initial null cursors.
     // Integer subtraction avoids subtracting pointers to different allocations.
-    intptr_t delta = intptr_t(reinterpret_cast< uintptr_t >(mCache.mData.data()) - oldAddress) / intptr_t(sizeof(ushort));
-    mLeafCount = reinterpret_cast< ushort* >(reinterpret_cast< uintptr_t >(mLeafCount) + delta * sizeof(ushort));
-    mTriangleCount = reinterpret_cast< ushort* >(reinterpret_cast< uintptr_t >(mTriangleCount) + delta * sizeof(ushort));
-    mLeafBounds = reinterpret_cast< CAABox* >(reinterpret_cast< uintptr_t >(mLeafBounds) + delta * sizeof(ushort));
+    intptr_t delta = intptr_t(reinterpret_cast< uintptr_t >(mCache.mData.data()) - oldAddress) /
+                     intptr_t(sizeof(ushort));
+    mLeafCount = reinterpret_cast< ushort* >(reinterpret_cast< uintptr_t >(mLeafCount) +
+                                             delta * sizeof(ushort));
+    mTriangleCount = reinterpret_cast< ushort* >(reinterpret_cast< uintptr_t >(mTriangleCount) +
+                                                 delta * sizeof(ushort));
+    mLeafBounds = reinterpret_cast< CAABox* >(reinterpret_cast< uintptr_t >(mLeafBounds) +
+                                              delta * sizeof(ushort));
   }
 }
 
