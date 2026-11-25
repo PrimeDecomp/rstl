@@ -1,6 +1,7 @@
 #ifndef _CGAMESPLINEDESC
 #define _CGAMESPLINEDESC
 
+#include "rstl/RstlVersions.h"
 #include "rstl/static_assert.hpp"
 #include "Kyoto/Math/CMayaSpline.hpp"
 #include "Kyoto/Math/CMotionSpline.hpp"
@@ -25,10 +26,9 @@ private:
 };
 CHECK_SIZEOF(CGameSplineDesc, 0x50)
 
-#if !RSTL_CORRUPTION
 inline CGameSplineDesc::CGameSplineDesc(const SLdrSpline& spline, CMotionSpline::ESplineType type,
-                                        const float duration, const bool closedLoop)
+                                        const float duration,
+                                        RSTL_KYOTO_SCALAR_PARAM_CONST bool closedLoop)
 : mSpline(spline), mType(type), mDuration(duration), mClosedLoop(closedLoop) {}
-#endif
 
 #endif // _CGAMESPLINEDESC
