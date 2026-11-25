@@ -91,14 +91,26 @@ class CCollisionCache {
   friend class CCollisionCacheIterator;
 
 public:
-  CCollisionCache(const CAABox& bounds, int x2c, int x30, ushort x34);
+  enum EGeometryMode {
+    kGM_Static = 0,
+    kGM_Unknown = 1,
+    kGM_DynamicPrimitives = 2
+  };
+  enum EStorageMode {
+    kSM_LockedCacheThenHeap = 0, // large initial reserve, temporary caches
+    kSM_LockedCacheSmall    = 1, // same allocator, smaller reserve (not seen in any caller)
+    kSM_PreferHeap          = 2, // small reserve, persistent caches
+  };
+
+
+  CCollisionCache(const CAABox& bounds, EGeometryMode geometryMode, EStorageMode storageMode = kSM_LockedCacheThenHeap, ushort ownerId = 0xffff);
   // Guessed reconstruction: the member-wise copy is written out in the class.
   CCollisionCache(const CCollisionCache& other)
   : mBounds(other.mBounds)
   , mData(other.mData)
   , mMetadataWords(other.mMetadataWords)
-  , mDynamicGeometryMode(other.mDynamicGeometryMode)
-  , x30_unknown(other.x30_unknown)
+  , mGeometryMode(other.mGeometryMode)
+  , mStorageMode(other.mStorageMode)
   , mOwnerId(other.mOwnerId)
   , mGeometryRevision(other.mGeometryRevision) {}
   void Reset(); // Guessed names
@@ -107,7 +119,7 @@ public:
   uint GetNumTriangles() const {
     return uint(mData.size() - mMetadataWords) / (sizeof(SCachedCollisionSlot) / sizeof(ushort));
   }
-  int GetDynamicGeometryMode() const { return mDynamicGeometryMode; }
+  EGeometryMode GetGeometryMode() const { return mGeometryMode; }
   TUniqueId GetOwnerId() const { return TUniqueId(mOwnerId); }
   void RemoveGeometry(CCollisionCacheIterator& iterator);
   uint SkipGeometry(CCollisionCacheIterator& iterator);
@@ -180,8 +192,8 @@ private:
   CAABox mBounds; // Guessed names
   rstl::vector< ushort, rstl::locked_cache_allocator > mData;
   int mMetadataWords;
-  int mDynamicGeometryMode; // Guessed role; the full mode domain remains unresolved.
-  int x30_unknown;
+  EGeometryMode mGeometryMode; // Guessed role; the full mode domain remains unresolved.
+  int mStorageMode;
   ushort mOwnerId; // Packed TUniqueId storage; constructor API remains ushort.
   uint mGeometryRevision;
 };
