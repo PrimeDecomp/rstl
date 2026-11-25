@@ -124,22 +124,15 @@ struct reserved_vector_traits< float > {
 #endif
 
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
+// Guessed copy policy name.
 template < typename T >
-struct reserved_vector_scalar_type : is_scalar_type< T > {};
-
-template <>
-struct reserved_vector_scalar_type< unsigned long > {
-  enum { value = true };
-};
-
-template < typename T >
-struct reserved_vector_counted_scalar_copy {
-  enum { value = false };
+struct reserved_vector_copy_policy {
+  enum { placement = use_assignment_for_construction< T >::value && !is_scalar_type< T >::value };
 };
 
 template <>
-struct reserved_vector_counted_scalar_copy< int > {
-  enum { value = true };
+struct reserved_vector_copy_policy< unsigned long > {
+  enum { placement = false };
 };
 #endif
 
@@ -199,12 +192,8 @@ public:
 #endif
   reserved_vector(const reserved_vector& other) : mCount(other.mCount) {
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
-    if (reserved_vector_counted_scalar_copy< T >::value) {
-      uninitialized_copy_n(other.data(), mCount, data());
-    } else if (reserved_vector_scalar_type< T >::value ||
-               use_assignment_for_construction< T >::value) {
-      // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
-      // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
+    if (reserved_vector_copy_policy< T >::placement) {
+      // These class elements require placement construction in fixed storage.
       RSTL_PRECONDITION(other.mCount >= 0);
       RSTL_PRECONDITION(other.mCount <= N);
       RSTL_PRECONDITION(mCount == other.mCount);
@@ -213,12 +202,11 @@ public:
       const T* it = other.begin();
       T* cur = data();
       for (int remaining = mCount; remaining != 0; --remaining, ++it, ++cur) {
-        construction_policy< T, reserved_vector_scalar_type< T >::value >::construct(cur, *it);
+        construction_policy< T, false >::construct(cur, *it);
       }
     } else {
-      uninitialized_copy_n(other.begin(), mCount, data());
+      uninitialized_copy_n(other.data(), mCount, data());
     }
-  }
 #else
 #if RSTL_PRECONDITION_MACRO
     RSTL_PRECONDITION(mCount >= 0);
@@ -228,8 +216,8 @@ public:
 #else
     uninitialized_copy_n(const_iterator(other.data()), mCount, begin());
 #endif
-  }
 #endif
+  }
   reserved_vector(const T* first, const T* last) : mCount(0) {
     mCount = last - first;
     uninitialized_copy(first, last, data());
@@ -468,8 +456,7 @@ inline reserved_vector< T, N >& reserved_vector< T, N >::operator=(const reserve
   if (this != &other) {
     destroy_elements();
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
-    if (use_assignment_for_construction< T >::value &&
-        !reserved_vector_scalar_type< T >::value) {
+    if (reserved_vector_copy_policy< T >::placement) {
       copy_reserved_vector_elements(other.begin(), other.end(), begin());
     } else {
       uninitialized_copy(other.data(), other.data() + other.size(), data());
