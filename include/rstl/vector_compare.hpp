@@ -7,7 +7,7 @@
 namespace rstl {
 
 // Guessed names. Element-wise comparison built on mismatch. Kept out of vector.hpp so that
-// including it does not pull algorithm.hpp (and its RSTL_INLINE_SWAP check) into every user of
+// including it does not pull algorithm.hpp into every user of
 // vector.
 template < typename T, typename Alloc >
 bool operator==(const vector< T, Alloc >& left, const vector< T, Alloc >& right) {
