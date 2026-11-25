@@ -131,6 +131,16 @@ template <>
 struct reserved_vector_scalar_type< unsigned long > {
   enum { value = true };
 };
+
+template < typename T >
+struct reserved_vector_counted_scalar_copy {
+  enum { value = false };
+};
+
+template <>
+struct reserved_vector_counted_scalar_copy< int > {
+  enum { value = true };
+};
 #endif
 
 template < typename T, int N >
@@ -189,7 +199,10 @@ public:
 #endif
   reserved_vector(const reserved_vector& other) : mCount(other.mCount) {
 #if RSTL_RESERVED_VECTOR_POLICY_COPY
-    if (reserved_vector_scalar_type< T >::value || use_assignment_for_construction< T >::value) {
+    if (reserved_vector_counted_scalar_copy< T >::value) {
+      uninitialized_copy_n(other.data(), mCount, data());
+    } else if (reserved_vector_scalar_type< T >::value ||
+               use_assignment_for_construction< T >::value) {
       // Scalars are copied by assignment. Class types, even those rstl constructs by assignment
       // elsewhere (CVector3f, CVector2f), are placement-new'ed with its null check.
       RSTL_PRECONDITION(other.mCount >= 0);
