@@ -434,11 +434,20 @@ void vector< T, Alloc >::assign(int size, typename type_traits< T >::vector_fill
   }
 }
 
+#if !RSTL_SCALAR_FILL_HELPERS
+namespace vector_detail {
+using rstl::uninitialized_fill_n;
+} // namespace vector_detail
+#endif
+
 template < typename T, typename Alloc >
 inline void vector< T, Alloc >::resize(int size, typename type_traits< T >::vector_resize_type in) {
   if (mCount != size) {
     if (size > mCount) {
       reserve(size);
+#if !RSTL_SCALAR_FILL_HELPERS
+      using vector_detail::uninitialized_fill_n;
+#endif
       uninitialized_fill_n(mItems + mCount, size - mCount, in);
     } else {
       destroy(begin() + size, end());
