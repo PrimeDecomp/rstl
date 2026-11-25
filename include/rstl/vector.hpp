@@ -12,6 +12,7 @@
 
 #include "rstl/allocator_auto_ptr.hpp"
 #include "rstl/iterator.hpp"
+#include "rstl/math.hpp"
 #include "rstl/pointer_iterator.hpp"
 #include "rstl/rmemory_allocator.hpp"
 #include "rstl/type_traits.hpp"
@@ -238,6 +239,19 @@ public:
 #endif
   void assign(int size, typename type_traits< T >::vector_fill_type in = T());
   void reserve(int size);
+
+  // Guessed name. Growth starts at a positive minimum capacity.
+  void reserve_for_append(int count, int minimumCapacity = 1) {
+    const int required = mCount + count;
+    if (required > mCapacity) {
+      int capacity = rstl::max_val(mCapacity * 2, minimumCapacity);
+      while (capacity < required) {
+        capacity *= 2;
+      }
+      reserve(capacity);
+    }
+  }
+
   inline iterator insert(iterator it, typename type_traits< T >::vector_insert_type value);
 
   template < typename from_iterator >
