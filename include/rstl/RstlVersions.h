@@ -882,8 +882,6 @@
 
 // Corruption's CVector3f: Normalize returns the magnitude and Slerp handles degenerate vectors.
 #define RSTL_KYOTO_VECTOR3F_CORRUPTION (RSTL_CORRUPTION)
-// CVector3f::Cross is defined out of line.
-#define RSTL_KYOTO_VECTOR3F_CROSS_OUT_OF_LINE (RSTL_VERSION == RSTL_G2MEAB)
 // CVector3f declares reserved_vector and optional construction policies.
 #define RSTL_KYOTO_VECTOR3F_CONTAINER_POLICIES (!RSTL_PRIME1 && !RSTL_CORRUPTION)
 // vector<CVector3f> constructs elements through component assignment.

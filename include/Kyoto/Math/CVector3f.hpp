@@ -168,7 +168,6 @@ protected:
 DECLARE_FULL_SIZE_FOR(CVector3f, 0xc)
 CHECK_SIZEOF(CVector3f, CVector3f_FULL_SIZE)
 
-#if !RSTL_KYOTO_VECTOR3F_CROSS_OUT_OF_LINE
 inline CVector3f CVector3f::Cross(const CVector3f& lhs, const CVector3f& rhs) {
   float lX = lhs.GetX();
   float lY = lhs.GetY();
@@ -178,7 +177,6 @@ inline CVector3f CVector3f::Cross(const CVector3f& lhs, const CVector3f& rhs) {
   float rZ = rhs.GetZ();
   return CVector3f(lY * rZ - rY * lZ, lZ * rX - rZ * lX, lX * rY - rX * lY);
 }
-#endif
 
 // Guessed name
 template < typename T >
