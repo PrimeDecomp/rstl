@@ -12,6 +12,7 @@ class CInputStream;
 
 class CPlane {
 public:
+  CPlane() {}
   CPlane(CInputStream& in);
 
   CPlane(const CVector3f& vec, const CUnitVector3f& normal)
@@ -20,6 +21,12 @@ public:
 
   CPlane(const CVector3f&, const CVector3f&, const CVector3f&);
   // TODO
+
+  // Guessed name.
+  void InitFromPointNormal(const CVector3f& point, const CUnitVector3f& normal) {
+    mNormal = normal;
+    mConstant = CVector3f::Dot(point, mNormal);
+  }
 
   const CUnitVector3f& GetNormal() const { return mNormal; }
   float GetConstant() const { return mConstant; }
