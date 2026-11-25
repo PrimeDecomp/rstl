@@ -17,6 +17,12 @@ typedef uint CAssetId;
 #endif
 typedef uint FourCC;
 
+#if RSTL_KYOTO_ASSET_ID_CLASS
+#define ASSET_ID_TO_HEX_STRING(id) (id).ToHexString().data()
+#else
+#define ASSET_ID_TO_HEX_STRING(id) (CBasics::Stringize("%d", (id)))
+#endif
+
 struct SObjectTag {
   FourCC type;
   CAssetId id;

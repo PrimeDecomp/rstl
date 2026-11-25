@@ -10,7 +10,9 @@
 
 namespace CBasics {
 bool Init();
+#if RSTL_KYOTO_STRINGIZE_VA_LIST
 char* Stringize(const char* fmt, va_list args);
+#endif
 char* Stringize(const char* fmt, ...);
 // Guessed names. Cache-block (dcbz) accelerated fill/copy; G2ME01 0x8028BD3C/0x8028BE1C, next to
 // CBasics::Init in Prime Trilogy.

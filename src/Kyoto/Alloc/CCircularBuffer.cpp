@@ -58,7 +58,6 @@ void CCircularBuffer::Free(void* ptr, const int len) {
   }
 }
 
-#if RSTL_KYOTO_CIRCULAR_BUFFER_ALLOCATED_AMOUNT
 int CCircularBuffer::GetAllocatedAmount() const {
   const int previousStart = x14_;
   int amount = mNextFreeAddr - xc_;
@@ -68,4 +67,3 @@ int CCircularBuffer::GetAllocatedAmount() const {
 
   return amount;
 }
-#endif

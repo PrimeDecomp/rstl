@@ -517,6 +517,11 @@
 // Kyoto: across folders
 // ============================================================================================
 
+#ifndef RSTL_KYOTO_DEBUG_BUILD
+// Debug build: asserts, debugger prints, source-line allocation tags and freed-block fills.
+#define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
+#endif
+
 // By-value scalar returns are `const` (CBasics::SwapBytes, SObjectTag::GetType, CRandom16).
 #define RSTL_KYOTO_CONST_SCALAR_RETURNS RSTL_PRIME1
 // `const` on by-value scalar parameters and returns that only Prime declares.
@@ -557,8 +562,6 @@
 #define RSTL_KYOTO_ASSET_ID_CLASS (RSTL_CORRUPTION)
 // Resource factories receive the loaded buffer and size instead of a CInputStream.
 #define RSTL_KYOTO_BUFFER_FACTORIES (RSTL_CORRUPTION)
-// Debug build: asserts, debugger prints, source-line allocation tags and freed-block fills.
-#define RSTL_KYOTO_DEBUG_BUILD (RSTL_VERSION == RSTL_G2MEAB)
 // Spellings only the prototype's units use where Echoes' equivalent compiles differently.
 #define RSTL_KYOTO_PROTO_SOURCE_FORMS (RSTL_CORRUPTION)
 
@@ -661,8 +664,6 @@
 #else
 #define RSTL_KYOTO_CMEMORY_MUTABLE_FREE 0
 #endif
-// CCircularBuffer.cpp defines `GetAllocatedAmount`.
-#define RSTL_KYOTO_CIRCULAR_BUFFER_ALLOCATED_AMOUNT (RSTL_PRIME1 || RSTL_CORRUPTION)
 
 // ============================================================================================
 // Kyoto/Animation

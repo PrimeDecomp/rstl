@@ -7,12 +7,7 @@
 #include "Kyoto/IFactory.hpp"
 
 CSimplePool::CSimplePool(IFactory& factory)
-// TODO: verify that this Prime/Echoes difference is real
-#if RSTL_PRIME1
-: mFactory(factory)
-#else
 : mFactory(&factory)
-#endif
 , mParamXfr(CVParamTransfer::Null()) {
   mParamXfr = CVParamTransfer(rs_new_line(32) TObjOwnerParam< IObjectStore* >(this));
 }
@@ -47,18 +42,18 @@ CToken CSimplePool::GetObj(const SObjectTag& tag, const CVParamTransfer& xfer) {
     RS_VERIFY_THROW(
         83, tag.GetType() == ref->GetObjectTag().GetType(), false,
         CBasics::Stringize("Object tag types don't match in CSimplePool::GetObj. Type:%s\tID:%s",
-                           SObjectTag::Type2Text(tag.GetType()), tag.GetId().ToHexString().data()));
+                           SObjectTag::Type2Text(tag.GetType()), ASSET_ID_TO_HEX_STRING(tag.GetId())));
     return CToken(ref);
   }
 
   RS_VERIFY_THROW(91, mFactory->CanBuild(tag), false,
                   CBasics::Stringize("Asset doesn't exist in .pak files. Type:%s\tID:%s",
                                      SObjectTag::Type2Text(tag.GetType()),
-                                     tag.GetId().ToHexString().data()));
+                                     ASSET_ID_TO_HEX_STRING(tag.GetId())));
   RS_VERIFY_THROW(95, mFactory != NULL, false,
                   CBasics::Stringize("Missing factory for type:%s\tID:%s",
                                      SObjectTag::Type2Text(tag.GetType()),
-                                     tag.GetId().ToHexString().data()));
+                                     ASSET_ID_TO_HEX_STRING(tag.GetId())));
   CObjectReference* ref =
       rs_new_line(97) CObjectReference(*this, rstl::auto_ptr< IObj >(nullptr), tag, xfer);
   RSTL_PRIME1_CONST ResourceMap::value_type item(tag, ref);
@@ -85,9 +80,9 @@ bool CSimplePool::HasObject(const SObjectTag& tag) const {
   bool result = true;
   if (!(it != mResources.end())) {
 #if NONMATCHING
-    const bool canBuild = mFactory.CanBuild(tag);
+    const bool canBuild = mFactory->CanBuild(tag);
 #else
-    const bool canBuild = &mFactory != nullptr && mFactory.CanBuild(tag);
+    const bool canBuild = mFactory != nullptr && mFactory->CanBuild(tag);
 #endif
     if (!canBuild) {
       result = false;
@@ -127,7 +122,7 @@ void CSimplePool::DebugDumpPool() const {
 #if RSTL_PRIME1
     SObjectTag::Type2Text(it->first.GetType());
 #else
-    RS_DEBUGGER_PRINT("   Asset %s type %s\n", it->first.GetId().ToHexString().data(),
+    RS_DEBUGGER_PRINT("   Asset %s type %s\n", ASSET_ID_TO_HEX_STRING(it->first.GetId()),
                       SObjectTag::Type2Text(it->first.GetType()));
 #endif
   }
@@ -154,4 +149,3 @@ rstl::vector< SObjectTag > CSimplePool::GetReferencedTags() const {
   }
   return tags;
 }
-
