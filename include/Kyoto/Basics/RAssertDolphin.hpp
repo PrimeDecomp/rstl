@@ -33,6 +33,8 @@ void ErrorHandler(OSError code, OSContext* context, int dsisr, ErrorDataAddress 
 void SetErrorHandlers();
 // Formats the message and reports it through ErrorHandler.
 void rs_reallyfatal_printf(const char* format, ...);
+void rs_log_assert_failure(const CCallStack* stack, const char* source, int line, const char* kind,
+                           const char* condition, const char* message);
 
 #if RSTL_KYOTO_DEBUG_BUILD
 // Guessed name
@@ -63,6 +65,5 @@ void rs_debugger_printf(const char* format, ...);
 void rs_fatal_printf(const char* format, ...);
 
 void rs_halt_cpu();
-
 
 #endif // _RASSERTDOLPHIN
