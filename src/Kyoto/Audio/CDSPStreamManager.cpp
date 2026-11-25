@@ -4,6 +4,8 @@
 #include "Kyoto/Basics/CInterruptGuard.hpp"
 #include "Kyoto/CDvdFile.hpp"
 #include "Kyoto/Platform.h"
+#include "Kyoto/ByteOrder.hpp"
+#include "Kyoto/Basics/CBasics.hpp"
 #include "rstl/RstlVersions.h"
 
 #include "dolphin/dvd.h"
@@ -105,6 +107,7 @@ CDSPStreamManager& CDSPStreamManager::operator=(const CDSPStreamManager& other) 
 #if !RSTL_PRIME1
 CDSPStreamManager sStreams[2];
 rstl::reserved_vector< SDSPStreamVoice, 4 > sVoices;
+IF_TARGET_PC(static CDSPStreamManager* sVoiceOwners[4];)
 static bool sDeferCallbacks;
 static int sDeferredCallbacks;
 const int kDSPStreamBlockSize = 0x8F00;
@@ -356,10 +359,11 @@ int CDSPStreamManager::AllocateVoice(int volume, uchar pan, SND_ADPCMSTREAM_INFO
           static_cast< uchar* >(CMemory::Alloc(it->mBufferSize, IAllocator::kHI_RoundUpLen)));
     }
     const SDSPStreamVoice& voice = *it;
+    IF_TARGET_PC(sVoiceOwners[idx] = this);
     it->mStreamId = sndStreamAllocEx(0xFF, voice.mBuffer.get(), voice.mNumSamples,
                                      mHeader.mSampleRate, volume, voice.mPan, 0, 0, 0, 0, 0x30001,
                                      primary ? UpdateStream : UpdateSecondaryStream,
-                                     reinterpret_cast< u32 >(this), nullptr);
+                                     IF_TARGET_PC_OR(idx, reinterpret_cast< u32 >(this)), nullptr);
     sndStreamADPCMParameter(it->mStreamId, info);
     return idx;
   }
@@ -428,6 +432,24 @@ void CDSPStreamManager::ReadCompleted(s32 result, DVDFileInfo* fileInfo) {
     switch (stream.mState) {
     case kSS_ReadingHeader:
       DCInvalidateRange(&stream.mHeader, sizeof(SRSFHeader));
+      if (TARGET_LITTLE_ENDIAN) {
+        SRSFHeader& header = stream.mHeader;
+        header.mMagic = CBasics::SwapBytes(header.mMagic);
+        header.mVersion = CBasics::SwapBytes(header.mVersion);
+        header.mNumChannels = CBasics::SwapBytes(header.mNumChannels);
+        header.x8_ = CBasics::SwapBytes(header.x8_);
+        header.mSampleRate = CBasics::SwapBytes(header.mSampleRate);
+        header.mDataSize = CBasics::SwapBytes(header.mDataSize);
+        header.mLoopFlag = CBasics::SwapBytes(header.mLoopFlag);
+        header.mLoopStart = CBasics::SwapBytes(header.mLoopStart);
+        header.mLoopEnd = CBasics::SwapBytes(header.mLoopEnd);
+        for (int i = 0; i < 2; ++i) {
+          for (int j = 0; j < 8; ++j) {
+            header.mAdpcmInfo[i].coefTab[j][0] = CBasics::SwapBytes(header.mAdpcmInfo[i].coefTab[j][0]);
+            header.mAdpcmInfo[i].coefTab[j][1] = CBasics::SwapBytes(header.mAdpcmInfo[i].coefTab[j][1]);
+          }
+        }
+      }
       if (stream.mHeader.mMagic != 'RS' || stream.mHeader.mVersion != 3) {
         stream.Deallocate();
         return;
@@ -588,7 +610,14 @@ void CDSPStreamManager::BufferStream() {
 }
 
 u32 CDSPStreamManager::UpdateStream(void* buf1, u32 len1, void* buf2, u32 len2, u32 user) {
+#if IS_TARGET_PC
+  CDSPStreamManager* stream = user < ARRAY_SIZE(sVoiceOwners) ? sVoiceOwners[user] : nullptr;
+  if (stream == nullptr || stream->mVoices.empty()) {
+    return 0;
+  }
+#else
   CDSPStreamManager* stream = reinterpret_cast< CDSPStreamManager* >(user);
+#endif
   len1 += len2;
   u32 half = sVoices[stream->mVoices[0]].mNumSamples / 2;
   if (len1 < half) {
@@ -619,6 +648,7 @@ void CDSPStreamManager::Deallocate() {
     SDSPStreamVoice& voice = sVoices[*it];
     sndStreamDeactivate(voice.mStreamId);
     sndStreamFree(voice.mStreamId);
+    IF_TARGET_PC(sVoiceOwners[*it] = nullptr;)
     voice.mStreamId = -1;
     if (voice.mType != 0) {
       voice.mBuffer = rstl::auto_ptr< uchar >();
