@@ -215,7 +215,7 @@ RSTL_PRIME1_CONST CFactoryFnReturn FAudioGroupSetLocDataFactory(const SObjectTag
 
 #if !RSTL_PRIME1
 CAudioGrpSetLoc::~CAudioGrpSetLoc() {
-  if (mStackId != -2 && mStackId != -1 && (sndIsInstalled() || !NONMATCHING)) {
+  if (mStackId != -2 && mStackId != -1 && (!NONMATCHING || sndIsInstalled())) {
     sndStackSetCurrent(mStackId);
     sndPopGroup();
     sndStackRemove(mStackId);
