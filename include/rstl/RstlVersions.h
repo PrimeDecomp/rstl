@@ -339,8 +339,6 @@
 
 // Members are declared in the class and defined outside it.
 #define RSTL_LIST_OUT_OF_CLASS (RSTL_VERSION >= RSTL_P2ME)
-// `remove_if` stays in the class body (over nodes).
-#define RSTL_LIST_REMOVE_IF_IN_CLASS (RSTL_CORRUPTION)
 // The copy constructor guards the partial copy with a `destroy_helper`.
 #define RSTL_LIST_COPY_DESTROY_GUARD (RSTL_VERSION < RSTL_P2ME)
 // `destroy` calls `clear()` instead of erasing the range.

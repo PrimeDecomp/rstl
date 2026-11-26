@@ -224,24 +224,11 @@ public:
 #endif
   }
 
-  void remove(const T& val);
-
-#if RSTL_LIST_REMOVE_IF_IN_CLASS
-  template < typename Pred >
-  void remove_if(Pred pred) {
-    node* it = mStart;
-    while (it != mEnd) {
-      if (pred(*it->get_value())) {
-        it = do_erase(it);
-      } else {
-        it = it->get_next();
-      }
-    }
+  void remove(const T& val) {
+    rstl::equal_to< T > equal;
+    remove_if(rstl::bind1st(equal, val));
   }
-#elif RSTL_LIST_OUT_OF_CLASS
-  template < typename Pred >
-  void remove_if(Pred pred);
-#else
+
   template < typename Pred >
   void remove_if(Pred pred) {
     iterator it = begin();
@@ -253,7 +240,6 @@ public:
       }
     }
   }
-#endif
 
   template < typename Cmp >
   void sort(Cmp cmp) {
@@ -406,26 +392,6 @@ inline void list< T, Alloc >::insert(const iterator& pos, InputIterator first, I
   }
 }
 
-template < typename T, typename Alloc >
-void list< T, Alloc >::remove(const T& val) {
-  rstl::equal_to< T > equal;
-  remove_if(rstl::bind1st(equal, val));
-}
-
-#if !RSTL_LIST_REMOVE_IF_IN_CLASS
-template < typename T, typename Alloc >
-template < typename Pred >
-void list< T, Alloc >::remove_if(Pred pred) {
-  node* it = mStart;
-  while (it != mEnd) {
-    if (pred(*it->get_value())) {
-      it = do_erase(it);
-    } else {
-      it = it->get_next();
-    }
-  }
-}
-#endif
 #else
 template < typename T, typename Alloc >
 inline typename list< T, Alloc >::iterator list< T, Alloc >::insert(const iterator& pos,
@@ -442,11 +408,6 @@ void list< T, Alloc >::insert(const iterator& pos, InputIterator first, InputIte
   }
 }
 
-template < typename T, typename Alloc >
-inline void list< T, Alloc >::remove(const T& val) {
-  rstl::equal_to< T > equal;
-  remove_if(rstl::bind1st(equal, val));
-}
 #endif
 
 template < typename T, typename Alloc >
