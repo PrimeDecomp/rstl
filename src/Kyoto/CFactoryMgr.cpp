@@ -88,7 +88,7 @@ void CFactoryMgr::AddFactory(FourCC type, FMemFactoryFunc factory) {
 #if RSTL_KYOTO_BUFFER_FACTORIES
 rstl::auto_ptr< IObj > CFactoryMgr::MakeObjectFromMemory(const SObjectTag& tag,
                                                          MemoryBufferPtr buffer, int size,
-                                                         bool uncompressed,
+                                                         int uncompressed,
                                                          const CVParamTransfer& params) {
   FMemFactoryFunc factory = mMemFactories.find(tag.GetType())->second;
   if (!uncompressed) {

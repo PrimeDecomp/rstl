@@ -201,7 +201,6 @@ CINPUTSTREAM_HELPER(unsigned char, ReadChar)
 CINPUTSTREAM_HELPER(signed char, ReadChar)
 CINPUTSTREAM_HELPER(int, ReadLong)
 CINPUTSTREAM_HELPER(uint, ReadLong)
-CINPUTSTREAM_HELPER(unsigned long, ReadLong)
 CINPUTSTREAM_HELPER(u64, ReadLongLong)
 CINPUTSTREAM_HELPER(float, ReadFloat)
 CINPUTSTREAM_HELPER(short, ReadShort)
@@ -301,11 +300,6 @@ CINPUTSTREAM_GET(signed char, ReadInt8())
 #endif
 CINPUTSTREAM_GET(int, ReadInt32())
 CINPUTSTREAM_GET(uint, ReadUint32())
-#if RSTL_KYOTO_INPUT_STREAM_TYPED_CURSOR
-CINPUTSTREAM_GET(unsigned long, ReadUint32())
-#else
-CINPUTSTREAM_GET(unsigned long, ReadInt32())
-#endif
 CINPUTSTREAM_GET(u64, ReadInt64())
 CINPUTSTREAM_GET(float, ReadFloat())
 CINPUTSTREAM_GET(short, ReadInt16())

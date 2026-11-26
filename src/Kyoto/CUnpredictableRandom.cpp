@@ -3,6 +3,12 @@
 
 #include "rstl/math.hpp"
 
+namespace {
+extern const float skProbabilityPercentScale; // Guessed name
+extern const float skMaximumProbability; // Guessed name
+extern const float skMinimumProbability; // Guessed name
+} // namespace
+
 static const bool skInitialBoolHistory[20] = {false, true,  true,  true,  false, false, true,
                                               true,  false, false, false, true,  false, true,
                                               false, false, true,  true,  false, false};
@@ -38,22 +44,22 @@ CUnpredictableRandomBool::CUnpredictableRandomBool() : mHistory() {
 }
 
 bool CUnpredictableRandomBool::Generate(CRandom16& random, float probability) {
-  int index = int(100.f * probability + 0.5f) - 1;
+  int index = int(skProbabilityPercentScale * probability + 0.5f) - 1;
   bool flipped = false;
   for (int i = 0; i < 19; ++i) {
     mHistory[i] = mHistory[i + 1];
   }
-  if (probability <= 0.f) {
+  if (probability <= skMinimumProbability) {
     mHistory[19] = false;
     return mHistory[19];
   }
-  if (probability >= 1.f) {
+  if (probability >= skMaximumProbability) {
     mHistory[19] = true;
     return mHistory[19];
   }
   if (probability > 0.5f) {
     flipped = true;
-    index = int(100.f * (1.f - probability) + 0.5f) - 1;
+    index = int(skProbabilityPercentScale * (skMaximumProbability - probability) + 0.5f) - 1;
   }
   if (index < 0) {
     index = 0;
@@ -115,7 +121,7 @@ CUnpredictableRandomInt::CUnpredictableRandomInt() : mMinRepeatLimit(1) {
 }
 
 int CUnpredictableRandomInt::GetChoiceProbabilityPercent(int numChoices, int choice) const {
-  return rstl::min_val(int(100.f / numChoices), 99);
+  return rstl::min_val(int(skProbabilityPercentScale / numChoices), 99);
 }
 
 int CUnpredictableRandomInt::GetConsecutiveRepeatLimit(int numChoices, int choice) const {
@@ -223,11 +229,11 @@ CUnpredictableRandomWeighted::CUnpredictableRandomWeighted(int count, const floa
 }
 
 int CUnpredictableRandomWeighted::GetChoiceProbabilityPercent(int numChoices, int choice) const {
-  return rstl::min_val(int(100.f * mWeights[choice] / mTotalWeight), 99);
+  return rstl::min_val(int(skProbabilityPercentScale * mWeights[choice] / mTotalWeight), 99);
 }
 
 void CUnpredictableRandomWeighted::RecomputeTotalWeight() {
-  mTotalWeight = 0.f;
+  mTotalWeight = skMinimumProbability;
   for (int i = 0; i < mWeights.size(); ++i) {
     mTotalWeight += mWeights[i];
   }
@@ -244,10 +250,10 @@ int CUnpredictableRandomWeighted::SelectCandidate(CRandom16& random, int numChoi
       mRemainingWeight = mTotalWeight;
     } else {
       mRemainingWeight -= candidates[rejectedChoice];
-      candidates[rejectedChoice] = 0.f;
+      candidates[rejectedChoice] = skMinimumProbability;
     }
     float threshold = mRemainingWeight * random.Float();
-    float sum = 0.f;
+    float sum = skMinimumProbability;
     int i = 0;
     for (; i < candidates.size() - 1; ++i) {
       sum += candidates[i];
@@ -258,7 +264,7 @@ int CUnpredictableRandomWeighted::SelectCandidate(CRandom16& random, int numChoi
     return i;
   }
   float threshold = mTotalWeight * random.Float();
-  float sum = 0.f;
+  float sum = skMinimumProbability;
   int i = 0;
   for (; i < mWeights.size() - 1; ++i) {
     sum += mWeights[i];
@@ -293,8 +299,9 @@ float CUnpredictableRandomFloat::Generate(CRandom16& random) {
     ++attempts;
     float bucket = float(mInteger.Generate(random, 10));
     float value = 0.1f * (bucket + random.Float());
-    if (value > 1.f) {
-      value = 1.f;
+    float maximumProbability = skMaximumProbability;
+    if (value > maximumProbability) {
+      value = maximumProbability;
     }
     mHistory[4] = value;
     float d1 = mHistory[4] - mHistory[3];
@@ -314,3 +321,8 @@ float CUnpredictableRandomFloat::Generate(CRandom16& random) {
   return mHistory[4];
 }
 
+namespace {
+const float skProbabilityPercentScale = 100.f;
+const float skMaximumProbability = 1.f;
+const float skMinimumProbability = 0.f;
+} // namespace
