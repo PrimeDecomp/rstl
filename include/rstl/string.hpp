@@ -822,8 +822,6 @@ inline wstring::basic_string(wstring::literal_t, const wchar_t* data) {
 
 inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
 
-bool operator==(const string& lhs, const char* rhs);
-
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
 
@@ -888,8 +886,6 @@ inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare
 inline bool operator==(const char* lhs, const rstl::string& rhs) {
   return rhs.compare(lhs, -1) == 0;
 }
-
-inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
 
 bool operator==(const char* lhs, const string& rhs);
 bool operator!=(const string& lhs, const char* rhs);
@@ -965,7 +961,6 @@ inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare
 inline istring istring_l(const char* data) { return istring(istring::literal_t(), data); }
 inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
 
-inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
 inline bool operator==(const char* lhs, const string& rhs) { return rhs.compare(lhs, -1) == 0; }
 inline bool operator!=(const string& lhs, const char* rhs) { return lhs.compare(rhs) != 0; }
 
@@ -1057,6 +1052,8 @@ basic_string< _CharTp, Traits, Alloc >::substr(int pos, int count) const {
   return basic_string(range.first, range.second);
 }
 #endif
+
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
 
 } // namespace rstl
 
