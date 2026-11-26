@@ -451,8 +451,12 @@
 #define RSTL_STRING_MUTABLE_NULL (RSTL_VERSION >= RSTL_P2ME && !RSTL_STRING_INCLASS_NULL)
 // `compare(const _CharTp*, int)` and `operator==(const string&, const char*)` are inline.
 #define RSTL_STRING_INLINE_CHAR_COMPARE 1
-// Typedefs and comparisons precede the out-of-line specializations; `substr` is out of line.
+// The tail declares the literal factories and uses out-of-line string specializations.
 #define RSTL_STRING_PREDECLARED_SPECIALIZATIONS (RSTL_VERSION >= RSTL_P2ME)
+// The comparison with a C string on the left is defined in the header.
+#define RSTL_STRING_INLINE_CSTR_LHS_EQUAL (!RSTL_CORRUPTION)
+// String-to-C-string inequality is defined in the header.
+#define RSTL_STRING_INLINE_CSTR_NOT_EQUAL (RSTL_VERSION < RSTL_P2ME)
 // `operator+(const string&, const string&)` is inline.
 #define RSTL_STRING_INLINE_CONCAT RSTL_ECHOES
 // Characters are read with `ReadInt8()` instead of `Get< schar >()`.
@@ -491,7 +495,7 @@
 #define RSTL_STRING_MATCH_LOOP_SEARCH (RSTL_CORRUPTION)
 // Reverse iterators copy from a const reference and decrement the stored iterator.
 #define RSTL_STRING_REVERSE_ITERATOR_REF RSTL_CORRUPTION
-// Typedefs, specializations and `operator+` overloads come in the prototype's order.
+// String factories, specializations and `operator+` overloads use Corruption's layout.
 #define RSTL_STRING_PROTO_TAIL (RSTL_CORRUPTION)
 // rstl_strings.cpp's definitions come in the prototype's order.
 #define RSTL_STRINGS_PROTO_LAYOUT (RSTL_CORRUPTION)

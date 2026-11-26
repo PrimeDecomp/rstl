@@ -800,14 +800,28 @@ template <>
 void basic_string< char, case_insensitive_char_traits< char > >::internal_dereference();
 #endif
 
-#if RSTL_STRING_PROTO_TAIL
 typedef basic_string< wchar_t > wstring;
 typedef basic_string< char > string;
-typedef basic_string< char, case_insensitive_char_traits< char > > case_insensitive_string;
-typedef case_insensitive_string istring;
+typedef basic_string< char, case_insensitive_char_traits< char > > istring;
+
+inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
+inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
+inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
+
+bool operator==(const char* lhs, const string& rhs);
+bool operator!=(const string& lhs, const char* rhs);
+
+#if RSTL_STRING_INLINE_CSTR_LHS_EQUAL
+inline bool operator==(const char* lhs, const string& rhs) { return rhs.compare(lhs, -1) == 0; }
+#endif
+#if RSTL_STRING_INLINE_CSTR_NOT_EQUAL
+inline bool operator!=(const string& lhs, const char* rhs) { return lhs.compare(rhs) != 0; }
+#endif
+
+#if RSTL_STRING_PROTO_TAIL
+typedef istring case_insensitive_string;
 
 istring istring_l(const char* data);
-inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
 
 template <>
 inline wstring::basic_string(wstring::literal_t, const wchar_t* data) {
@@ -819,11 +833,6 @@ inline wstring::basic_string(wstring::literal_t, const wchar_t* data) {
   }
   mSize = end - data;
 }
-
-inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
-
-bool operator==(const char* lhs, const string& rhs);
-bool operator!=(const string& lhs, const char* rhs);
 
 wstring wstring_l(const wchar_t* data);
 
@@ -877,21 +886,7 @@ basic_string< _CharTp, Traits, Alloc >::substr(int pos, int count) const {
 #elif RSTL_STRING_PREDECLARED_SPECIALIZATIONS
 // Declare the out-of-line specializations (defined in rstl_strings.cpp and
 // CScriptStreamedMusic.cpp) before first use.
-typedef basic_string< wchar_t > wstring;
-typedef basic_string< char > string;
-typedef basic_string< char, case_insensitive_char_traits< char > > istring;
-
-inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
-
-inline bool operator==(const char* lhs, const rstl::string& rhs) {
-  return rhs.compare(lhs, -1) == 0;
-}
-
-bool operator==(const char* lhs, const string& rhs);
-bool operator!=(const string& lhs, const char* rhs);
-
 istring istring_l(const char* data);
-inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
 
 wstring wstring_l(const wchar_t* data);
 
@@ -952,17 +947,7 @@ basic_string< _CharTp, Traits, Alloc >::substr(int pos, int count) const {
 }
 
 #else
-typedef basic_string< wchar_t > wstring;
-typedef basic_string< char > string;
-typedef basic_string< char, case_insensitive_char_traits< char > > istring;
-
-inline bool operator<(const string& lhs, const string& rhs) { return lhs.compare(rhs) < 0; }
-
 inline istring istring_l(const char* data) { return istring(istring::literal_t(), data); }
-inline bool operator==(const istring& a, const istring& b) { return a.compare(b) == 0; }
-
-inline bool operator==(const char* lhs, const string& rhs) { return rhs.compare(lhs, -1) == 0; }
-inline bool operator!=(const string& lhs, const char* rhs) { return lhs.compare(rhs) != 0; }
 
 inline wstring wstring_l(const wchar_t* data) {
   return wstring(wstring::literal_t(), data);
@@ -1052,8 +1037,6 @@ basic_string< _CharTp, Traits, Alloc >::substr(int pos, int count) const {
   return basic_string(range.first, range.second);
 }
 #endif
-
-inline bool operator==(const string& lhs, const char* rhs) { return lhs.compare(rhs) == 0; }
 
 } // namespace rstl
 
