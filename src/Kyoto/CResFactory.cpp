@@ -97,7 +97,8 @@ rstl::auto_ptr< IObj > CResFactory::BuildSync(const SObjectTag& tag,
   mResLoader.LoadMemResourceSync(tag, &buffer, &size);
   return mFactoryMgr.MakeObjectFromMemory(
       tag, rstl::auto_ptr< uchar >(reinterpret_cast< uchar* >(buffer)), size,
-      mResLoader.GetResourceCompression(tag) == CResLoader::kCompressionType_Uncompressed, params);
+      mResLoader.GetResourceCompression(tag) == CResLoader::kCompressionType_Uncompressed ? 1 : 0,
+      params);
 #else
   if (mFactoryMgr.CanMakeMemory(tag)) {
     char* buffer;
@@ -205,12 +206,13 @@ bool CResFactory::PumpResource(const LoadList::iterator& it, uint time) {
     }
     SLoadingData data(*it);
     EraseFromLoadList(it);
+    const SLoadingData& completed = data;
     *data.mTarget =
         mFactoryMgr
             .MakeObjectFromMemory(
-                data.mTag, IF_RSTL_PRIME1_ELSE(data.mBuffer.release(), data.mBuffer), data.mSize,
+                completed.mTag, IF_RSTL_PRIME1_ELSE(data.mBuffer.release(), data.mBuffer), data.mSize,
 #if RSTL_KYOTO_BUFFER_FACTORIES
-                data.mCompression == CResLoader::kCompressionType_Uncompressed,
+                data.mCompression == CResLoader::kCompressionType_Uncompressed ? 1 : 0,
 #else
                 data.mCompression != CResLoader::kCompressionType_Uncompressed,
 #endif
