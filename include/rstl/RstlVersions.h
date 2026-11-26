@@ -103,6 +103,8 @@
 #define RSTL_ALIGNED_ALLOCATE_INLINE (RSTL_PRIME1 || RSTL_CORRUPTION)
 // `locked_cache_allocator` takes a plain `int` mode instead of `EMode`.
 #define RSTL_LOCKED_CACHE_RAW_MODE (RSTL_CORRUPTION)
+// Locked-cache vectors pass byte counts to their typed allocator.
+#define RSTL_LOCKED_CACHE_TYPED_ALLOCATE (RSTL_VERSION == RSTL_G2MEAB)
 
 // ============================================================================================
 // rstl: construct.hpp and type_traits.hpp

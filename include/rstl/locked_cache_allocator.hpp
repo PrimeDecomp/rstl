@@ -3,6 +3,7 @@
 
 #include "rstl/static_assert.hpp"
 #include "rstl/RstlVersions.h"
+#include "rstl/rmemory_allocator.hpp"
 
 #include "Kyoto/Alloc/CMemory.hpp"
 #include "Kyoto/Alloc/LockedCache.hpp"
@@ -26,15 +27,17 @@ public:
   , mHeapAllocation(false)
   , mPreviousHeapAllocation(false)
   , mAllocationCount(0) {}
-  // Guessed name and form. Only Allocate< void > is used. Being a template, its body is
-  // instantiated only once it is needed, after the callers that inline allocate().
   template < typename T >
+#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
+  inline void allocate(T*& out, int size);
+#else
   inline void Allocate(T*& out, int size);
 
   template < typename T >
   void allocate(T*& out, int count) {
     Allocate(reinterpret_cast< void*& >(out), sizeof(T) * count);
   }
+#endif
   template < typename T >
   void deallocate(T* ptr) {
     if (ptr != 0) {
@@ -60,6 +63,14 @@ private:
   uint mUnknownTail : 2;
 };
 CHECK_SIZEOF(locked_cache_allocator, 0x4)
+
+#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
+template < typename T >
+struct allocator_units_per_element< locked_cache_allocator, T > {
+  enum { value = sizeof(T) };
+};
+#endif
+
 } // namespace rstl
 
 #endif // _RSTL_LOCKED_CACHE_ALLOCATOR

@@ -52,6 +52,8 @@ class vector
 : private Alloc
 #endif
 {
+  typedef allocator_units_per_element< Alloc, T > allocation_units;
+
   Alloc& GetAllocator() {
 #if RSTL_ALLOCATOR_BASE_CLASS
     return *this;
@@ -131,7 +133,7 @@ public:
   mCount(count)
   , mCapacity(count) {
 #if RSTL_ALLOCATOR_INSTANCE
-    GetAllocator().allocate(mItems, size());
+    GetAllocator().allocate(mItems, size() * allocation_units::value);
 #else
     Alloc::allocate(mItems, size());
 #endif
@@ -196,7 +198,7 @@ public:
     mCount(0), mCapacity(0) {
     mCount = mCapacity = rstl::distance(first, last);
 #if RSTL_ALLOCATOR_INSTANCE
-    GetAllocator().allocate(mItems, mCount);
+    GetAllocator().allocate(mItems, mCount * allocation_units::value);
 #else
     Alloc::allocate(mItems, mCount);
 #endif
@@ -390,7 +392,7 @@ mCount(other.mCount)
     mItems = nullptr;
   } else {
 #if RSTL_ALLOCATOR_INSTANCE
-    GetAllocator().allocate(mItems, mCapacity);
+    GetAllocator().allocate(mItems, mCapacity * allocation_units::value);
 #else
     Alloc::allocate(mItems, mCapacity);
 #endif
@@ -464,7 +466,7 @@ void vector< T, Alloc >::reserve(int newSize) {
 
   T* newData;
 #if RSTL_ALLOCATOR_INSTANCE
-  GetAllocator().allocate(newData, newSize);
+  GetAllocator().allocate(newData, newSize * allocation_units::value);
 #else
   Alloc::allocate(newData, newSize);
 #endif
@@ -534,7 +536,7 @@ void vector< T, Alloc >::insert_into(iterator at, int n, In in) {
 
     T* newData;
 #if RSTL_ALLOCATOR_INSTANCE
-    GetAllocator().allocate(newData, newCapacity);
+    GetAllocator().allocate(newData, newCapacity * allocation_units::value);
 #else
     Alloc::allocate(newData, newCapacity);
 #endif
