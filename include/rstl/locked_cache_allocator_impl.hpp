@@ -5,12 +5,7 @@
 
 namespace rstl {
 template < typename T >
-#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
-inline void locked_cache_allocator::allocate(T*& out, int size)
-#else
-inline void locked_cache_allocator::Allocate(T*& out, int size)
-#endif
-{
+inline void locked_cache_allocator::allocate(T*& out, int size) {
   if (size == 0) {
     out = 0;
     return;
@@ -29,11 +24,7 @@ inline void locked_cache_allocator::Allocate(T*& out, int size)
     if (out == 0) {
       --mAllocationCount;
       mPreferHeap = true;
-#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
       allocate(out, size);
-#else
-      Allocate(out, size);
-#endif
     }
   }
 }

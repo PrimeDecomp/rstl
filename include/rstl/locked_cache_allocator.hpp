@@ -28,16 +28,7 @@ public:
   , mPreviousHeapAllocation(false)
   , mAllocationCount(0) {}
   template < typename T >
-#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
   inline void allocate(T*& out, int size);
-#else
-  inline void Allocate(T*& out, int size);
-
-  template < typename T >
-  void allocate(T*& out, int count) {
-    Allocate(reinterpret_cast< void*& >(out), sizeof(T) * count);
-  }
-#endif
   template < typename T >
   void deallocate(T* ptr) {
     if (ptr != 0) {
@@ -64,12 +55,10 @@ private:
 };
 CHECK_SIZEOF(locked_cache_allocator, 0x4)
 
-#if RSTL_LOCKED_CACHE_TYPED_ALLOCATE
 template < typename T >
 struct allocator_units_per_element< locked_cache_allocator, T > {
   enum { value = sizeof(T) };
 };
-#endif
 
 } // namespace rstl
 
