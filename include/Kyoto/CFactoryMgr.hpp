@@ -49,7 +49,12 @@ public:
 #endif
   rstl::auto_ptr< IObj > MakeObjectFromMemory(const SObjectTag& tag,
                                               MemoryBufferPtr buffer,
-                                              int size, bool compressed,
+                                              int size,
+#if RSTL_KYOTO_BUFFER_FACTORIES
+                                              int uncompressed,
+#else
+                                              bool compressed,
+#endif
                                               const CVParamTransfer& params);
 
   static uint FourCCToTypeIdx(uint fcc);
