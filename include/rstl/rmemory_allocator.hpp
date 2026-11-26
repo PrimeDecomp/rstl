@@ -16,6 +16,11 @@
 
 namespace rstl {
 
+template < typename Allocator, typename T >
+struct allocator_units_per_element {
+  enum { value = 1 };
+};
+
 #if RSTL_ALLOCATOR_EXTERN_ALLOCATE
 struct rmemory_allocator {
   rmemory_allocator() {}

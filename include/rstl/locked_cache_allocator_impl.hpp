@@ -5,7 +5,7 @@
 
 namespace rstl {
 template < typename T >
-inline void locked_cache_allocator::Allocate(T*& out, int size) {
+inline void locked_cache_allocator::allocate(T*& out, int size) {
   if (size == 0) {
     out = 0;
     return;
@@ -16,15 +16,15 @@ inline void locked_cache_allocator::Allocate(T*& out, int size) {
       mPreviousHeapAllocation = true;
     else
       mHeapAllocation = true;
-    out = rs_aligned_new_line_in("lc_allocator.h", 71, size);
+    out = static_cast< T* >(rs_aligned_new_line_in("lc_allocator.h", 71, size));
   } else {
-    out = AllocateLockedCache32(size);
+    out = static_cast< T* >(AllocateLockedCache32(size));
     if (mHeapAfterCacheAttempt)
       mPreferHeap = true;
     if (out == 0) {
       --mAllocationCount;
       mPreferHeap = true;
-      Allocate(out, size);
+      allocate(out, size);
     }
   }
 }
