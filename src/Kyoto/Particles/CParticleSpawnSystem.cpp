@@ -1,4 +1,5 @@
 #include "Kyoto/Particles/CParticleSpawnSystem.hpp"
+#include "Kyoto/Particles/CParticleGen.inl"
 
 #include "Kyoto/Graphics/CGraphics.hpp"
 #include "Kyoto/Math/CMath.hpp"

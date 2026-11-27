@@ -94,8 +94,6 @@ private:
 
 };
 
-inline CParticleGen::~CParticleGen() {}
-
 #if !RSTL_PRIME1
 inline bool CParticleGen::ShouldDraw() const {
   const uint mask = sDrawMask;

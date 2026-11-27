@@ -1,5 +1,6 @@
 #include "rstl/RstlVersions.h"
 #include "Kyoto/Particles/CParticleSwoosh.hpp"
+#include "Kyoto/Particles/CParticleGen.inl"
 
 #include "Kyoto/Basics/CStopwatch.hpp"
 

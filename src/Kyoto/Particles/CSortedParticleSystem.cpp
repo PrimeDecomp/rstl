@@ -1,4 +1,5 @@
 #include "Kyoto/Particles/CSortedParticleSystem.hpp"
+#include "Kyoto/Particles/CParticleGen.inl"
 
 #include "Kyoto/Math/CloseEnough.hpp"
 #include "Kyoto/Particles/CParticleGlobals.hpp"

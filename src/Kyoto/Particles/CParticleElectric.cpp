@@ -2,6 +2,7 @@
 #include "rstl/macros.hpp"
 #include "rstl/list.hpp" // IWYU pragma: keep
 #include "Kyoto/Particles/CParticleElectric.hpp" // IWYU pragma: keep
+#include "Kyoto/Particles/CParticleGen.inl"
 
 #include "Kyoto/Basics/CStopwatch.hpp"
 

@@ -1,4 +1,5 @@
 #include "Kyoto/Particles/CElementGen.hpp"
+#include "Kyoto/Particles/CParticleGen.inl"
 #include "rstl/macros.hpp"
 
 #if RSTL_PRIME1
