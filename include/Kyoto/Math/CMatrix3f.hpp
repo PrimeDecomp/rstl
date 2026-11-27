@@ -139,7 +139,11 @@ public:
     float x = GetRow(kDX)[dim];
     return CVector3f(x, y, z);
 #else
-    return CVector3f(GetRow(kDX)[dim], GetRow(kDY)[dim], GetRow(kDZ)[dim]);
+    const unsigned char* column =
+        reinterpret_cast< const unsigned char* >(this) + sizeof(float) * dim;
+    return CVector3f(*reinterpret_cast< const float* >(column),
+                     *reinterpret_cast< const float* >(column + sizeof(CVector3f)),
+                     *reinterpret_cast< const float* >(column + 2 * sizeof(CVector3f)));
 #endif
   }
 
