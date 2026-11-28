@@ -841,9 +841,10 @@ float CMayaSpline::EvaluateInfinities(float time, bool pre) const {
       CVector2f tangentA(0.0f, 0.0f);
       CVector2f tangentB(0.0f, 0.0f);
       mKnots[0].GetTangents(nullptr, &mKnots[1], tangentA, tangentB);
+      const float tangentAX = tangentA.GetX();
       const float amplitude = mKnots[0].GetAmplitude();
-      return !CMath::IsEpsilon(tangentA.GetX(), 0.f, 1.e-5f)
-                 ? amplitude - center * tangentA.GetY() / tangentA.GetX()
+      return !CMath::IsEpsilon(tangentAX, 0.f, 1.e-5f)
+                 ? amplitude - center * tangentA.GetY() / tangentAX
                  : amplitude;
     }
   } else {
@@ -862,9 +863,10 @@ float CMayaSpline::EvaluateInfinities(float time, bool pre) const {
       CVector2f tangentB(0.0f, 0.0f);
       mKnots[lastIdx].GetTangents(lastIdx > 0 ? &mKnots[lastIdx - 1] : nullptr, nullptr, tangentA,
                                   tangentB);
+      const float tangentBX = tangentB.GetX();
       const float amplitude = mKnots[lastIdx].GetAmplitude();
-      return !CMath::IsEpsilon(tangentB.GetX(), 0.f, 1.e-5f)
-                 ? amplitude + center * tangentB.GetY() / tangentB.GetX()
+      return !CMath::IsEpsilon(tangentBX, 0.f, 1.e-5f)
+                 ? amplitude + center * tangentB.GetY() / tangentBX
                  : amplitude;
     }
   }

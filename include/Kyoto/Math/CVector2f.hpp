@@ -21,7 +21,7 @@ public:
   {
   }
 
-  float GetX() const { return mX; }
+  const float GetX() const { return mX; }
   float GetY() const { return mY; }
   void SetX(float x) { mX = x; }
   void SetY(float y) { mY = y; }
