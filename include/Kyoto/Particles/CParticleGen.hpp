@@ -44,7 +44,7 @@ public:
   virtual void SetLocalScale(const CVector3f& scale) = 0;
   virtual void SetParticleEmission(bool emission) = 0;
   virtual void SetModulationColor(const CColor& col) = 0;
-  virtual void SetGeneratorRate(float rate) {}
+  virtual void SetGeneratorRate(const float rate) {}
 #if !RSTL_PRIME1
   // Names of the draw-flag methods are hypotheses based on the sDrawFlags/sDrawMask Wii exports.
   virtual void SetDrawFlags(uint flags) { mDrawFlags = flags; }
